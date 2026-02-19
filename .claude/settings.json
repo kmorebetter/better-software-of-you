@@ -1,0 +1,17 @@
+{
+  "permissions": {
+    "allow": [
+      "Read",
+      "Bash(sqlite3 *)",
+      "Bash(open *)",
+      "Bash(python3 *)",
+      "Bash(curl *)",
+      "Write(/output/**)",
+      "Edit(/output/**)",
+      "Write(/config/**)",
+      "Edit(/config/**)",
+      "Write(/data/**)",
+      "Edit(/data/**)"
+    ]
+  }
+}
