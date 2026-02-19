@@ -58,6 +58,7 @@ When both modules are installed, they enhance each other automatically:
 | `/project-status` | Quick project status check |
 | `/dashboard` | Generate a visual HTML dashboard |
 | `/view` | Generate specialized module views |
+| `/import` | Import data — paste text, CSV, file path, anything |
 | `/search` | Natural language search across all data |
 | `/note` | Add a note to any contact or project |
 | `/tag` | Create and manage tags |

@@ -21,6 +21,7 @@ Present available commands based on what's installed:
 | `/note <entity> <content>` | Add a note to any contact or project |
 | `/tag <action> [args]` | Create, list, or apply tags |
 | `/log [timeframe]` | View your activity timeline |
+| `/import` | Import data from any source — paste text, CSV, file path, anything |
 | `/dashboard` | Generate a visual HTML dashboard |
 | `/view <module>` | Generate a specialized module view |
 | `/help-soy` | This help page |
