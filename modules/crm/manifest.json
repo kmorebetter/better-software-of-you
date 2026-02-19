@@ -1,0 +1,24 @@
+{
+  "name": "crm",
+  "display_name": "Contacts & CRM",
+  "version": "1.0.0",
+  "description": "Manage contacts, track interactions, and maintain relationships with AI-powered summaries and follow-up drafting.",
+  "migration": "002_crm_module.sql",
+  "tables": ["contact_interactions", "contact_relationships", "follow_ups"],
+  "entities": ["contact"],
+  "commands": ["contact", "contact-summary", "follow-up"],
+  "standalone_features": [
+    "Add, edit, search, and manage contacts",
+    "Log interactions (calls, emails, meetings)",
+    "Track follow-ups with due dates",
+    "AI relationship summaries",
+    "AI follow-up message drafting"
+  ],
+  "enhancements": [
+    {
+      "requires_module": "project-tracker",
+      "features": ["Project history per contact", "Client workload overview"],
+      "description": "See all projects linked to a contact and their current status."
+    }
+  ]
+}

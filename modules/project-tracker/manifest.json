@@ -1,0 +1,24 @@
+{
+  "name": "project-tracker",
+  "display_name": "Project Tracker",
+  "version": "1.0.0",
+  "description": "Track projects, tasks, and milestones with AI-powered briefs and status reports.",
+  "migration": "003_projects_module.sql",
+  "tables": ["projects", "tasks", "milestones"],
+  "entities": ["project", "task", "milestone"],
+  "commands": ["project", "project-brief", "project-status"],
+  "standalone_features": [
+    "Create and manage projects with status tracking",
+    "Task management with priorities and assignments",
+    "Milestone tracking with target dates",
+    "AI project brief generation",
+    "AI status report generation"
+  ],
+  "enhancements": [
+    {
+      "requires_module": "crm",
+      "features": ["Client context on projects", "Contact interaction timeline in project view"],
+      "description": "See client details and interaction history directly on project views."
+    }
+  ]
+}

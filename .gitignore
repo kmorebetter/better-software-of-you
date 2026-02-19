@@ -1,0 +1,6 @@
+data/soy.db
+data/soy.db-journal
+data/soy.db-wal
+data/soy.db-shm
+output/*.html
+.DS_Store

@@ -1,0 +1,16 @@
+{
+  "description": "Software of You — session initialization and module detection",
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 ${CLAUDE_PLUGIN_ROOT}/hooks/session-start.py",
+            "timeout": 15
+          }
+        ]
+      }
+    ]
+  }
+}

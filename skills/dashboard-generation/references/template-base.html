@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Software of You</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'system-ui', 'sans-serif'] }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-zinc-50 text-zinc-900 font-sans antialiased">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
+        <!-- Header -->
+        <header class="mb-8">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h1 class="text-2xl font-bold text-zinc-900">Software of You</h1>
+                    <p class="text-sm text-zinc-500 mt-1"><!-- Generated: DATE --></p>
+                </div>
+                <div class="flex items-center gap-4">
+                    <!-- Stat pills go here -->
+                </div>
+            </div>
+        </header>
+
+        <!-- Main content grid -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <!-- Cards go here -->
+        </div>
+
+    </div>
+
+    <script>lucide.createIcons();</script>
+</body>
+</html>
