@@ -6,7 +6,7 @@ argument-hint: <contacts | projects | custom description>
 
 # Generate Module View
 
-Generate a specialized HTML view based on $ARGUMENTS.
+Generate a specialized HTML view based on $ARGUMENTS. Unlike `/dashboard` (which has a fixed layout), `/view` generates flexible, purpose-built pages tailored to what the user asks for. The layout should match the data — a contact directory looks different from a project board looks different from a custom report.
 
 ## Determine View Type
 
