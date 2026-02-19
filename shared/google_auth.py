@@ -41,6 +41,12 @@ CONFIG_DIR = os.path.join(PLUGIN_ROOT, "config")
 TOKEN_FILE = os.path.join(CONFIG_DIR, "google_token.json")
 CREDENTIALS_FILE = os.path.join(CONFIG_DIR, "google_credentials.json")
 
+# Embedded OAuth credentials (Desktop app — not secret per Google's design)
+DEFAULT_CREDENTIALS = {
+    "client_id": "50587301029-pb96imk0vvadpg8n5oa2q8ac1lfk5f9o.apps.googleusercontent.com",
+    "client_secret": "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",
+}
+
 # Default scopes for Software of You
 DEFAULT_SCOPES = [
     "https://www.googleapis.com/auth/gmail.readonly",
@@ -58,15 +64,18 @@ REVOKE_ENDPOINT = "https://oauth2.googleapis.com/revoke"
 
 
 def load_credentials():
-    """Load OAuth client credentials from config file."""
-    if not os.path.exists(CREDENTIALS_FILE):
-        return None
-    with open(CREDENTIALS_FILE, "r") as f:
-        data = json.load(f)
-    # Handle both raw format and Google's exported format
-    if "installed" in data:
-        data = data["installed"]
-    return data
+    """Load OAuth client credentials. Config file overrides embedded defaults."""
+    if os.path.exists(CREDENTIALS_FILE):
+        with open(CREDENTIALS_FILE, "r") as f:
+            data = json.load(f)
+        if "installed" in data:
+            data = data["installed"]
+        if "client_id" in data:
+            # Merge with defaults to fill in any missing fields (e.g. client_secret)
+            merged = dict(DEFAULT_CREDENTIALS)
+            merged.update(data)
+            return merged
+    return dict(DEFAULT_CREDENTIALS)
 
 
 def load_token():
@@ -177,16 +186,6 @@ class OAuthCallbackHandler(BaseHTTPRequestHandler):
 def run_auth_flow(scopes=None):
     """Run the full OAuth authorization flow."""
     credentials = load_credentials()
-    if not credentials:
-        print(json.dumps({
-            "error": "No Google credentials found.",
-            "setup_needed": True,
-            "message": (
-                "To connect Google services, you need OAuth credentials. "
-                "Run /google-setup for step-by-step instructions."
-            ),
-        }))
-        sys.exit(1)
 
     if scopes is None:
         scopes = DEFAULT_SCOPES
