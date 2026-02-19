@@ -52,6 +52,14 @@ Present available commands based on what's installed:
 |---------|-------------|
 | `/calendar [today\|week\|schedule]` | View or create calendar events |
 
+## If Conversation Intelligence Installed
+| Command | Description |
+|---------|-------------|
+| `/import-call` | Import a meeting transcript — paste or file path |
+| `/commitments [mine\|theirs\|overdue]` | View and manage commitments from conversations |
+| `/communication-review [week\|month]` | Your communication patterns and coaching |
+| `/relationship-pulse <name>` | Deep relationship view with conversation history |
+
 ## Natural Language
 
 You can also just talk naturally:

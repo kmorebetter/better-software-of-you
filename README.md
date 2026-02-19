@@ -52,6 +52,13 @@ Type `/help-soy` to see available commands, or just start talking:
 - Check availability and find free time
 - Events auto-link to contacts and projects
 
+### Conversation Intelligence
+- Import meeting transcripts (paste or file — Fathom, Otter, Zoom, anything)
+- Extract commitments — what you owe others, what they owe you
+- Communication metrics — talk ratio, questions, interruptions
+- AI coaching grounded in specific moments from your calls
+- Relationship scoring and trajectory tracking over time
+
 ### Cross-Module Intelligence
 Modules enhance each other automatically:
 - Contact summaries include project history, email threads, and meeting history
@@ -77,6 +84,10 @@ Modules enhance each other automatically:
 | `/note` | Add a note to any contact or project |
 | `/tag` | Create and manage tags |
 | `/log` | View your activity timeline |
+| `/import-call` | Import a meeting transcript |
+| `/commitments` | View and manage commitments from conversations |
+| `/communication-review` | Your communication patterns and coaching |
+| `/relationship-pulse` | Deep relationship view with conversation history |
 | `/gmail` | View, search, and triage your Gmail inbox |
 | `/email` | Compose and send emails (always confirms first) |
 | `/calendar` | View and create Google Calendar events |

@@ -1,0 +1,29 @@
+{
+  "name": "conversation-intelligence",
+  "display_name": "Conversation Intelligence",
+  "version": "1.0.0",
+  "description": "Import meeting transcripts, extract commitments, and get communication coaching grounded in real conversations.",
+  "migration": "006_conversation_intelligence_module.sql",
+  "tables": ["transcripts", "transcript_participants", "commitments", "conversation_metrics", "communication_insights", "relationship_scores"],
+  "entities": ["transcript", "commitment", "insight"],
+  "commands": ["import-call", "commitments", "communication-review", "relationship-pulse"],
+  "standalone_features": [
+    "Paste-in transcript import with speaker detection",
+    "Commitment extraction (yours and theirs)",
+    "Per-call communication metrics (talk ratio, questions, interruptions)",
+    "Coach insight per conversation — specific, not generic",
+    "Relationship scoring over time"
+  ],
+  "enhancements": [
+    {
+      "requires_module": "crm",
+      "features": ["Auto-map speakers to contacts", "Enrich contact summaries with communication patterns", "Conversation history in relationship view"],
+      "description": "Transcript speakers auto-link to contacts. Contact summaries include communication patterns and coaching insights."
+    },
+    {
+      "requires_module": "project-tracker",
+      "features": ["Convert commitments to tasks", "Link discussions to projects", "Conversation context in project briefs"],
+      "description": "Convert commitments to project tasks. Project briefs include relevant conversation context."
+    }
+  ]
+}
