@@ -40,6 +40,18 @@ Present available commands based on what's installed:
 | `/project-brief <name>` | AI-generated project brief |
 | `/project-status <name>` | Quick project status report |
 
+## If Gmail Module Installed
+| Command | Description |
+|---------|-------------|
+| `/google-setup` | Connect your Google account (Gmail + Calendar) |
+| `/gmail [inbox\|unread\|from <name>]` | View, search, and triage your inbox |
+| `/email <contact> [context]` | Compose and send an email (with confirmation) |
+
+## If Calendar Module Installed
+| Command | Description |
+|---------|-------------|
+| `/calendar [today\|week\|schedule]` | View or create calendar events |
+
 ## Natural Language
 
 You can also just talk naturally:

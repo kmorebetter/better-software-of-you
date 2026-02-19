@@ -1,0 +1,29 @@
+{
+  "name": "gmail",
+  "display_name": "Gmail",
+  "version": "1.0.0",
+  "description": "Read, triage, and send emails through Gmail. Automatically links emails to contacts.",
+  "migration": "004_gmail_module.sql",
+  "tables": ["emails"],
+  "entities": ["email"],
+  "commands": ["gmail", "email", "google-setup"],
+  "requires_setup": "google-setup",
+  "standalone_features": [
+    "View and search recent emails",
+    "AI email triage and prioritization",
+    "Compose and send emails (with confirmation)",
+    "Thread summaries"
+  ],
+  "enhancements": [
+    {
+      "requires_module": "crm",
+      "features": ["Auto-link emails to contacts", "Email history in contact summaries"],
+      "description": "Emails are automatically linked to contacts. Contact summaries include email history."
+    },
+    {
+      "requires_module": "project-tracker",
+      "features": ["Link email threads to projects", "Project briefs include relevant emails"],
+      "description": "Link email threads to projects for full context in project briefs."
+    }
+  ]
+}

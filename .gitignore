@@ -3,4 +3,6 @@ data/soy.db-journal
 data/soy.db-wal
 data/soy.db-shm
 output/*.html
+config/google_token.json
+config/google_credentials.json
 .DS_Store

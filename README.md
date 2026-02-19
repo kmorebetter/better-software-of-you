@@ -40,10 +40,24 @@ Type `/help-soy` to see available commands, or just start talking:
 - AI project brief generation
 - AI status reports
 
+### Gmail
+- View, search, and triage your inbox
+- Compose and send emails (always shows draft, always confirms)
+- AI email summaries and prioritization
+- Emails auto-link to contacts
+
+### Google Calendar
+- View today's schedule, this week's events
+- Create events with attendees linked to contacts
+- Check availability and find free time
+- Events auto-link to contacts and projects
+
 ### Cross-Module Intelligence
-When both modules are installed, they enhance each other automatically:
-- Contact summaries include project history
-- Project briefs include client context and interaction history
+Modules enhance each other automatically:
+- Contact summaries include project history, email threads, and meeting history
+- Project briefs include client context, interaction history, and scheduled meetings
+- Email threads link to contacts and projects
+- Calendar events link to contacts via attendees
 - Search spans all data across all modules
 
 ## Commands
@@ -63,6 +77,10 @@ When both modules are installed, they enhance each other automatically:
 | `/note` | Add a note to any contact or project |
 | `/tag` | Create and manage tags |
 | `/log` | View your activity timeline |
+| `/gmail` | View, search, and triage your Gmail inbox |
+| `/email` | Compose and send emails (always confirms first) |
+| `/calendar` | View and create Google Calendar events |
+| `/google-setup` | Connect your Google account |
 | `/status` | System overview |
 | `/setup` | First-run setup (runs automatically) |
 | `/add-module` | Install a new module |

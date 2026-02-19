@@ -1,0 +1,29 @@
+{
+  "name": "calendar",
+  "display_name": "Google Calendar",
+  "version": "1.0.0",
+  "description": "View, create, and manage calendar events. Automatically links events to contacts and projects.",
+  "migration": "005_calendar_module.sql",
+  "tables": ["calendar_events"],
+  "entities": ["calendar_event"],
+  "commands": ["calendar", "google-setup"],
+  "requires_setup": "google-setup",
+  "standalone_features": [
+    "View upcoming events",
+    "Create new events",
+    "Check availability",
+    "Daily/weekly schedule overview"
+  ],
+  "enhancements": [
+    {
+      "requires_module": "crm",
+      "features": ["Auto-link events to contacts via attendees", "Meeting history in contact summaries"],
+      "description": "Events with attendees matching contacts are automatically linked. Contact summaries show meeting history."
+    },
+    {
+      "requires_module": "project-tracker",
+      "features": ["Link events to projects", "Project timeline includes meetings"],
+      "description": "Link calendar events to projects for a complete project timeline."
+    }
+  ]
+}
