@@ -6,3 +6,4 @@ output/*.html
 config/google_token.json
 config/google_credentials.json
 .DS_Store
+client_secret_*.json
