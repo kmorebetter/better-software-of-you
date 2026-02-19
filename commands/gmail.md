@@ -66,23 +66,36 @@ INSERT OR IGNORE INTO emails (gmail_id, thread_id, contact_id, direction, from_a
 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
 ```
 
-## Step 6: Present Results
+## Step 6: Present as a Natural Language Briefing
 
-Show emails in a clean, scannable format:
+**Do NOT show a table of emails.** Instead, synthesize the emails into a conversational briefing — like a personal assistant summarizing your inbox. The style should be warm, scannable, and actionable.
 
-| From | Subject | Date |
-|------|---------|------|
-| Jane Smith (Acme) | Re: Design specs | 2 hours ago |
-| bob@widgets.io | API proposal | Yesterday |
+### Format
 
-- Bold unread messages
-- Show contact name if linked (not just email address)
-- Group by today / yesterday / this week if showing many
-- For "summary": provide AI triage — what needs attention, what can wait, key threads
+Write a natural paragraph that weaves together the key emails. Use **bold** for the important keywords, topics, and names so the user can scan quickly. Use regular weight for connecting context.
+
+### Example Output
+
+"Hi Kerry, you have **onboarding tasks** and **interview updates** for the FinOps role, newly shared **sales proposals** to review, and **meeting notes** from a technician interview, while **Gigi Presentey** granted you access to finance resources and **BMO** provided a **lending timeline** for Benji's."
+
+### Rules
+
+- Lead with the user's name if known (check contacts or Google account info)
+- Group related emails into themes, don't list them one by one
+- Bold the **key topics**, **action items**, **people**, and **organizations**
+- Keep connecting text in normal weight for flow and context
+- Mention who sent important items by name (use contact names from the database when available, not just email addresses)
+- Prioritize: action-required items first, FYI items second, newsletters/noise last (or skip noise entirely)
+- Keep it to 2-4 sentences for a typical inbox check
+- End with a suggestion if there's something urgent: "You might want to reply to the BMO timeline first — it looks time-sensitive."
+
+### When the user asks for more detail
+
+If they ask about a specific email or thread ("tell me more about the BMO email"), then show the full subject, sender, date, and snippet/body preview. But the default view is always the narrative summary.
 
 ## "from <name>" Shortcut
 
 When the user says `/gmail from Jane`:
 1. Look up Jane in contacts: `SELECT email FROM contacts WHERE name LIKE '%Jane%';`
 2. Search Gmail for emails from that address
-3. Show results with full contact context
+3. Summarize in narrative form: "From **Jane Smith**, you have a reply about the **design specs** from earlier today and a **project timeline** she shared on Monday."

@@ -54,22 +54,30 @@ INSERT OR REPLACE INTO calendar_events (google_event_id, title, description, loc
 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
 ```
 
-**Present as a clean schedule:**
-```
-Today — Wednesday, Feb 18
+**Present as a natural language briefing — not a schedule grid.**
 
-  9:00 AM   Design review with Jane Smith (Acme)
-             📍 Zoom · 1 hour
+### Format
 
-  1:30 PM   API planning
-             With Bob Johnson (Widgets Inc)
-             📍 Conference Room B · 45 min
+Write a friendly, conversational summary of the day or week. Use **bold** for event names, people, and times so the user can scan. Weave events into a narrative flow.
 
-  3:00 PM   Team standup
-             📍 Google Meet · 15 min
-```
+### Example Output (today)
 
-Show contact names (not just emails) when linked. Include location and duration.
+"Good morning Kerry. Your day starts with a **design review** with **Jane Smith** at **9am** on Zoom, then you're free until a **1:30 API planning** session with **Bob Johnson** in Conference Room B. You have a quick **team standup** at **3** to close out the afternoon, and the rest of the day is open."
+
+### Example Output (week)
+
+"This week you have **8 meetings**. Monday is the busiest — back-to-back from 9 to noon with the **sprint planning** and **client review** with **Acme**. Wednesday has the **design review** with **Jane** you've been prepping for. Thursday and Friday are lighter — just the recurring **standups** and a **1-on-1** with your manager on Friday afternoon."
+
+### Rules
+
+- Lead with a greeting and the user's name if known
+- Mention specific times for today's events, but use relative language for future days ("Monday morning", "Thursday afternoon")
+- Bold **event names**, **people**, and **key times**
+- Use contact names from the database when attendees match (not email addresses)
+- Call out free time / gaps: "you're free until..." or "the afternoon is open"
+- Mention location only when it's useful (different from the norm — e.g., in-person vs. usual Zoom)
+- If a meeting involves a known contact with active projects, briefly note the connection: "the **design review** with **Jane** — she's the client on **Website Redesign**"
+- Keep it to 2-4 sentences for a typical day
 
 ## Creating Events
 
@@ -124,4 +132,4 @@ When the user says `/calendar with Jane`:
 When the user asks about free time:
 1. Fetch today's/this week's events
 2. Calculate gaps between events
-3. Present available time slots: "You're free today: 10-11:30 AM, 2:30-5 PM"
+3. Present in narrative form: "You're free from **10 to 11:30** this morning and have the whole afternoon open after **2:30**. Tomorrow looks wide open — nothing on the calendar yet."
