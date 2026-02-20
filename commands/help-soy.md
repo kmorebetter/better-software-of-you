@@ -30,6 +30,7 @@ Present available commands based on what's installed:
 | `/nudges` | What needs your attention — cold contacts, overdue items, stale projects |
 | `/network-map` | Interactive visual map of your contact network |
 | `/entity-page <name>` | Generate a contact intelligence brief |
+| `/build-all` | Generate ALL views — entity pages, project pages, module views, dashboard |
 | `/help-soy` | This help page |
 
 ## If CRM Module Installed
