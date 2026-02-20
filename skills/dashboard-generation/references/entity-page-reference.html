@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Daniel Byrne — Software of You</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'system-ui', 'sans-serif'] }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-zinc-50 text-zinc-900 font-sans antialiased">
+    <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
+        <!-- Back link -->
+        <div class="mb-6">
+            <span class="text-sm text-zinc-400">Software of You / Contacts</span>
+        </div>
+
+        <!-- Contact Header -->
+        <div class="bg-white rounded-xl shadow-sm border border-zinc-200 p-6 mb-6">
+            <div class="flex items-start justify-between">
+                <div class="flex items-start gap-5">
+                    <div class="w-16 h-16 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
+                        <span class="text-2xl font-bold text-blue-700">DB</span>
+                    </div>
+                    <div>
+                        <h1 class="text-2xl font-bold">Daniel Byrne</h1>
+                        <p class="text-zinc-500 mt-0.5">President at <span class="font-medium text-zinc-700">Main+Main</span></p>
+                        <div class="flex items-center gap-4 mt-3">
+                            <div class="flex items-center gap-1.5 text-sm text-zinc-500">
+                                <i data-lucide="mail" class="w-4 h-4"></i>
+                                <span>Daniel@mainandmain.ca</span>
+                            </div>
+                            <div class="flex items-center gap-1.5 text-sm text-zinc-500">
+                                <i data-lucide="phone" class="w-4 h-4"></i>
+                                <span>416-566-1611</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="flex items-center gap-2">
+                    <span class="px-2.5 py-1 rounded-full text-xs font-medium bg-green-50 text-green-700">Active</span>
+                    <span class="px-2.5 py-1 rounded-full text-xs font-medium bg-blue-50 text-blue-700">Client</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Grid -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+            <!-- Left Column (2 cols) -->
+            <div class="lg:col-span-2 space-y-6">
+
+                <!-- Relationship Context -->
+                <div class="bg-white rounded-xl shadow-sm border border-zinc-200 p-6">
+                    <div class="flex items-center gap-2 mb-4">
+                        <i data-lucide="link" class="w-5 h-5 text-zinc-400"></i>
+                        <h2 class="text-lg font-semibold">Relationship Context</h2>
+                    </div>
+                    <div class="bg-amber-50 border border-amber-100 rounded-lg p-4 mb-4">
+                        <div class="flex items-start gap-2">
+                            <i data-lucide="zap" class="w-4 h-4 text-amber-600 mt-0.5 flex-shrink-0"></i>
+                            <div>
+                                <p class="text-sm font-medium text-amber-800">First call tomorrow — 8:30 AM CST</p>
+                                <p class="text-xs text-amber-600 mt-0.5">You haven't spoken yet. This is the first real conversation after a warm intro.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="space-y-3 text-sm">
+                        <div class="flex gap-3">
+                            <div class="w-5 flex-shrink-0 text-center">
+                                <i data-lucide="user-check" class="w-4 h-4 text-zinc-400 inline"></i>
+                            </div>
+                            <p><span class="font-medium">Introduced by Vahid Jozi</span> (Fractional CPO, vahid@fractionalcpo.com) on Feb 17. Described Daniel as a friend.</p>
+                        </div>
+                        <div class="flex gap-3">
+                            <div class="w-5 flex-shrink-0 text-center">
+                                <i data-lucide="calendar" class="w-4 h-4 text-zinc-400 inline"></i>
+                            </div>
+                            <p>Original meeting on Feb 19 didn't happen — Daniel had a calendar glitch. Both laughed it off, rebooked for Feb 20.</p>
+                        </div>
+                        <div class="flex gap-3">
+                            <div class="w-5 flex-shrink-0 text-center">
+                                <i data-lucide="target" class="w-4 h-4 text-zinc-400 inline"></i>
+                            </div>
+                            <p><span class="font-medium">Intent:</span> Looking to bring AI into Main+Main's operations. Specifics TBD after discovery call.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Company Intel -->
+                <div class="bg-white rounded-xl shadow-sm border border-zinc-200 p-6">
+                    <div class="flex items-center gap-2 mb-4">
+                        <i data-lucide="building" class="w-5 h-5 text-zinc-400"></i>
+                        <h2 class="text-lg font-semibold">Main+Main</h2>
+                        <span class="text-xs text-zinc-400 ml-1">mainandmain.ca</span>
+                    </div>
+                    <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-5">
+                        <div class="rounded-lg bg-zinc-50 p-3 text-center">
+                            <p class="text-xl font-bold text-zinc-800">75+</p>
+                            <p class="text-xs text-zinc-500">Properties</p>
+                        </div>
+                        <div class="rounded-lg bg-zinc-50 p-3 text-center">
+                            <p class="text-xl font-bold text-zinc-800">25+</p>
+                            <p class="text-xs text-zinc-500">Projects</p>
+                        </div>
+                        <div class="rounded-lg bg-zinc-50 p-3 text-center">
+                            <p class="text-xl font-bold text-zinc-800">6,000+</p>
+                            <p class="text-xs text-zinc-500">Unit Pipeline</p>
+                        </div>
+                        <div class="rounded-lg bg-zinc-50 p-3 text-center">
+                            <p class="text-xl font-bold text-zinc-800">2011</p>
+                            <p class="text-xs text-zinc-500">Founded</p>
+                        </div>
+                    </div>
+                    <div class="space-y-2 text-sm text-zinc-600">
+                        <p>Mixed-use urban developer focused on <span class="font-medium">Purpose Built Rental (PBR)</span> in Toronto, Ottawa, and Montreal. Works independently and with REITs, pension funds, and top-tier developers.</p>
+                        <p>Strategy: acquire premium urban sites with long-term growth potential, stay exposed to location upside by holding as rental rather than selling condos.</p>
+                    </div>
+
+                    <!-- Key Team -->
+                    <div class="mt-5 pt-4 border-t border-zinc-100">
+                        <p class="text-xs text-zinc-400 font-medium uppercase tracking-wide mb-3">Key Team</p>
+                        <div class="grid grid-cols-2 gap-2 text-sm">
+                            <div class="flex items-center gap-2">
+                                <div class="w-6 h-6 rounded-full bg-zinc-100 flex items-center justify-center"><span class="text-[10px] font-bold text-zinc-500">RI</span></div>
+                                <div>
+                                    <span class="font-medium">Rick Iafelice</span>
+                                    <span class="text-zinc-400"> — Founder & CEO</span>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <div class="w-6 h-6 rounded-full bg-zinc-100 flex items-center justify-center"><span class="text-[10px] font-bold text-zinc-500">CB</span></div>
+                                <div>
+                                    <span class="font-medium">Chris Bartoffy</span>
+                                    <span class="text-zinc-400"> — VP</span>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <div class="w-6 h-6 rounded-full bg-zinc-100 flex items-center justify-center"><span class="text-[10px] font-bold text-zinc-500">ER</span></div>
+                                <div>
+                                    <span class="font-medium">Emily Roukhkian</span>
+                                    <span class="text-zinc-400"> — Dir. of Dev</span>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <div class="w-6 h-6 rounded-full bg-zinc-100 flex items-center justify-center"><span class="text-[10px] font-bold text-zinc-500">RA</span></div>
+                                <div>
+                                    <span class="font-medium">Reza Ayel</span>
+                                    <span class="text-zinc-400"> — VP Acquisitions</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Notable Projects -->
+                    <div class="mt-5 pt-4 border-t border-zinc-100">
+                        <p class="text-xs text-zinc-400 font-medium uppercase tracking-wide mb-3">Notable Projects</p>
+                        <div class="flex flex-wrap gap-2">
+                            <span class="px-2.5 py-1 rounded-full text-xs bg-zinc-100 text-zinc-600">Equiton Ottawa — 1,000+ units riverfront</span>
+                            <span class="px-2.5 py-1 rounded-full text-xs bg-zinc-100 text-zinc-600">MEC Site, King St W Toronto</span>
+                            <span class="px-2.5 py-1 rounded-full text-xs bg-zinc-100 text-zinc-600">St. Clair & Avenue Rd</span>
+                            <span class="px-2.5 py-1 rounded-full text-xs bg-zinc-100 text-zinc-600">Albert + Lyon</span>
+                            <span class="px-2.5 py-1 rounded-full text-xs bg-zinc-100 text-zinc-600">Station Place</span>
+                            <span class="px-2.5 py-1 rounded-full text-xs bg-zinc-100 text-zinc-600">400 King</span>
+                            <span class="px-2.5 py-1 rounded-full text-xs bg-zinc-100 text-zinc-600">Kingston & Co</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Email Thread -->
+                <div class="bg-white rounded-xl shadow-sm border border-zinc-200 p-6">
+                    <div class="flex items-center gap-2 mb-4">
+                        <i data-lucide="mail" class="w-5 h-5 text-zinc-400"></i>
+                        <h2 class="text-lg font-semibold">Email Thread</h2>
+                        <span class="text-xs text-zinc-400 ml-1">AI for Main+Main — 6 messages</span>
+                    </div>
+                    <div class="space-y-0">
+                        <div class="flex gap-3 py-3 border-b border-zinc-50">
+                            <div class="w-8 h-8 rounded-full bg-zinc-100 flex items-center justify-center flex-shrink-0 mt-0.5">
+                                <span class="text-xs font-bold text-zinc-500">VJ</span>
+                            </div>
+                            <div class="flex-1">
+                                <div class="flex items-center justify-between">
+                                    <p class="text-sm font-medium">Vahid Jozi</p>
+                                    <p class="text-xs text-zinc-400">Feb 17</p>
+                                </div>
+                                <p class="text-sm text-zinc-500 mt-0.5">Made the intro. Said Daniel is a friend and President at Main+Main, looking to bring AI in.</p>
+                            </div>
+                        </div>
+                        <div class="flex gap-3 py-3 border-b border-zinc-50">
+                            <div class="w-8 h-8 rounded-full bg-emerald-100 flex items-center justify-center flex-shrink-0 mt-0.5">
+                                <span class="text-xs font-bold text-emerald-700">KM</span>
+                            </div>
+                            <div class="flex-1">
+                                <div class="flex items-center justify-between">
+                                    <p class="text-sm font-medium">You</p>
+                                    <p class="text-xs text-zinc-400">Feb 17</p>
+                                </div>
+                                <p class="text-sm text-zinc-500 mt-0.5">Replied same day — expressed excitement, offered to hear about goals and what to speed up.</p>
+                            </div>
+                        </div>
+                        <div class="flex gap-3 py-3 border-b border-zinc-50">
+                            <div class="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0 mt-0.5">
+                                <span class="text-xs font-bold text-blue-700">DB</span>
+                            </div>
+                            <div class="flex-1">
+                                <div class="flex items-center justify-between">
+                                    <p class="text-sm font-medium">Daniel Byrne</p>
+                                    <p class="text-xs text-zinc-400">Feb 19, 8:45 AM</p>
+                                </div>
+                                <p class="text-sm text-zinc-500 mt-0.5">Had a tech glitch — Google meeting didn't populate his calendar. Showed up 10 mins late, said he's available until 10.</p>
+                            </div>
+                        </div>
+                        <div class="flex gap-3 py-3 border-b border-zinc-50">
+                            <div class="w-8 h-8 rounded-full bg-emerald-100 flex items-center justify-center flex-shrink-0 mt-0.5">
+                                <span class="text-xs font-bold text-emerald-700">KM</span>
+                            </div>
+                            <div class="flex-1">
+                                <div class="flex items-center justify-between">
+                                    <p class="text-sm font-medium">You</p>
+                                    <p class="text-xs text-zinc-400">Feb 19, 9:50 AM</p>
+                                </div>
+                                <p class="text-sm text-zinc-500 mt-0.5">"Hey bud. I have us in the books for tomorrow. ;)" — on another call, confirmed tomorrow.</p>
+                            </div>
+                        </div>
+                        <div class="flex gap-3 py-3 border-b border-zinc-50">
+                            <div class="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0 mt-0.5">
+                                <span class="text-xs font-bold text-blue-700">DB</span>
+                            </div>
+                            <div class="flex-1">
+                                <div class="flex items-center justify-between">
+                                    <p class="text-sm font-medium">Daniel Byrne</p>
+                                    <p class="text-xs text-zinc-400">Feb 19, 2:51 PM</p>
+                                </div>
+                                <p class="text-sm text-zinc-500 mt-0.5">"What a relief! Having some calendar issues on my end. See you tomorrow."</p>
+                            </div>
+                        </div>
+                        <div class="flex gap-3 py-3">
+                            <div class="w-8 h-8 rounded-full bg-emerald-100 flex items-center justify-center flex-shrink-0 mt-0.5">
+                                <span class="text-xs font-bold text-emerald-700">KM</span>
+                            </div>
+                            <div class="flex-1">
+                                <div class="flex items-center justify-between">
+                                    <p class="text-sm font-medium">You</p>
+                                    <p class="text-xs text-zinc-400">Feb 19, 10:50 AM</p>
+                                </div>
+                                <p class="text-sm text-zinc-500 mt-0.5">"All good my man. Talk tomorrow."</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column (1 col) -->
+            <div class="space-y-6">
+
+                <!-- Upcoming -->
+                <div class="bg-white rounded-xl shadow-sm border border-zinc-200 p-6">
+                    <div class="flex items-center gap-2 mb-4">
+                        <i data-lucide="calendar" class="w-5 h-5 text-zinc-400"></i>
+                        <h2 class="text-lg font-semibold">Upcoming</h2>
+                    </div>
+                    <div class="bg-blue-50 border border-blue-100 rounded-lg p-4">
+                        <p class="text-sm font-medium text-blue-900">Discovery Call</p>
+                        <p class="text-xs text-blue-700 mt-1">Fri Feb 20 &middot; 8:30–9:15 AM CST</p>
+                        <p class="text-xs text-blue-600 mt-1">Google Meet</p>
+                    </div>
+                </div>
+
+                <!-- Project -->
+                <div class="bg-white rounded-xl shadow-sm border border-zinc-200 p-6">
+                    <div class="flex items-center gap-2 mb-4">
+                        <i data-lucide="folder-open" class="w-5 h-5 text-zinc-400"></i>
+                        <h2 class="text-lg font-semibold">Project</h2>
+                    </div>
+                    <div class="mb-3">
+                        <p class="font-medium">AI for Main+Main</p>
+                        <div class="flex items-center gap-2 mt-1">
+                            <span class="px-2 py-0.5 rounded-full text-xs font-medium bg-blue-50 text-blue-700">Planning</span>
+                            <span class="text-amber-600 text-xs font-medium">High priority</span>
+                        </div>
+                    </div>
+                    <div class="space-y-2 mt-4">
+                        <p class="text-xs text-zinc-400 font-medium uppercase tracking-wide mb-2">Tasks</p>
+                        <div class="flex items-center gap-2 text-sm">
+                            <i data-lucide="square" class="w-4 h-4 text-zinc-300"></i>
+                            <span>Prep discovery questions</span>
+                        </div>
+                        <div class="flex items-center gap-2 text-sm">
+                            <i data-lucide="circle-check" class="w-4 h-4 text-green-500"></i>
+                            <span class="line-through text-zinc-400">Research Main+Main</span>
+                        </div>
+                        <div class="flex items-center gap-2 text-sm">
+                            <i data-lucide="square" class="w-4 h-4 text-zinc-300"></i>
+                            <span>Discovery call with Daniel</span>
+                        </div>
+                        <div class="flex items-center gap-2 text-sm">
+                            <i data-lucide="square" class="w-4 h-4 text-zinc-300"></i>
+                            <span>Send follow-up</span>
+                        </div>
+                        <div class="flex items-center gap-2 text-sm">
+                            <i data-lucide="square" class="w-4 h-4 text-zinc-300"></i>
+                            <span>Draft proposal or scope</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Daniel's Background -->
+                <div class="bg-white rounded-xl shadow-sm border border-zinc-200 p-6">
+                    <div class="flex items-center gap-2 mb-4">
+                        <i data-lucide="user" class="w-5 h-5 text-zinc-400"></i>
+                        <h2 class="text-lg font-semibold">About Daniel</h2>
+                    </div>
+                    <div class="space-y-2 text-sm text-zinc-600">
+                        <p>Co-founded Main+Main in 2012. Finance degree from Concordia University.</p>
+                        <p>Started career at CMHC in the 1990s, then 7 years in management consulting focused on real estate.</p>
+                        <p>Has managed entitlement of <span class="font-medium">1.4M+ sq ft</span> of mixed-use development.</p>
+                    </div>
+                </div>
+
+                <!-- Discovery Questions -->
+                <div class="bg-white rounded-xl shadow-sm border border-zinc-200 p-6">
+                    <div class="flex items-center gap-2 mb-4">
+                        <i data-lucide="message-circle" class="w-5 h-5 text-zinc-400"></i>
+                        <h2 class="text-lg font-semibold">Questions to Ask</h2>
+                    </div>
+                    <div class="space-y-3 text-sm text-zinc-600">
+                        <div class="flex gap-2">
+                            <span class="text-zinc-400 flex-shrink-0">1.</span>
+                            <p>What processes are eating the most time across the team right now?</p>
+                        </div>
+                        <div class="flex gap-2">
+                            <span class="text-zinc-400 flex-shrink-0">2.</span>
+                            <p>Have you tried any AI tools already? What worked, what didn't?</p>
+                        </div>
+                        <div class="flex gap-2">
+                            <span class="text-zinc-400 flex-shrink-0">3.</span>
+                            <p>What does success look like in 90 days?</p>
+                        </div>
+                        <div class="flex gap-2">
+                            <span class="text-zinc-400 flex-shrink-0">4.</span>
+                            <p>Who else on the team would be involved?</p>
+                        </div>
+                        <div class="flex gap-2">
+                            <span class="text-zinc-400 flex-shrink-0">5.</span>
+                            <p>Where in the dev pipeline (acquisitions, entitlements, construction, leasing) do you see AI having the biggest impact?</p>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <footer class="mt-8 text-center">
+            <p class="text-xs text-zinc-400">Generated by Software of You &middot; Contact Card &middot; February 19, 2026</p>
+        </footer>
+
+    </div>
+
+    <script>lucide.createIcons();</script>
+</body>
+</html>

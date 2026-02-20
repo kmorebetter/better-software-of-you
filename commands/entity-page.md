@@ -1,16 +1,19 @@
 ---
-description: Generate a HubSpot-style entity page with unified activity timeline
+description: Generate a contact intelligence brief — everything about a person in one page
 allowed-tools: ["Bash", "Read", "Write"]
 argument-hint: <contact name or id>
 ---
 
 # Entity Page
 
-Generate a unified entity page for the contact specified in $ARGUMENTS. This page shows everything about a contact (or company) in one place: profile, action items, and an intelligently grouped activity timeline.
+Generate a contact intelligence brief for the contact specified in $ARGUMENTS. This is the flagship view — a single page that synthesizes everything the system knows about a person: profile, relationship context, company intel, email history, projects, upcoming events, and AI-generated prep.
 
-## Step 1: Read Design System + Resolve Entity
+**Reference implementation:** `${CLAUDE_PLUGIN_ROOT}/skills/dashboard-generation/references/entity-page-reference.html` — this is the gold standard. Match its layout, density, and tone.
 
-Read all three design files in parallel (these define the HTML patterns used to render the page):
+## Step 1: Read References + Resolve Entity
+
+Read design references in parallel:
+- `${CLAUDE_PLUGIN_ROOT}/skills/dashboard-generation/references/entity-page-reference.html`
 - `${CLAUDE_PLUGIN_ROOT}/skills/dashboard-generation/references/template-base.html`
 - `${CLAUDE_PLUGIN_ROOT}/skills/dashboard-generation/references/component-patterns.md`
 - `${CLAUDE_PLUGIN_ROOT}/skills/dashboard-generation/references/activity-feed-patterns.md`
@@ -32,7 +35,7 @@ If multiple matches, pick the best match or ask the user.
   ```
 - If the contact is an individual with a `company` value, also note the company name for context (but don't expand scope — keep it focused on the individual)
 
-## Step 3: Check Installed Modules
+## Step 2: Check Installed Modules
 
 ```sql
 SELECT name FROM modules WHERE enabled = 1;
@@ -40,9 +43,9 @@ SELECT name FROM modules WHERE enabled = 1;
 
 Only run queries for installed modules. Skip queries for modules that aren't installed.
 
-## Step 4: Gather Data
+## Step 3: Gather Data
 
-Run these queries. Use the resolved contact ID(s) from Step 2 wherever you see `?` or `/* scope */`. Run all queries in a single `sqlite3` heredoc call for efficiency.
+Run these queries. Use the resolved contact ID(s) from Step 1 wherever you see `?` or `/* scope */`. Run all queries in a single `sqlite3` heredoc call for efficiency.
 
 ### Always query:
 
@@ -92,28 +95,18 @@ ORDER BY f.due_date ASC;
 ### If Gmail module installed:
 
 ```sql
--- Emails collapsed by thread
-SELECT
-  thread_id,
-  COUNT(*) as message_count,
-  MAX(received_at) as latest_date,
-  MIN(received_at) as first_date,
-  GROUP_CONCAT(DISTINCT direction) as directions,
-  (SELECT subject FROM emails e2 WHERE e2.thread_id = emails.thread_id ORDER BY received_at DESC LIMIT 1) as subject,
-  (SELECT snippet FROM emails e3 WHERE e3.thread_id = emails.thread_id ORDER BY received_at DESC LIMIT 1) as latest_snippet,
-  GROUP_CONCAT(DISTINCT from_address) as from_addresses
+-- Individual emails (for expanded thread view)
+SELECT id, thread_id, subject, snippet, from_name, from_address,
+  to_addresses, direction, received_at, contact_id
 FROM emails
 WHERE contact_id IN (/* scope */)
-GROUP BY thread_id
-ORDER BY latest_date DESC
-LIMIT 50;
+ORDER BY received_at ASC;
 ```
 
 ### If Calendar module installed:
 
 ```sql
 -- Calendar events (upcoming and recent)
--- Note: contact_ids is comma-separated, so use LIKE matching
 SELECT * FROM calendar_events
 WHERE contact_ids LIKE '%' || ? || '%'
 ORDER BY start_time DESC
@@ -134,10 +127,10 @@ FROM projects p
 WHERE p.client_id IN (/* scope */)
 ORDER BY p.updated_at DESC;
 
--- Tasks assigned to this contact
+-- All tasks for those projects (for inline checklist)
 SELECT t.*, p.name as project_name FROM tasks t
 JOIN projects p ON t.project_id = p.id
-WHERE t.assigned_to IN (/* scope */) AND t.status != 'done'
+WHERE p.client_id IN (/* scope */)
 ORDER BY t.due_date ASC NULLS LAST;
 ```
 
@@ -179,122 +172,99 @@ SELECT insight_type, content, sentiment FROM communication_insights
 WHERE contact_id = ? ORDER BY created_at DESC LIMIT 5;
 ```
 
-## Step 5: Compute Quick Stats
+## Step 4: Synthesize Intelligence
 
-From the query results, calculate:
-- **Total emails**: sum of all `message_count` from thread-collapsed emails
-- **Total meetings**: count of calendar events + transcripts (deduplicated)
-- **Last activity**: most recent date across all data sources — present as relative ("2 days ago")
+This is where the page goes beyond raw data. Using all gathered data, synthesize the following sections. Write in natural, narrative language — not bullet dumps.
 
-## Step 6: Build Activity Items
+### Relationship Context Card
 
-Normalize every query result into activity items. Each item has:
-- **type**: email_thread, colleague_email, meeting_upcoming, meeting_past, transcript, interaction, note, commitment_open, commitment_overdue, follow_up_due, follow_up_overdue
-- **date**: the canonical date for sorting (received_at, occurred_at, start_time, created_at, due_date)
-- **render data**: whatever the HTML pattern needs
+Tell the story of this relationship:
+- **How you met** — who introduced you, when, what context
+- **Key moments** — notable exchanges, mishaps, breakthroughs (e.g. "meeting didn't happen — calendar glitch, both laughed it off")
+- **Intent / opportunity** — what this person wants, what you might do together
+- **What's next** — highlight the immediate next action (e.g. "First call tomorrow — 8:30 AM")
 
-### Grouping rules:
+Pull from: interactions, email content/snippets, notes, relationship notes, commitments. If there's an upcoming event, surface it prominently with an amber callout.
 
-**Email thread collapsing** is already done in the SQL (GROUP BY thread_id). Each thread = one activity item showing subject + count + latest snippet + date range.
+### Company Intel Card
 
-**Meeting + transcript merging**: If a transcript's `occurred_at` falls on the same day as a calendar event's `start_time`, AND they share at least one participant, merge them into a single "meeting + transcript" item. Use the transcript's summary and commitment count. Use the calendar event's attendees and time.
+If the contact has a `company` value, build a company context card:
+- Company name + website (from contact or notes)
+- Key stats if available in notes (headcount, revenue, properties, etc.)
+- Brief description of what the company does
+- **Key team** — other contacts in the system at the same company, with their roles
+- **Notable projects/work** — from notes or project data
 
-**Deduplication**:
-- If an email exists in the `emails` table AND as a `contact_interaction` with type='email' on the same day with matching subject → keep only the `emails` version (it has thread collapsing)
-- If a calendar event AND a `contact_interaction` with type='meeting' on the same day → keep only the calendar event (it has attendees)
+Pull from: contact fields, notes, other contacts with matching company, projects.
 
-### Temporal bucketing:
+### Email Thread Card
 
-Sort all activity items by date descending, then assign to sections:
+When emails exist, show the **full conversation expanded** — not collapsed. Each message shows:
+- Sender avatar (initials), name (or "You" for outbound)
+- Date/time
+- One-line summary of what that message said or did
 
-| Section | Rule |
-|---------|------|
-| **Upcoming** | date > now (future events, future follow-up due dates) |
-| **This Week** | date >= start of this week AND date <= now |
-| **Earlier This Month** | date >= start of this month AND date < start of this week |
-| **Last Month** | date >= start of last month AND date < start of this month |
-| **Older** | everything else |
+Group by thread. Show the most active/recent thread first. Use color-coded avatars: emerald for you, blue for the contact, zinc for third parties.
 
-Only render sections that have items. Skip empty sections entirely.
+### Discovery Questions (AI-generated)
 
-**Rendering caps per section** (to keep page manageable):
-- Upcoming: show all (typically small)
-- This Week: up to 15 items
-- Earlier This Month: up to 10 items
-- Last Month: up to 10 items
-- Older: up to 20 items, wrapped in `<details>` for collapse
+If there's an upcoming meeting or the relationship is early (few interactions), generate 3-5 discovery questions tailored to:
+- The contact's role and company
+- What you already know about their intent
+- Gaps in your knowledge
 
-If a section hits its cap, add a note like "and 5 more items" at the end of that section.
+These should feel like a smart advisor prepped them — not generic.
 
-## Step 7: Detect Enrichment Signals
+## Step 5: Generate HTML
 
-Check for actionable signals to surface in the Action Items card:
+Generate a self-contained HTML file. **Match the reference implementation exactly in structure and visual quality.**
 
-**Overdue commitments**: Any commitment with `status = 'overdue'` or `deadline_date < date('now')` and `status = 'open'`
+### Page Structure
 
-**Follow-ups due/overdue**: Any follow-up with `status = 'pending'` and `due_date <= date('now', '+3 days')` (show upcoming ones too)
+```
+Contact Header (full width card)
+├── Avatar (initials) + Name + Role at Company
+├── Email + Phone inline
+└── Status + Tag badges
 
-**Staleness**: Calculate the most recent activity date across ALL sources. If > 30 days ago AND the contact is active, flag it.
+Two-column grid (lg:grid-cols-3)
+├── Left column (lg:col-span-2)
+│   ├── Relationship Context card (with amber callout for next action)
+│   ├── Company Intel card (stats grid + description + key team + notable work)
+│   └── Email Thread card (expanded per-message view)
+└── Right column
+    ├── Upcoming card (next meeting highlighted)
+    ├── Project card (with inline task checklist — checkmarks for done, squares for open)
+    ├── About card (background/bio from notes)
+    └── Discovery Questions card (AI-generated)
 
-**Missing data**: Check if 2 or more of these are NULL/empty: email, phone, company, role. If so, show a subtle "Missing: X, Y" hint below the contact details card (not in the action items card).
-
-Only render the Action Items card if there are overdue commitments, due/overdue follow-ups, or staleness warnings. If everything is clean, skip the card entirely.
-
-## Step 8: Generate HTML
-
-Generate a self-contained HTML file using the template-base.html structure with these modifications:
-
-### Title
-Change the page `<title>` to the contact's name. Change the header to show the entity page header pattern (avatar initials + name + company/role + tags + quick stats).
-
-### Layout
-
-```html
-<!-- Header (full width) -->
-<!-- entity page header pattern from activity-feed-patterns.md -->
-
-<!-- Two-column grid -->
-<div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-
-    <!-- Left column (2/3 width) -->
-    <div class="lg:col-span-2 space-y-0">
-        <!-- Action Items card (only if items exist) -->
-        <!-- Activity Timeline with temporal sections -->
-    </div>
-
-    <!-- Right column (1/3 width) — sidebar -->
-    <div class="space-y-6">
-        <!-- Contact Details card -->
-        <!-- Related Contacts card (if CRM installed and relationships exist) -->
-        <!-- Active Projects card (if Project Tracker installed and projects exist) -->
-        <!-- Relationship Health card (if ConvIntel installed and score exists) -->
-    </div>
-</div>
+Footer
 ```
 
 ### Design Rules
 
 - Use the template-base.html skeleton (Tailwind CDN, Lucide CDN, Inter font)
 - Background: `bg-zinc-50`, cards: `bg-white rounded-xl shadow-sm border border-zinc-200`
-- Use activity feed patterns from `activity-feed-patterns.md` for all timeline items
-- Use base patterns from `component-patterns.md` for status badges, empty states
+- Avatar colors: `blue-100`/`blue-700` for the contact, `emerald-100`/`emerald-700` for you, `zinc-100`/`zinc-500` for others
+- Callout cards: `bg-amber-50 border-amber-100` for urgent/upcoming, `bg-blue-50 border-blue-100` for informational
+- Stats grid: `bg-zinc-50 rounded-lg p-3 text-center` with bold number + label
 - All data static in HTML — no JavaScript data fetching
 - The only JS: Lucide icon initialization (`lucide.createIcons()`)
-- The `<details>` element for the Older section is native HTML, not JS
 - Responsive: sidebar stacks below on mobile via `grid-cols-1 lg:grid-cols-3`
 
-### Empty States
+### Rendering Principles
 
-- If no activity at all: show empty state with "No recorded activity yet. Interactions, emails, and meetings will appear here as data is added."
-- If a sidebar card would be empty (no projects, no relationships, no relationship score): don't render that card at all
-- If no action items: don't render the action items card
+- **Narrative over tables.** Write relationship context as prose, not bullet lists.
+- **Summarize email content.** Don't paste raw snippets — describe what each message did ("Made the intro", "Confirmed tomorrow", "Had a calendar glitch").
+- **Only show cards that have data.** If no project exists, skip the project card. If no company intel, skip that card.
+- **Highlight what matters now.** If there's an upcoming meeting, it should be the most prominent thing on the page.
 
-## Step 9: Write and Open
+## Step 6: Write and Open
 
 Generate a filename slug from the contact name (lowercase, hyphens for spaces):
 
-Write to `${CLAUDE_PLUGIN_ROOT}/output/{contact-slug}.html`
+Write to `${CLAUDE_PLUGIN_ROOT}/output/contact-{slug}.html`
 
-Open with: `open "${CLAUDE_PLUGIN_ROOT}/output/{contact-slug}.html"`
+Open with: `open "${CLAUDE_PLUGIN_ROOT}/output/contact-{slug}.html"`
 
-Tell the user: "Entity page for **{contact name}** opened." Then briefly mention what's on it — e.g., "Shows 12 email threads, 4 meetings, and 2 overdue commitments."
+Tell the user: "Contact page for **{contact name}** opened." Then briefly summarize what's on it — e.g., "Shows relationship context from Vahid's intro, 6-email thread, upcoming discovery call, and 5 prep questions."
