@@ -27,6 +27,9 @@ Present available commands based on what's installed:
 | `/backup [export\|import\|status]` | Export or import your data as JSON |
 | `/pages [name]` | List or open generated HTML pages |
 | `/project-page <name>` | Generate a project intelligence brief |
+| `/nudges` | What needs your attention — cold contacts, overdue items, stale projects |
+| `/network-map` | Interactive visual map of your contact network |
+| `/entity-page <name>` | Generate a contact intelligence brief |
 | `/help-soy` | This help page |
 
 ## If CRM Module Installed
