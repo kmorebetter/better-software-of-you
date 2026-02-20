@@ -72,12 +72,26 @@ If CRM module is installed and there are 2+ contacts:
 - Follow `commands/network-map.md` completely
 - Generate the D3.js interactive visualization
 
+### Cross-Cutting Views (after all entity/module pages)
+
+Generate these four views AFTER all entity pages and module views, since they link to those pages:
+
+| View | Command spec to follow | Output file |
+|------|----------------------|-------------|
+| Nudges | `commands/nudges-view.md` | `nudges.html` |
+| Timeline | `commands/timeline.md` | `timeline.html` |
+| Weekly Review | `commands/weekly-review.md` | `weekly-review.html` |
+| Search Hub | `commands/search-hub.md` | `search.html` |
+
+For each: read the full command file and follow it completely. Generate them in the order listed — Nudges first (standalone urgency data), then Timeline (cross-module chronological data), then Weekly Review (aggregated weekly lens), then Search Hub last (needs all entity pages for link data and all data for JSON embedding).
+
 ### Dashboard (LAST)
 
-Generate the dashboard LAST so it can link to all the entity pages and module views that now exist:
+Generate the dashboard LAST so it can link to all the entity pages, module views, and cross-cutting views that now exist:
 - Follow `commands/dashboard.md` completely
 - The nav bar will populate with all the pages generated above
 - Contact names throughout will link to entity pages
+- The Intelligence Tools strip will link to the four cross-cutting views
 
 ## Step 3: Open Dashboard
 
