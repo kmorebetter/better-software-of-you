@@ -88,6 +88,15 @@ Present available commands based on what's installed:
 | `/journal read <date>` | Read entries for a specific date |
 | `/journal-view` | Generate a Journal page with mood trends and cross-references |
 
+## If Notes Module Installed
+| Command | Description |
+|---------|-------------|
+| `/note <content>` | Quick-capture a standalone note with auto cross-referencing |
+| `/note list` | View recent standalone notes (pinned first) |
+| `/note search <term>` | Search across all standalone notes |
+| `/note pin <id>` | Pin or unpin a note |
+| `/notes-view` | Generate a Notes page with tags, linked entities, and pinned highlights |
+
 ## Natural Language
 
 You can also just talk naturally:

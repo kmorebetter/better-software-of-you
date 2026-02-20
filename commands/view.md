@@ -17,6 +17,7 @@ Generate a specialized HTML view based on $ARGUMENTS. Unlike `/dashboard` (which
 - **"conversations"** or **"transcripts"** or **"calls"** → Run `/conversations-view`
 - **"decisions"** → Run `/decision-journal-view`
 - **"journal"** or **"diary"** → Run `/journal-view`
+- **"notes"** → Run `/notes-view`
 - **"network"** or **"map"** → Run `/network-map`
 - **Custom text** → Generate a custom view based on the description
 
