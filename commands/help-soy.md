@@ -52,11 +52,13 @@ Present available commands based on what's installed:
 | `/google-setup` | Connect your Google account (Gmail + Calendar) |
 | `/gmail [inbox\|unread\|from <name>]` | View, search, and triage your inbox |
 | `/email <contact> [context]` | Compose and send an email (with confirmation) |
+| `/email-hub` | Generate an Email Hub page with threads, response queue, and contact stats |
 
 ## If Calendar Module Installed
 | Command | Description |
 |---------|-------------|
 | `/calendar [today\|week\|schedule]` | View or create calendar events |
+| `/week-view` | Generate a visual calendar week view |
 
 ## If Conversation Intelligence Installed
 | Command | Description |
@@ -65,6 +67,7 @@ Present available commands based on what's installed:
 | `/commitments [mine\|theirs\|overdue]` | View and manage commitments from conversations |
 | `/communication-review [week\|month]` | Your communication patterns and coaching |
 | `/relationship-pulse <name>` | Deep relationship view with conversation history |
+| `/conversations-view` | Generate a Conversations page with transcripts, commitments, and coaching |
 
 ## If Decision Log Installed
 | Command | Description |
@@ -73,6 +76,7 @@ Present available commands based on what's installed:
 | `/decision list [project]` | View recent decisions, optionally filtered by project |
 | `/decision outcome <title>` | Record how a decision turned out |
 | `/decision revisit` | Review old decisions that need outcome tracking |
+| `/decision-journal-view` | Generate a Decision Journal page with outcomes and patterns |
 
 ## If Journal Installed
 | Command | Description |
@@ -81,6 +85,7 @@ Present available commands based on what's installed:
 | `/journal today` | Read today's entry |
 | `/journal week` | AI-synthesized weekly review of your entries |
 | `/journal read <date>` | Read entries for a specific date |
+| `/journal-view` | Generate a Journal page with mood trends and cross-references |
 
 ## Natural Language
 
