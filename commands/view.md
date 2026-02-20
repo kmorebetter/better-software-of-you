@@ -37,7 +37,16 @@ GROUP BY c.id ORDER BY c.updated_at DESC;
 
 If CRM installed, also get pending follow-ups per contact.
 
-Layout: Card grid showing each contact with name, company, email, tags, project count, and last activity date.
+Layout: Card grid showing each contact with name, company, email, tags, project count, and last activity date. Each contact name links to their entity page if one exists.
+
+**Write to:** `${CLAUDE_PLUGIN_ROOT}/output/contacts.html` (always this filename — the nav bar links here)
+
+**Register:**
+```sql
+INSERT INTO generated_views (view_type, entity_type, entity_id, entity_name, filename)
+VALUES ('module_view', 'module', NULL, 'Contacts', 'contacts.html')
+ON CONFLICT(filename) DO UPDATE SET updated_at = datetime('now');
+```
 
 ## Project Board View
 
@@ -53,14 +62,28 @@ WHERE p.status NOT IN ('completed', 'cancelled')
 ORDER BY p.priority DESC;
 ```
 
-Layout: Kanban-style columns by status (Planning, Active, Paused) or card list with task progress bars.
+Layout: Kanban-style columns by status (Planning, Active, Paused) or card list with task progress bars. Each project name links to its project page if one exists.
+
+**Write to:** `${CLAUDE_PLUGIN_ROOT}/output/projects.html` (always this filename)
+
+**Register:**
+```sql
+INSERT INTO generated_views (view_type, entity_type, entity_id, entity_name, filename)
+VALUES ('module_view', 'module', NULL, 'Projects', 'projects.html')
+ON CONFLICT(filename) DO UPDATE SET updated_at = datetime('now');
+```
 
 ## Custom View
 
 For custom descriptions, interpret what the user wants, query the relevant data, and generate an appropriate HTML layout. Use the design system from `skills/dashboard-generation/references/`.
 
+## Navigation
+
+**Every view must include the primary nav bar** from `${CLAUDE_PLUGIN_ROOT}/skills/dashboard-generation/references/navigation-patterns.md`. Read it before generating any HTML. The nav bar is consistent across all pages — same sections, same counts, same order.
+
 ## Output
 
 Read template and patterns from `${CLAUDE_PLUGIN_ROOT}/skills/dashboard-generation/references/`.
 Write HTML to `${CLAUDE_PLUGIN_ROOT}/output/{view-name}.html`.
+Register in `generated_views`.
 Open with `open <filepath>`.
