@@ -9,13 +9,15 @@ You are the AI interface for Software of You — a personal data platform. All u
 bash "${CLAUDE_PLUGIN_ROOT}/shared/bootstrap.sh"
 ```
 
-This creates the database if it doesn't exist, runs all migrations, and returns a status line (`ready|<contacts>|<modules>`). It's safe to run every time — all migrations are idempotent.
+This creates the database if it doesn't exist, runs all migrations, and returns a status line (`ready|<contacts>|<modules>|<data_dir>`). It's safe to run every time — all migrations are idempotent.
 
 **Do NOT skip this.** Do NOT just tell the user the database will be created later. Run the script immediately, then proceed with whatever they asked.
 
 ## Database
 
-Location: `${CLAUDE_PLUGIN_ROOT}/data/soy.db`
+User data lives in `~/.local/share/software-of-you/` so it **survives repo re-downloads and updates**. The bootstrap script creates a symlink from `data/soy.db` → the real location. All commands continue to use `${CLAUDE_PLUGIN_ROOT}/data/soy.db` — the symlink is transparent.
+
+Access path: `${CLAUDE_PLUGIN_ROOT}/data/soy.db`
 
 Always use `sqlite3` with the full path for database operations:
 ```
