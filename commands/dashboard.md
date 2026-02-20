@@ -16,12 +16,19 @@ Before building the dashboard, ensure data is fresh. Follow the auto-sync proced
 Read these files first:
 - `${CLAUDE_PLUGIN_ROOT}/skills/dashboard-generation/references/template-base.html` — HTML skeleton
 - `${CLAUDE_PLUGIN_ROOT}/skills/dashboard-generation/references/component-patterns.md` — component snippets
+- `${CLAUDE_PLUGIN_ROOT}/skills/dashboard-generation/references/navigation-patterns.md` — nav bar patterns
 
 ## Step 2: Gather Data
 
 Query `${CLAUDE_PLUGIN_ROOT}/data/soy.db`. Check installed modules first:
 ```sql
 SELECT name FROM modules WHERE enabled = 1;
+```
+
+**Query generated views** (for navigation and contact linking):
+```sql
+SELECT entity_name, entity_id, filename, updated_at FROM generated_views
+WHERE view_type = 'entity_page' ORDER BY updated_at DESC LIMIT 10;
 ```
 
 **Always query:**
@@ -68,6 +75,9 @@ WHERE t.due_date < date('now') AND t.status NOT IN ('done');
 
 Generate a self-contained HTML file. Follow this **exact layout structure**:
 
+### Nav Bar (always)
+Include the dashboard nav bar from `navigation-patterns.md` — shows "Dashboard" label + pills linking to generated entity pages.
+
 ### Header (always)
 - Title: "Software of You"
 - Subtitle: Generated date in human format
@@ -97,9 +107,20 @@ Generate a self-contained HTML file. Follow this **exact layout structure**:
 
 If a section has no data, show an empty state with a subtle message and a suggestion command.
 
+### Contact Name Linking
+
+Anywhere a contact name appears (activity feed, follow-ups, project cards), check if that contact has a generated entity page in the `generated_views` query results. If so, render the name as a clickable link to that page. If not, render as plain text. Follow the pattern in `navigation-patterns.md`.
+
 Write to `${CLAUDE_PLUGIN_ROOT}/output/dashboard.html`.
 
-## Step 4: Open
+## Step 4: Register, Open
+
+**Register the dashboard view:**
+```sql
+INSERT INTO generated_views (view_type, entity_type, entity_id, entity_name, filename)
+VALUES ('dashboard', NULL, NULL, 'Dashboard', 'dashboard.html')
+ON CONFLICT(filename) DO UPDATE SET updated_at = datetime('now');
+```
 
 Run: `open "${CLAUDE_PLUGIN_ROOT}/output/dashboard.html"`
 

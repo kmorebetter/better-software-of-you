@@ -21,6 +21,7 @@ Read design references in parallel:
 - `${CLAUDE_PLUGIN_ROOT}/skills/dashboard-generation/references/template-base.html`
 - `${CLAUDE_PLUGIN_ROOT}/skills/dashboard-generation/references/component-patterns.md`
 - `${CLAUDE_PLUGIN_ROOT}/skills/dashboard-generation/references/activity-feed-patterns.md`
+- `${CLAUDE_PLUGIN_ROOT}/skills/dashboard-generation/references/navigation-patterns.md`
 
 At the same time, resolve the contact. Query `${CLAUDE_PLUGIN_ROOT}/data/soy.db`:
 
@@ -263,11 +264,29 @@ Footer
 - **Only show cards that have data.** If no project exists, skip the project card. If no company intel, skip that card.
 - **Highlight what matters now.** If there's an upcoming meeting, it should be the most prominent thing on the page.
 
-## Step 6: Write and Open
+## Step 6: Add Navigation
+
+Before generating, query existing pages for the nav bar:
+```sql
+SELECT entity_name, filename FROM generated_views WHERE view_type != 'dashboard' ORDER BY updated_at DESC LIMIT 5;
+```
+
+Include the nav bar from `navigation-patterns.md` at the top of the page — "Dashboard" breadcrumb link + pills for other generated entity pages (excluding the current contact).
+
+## Step 7: Write, Register, and Open
 
 Generate a filename slug from the contact name (lowercase, hyphens for spaces):
 
 Write to `${CLAUDE_PLUGIN_ROOT}/output/contact-{slug}.html`
+
+**Register the view** so other pages can link to it:
+```sql
+INSERT INTO generated_views (view_type, entity_type, entity_id, entity_name, filename)
+VALUES ('entity_page', 'contact', ?, ?, 'contact-{slug}.html')
+ON CONFLICT(filename) DO UPDATE SET
+  entity_name = excluded.entity_name,
+  updated_at = datetime('now');
+```
 
 Open with: `open "${CLAUDE_PLUGIN_ROOT}/output/contact-{slug}.html"`
 
