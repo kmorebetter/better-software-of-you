@@ -1,26 +1,47 @@
 ---
-description: First-run setup for Software of You
+description: Initialize or verify Software of You installation
 allowed-tools: ["Bash", "Read", "Write"]
 ---
 
 # Software of You — Setup
 
-Check if the database exists at `${CLAUDE_PLUGIN_ROOT}/data/soy.db`.
+## Step 1: Initialize Database
 
-**If the database does NOT exist:**
+Create the data directory and run all migrations:
+```bash
+mkdir -p "${CLAUDE_PLUGIN_ROOT}/data"
+for f in "${CLAUDE_PLUGIN_ROOT}"/data/migrations/*.sql; do
+  sqlite3 "${CLAUDE_PLUGIN_ROOT}/data/soy.db" < "$f"
+done
+```
 
-1. Run each migration file in order:
-   ```
-   sqlite3 "${CLAUDE_PLUGIN_ROOT}/data/soy.db" < "${CLAUDE_PLUGIN_ROOT}/data/migrations/001_core_schema.sql"
-   ```
-   Then run any additional migration files (002, 003, etc.) found in the migrations directory.
+## Step 2: Verify
 
-2. Welcome the user warmly. Tell them:
-   - Software of You is set up and ready
-   - List the installed modules (query the `modules` table)
-   - Where their data lives (the database path)
-   - Suggest first steps: add a contact, create a project, or explore with /help-soy
+Check what's installed:
+```sql
+SELECT name, display_name, version FROM modules WHERE enabled = 1;
+SELECT COUNT(*) as contacts FROM contacts;
+SELECT COUNT(*) as projects FROM projects;
+```
 
-**If the database already exists:**
+## Step 3: Report
 
-Tell the user it's already set up. Show a quick status summary (contact count, project count) and suggest /status for full details or /help-soy for available commands.
+Tell the user:
+
+**If fresh install (no data):**
+"Software of You is ready. You have [N] modules installed: [list]. Your database is at `data/soy.db`.
+
+Get started:
+- **Add a contact**: just tell me about someone — name, email, company
+- **Connect Google**: run `/google-setup` to sync Gmail and Calendar
+- **See what's possible**: try `/help-soy`"
+
+**If existing install (has data):**
+"Everything looks good. [N] contacts, [N] projects, [N] modules installed. Database at `data/soy.db`.
+
+Google: [connected as email / not connected — run `/google-setup`]"
+
+Check Google status:
+```
+python3 "${CLAUDE_PLUGIN_ROOT}/shared/google_auth.py" status 2>/dev/null
+```

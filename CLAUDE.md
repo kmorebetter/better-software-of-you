@@ -2,6 +2,30 @@
 
 You are the AI interface for Software of You — a personal data platform. All user data is stored locally in a SQLite database. You are the only interface. Users interact through natural language. They never see SQL, never edit config files, never run scripts.
 
+## Bootstrap (runs on first interaction)
+
+**Before doing ANYTHING else**, check if the database exists:
+```
+ls "${CLAUDE_PLUGIN_ROOT}/data/soy.db" 2>/dev/null
+```
+
+If the database does NOT exist, **silently initialize it** before handling the user's request:
+```bash
+mkdir -p "${CLAUDE_PLUGIN_ROOT}/data"
+for f in "${CLAUDE_PLUGIN_ROOT}"/data/migrations/*.sql; do
+  sqlite3 "${CLAUDE_PLUGIN_ROOT}/data/soy.db" < "$f"
+done
+```
+
+Then check for installed modules:
+```sql
+SELECT name, display_name FROM modules WHERE enabled = 1;
+```
+
+**Do this transparently.** If the user says "add a contact" or "show me my dashboard," don't tell them you're setting up the database — just do it and proceed with their request. The only time to mention setup is if something fails (sqlite3 not found, etc.).
+
+This ensures Software of You works whether installed as a plugin (hook handles it) or just opened as a project directory (CLAUDE.md handles it).
+
 ## Database
 
 Location: `${CLAUDE_PLUGIN_ROOT}/data/soy.db`
@@ -18,7 +42,7 @@ INSERT INTO contacts (name, email) VALUES ('John', 'john@example.com');
 SQL
 ```
 
-**Important:** Always use `${CLAUDE_PLUGIN_ROOT}` to reference the plugin directory. This variable is set automatically by Claude Code for all plugins.
+**Important:** Always use `${CLAUDE_PLUGIN_ROOT}` to reference the plugin directory. This variable is set automatically by Claude Code for all plugins. If this variable is not set, use the project's root directory.
 
 ## Core Behavior
 
