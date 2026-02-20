@@ -158,6 +158,77 @@ Include the dashboard nav bar from `navigation-patterns.md` — shows "Dashboard
 
 ---
 
+### Intelligence Tools Strip (always, after header)
+
+A 4-card grid linking to cross-cutting views. Place this between the header and Today's Agenda. Always include this section — it's the gateway to the platform's intelligence features.
+
+**Query nudge count for the badge:**
+```sql
+-- Count urgent nudges (overdue follow-ups + overdue commitments + overdue tasks)
+SELECT
+  (SELECT COUNT(*) FROM follow_ups WHERE status = 'pending' AND due_date < date('now'))
+  + (SELECT COUNT(*) FROM commitments WHERE status IN ('open','overdue') AND deadline_date < date('now'))
+  + (SELECT COUNT(*) FROM tasks t JOIN projects p ON p.id = t.project_id WHERE t.status NOT IN ('done') AND t.due_date < date('now'))
+  as urgent_count;
+```
+
+**HTML:**
+```html
+<!-- Intelligence Tools Strip -->
+<div class="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
+  <a href="weekly-review.html" class="bg-white rounded-xl border border-zinc-200 p-4 hover:border-blue-300 hover:shadow-sm transition-all group">
+    <div class="flex items-center gap-3">
+      <div class="w-9 h-9 rounded-lg bg-blue-50 flex items-center justify-center">
+        <i data-lucide="clipboard-list" class="w-4.5 h-4.5 text-blue-600"></i>
+      </div>
+      <div>
+        <div class="text-sm font-semibold text-zinc-900 group-hover:text-blue-700">Weekly Review</div>
+        <div class="text-xs text-zinc-500">Your week at a glance</div>
+      </div>
+    </div>
+  </a>
+  <a href="nudges.html" class="bg-white rounded-xl border border-zinc-200 p-4 hover:border-amber-300 hover:shadow-sm transition-all group">
+    <div class="flex items-center gap-3">
+      <div class="w-9 h-9 rounded-lg bg-amber-50 flex items-center justify-center relative">
+        <i data-lucide="bell" class="w-4.5 h-4.5 text-amber-600"></i>
+        <!-- Show red dot badge if urgent_count > 0. Hide this span entirely if urgent_count is 0. -->
+        <span class="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full text-[10px] text-white flex items-center justify-center font-bold">N</span>
+      </div>
+      <div>
+        <div class="text-sm font-semibold text-zinc-900 group-hover:text-amber-700">Nudges</div>
+        <div class="text-xs text-zinc-500">Items need attention</div>
+      </div>
+    </div>
+  </a>
+  <a href="timeline.html" class="bg-white rounded-xl border border-zinc-200 p-4 hover:border-purple-300 hover:shadow-sm transition-all group">
+    <div class="flex items-center gap-3">
+      <div class="w-9 h-9 rounded-lg bg-purple-50 flex items-center justify-center">
+        <i data-lucide="clock" class="w-4.5 h-4.5 text-purple-600"></i>
+      </div>
+      <div>
+        <div class="text-sm font-semibold text-zinc-900 group-hover:text-purple-700">Timeline</div>
+        <div class="text-xs text-zinc-500">Activity across everything</div>
+      </div>
+    </div>
+  </a>
+  <a href="search.html" class="bg-white rounded-xl border border-zinc-200 p-4 hover:border-emerald-300 hover:shadow-sm transition-all group">
+    <div class="flex items-center gap-3">
+      <div class="w-9 h-9 rounded-lg bg-emerald-50 flex items-center justify-center">
+        <i data-lucide="search" class="w-4.5 h-4.5 text-emerald-600"></i>
+      </div>
+      <div>
+        <div class="text-sm font-semibold text-zinc-900 group-hover:text-emerald-700">Search</div>
+        <div class="text-xs text-zinc-500">Find anything</div>
+      </div>
+    </div>
+  </a>
+</div>
+```
+
+Replace `N` in the Nudges badge with the actual `urgent_count` value. If `urgent_count` is 0, omit the red badge `<span>` entirely.
+
+---
+
 ### TODAY'S AGENDA — Hero Card (if Calendar installed)
 
 **This is the most prominent card on the dashboard.** Full width, top of the page, visually distinct.
