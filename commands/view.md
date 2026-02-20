@@ -12,6 +12,12 @@ Generate a specialized HTML view based on $ARGUMENTS. Unlike `/dashboard` (which
 
 - **"contacts"** → Contact directory view
 - **"projects"** → Project board view
+- **"emails"** or **"email"** or **"gmail"** → Run `/email-hub` (tell user: "Generating your Email Hub...")
+- **"calendar"** or **"week"** or **"schedule"** → Run `/week-view`
+- **"conversations"** or **"transcripts"** or **"calls"** → Run `/conversations-view`
+- **"decisions"** → Run `/decision-journal-view`
+- **"journal"** or **"diary"** → Run `/journal-view`
+- **"network"** or **"map"** → Run `/network-map`
 - **Custom text** → Generate a custom view based on the description
 
 ## Contact Directory View

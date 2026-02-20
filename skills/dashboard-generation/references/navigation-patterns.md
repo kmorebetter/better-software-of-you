@@ -10,7 +10,7 @@ Before generating any HTML page, query `generated_views` for recent pages:
 SELECT view_type, entity_name, filename, updated_at
 FROM generated_views
 ORDER BY updated_at DESC
-LIMIT 10;
+LIMIT 15;
 ```
 
 Use this to populate the nav bar with links to other existing pages.
@@ -30,6 +30,19 @@ ON CONFLICT(filename) DO UPDATE SET
 For dashboards: `view_type = 'dashboard'`, `entity_type = NULL`, `entity_id = NULL`, `entity_name = 'Dashboard'`, `filename = 'dashboard.html'`
 
 For entity pages: `view_type = 'entity_page'`, `entity_type = 'contact'`, `entity_id = <id>`, `entity_name = <contact name>`, `filename = 'contact-{slug}.html'`
+
+## Module View Registration
+
+For module-specific views, use `view_type = 'module_view'`:
+
+| View | entity_name | filename |
+|------|-------------|----------|
+| Email Hub | 'Email Hub' | 'email-hub.html' |
+| Week View | 'Week View' | 'week-view.html' |
+| Conversations | 'Conversations' | 'conversations.html' |
+| Decision Journal | 'Decision Journal' | 'decision-journal.html' |
+| Journal | 'Journal' | 'journal.html' |
+| Network Map | 'Network Map' | 'network-map.html' |
 
 ## Nav Bar Component
 
@@ -66,8 +79,13 @@ Include at the top of every generated page, inside the `max-w-5xl` container, be
         <span class="text-sm font-medium text-zinc-900">Dashboard</span>
     </div>
 
-    <!-- Quick links to generated entity pages -->
+    <!-- Quick links to generated pages -->
     <div class="flex items-center gap-2">
+        <!-- Module views (always show if generated) -->
+        <a href="email-hub.html" class="px-2.5 py-1 rounded-full text-xs bg-blue-50 text-blue-600 hover:bg-blue-100 transition-colors">Email Hub</a>
+        <a href="week-view.html" class="px-2.5 py-1 rounded-full text-xs bg-blue-50 text-blue-600 hover:bg-blue-100 transition-colors">Week View</a>
+
+        <!-- Entity pages -->
         <a href="contact-daniel-byrne.html" class="px-2.5 py-1 rounded-full text-xs bg-zinc-100 text-zinc-600 hover:bg-zinc-200 transition-colors">Daniel Byrne</a>
         <a href="contact-sarah-chen.html" class="px-2.5 py-1 rounded-full text-xs bg-zinc-100 text-zinc-600 hover:bg-zinc-200 transition-colors">Sarah Chen</a>
     </div>
@@ -77,10 +95,12 @@ Include at the top of every generated page, inside the `max-w-5xl` container, be
 ### Rules
 
 - Quick links show **only pages that exist** in `generated_views` — never link to a page that hasn't been generated
-- On the dashboard, quick links show entity pages. On entity pages, quick links show other entity pages (not the current one)
-- Limit quick links to 5 most recently updated pages to keep the bar compact
+- Module view pills use `bg-blue-50 text-blue-600` to distinguish from entity page pills (`bg-zinc-100 text-zinc-600`)
+- Module views show first in the nav bar, then entity pages
+- Only show module views that exist in `generated_views`
+- Limit: show all module views + up to 5 entity pages
+- On entity pages, quick links show other entity pages (not the current one)
 - Links use relative paths (all pages live in `output/` together)
-- On the dashboard, show entity pages as clickable pills
 - The current page is shown as plain text (not a link)
 
 ## Contact Name Links in Dashboard
