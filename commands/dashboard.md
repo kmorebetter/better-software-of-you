@@ -7,6 +7,10 @@ allowed-tools: ["Bash", "Read", "Write"]
 
 Generate the Software of You home dashboard. This is a **fixed-layout** dashboard — the same sections appear in the same order every time. You fill in the data, but do NOT change the structure.
 
+## Step 0: Auto-Sync External Data
+
+Before building the dashboard, ensure data is fresh. Follow the auto-sync procedure in CLAUDE.md — check `gmail_last_synced` and `calendar_last_synced` in `soy_meta`, and sync if stale (>15 min) or never synced. Do this silently.
+
 ## Step 1: Read the Design System
 
 Read these files first:

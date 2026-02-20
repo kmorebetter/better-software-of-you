@@ -54,6 +54,11 @@ INSERT OR REPLACE INTO calendar_events (google_event_id, title, description, loc
 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
 ```
 
+**Update the sync timestamp:**
+```sql
+INSERT OR REPLACE INTO soy_meta (key, value, updated_at) VALUES ('calendar_last_synced', datetime('now'), datetime('now'));
+```
+
 **Present as a natural language briefing — not a schedule grid.**
 
 ### Format

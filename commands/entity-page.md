@@ -10,6 +10,10 @@ Generate a contact intelligence brief for the contact specified in $ARGUMENTS. T
 
 **Reference implementation:** `${CLAUDE_PLUGIN_ROOT}/skills/dashboard-generation/references/entity-page-reference.html` — this is the gold standard. Match its layout, density, and tone.
 
+## Step 0: Auto-Sync External Data
+
+Before building the entity page, ensure data is fresh. Follow the auto-sync procedure in CLAUDE.md — check `gmail_last_synced` and `calendar_last_synced` in `soy_meta`, and sync if stale (>15 min) or never synced. Do this silently.
+
 ## Step 1: Read References + Resolve Entity
 
 Read design references in parallel:
