@@ -71,6 +71,36 @@ JOIN projects p ON t.project_id = p.id
 WHERE t.due_date < date('now') AND t.status NOT IN ('done');
 ```
 
+**If Gmail module installed:**
+```sql
+-- Recent email threads (last 7 days, grouped by thread)
+SELECT e.thread_id, e.subject, e.from_name, e.from_address, e.direction,
+  e.snippet, e.received_at, c.name as contact_name,
+  COUNT(*) OVER (PARTITION BY e.thread_id) as thread_count
+FROM emails e
+LEFT JOIN contacts c ON e.contact_id = c.id
+WHERE e.received_at > datetime('now', '-7 days')
+GROUP BY e.thread_id
+ORDER BY MAX(e.received_at) DESC
+LIMIT 8;
+
+-- Unread count
+SELECT COUNT(*) as unread FROM emails WHERE is_read = 0;
+```
+
+**If Calendar module installed:**
+```sql
+-- Upcoming events (next 7 days)
+SELECT ce.*, GROUP_CONCAT(c.name) as attendee_names
+FROM calendar_events ce
+LEFT JOIN contacts c ON ce.contact_ids LIKE '%' || c.id || '%'
+WHERE ce.start_time BETWEEN datetime('now') AND datetime('now', '+7 days')
+  AND ce.status != 'cancelled'
+GROUP BY ce.id
+ORDER BY ce.start_time ASC
+LIMIT 8;
+```
+
 ## Step 3: Generate HTML
 
 Generate a self-contained HTML file. Follow this **exact layout structure**:
@@ -81,7 +111,14 @@ Include the dashboard nav bar from `navigation-patterns.md` — shows "Dashboard
 ### Header (always)
 - Title: "Software of You"
 - Subtitle: Generated date in human format
-- Stat pills (right side): Contact count, Project count (if installed), Task count (if installed)
+- Stat pills (right side): Contact count, Project count (if installed), Task count (if installed), Email count (if Gmail installed, show unread count), Event count (if Calendar installed, show upcoming 7-day count)
+
+### Row 0: Two-column grid (conditional — only if Calendar or Gmail installed)
+- **Left: Upcoming Schedule** (if Calendar installed) — next 7 days of events. Each shows: time (formatted nicely), title, attendee names, location if any. Today's events highlighted with `border-l-4 border-amber-400 bg-amber-50/50`. If no Calendar module, skip this card.
+- **Right: Email Activity** (if Gmail installed) — recent email threads. Each shows: subject, contact name, thread_count messages, last activity time, direction indicator (arrow-up-right icon for outbound, arrow-down-left icon for inbound). Unread count badge in card header (e.g., "3 unread" pill). If no Gmail module, skip this card.
+- Grid: `grid grid-cols-1 lg:grid-cols-2 gap-6`
+- Use Lucide icons: `calendar` for events, `mail` for emails, `arrow-up-right` for outbound, `arrow-down-left` for inbound
+- If only one module is installed, render just that card at full width.
 
 ### Row 1: Two-column grid
 - **Left: Active Projects** (if Project Tracker installed) — table with project name, client, status badge, target date. If no projects, show "Contacts" card instead.
@@ -101,7 +138,7 @@ Include the dashboard nav bar from `navigation-patterns.md` — shows "Dashboard
 - Use the template-base.html structure (Tailwind CDN, Lucide CDN, Inter font)
 - Background: `bg-zinc-50`, cards: `bg-white rounded-xl shadow-sm border border-zinc-200 p-6`
 - Status badges: green (active/done), blue (planning/in-progress), amber (pending), red (overdue/blocked), zinc (paused/inactive)
-- Use Lucide icons: `users` for contacts, `folder`/`folder-open` for projects, `check-square` for tasks, `clock` for follow-ups, `activity` for timeline
+- Use Lucide icons: `users` for contacts, `folder`/`folder-open` for projects, `check-square` for tasks, `clock` for follow-ups, `activity` for timeline, `calendar` for events, `mail` for emails, `arrow-up-right` for outbound emails, `arrow-down-left` for inbound emails
 - All data static in HTML — no JavaScript data fetching
 - Responsive: `grid grid-cols-1 lg:grid-cols-2 gap-6`
 

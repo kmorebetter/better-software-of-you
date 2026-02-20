@@ -18,6 +18,12 @@ Translate their natural language query into SQL against `${CLAUDE_PLUGIN_ROOT}/d
 
 **If Project Tracker installed:** projects, tasks, milestones
 
+**If Gmail module installed:** emails (subject, snippet, from_address, from_name, to_addresses, date, is_read, label_ids)
+
+**If Calendar module installed:** calendar_events (title, description, attendees, location, start_time, end_time, status)
+
+**If Conversation Intelligence module installed:** transcripts (title, summary, raw_text, source, recorded_at), commitments (description, status, due_date, contact_id), communication_insights (content, insight_type, contact_id)
+
 Check which modules are installed first: `SELECT name FROM modules WHERE enabled = 1;`
 
 ## Search Strategy
@@ -34,5 +40,21 @@ Check which modules are installed first: `SELECT name FROM modules WHERE enabled
 - "Everything about John" → contacts matching John + their notes, interactions, projects, tasks
 - "What happened last week?" → activity_log for the past 7 days
 - "Show me my VIP clients" → contacts with 'vip' tag
+
+**Email searches (Gmail module):**
+- "emails from Sarah" → `WHERE from_address LIKE '%sarah%' OR from_name LIKE '%sarah%'`
+- "emails about the proposal" → `WHERE subject LIKE '%proposal%' OR snippet LIKE '%proposal%'`
+- "unread emails" → `WHERE is_read = 0`
+
+**Calendar searches (Calendar module):**
+- "meetings next week" → `WHERE start_time BETWEEN date('now') AND date('now', '+7 days')`
+- "meetings with John" → `WHERE attendees LIKE '%john%' OR title LIKE '%john%'`
+- "what's on my calendar today" → `WHERE date(start_time) = date('now')`
+
+**Transcript & commitment searches (Conversation Intelligence module):**
+- "what did Sarah commit to?" → search commitments JOIN contacts WHERE contacts.name LIKE '%sarah%'
+- "coaching notes" → search communication_insights WHERE insight_type = 'coach_note'
+- "transcript about onboarding" → `WHERE title LIKE '%onboarding%' OR summary LIKE '%onboarding%'`
+- "open commitments" → search commitments WHERE status != 'completed'
 
 If nothing found, say so clearly and suggest alternative searches or broader terms.
