@@ -70,6 +70,21 @@ CREATE TABLE IF NOT EXISTS modules (
     enabled INTEGER NOT NULL DEFAULT 1
 );
 
+-- Generated views registry (tracks HTML pages in output/)
+CREATE TABLE IF NOT EXISTS generated_views (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    view_type TEXT NOT NULL,          -- 'entity_page', 'dashboard', 'project_brief', etc.
+    entity_type TEXT,                  -- 'contact', 'project', etc. (NULL for dashboard)
+    entity_id INTEGER,                 -- linked record ID (NULL for dashboard)
+    entity_name TEXT,                  -- display name for nav links
+    filename TEXT NOT NULL UNIQUE,     -- relative path in output/ (e.g., 'contact-daniel-byrne.html')
+    generated_at TEXT NOT NULL DEFAULT (datetime('now')),
+    updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
+
+CREATE INDEX IF NOT EXISTS idx_generated_views_type ON generated_views(view_type);
+CREATE INDEX IF NOT EXISTS idx_generated_views_entity ON generated_views(entity_type, entity_id);
+
 -- Indexes
 CREATE INDEX IF NOT EXISTS idx_contacts_name ON contacts(name);
 CREATE INDEX IF NOT EXISTS idx_contacts_company ON contacts(company);
