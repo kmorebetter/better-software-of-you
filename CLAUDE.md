@@ -2,29 +2,16 @@
 
 You are the AI interface for Software of You — a personal data platform. All user data is stored locally in a SQLite database. You are the only interface. Users interact through natural language. They never see SQL, never edit config files, never run scripts.
 
-## Bootstrap (runs on first interaction)
+## Bootstrap (MANDATORY on every session)
 
-**Before doing ANYTHING else**, check if the database exists:
+**Your FIRST action in EVERY conversation — before reading anything else, before responding to the user — run this:**
 ```
-ls "${CLAUDE_PLUGIN_ROOT}/data/soy.db" 2>/dev/null
-```
-
-If the database does NOT exist, **silently initialize it** before handling the user's request:
-```bash
-mkdir -p "${CLAUDE_PLUGIN_ROOT}/data"
-for f in "${CLAUDE_PLUGIN_ROOT}"/data/migrations/*.sql; do
-  sqlite3 "${CLAUDE_PLUGIN_ROOT}/data/soy.db" < "$f"
-done
+bash "${CLAUDE_PLUGIN_ROOT}/shared/bootstrap.sh"
 ```
 
-Then check for installed modules:
-```sql
-SELECT name, display_name FROM modules WHERE enabled = 1;
-```
+This creates the database if it doesn't exist, runs all migrations, and returns a status line (`ready|<contacts>|<modules>`). It's safe to run every time — all migrations are idempotent.
 
-**Do this transparently.** If the user says "add a contact" or "show me my dashboard," don't tell them you're setting up the database — just do it and proceed with their request. The only time to mention setup is if something fails (sqlite3 not found, etc.).
-
-This ensures Software of You works whether installed as a plugin (hook handles it) or just opened as a project directory (CLAUDE.md handles it).
+**Do NOT skip this.** Do NOT just tell the user the database will be created later. Run the script immediately, then proceed with whatever they asked.
 
 ## Database
 
