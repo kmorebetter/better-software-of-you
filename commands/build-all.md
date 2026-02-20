@@ -63,6 +63,7 @@ Generate each module's dedicated view if the module is installed:
 | Conversation Intelligence | `commands/conversations-view.md` | `conversations.html` |
 | Decision Log | `commands/decision-journal-view.md` | `decision-journal.html` |
 | Journal | `commands/journal-view.md` | `journal.html` |
+| Notes | `commands/notes-view.md` | `notes.html` |
 
 For each: read the full command file and follow it completely.
 

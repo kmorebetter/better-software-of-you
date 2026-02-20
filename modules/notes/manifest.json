@@ -1,0 +1,29 @@
+{
+  "name": "notes",
+  "display_name": "Notes",
+  "version": "1.0.0",
+  "description": "Standalone notes with automatic cross-referencing to contacts and projects. Hashtag tagging, pinning, and full-text search.",
+  "migration": "008_notes_module.sql",
+  "tables": ["standalone_notes"],
+  "entities": ["standalone_note"],
+  "commands": ["note", "notes-view"],
+  "standalone_features": [
+    "Quick-capture notes from natural language",
+    "Auto-link contacts and projects mentioned in content",
+    "#hashtag extraction as tags",
+    "Pin important notes for quick access",
+    "Full-text search across all notes"
+  ],
+  "enhancements": [
+    {
+      "requires_module": "crm",
+      "features": ["Auto-detect contact names in note content", "Show linked notes on contact entity pages", "Note activity in contact timeline"],
+      "description": "Notes automatically detect and link to contacts mentioned in your text. Contact entity pages show related notes."
+    },
+    {
+      "requires_module": "project-tracker",
+      "features": ["Auto-detect project names in note content", "Show linked notes on project pages", "Note activity in project timeline"],
+      "description": "Notes automatically detect and link to projects mentioned in your text. Project pages show related notes."
+    }
+  ]
+}

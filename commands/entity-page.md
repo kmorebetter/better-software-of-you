@@ -177,6 +177,43 @@ SELECT insight_type, content, sentiment FROM communication_insights
 WHERE contact_id = ? ORDER BY created_at DESC LIMIT 5;
 ```
 
+### If Notes module installed:
+
+```sql
+-- Standalone notes linked to this contact
+SELECT sn.id, sn.title, substr(sn.content, 1, 150) as preview, sn.tags, sn.pinned, sn.created_at
+FROM standalone_notes sn
+WHERE sn.linked_contacts LIKE '%' || ? || '%'
+ORDER BY sn.pinned DESC, sn.created_at DESC
+LIMIT 10;
+```
+
+If notes exist, add a **Notes** card to the right column (after About, before Discovery Questions). Show each note's title, preview, tags as pills, and age. Pinned notes show a pin indicator. If no linked notes exist, skip this card entirely.
+
+**Notes card layout:**
+```html
+<div class="bg-white rounded-xl shadow-sm border border-zinc-200 p-5 mb-4">
+    <div class="flex items-center gap-2 mb-4">
+        <i data-lucide="sticky-note" class="w-5 h-5 text-zinc-400"></i>
+        <h3 class="text-sm font-semibold">Notes</h3>
+    </div>
+    <div class="space-y-3">
+        <!-- Each note -->
+        <div class="pb-3 border-b border-zinc-100 last:border-0 last:pb-0">
+            <div class="flex items-center gap-2 mb-1">
+                <span class="text-sm font-medium text-zinc-900">Note title</span>
+                <!-- pin icon if pinned -->
+            </div>
+            <p class="text-xs text-zinc-500 leading-relaxed">Preview text...</p>
+            <div class="flex flex-wrap gap-1 mt-1.5">
+                <span class="px-1.5 py-0.5 rounded text-[10px] bg-violet-50 text-violet-600">#tag</span>
+            </div>
+            <p class="text-[10px] text-zinc-400 mt-1">3 days ago</p>
+        </div>
+    </div>
+</div>
+```
+
 ## Step 4: Synthesize Intelligence
 
 This is where the page goes beyond raw data. Using all gathered data, synthesize the following sections. Write in natural, narrative language — not bullet dumps.
