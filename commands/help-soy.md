@@ -24,6 +24,9 @@ Present available commands based on what's installed:
 | `/import` | Import data from any source — paste text, CSV, file path, anything |
 | `/dashboard` | Generate a visual HTML dashboard |
 | `/view <module>` | Generate a specialized module view |
+| `/backup [export\|import\|status]` | Export or import your data as JSON |
+| `/pages [name]` | List or open generated HTML pages |
+| `/project-page <name>` | Generate a project intelligence brief |
 | `/help-soy` | This help page |
 
 ## If CRM Module Installed
@@ -59,6 +62,22 @@ Present available commands based on what's installed:
 | `/commitments [mine\|theirs\|overdue]` | View and manage commitments from conversations |
 | `/communication-review [week\|month]` | Your communication patterns and coaching |
 | `/relationship-pulse <name>` | Deep relationship view with conversation history |
+
+## If Decision Log Installed
+| Command | Description |
+|---------|-------------|
+| `/decision <description>` | Log a decision with context, options, and rationale |
+| `/decision list [project]` | View recent decisions, optionally filtered by project |
+| `/decision outcome <title>` | Record how a decision turned out |
+| `/decision revisit` | Review old decisions that need outcome tracking |
+
+## If Journal Installed
+| Command | Description |
+|---------|-------------|
+| `/journal <entry>` | Write a journal entry with auto cross-referencing |
+| `/journal today` | Read today's entry |
+| `/journal week` | AI-synthesized weekly review of your entries |
+| `/journal read <date>` | Read entries for a specific date |
 
 ## Natural Language
 
