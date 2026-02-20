@@ -66,6 +66,11 @@ INSERT OR IGNORE INTO emails (gmail_id, thread_id, contact_id, direction, from_a
 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
 ```
 
+**Update the sync timestamp** so other commands know data is fresh:
+```sql
+INSERT OR REPLACE INTO soy_meta (key, value, updated_at) VALUES ('gmail_last_synced', datetime('now'), datetime('now'));
+```
+
 ## Step 6: Present as a Natural Language Briefing
 
 **Do NOT show a table of emails.** Instead, synthesize the emails into a conversational briefing — like a personal assistant summarizing your inbox. The style should be warm, scannable, and actionable.

@@ -30,6 +30,46 @@ SQL
 - **Suggest next actions.** After completing a request, briefly suggest related actions the user might want to take.
 - **Handle empty states gracefully.** New users have no data — guide them to add their first contact or project.
 
+## Auto-Sync: Keep Data Fresh
+
+Before generating any view (dashboard, entity page, or any HTML output) or answering questions about contacts/emails/calendar, **automatically check data freshness and sync if stale.** The user should never have to manually sync.
+
+**How it works:**
+
+1. Check if Google is connected:
+   ```
+   ACCESS_TOKEN=$(python3 "${CLAUDE_PLUGIN_ROOT}/shared/google_auth.py" token 2>/dev/null)
+   ```
+   If this fails, skip sync — Google isn't set up yet.
+
+2. Check when data was last synced:
+   ```sql
+   SELECT value FROM soy_meta WHERE key = 'gmail_last_synced';
+   SELECT value FROM soy_meta WHERE key = 'calendar_last_synced';
+   ```
+
+3. If never synced, or last sync was more than 15 minutes ago, **sync silently:**
+   - Fetch recent emails from Gmail API (last 50 messages)
+   - Fetch calendar events (next 14 days + last 7 days)
+   - Auto-link to contacts by matching email addresses
+   - Save to `emails` and `calendar_events` tables
+   - Update the timestamp:
+     ```sql
+     INSERT OR REPLACE INTO soy_meta (key, value, updated_at) VALUES ('gmail_last_synced', datetime('now'), datetime('now'));
+     INSERT OR REPLACE INTO soy_meta (key, value, updated_at) VALUES ('calendar_last_synced', datetime('now'), datetime('now'));
+     ```
+
+4. **Do this transparently.** Don't tell the user "syncing your emails..." — just do it and present the results. If the sync fails (network error, token expired), use whatever cached data exists and proceed.
+
+**When to sync:**
+- Before `/dashboard`, `/entity-page`, `/view`, or any HTML generation
+- Before answering questions like "what emails did I get from Daniel?" or "what's on my calendar?"
+- Before `/gmail` and `/calendar` commands (they already fetch, but should update the timestamp)
+
+**When NOT to sync:**
+- Pure database operations (adding contacts, logging interactions, creating projects)
+- When the user explicitly says "use cached data" or "don't sync"
+
 ## Module Awareness
 
 Check installed modules: `SELECT name, version FROM modules WHERE enabled = 1;`
