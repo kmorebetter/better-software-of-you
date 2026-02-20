@@ -38,8 +38,21 @@ PLUGIN_ROOT = os.environ.get(
     os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 )
 CONFIG_DIR = os.path.join(PLUGIN_ROOT, "config")
-TOKEN_FILE = os.path.join(CONFIG_DIR, "google_token.json")
 CREDENTIALS_FILE = os.path.join(CONFIG_DIR, "google_credentials.json")
+
+# Token lives in user data directory (survives repo re-downloads)
+DATA_HOME = os.environ.get(
+    "XDG_DATA_HOME",
+    os.path.join(os.path.expanduser("~"), ".local", "share"),
+)
+USER_DATA_DIR = os.path.join(DATA_HOME, "software-of-you")
+TOKEN_FILE = os.path.join(USER_DATA_DIR, "google_token.json")
+
+# Fall back to config/ if token exists there (pre-migration)
+_LEGACY_TOKEN = os.path.join(CONFIG_DIR, "google_token.json")
+if os.path.exists(_LEGACY_TOKEN) and not os.path.islink(_LEGACY_TOKEN) and not os.path.exists(TOKEN_FILE):
+    os.makedirs(USER_DATA_DIR, exist_ok=True)
+    os.rename(_LEGACY_TOKEN, TOKEN_FILE)
 
 # Embedded OAuth credentials (Desktop app — not secret per Google's design)
 DEFAULT_CREDENTIALS = {
