@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+
+{% block title %}{{ page_title }} — Software of You{% endblock %}
+
+{% block content %}
+<header class="mb-6">
+    <div class="flex items-center justify-between">
+        <div>
+            <h1 class="text-2xl font-bold text-zinc-900">{{ page_title }}</h1>
+            {% if page_subtitle %}
+            <p class="text-sm text-zinc-500 mt-1">{{ page_subtitle }}</p>
+            {% endif %}
+        </div>
+        {% if header_stats %}
+        <div class="flex items-center gap-3">
+            {% for stat in header_stats %}
+            <span class="px-3 py-1 rounded-full text-xs font-medium bg-{{ stat.color }}-50 text-{{ stat.color }}-700">
+                {{ stat.label }}: {{ stat.value }}
+            </span>
+            {% endfor %}
+        </div>
+        {% endif %}
+    </div>
+</header>
+
+{% for section in sections %}
+<div class="bg-white rounded-xl shadow-sm border border-zinc-200 p-6 mb-6">
+    {% if section.title %}
+    <div class="flex items-center gap-2 mb-4">
+        {% if section.icon %}<i data-lucide="{{ section.icon }}" class="w-5 h-5 text-zinc-400"></i>{% endif %}
+        <h2 class="text-lg font-semibold">{{ section.title }}</h2>
+        {% if section.badge %}
+        <span class="px-2 py-0.5 rounded-full text-xs font-medium bg-{{ section.badge_color | default('zinc') }}-50 text-{{ section.badge_color | default('zinc') }}-700">{{ section.badge }}</span>
+        {% endif %}
+    </div>
+    {% endif %}
+
+    {% if section.type == 'table' and section.rows %}
+    <table class="w-full text-sm">
+        <thead>
+            <tr class="border-b border-zinc-100">
+                {% for col in section.columns %}
+                <th class="text-{{ 'right' if loop.last else 'left' }} py-2 text-zinc-500 font-medium">{{ col }}</th>
+                {% endfor %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for row in section.rows %}
+            <tr class="border-b border-zinc-50 hover:bg-zinc-50">
+                {% for cell in row %}
+                <td class="py-2.5 {{ 'text-right text-zinc-500' if loop.last else ('font-medium' if loop.first else '') }}">{{ cell }}</td>
+                {% endfor %}
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% elif section.type == 'list' and section.items %}
+    <div class="space-y-2">
+        {% for item in section.items %}
+        <div class="flex items-start gap-3 py-2 border-b border-zinc-50 last:border-0">
+            {% if item.avatar %}
+            <div class="w-8 h-8 rounded-full bg-{{ item.avatar_color | default('blue') }}-100 flex items-center justify-center text-xs font-semibold text-{{ item.avatar_color | default('blue') }}-700 shrink-0">
+                {{ item.avatar }}
+            </div>
+            {% endif %}
+            <div class="flex-1 min-w-0">
+                <p class="text-sm font-medium text-zinc-900">{{ item.title }}</p>
+                {% if item.subtitle %}<p class="text-xs text-zinc-500">{{ item.subtitle }}</p>{% endif %}
+            </div>
+            {% if item.meta %}<span class="text-xs text-zinc-400 shrink-0">{{ item.meta }}</span>{% endif %}
+        </div>
+        {% endfor %}
+    </div>
+    {% elif section.type == 'timeline' and section.entries %}
+    <div class="space-y-0">
+        {% for entry in section.entries %}
+        <div class="flex gap-3 py-2.5 border-b border-zinc-50">
+            <div class="w-8 h-8 rounded-full bg-{{ entry.color | default('blue') }}-50 flex items-center justify-center flex-shrink-0 mt-0.5">
+                <i data-lucide="{{ entry.icon | default('activity') }}" class="w-4 h-4 text-{{ entry.color | default('blue') }}-600"></i>
+            </div>
+            <div>
+                <p class="text-sm">{{ entry.content }}</p>
+                <p class="text-xs text-zinc-400 mt-0.5">{{ entry.time }}</p>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% elif section.type == 'stats' and section.stats %}
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
+        {% for stat in section.stats %}
+        <div class="bg-zinc-50 rounded-lg p-3 text-center">
+            <p class="text-xl font-bold">{{ stat.value }}</p>
+            <p class="text-xs text-zinc-500">{{ stat.label }}</p>
+        </div>
+        {% endfor %}
+    </div>
+    {% elif section.type == 'html' %}
+    {{ section.html | safe }}
+    {% elif section.type == 'empty' %}
+    {% with icon=section.empty_icon | default('inbox'), message=section.empty_message | default('No data'), hint=section.empty_hint | default('') %}{% include "components/empty_state.html" %}{% endwith %}
+    {% endif %}
+</div>
+{% endfor %}
+{% endblock %}
