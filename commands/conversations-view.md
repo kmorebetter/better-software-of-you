@@ -19,8 +19,9 @@ Read these files first:
 Query `${CLAUDE_PLUGIN_ROOT}/data/soy.db`. Run all queries in a single `sqlite3` heredoc call for efficiency.
 
 ```sql
--- All transcripts with participants
+-- All transcripts with participants and call intelligence
 SELECT t.id, t.title, t.summary, t.duration_minutes, t.occurred_at, t.source,
+  t.call_intelligence,
   GROUP_CONCAT(DISTINCT CASE WHEN tp.is_user = 0 THEN c.name END) as participant_names,
   GROUP_CONCAT(DISTINCT CASE WHEN tp.is_user = 0 THEN c.id END) as participant_ids
 FROM transcripts t
@@ -97,6 +98,10 @@ Process the query results:
 3. **Coaching insights**: Map `insight_type` to Lucide icons: `relationship_pulse` -> `heart-pulse`, `coach_note` -> `lightbulb`, `pattern_alert` -> `alert-triangle`.
 4. **Relationship scores**: Map `trajectory` to display: `strengthening` -> green up arrow, `stable` -> zinc right arrow, `cooling` -> amber down-right arrow, `at_risk` -> red down arrow. Map `relationship_depth` to badge colors.
 5. **Commitment stats**: Use for header stat pills.
+6. **Call intelligence badges**: For each transcript, if `call_intelligence` JSON exists, parse it and prepare inline badges:
+   - Pain point count → `"X pain points"` badge (red-50/red-600 if any severity=high, else amber-50/amber-600)
+   - Concern count → `"X concerns"` badge (amber-50/amber-600 if any unaddressed, else zinc-100/zinc-600)
+   - Tech stack pills → show up to 3 tool names as compact pills (blue-50/blue-600), "+N more" if additional
 
 ## Step 4: Generate HTML
 
@@ -143,6 +148,10 @@ Left column (lg:col-span-2):
   ├── Each transcript entry:
   │   ├── Title (bold) + date (relative) + duration badge ("32 min")
   │   ├── Participants (linked to entity pages if they exist)
+  │   ├── Call intelligence badges (if call_intelligence JSON exists):
+  │   │   ├── Pain point count badge (red/amber pill)
+  │   │   ├── Concern count badge (amber/zinc pill)
+  │   │   └── Tech stack pills (up to 3, blue pills, "+N more")
   │   ├── Summary text (2-3 sentences, line-clamp-3)
   │   └── Commitments from this call (inline pills: amber for open, red for overdue, green for completed)
   └── Empty state: "No conversations imported yet. Use /import-call to get started." with mic-off icon

@@ -142,8 +142,9 @@ ORDER BY t.due_date ASC NULLS LAST;
 ### If Conversation Intelligence installed:
 
 ```sql
--- Transcripts involving this contact
+-- Transcripts involving this contact (including call intelligence JSON)
 SELECT t.id, t.title, t.summary, t.duration_minutes, t.occurred_at,
+  t.call_intelligence,
   GROUP_CONCAT(DISTINCT c.name) as participant_names
 FROM transcripts t
 JOIN transcript_participants tp ON tp.transcript_id = t.id
@@ -176,6 +177,14 @@ ORDER BY score_date DESC LIMIT 1;
 SELECT insight_type, content, sentiment FROM communication_insights
 WHERE contact_id = ? ORDER BY created_at DESC LIMIT 5;
 ```
+
+**Aggregate call intelligence across transcripts:**
+
+When processing the transcript query results, if any transcripts have `call_intelligence` JSON, aggregate across all calls for this contact:
+
+- **Cumulative pain points** — collect from all calls, deduplicate by title (keep most recent occurrence), sort most recent first
+- **Known tech stack** — merge tool names from all calls, deduplicate by name
+- **Unresolved concerns** — concerns where `addressed` is false, plus all concerns from the most recent call (even if addressed — shows current state)
 
 ### If Notes module installed:
 
@@ -273,7 +282,12 @@ Two-column grid (lg:grid-cols-3)
 ├── Left column (lg:col-span-2)
 │   ├── Relationship Context card (with amber callout for next action)
 │   ├── Company Intel card (stats grid + description + key team + notable work)
-│   └── Email Thread card (expanded per-message view)
+│   ├── Email Thread card (expanded per-message view)
+│   └── Call Intelligence card (if aggregated call_intelligence data exists)
+│       ├── Card header: brain icon + "Call Intelligence" + call count badge
+│       ├── Pain Points section (deduplicated across calls, severity dots: red=high, amber=medium)
+│       ├── Known Tech Stack section (merged pills with category labels)
+│       └── Unresolved Concerns section (unaddressed items flagged for follow-up)
 └── Right column
     ├── Upcoming card (next meeting highlighted)
     ├── Project card (with inline task checklist — checkmarks for done, squares for open)

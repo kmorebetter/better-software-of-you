@@ -1,0 +1,10 @@
+{# Status badge: maps status strings to color schemes #}
+{% set badge_colors = {
+    'active': 'green', 'done': 'green', 'completed': 'green', 'validated': 'green',
+    'planning': 'blue', 'in_progress': 'blue', 'open': 'blue',
+    'pending': 'amber', 'todo': 'amber', 'revisit': 'amber', 'tentative': 'amber',
+    'overdue': 'red', 'blocked': 'red', 'regretted': 'red', 'cancelled': 'red',
+    'paused': 'zinc', 'inactive': 'zinc', 'archived': 'zinc', 'decided': 'zinc',
+} %}
+{% set c = badge_colors.get(status, 'zinc') %}
+<span class="px-2 py-0.5 rounded-full text-xs font-medium bg-{{ c }}-50 text-{{ c }}-700">{{ status | replace('_', ' ') | title }}</span>

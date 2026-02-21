@@ -1,0 +1,347 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard — Software of You{% endblock %}
+
+{% block content %}
+<!-- Header -->
+<header class="mb-6">
+    <div class="flex items-center justify-between flex-wrap gap-4">
+        <div>
+            <h1 class="text-2xl font-bold text-zinc-900">Software of You</h1>
+            <p class="text-sm text-zinc-500 mt-1">{{ today_formatted }}</p>
+        </div>
+        <div class="flex items-center gap-3 flex-wrap">
+            <span class="px-3 py-1 rounded-full text-xs font-medium bg-blue-50 text-blue-700">
+                <i data-lucide="users" class="w-3 h-3 inline"></i> {{ stats.contacts }} contacts
+            </span>
+            {% if stats.projects is defined %}
+            <span class="px-3 py-1 rounded-full text-xs font-medium bg-violet-50 text-violet-700">
+                <i data-lucide="folder" class="w-3 h-3 inline"></i> {{ stats.projects }} projects
+            </span>
+            {% endif %}
+            {% if stats.unread is defined %}
+            <span class="px-3 py-1 rounded-full text-xs font-medium bg-amber-50 text-amber-700">
+                <i data-lucide="mail" class="w-3 h-3 inline"></i> {{ stats.unread }} unread
+            </span>
+            {% endif %}
+            {% if stats.today_events is defined %}
+            <span class="px-3 py-1 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700">
+                <i data-lucide="calendar" class="w-3 h-3 inline"></i> {{ stats.today_events }} today
+            </span>
+            {% endif %}
+        </div>
+    </div>
+</header>
+
+<!-- Intelligence Tools Strip -->
+<div class="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
+    <a href="weekly-review.html" class="bg-white rounded-xl border border-zinc-200 p-4 hover:border-blue-300 hover:shadow-sm transition-all group">
+        <div class="flex items-center gap-3">
+            <div class="w-9 h-9 rounded-lg bg-blue-50 flex items-center justify-center">
+                <i data-lucide="clipboard-list" class="w-4.5 h-4.5 text-blue-600"></i>
+            </div>
+            <div>
+                <div class="text-sm font-semibold text-zinc-900 group-hover:text-blue-700">Weekly Review</div>
+                <div class="text-xs text-zinc-500">Your week at a glance</div>
+            </div>
+        </div>
+    </a>
+    <a href="nudges.html" class="bg-white rounded-xl border border-zinc-200 p-4 hover:border-amber-300 hover:shadow-sm transition-all group">
+        <div class="flex items-center gap-3">
+            <div class="w-9 h-9 rounded-lg bg-amber-50 flex items-center justify-center relative">
+                <i data-lucide="bell" class="w-4.5 h-4.5 text-amber-600"></i>
+                {% if urgent_count > 0 %}
+                <span class="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full text-[10px] text-white flex items-center justify-center font-bold">{{ urgent_count }}</span>
+                {% endif %}
+            </div>
+            <div>
+                <div class="text-sm font-semibold text-zinc-900 group-hover:text-amber-700">Nudges</div>
+                <div class="text-xs text-zinc-500">Items need attention</div>
+            </div>
+        </div>
+    </a>
+    <a href="timeline.html" class="bg-white rounded-xl border border-zinc-200 p-4 hover:border-purple-300 hover:shadow-sm transition-all group">
+        <div class="flex items-center gap-3">
+            <div class="w-9 h-9 rounded-lg bg-purple-50 flex items-center justify-center">
+                <i data-lucide="clock" class="w-4.5 h-4.5 text-purple-600"></i>
+            </div>
+            <div>
+                <div class="text-sm font-semibold text-zinc-900 group-hover:text-purple-700">Timeline</div>
+                <div class="text-xs text-zinc-500">Activity across everything</div>
+            </div>
+        </div>
+    </a>
+    <a href="search.html" class="bg-white rounded-xl border border-zinc-200 p-4 hover:border-emerald-300 hover:shadow-sm transition-all group">
+        <div class="flex items-center gap-3">
+            <div class="w-9 h-9 rounded-lg bg-emerald-50 flex items-center justify-center">
+                <i data-lucide="search" class="w-4.5 h-4.5 text-emerald-600"></i>
+            </div>
+            <div>
+                <div class="text-sm font-semibold text-zinc-900 group-hover:text-emerald-700">Search</div>
+                <div class="text-xs text-zinc-500">Find anything</div>
+            </div>
+        </div>
+    </a>
+</div>
+
+<!-- Today's Agenda -->
+{% if 'calendar' in modules %}
+<div class="bg-white rounded-xl shadow-sm border border-zinc-200 p-6 mb-6">
+    <div class="flex items-center gap-2 mb-4">
+        <i data-lucide="calendar" class="w-5 h-5 text-zinc-400"></i>
+        <h2 class="text-lg font-semibold">Today</h2>
+        <span class="text-sm text-zinc-500">{{ today_formatted }}</span>
+        <span class="px-2 py-0.5 rounded-full text-xs font-medium bg-blue-50 text-blue-700 ml-auto">{{ today_events | length }} events</span>
+    </div>
+    {% if today_events %}
+    <div class="space-y-1">
+        {% for event in today_events %}
+        <div class="flex items-start gap-4 py-3 px-3 rounded-lg {{ 'bg-amber-50 border-l-4 border-amber-400' if event.is_next else ('opacity-60' if event.is_past else '') }}">
+            <div class="w-20 shrink-0">
+                <p class="text-sm font-semibold text-zinc-900">{{ event.start_formatted }}</p>
+                <p class="text-xs text-zinc-400">{{ event.duration }}</p>
+            </div>
+            <div class="flex-1">
+                <div class="flex items-center gap-2">
+                    <p class="text-sm font-semibold text-zinc-900">{{ event.title }}</p>
+                    {% if event.is_next %}<span class="px-1.5 py-0.5 rounded text-[10px] font-medium bg-amber-100 text-amber-700">Next up</span>{% endif %}
+                    {% if event.is_past %}<i data-lucide="check" class="w-3 h-3 text-zinc-400"></i>{% endif %}
+                </div>
+                {% if event.context_line %}
+                <p class="text-xs text-zinc-500 mt-0.5">{{ event.context_line }}</p>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="text-center py-6">
+        <i data-lucide="calendar-off" class="w-8 h-8 text-zinc-300 mx-auto"></i>
+        <p class="text-sm text-zinc-400 mt-2">No meetings today</p>
+    </div>
+    {% endif %}
+
+    {% if tomorrow_events %}
+    <div class="mt-4 pt-4 border-t border-zinc-100">
+        <p class="text-xs font-medium text-zinc-400 uppercase tracking-wider mb-2">Tomorrow</p>
+        {% for event in tomorrow_events %}
+        <div class="flex items-center gap-3 py-1.5 text-sm text-zinc-600">
+            <span class="w-16 text-xs text-zinc-400">{{ event.start_formatted }}</span>
+            <span>{{ event.title }}</span>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+</div>
+{% endif %}
+
+<!-- Email Inbox -->
+{% if 'gmail' in modules %}
+<div class="bg-white rounded-xl shadow-sm border border-zinc-200 p-6 mb-6">
+    <div class="flex items-center gap-2 mb-4">
+        <i data-lucide="mail" class="w-5 h-5 text-zinc-400"></i>
+        <h2 class="text-lg font-semibold">Inbox</h2>
+        {% if unread_count %}
+        <span class="px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-700">{{ unread_count }} unread</span>
+        {% endif %}
+    </div>
+    {% if needs_response %}
+    <div class="mb-4">
+        <p class="text-xs font-medium text-zinc-400 uppercase tracking-wider mb-2">Needs Response</p>
+        {% for thread in needs_response %}
+        <div class="flex items-start gap-3 py-2.5 border-b border-zinc-50 border-l-4 border-l-amber-400 pl-3">
+            <div class="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center shrink-0 text-xs font-semibold text-blue-700">
+                {{ thread.from_name[:2] | upper if thread.from_name else '?' }}
+            </div>
+            <div class="flex-1 min-w-0">
+                <p class="text-sm font-medium text-zinc-900 truncate">
+                    {% if thread.contact_name %}{{ thread.contact_name }}{% else %}{{ thread.from_name }}{% endif %}
+                </p>
+                <p class="text-xs text-zinc-600 truncate">{{ thread.subject }}</p>
+                <p class="text-xs text-zinc-400 mt-0.5">{{ thread.received_at_relative }}</p>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    {% if recent_threads %}
+    <p class="text-xs font-medium text-zinc-400 uppercase tracking-wider mb-2">Recent</p>
+    {% for thread in recent_threads %}
+    <div class="flex items-start gap-3 py-2 border-b border-zinc-50">
+        <div class="w-8 h-8 rounded-full bg-zinc-100 flex items-center justify-center shrink-0 text-xs font-medium text-zinc-500">
+            {{ thread.from_name[:2] | upper if thread.from_name else '?' }}
+        </div>
+        <div class="flex-1 min-w-0">
+            <p class="text-sm {{ 'font-semibold' if not thread.is_read else 'font-medium' }} text-zinc-900 truncate">{{ thread.subject }}</p>
+            <p class="text-xs text-zinc-500 truncate">{{ thread.snippet }}</p>
+        </div>
+        <span class="text-xs text-zinc-400 shrink-0">{{ thread.received_at_relative }}</span>
+    </div>
+    {% endfor %}
+    {% elif not needs_response %}
+    <div class="text-center py-6">
+        <i data-lucide="mail-check" class="w-8 h-8 text-zinc-300 mx-auto"></i>
+        <p class="text-sm text-zinc-400 mt-2">Inbox clear — no unread emails</p>
+    </div>
+    {% endif %}
+</div>
+{% endif %}
+
+<!-- Projects + Tasks row -->
+{% if 'project-tracker' in modules %}
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+    <div class="bg-white rounded-xl shadow-sm border border-zinc-200 p-6">
+        <div class="flex items-center gap-2 mb-4">
+            <i data-lucide="folder" class="w-5 h-5 text-zinc-400"></i>
+            <h2 class="text-lg font-semibold">Active Projects</h2>
+        </div>
+        {% if active_projects %}
+        <table class="w-full text-sm">
+            <thead>
+                <tr class="border-b border-zinc-100">
+                    <th class="text-left py-2 text-zinc-500 font-medium">Project</th>
+                    <th class="text-left py-2 text-zinc-500 font-medium">Client</th>
+                    <th class="text-left py-2 text-zinc-500 font-medium">Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for p in active_projects %}
+                <tr class="border-b border-zinc-50">
+                    <td class="py-2.5 font-medium">{{ p.name }}</td>
+                    <td class="py-2.5 text-zinc-500">{{ p.client_name or '—' }}</td>
+                    <td class="py-2.5">{% with status=p.status %}{% include "components/status_badge.html" %}{% endwith %}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        {% with icon='folder', message='No active projects', hint='Tell me about a project to get started' %}{% include "components/empty_state.html" %}{% endwith %}
+        {% endif %}
+    </div>
+
+    <div class="bg-white rounded-xl shadow-sm border border-zinc-200 p-6">
+        <div class="flex items-center gap-2 mb-4">
+            <i data-lucide="check-square" class="w-5 h-5 text-zinc-400"></i>
+            <h2 class="text-lg font-semibold">Tasks</h2>
+        </div>
+        {% if task_stats %}
+        <div class="grid grid-cols-2 gap-3 mb-4">
+            {% for s, count in task_stats.items() %}
+            <div class="bg-zinc-50 rounded-lg p-3 text-center">
+                <p class="text-xl font-bold">{{ count }}</p>
+                <p class="text-xs text-zinc-500">{{ s | replace('_', ' ') | title }}</p>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+        {% if overdue_tasks %}
+        <div class="mt-3">
+            <p class="text-xs font-medium text-red-600 mb-2">Overdue</p>
+            {% for t in overdue_tasks %}
+            <div class="flex items-center gap-2 py-1 text-sm text-red-700">
+                <i data-lucide="alert-circle" class="w-3 h-3"></i>
+                <span>{{ t.title }}</span>
+                <span class="text-xs text-red-400 ml-auto">{{ t.project_name }}</span>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endif %}
+
+<!-- Contacts + Follow-ups row -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+    <div class="bg-white rounded-xl shadow-sm border border-zinc-200 p-6">
+        <div class="flex items-center gap-2 mb-4">
+            <i data-lucide="users" class="w-5 h-5 text-zinc-400"></i>
+            <h2 class="text-lg font-semibold">Contacts</h2>
+        </div>
+        {% if recent_contacts %}
+        <div class="space-y-2">
+            {% for c in recent_contacts %}
+            <div class="flex items-center gap-3 py-1.5">
+                <div class="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-xs font-semibold text-blue-700">
+                    {{ c.name[:2] | upper }}
+                </div>
+                <div class="flex-1 min-w-0">
+                    {% if c.entity_page %}
+                    <a href="{{ c.entity_page }}" class="text-sm font-medium text-blue-600 hover:text-blue-800 hover:underline">{{ c.name }}</a>
+                    {% else %}
+                    <p class="text-sm font-medium text-zinc-900">{{ c.name }}</p>
+                    {% endif %}
+                    <p class="text-xs text-zinc-500">{{ c.company or '' }}{{ ' · ' if c.company and c.role else '' }}{{ c.role or '' }}</p>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        {% with icon='users', message='No contacts yet', hint='Tell me about someone to add your first contact' %}{% include "components/empty_state.html" %}{% endwith %}
+        {% endif %}
+    </div>
+
+    {% if 'crm' in modules %}
+    <div class="bg-white rounded-xl shadow-sm border border-zinc-200 p-6">
+        <div class="flex items-center gap-2 mb-4">
+            <i data-lucide="clock" class="w-5 h-5 text-zinc-400"></i>
+            <h2 class="text-lg font-semibold">Follow-ups</h2>
+        </div>
+        {% if follow_ups %}
+        <div class="space-y-2">
+            {% for fu in follow_ups %}
+            <div class="flex items-start gap-3 py-2 px-2 rounded-lg {{ 'bg-red-50 border-l-4 border-red-400' if fu.overdue else ('bg-amber-50 border-l-4 border-amber-400' if fu.due_today else '') }}">
+                <div class="flex-1">
+                    <p class="text-sm font-medium {{ 'text-red-700' if fu.overdue else 'text-zinc-900' }}">{{ fu.contact_name }}</p>
+                    <p class="text-xs text-zinc-500">{{ fu.reason }}</p>
+                </div>
+                <span class="text-xs {{ 'text-red-500' if fu.overdue else 'text-zinc-400' }} shrink-0">{{ fu.due_date_relative }}</span>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        {% with icon='clock', message='No pending follow-ups', hint='' %}{% include "components/empty_state.html" %}{% endwith %}
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+
+<!-- Activity Timeline -->
+<div class="bg-white rounded-xl shadow-sm border border-zinc-200 p-6">
+    <div class="flex items-center gap-2 mb-4">
+        <i data-lucide="activity" class="w-5 h-5 text-zinc-400"></i>
+        <h2 class="text-lg font-semibold">Recent Activity</h2>
+    </div>
+    {% if activity %}
+    <div class="space-y-0">
+        {% for entry in activity %}
+        <div class="flex gap-3 py-2.5 border-b border-zinc-50">
+            <div class="w-8 h-8 rounded-full bg-blue-50 flex items-center justify-center flex-shrink-0 mt-0.5">
+                <i data-lucide="{{ entry.icon or 'activity' }}" class="w-4 h-4 text-blue-600"></i>
+            </div>
+            <div>
+                <p class="text-sm"><span class="font-medium">{{ entry.action | replace('_', ' ') | title }}</span> {{ entry.entity_name or '' }}</p>
+                {% if entry.details %}<p class="text-xs text-zinc-500 mt-0.5">{{ entry.details }}</p>{% endif %}
+                <p class="text-xs text-zinc-400 mt-0.5">{{ entry.created_at_relative }}</p>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    {% with icon='activity', message='No activity yet', hint='Start by adding a contact or project' %}{% include "components/empty_state.html" %}{% endwith %}
+    {% endif %}
+</div>
+
+{% if not google_connected %}
+<!-- Google connect callout -->
+<div class="bg-blue-50 border border-blue-100 rounded-xl p-4 mt-6">
+    <div class="flex items-center gap-3">
+        <i data-lucide="link" class="w-5 h-5 text-blue-600"></i>
+        <div>
+            <p class="text-sm font-medium text-blue-900">Connect Google</p>
+            <p class="text-xs text-blue-700">See your email and calendar here. Say "connect my Google account" to get started.</p>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

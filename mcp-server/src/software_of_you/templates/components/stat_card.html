@@ -1,0 +1,12 @@
+{# Stat card component: icon, value, label, color #}
+<div class="bg-white rounded-xl shadow-sm border border-zinc-200 p-4">
+    <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-lg bg-{{ color }}-50 flex items-center justify-center">
+            <i data-lucide="{{ icon }}" class="w-5 h-5 text-{{ color }}-600"></i>
+        </div>
+        <div>
+            <p class="text-2xl font-bold">{{ value }}</p>
+            <p class="text-sm text-zinc-500">{{ label }}</p>
+        </div>
+    </div>
+</div>

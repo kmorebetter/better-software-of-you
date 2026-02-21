@@ -7,3 +7,7 @@ config/google_token.json
 config/google_credentials.json
 .DS_Store
 client_secret_*.json
+__pycache__/
+*.pyc
+mcp-server/dist/
+mcp-server/*.egg-info/

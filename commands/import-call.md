@@ -34,9 +34,17 @@ Ask the user which speaker is them (if not obvious from context).
 Run the full analysis pipeline:
 
 **3a. Save the transcript:**
+
+**Calculate duration from timestamps (MANDATORY — never estimate):**
+- Parse the first and last timestamp in the transcript to compute `duration_minutes`
+- Transcript formats vary — look for `HH:MM:SS`, `MM:SS`, `0:00` / `1:23:45`, or relative timestamps like `[00:00]`, `(12:34)`, speaker lines with times, etc.
+- Duration = last timestamp minus first timestamp, rounded to nearest minute
+- If the transcript has **no timestamps at all**, set `duration_minutes = NULL` — do NOT guess or estimate a number
+- **Show your work:** Before storing, output the first timestamp found, the last timestamp found, and the calculated duration. Example: "Timestamps: first `0:00`, last `31:42` → 32 minutes". If no timestamps: "No timestamps found in transcript → duration NULL".
+
 ```sql
-INSERT INTO transcripts (title, source, raw_text, occurred_at, processed_at)
-VALUES (?, ?, ?, ?, datetime('now'));
+INSERT INTO transcripts (title, source, raw_text, duration_minutes, occurred_at, processed_at)
+VALUES (?, ?, ?, ?, ?, datetime('now'));
 ```
 Generate a title from the content if one wasn't provided.
 
@@ -53,7 +61,28 @@ INSERT INTO commitments (transcript_id, owner_contact_id, is_user_commitment, de
 VALUES (?, ?, ?, ?, ?, ?);
 ```
 
-**3d. Calculate metrics per participant:**
+**3d. Calculate metrics per participant (MANDATORY — derive from actual transcript data, never estimate):**
+
+All metrics MUST be computed by counting/measuring the actual transcript text. Do NOT estimate, approximate, or invent numbers.
+
+| Metric | How to calculate | If not calculable |
+|--------|-----------------|-------------------|
+| `word_count` | Count actual words in each speaker's segments | Always calculable — every transcript has words |
+| `talk_ratio` | Each speaker's `word_count / total_word_count` as a decimal (0.0–1.0) | Always calculable from word counts |
+| `question_count` | Count sentences ending in `?` in each speaker's segments | Always calculable — count the `?` marks |
+| `interruption_count` | Count speaker changes mid-sentence (incomplete thoughts cut off by another speaker) | Set to `0` if format doesn't show interruptions |
+| `longest_monologue_seconds` | Find longest consecutive block per speaker. If timestamps exist, use them. If not, estimate from word count at ~150 words/minute | Use word-count estimation only for this field, and state you estimated it |
+
+**Show your work (MANDATORY):** Before storing ANY metrics, output a calculation summary the user can verify. Example:
+
+> **Metrics calculated from transcript:**
+> - Kerry: 1,247 words, 8 questions, talk ratio 0.56
+> - Sarah: 983 words, 12 questions, talk ratio 0.44
+> - Total: 2,230 words across 32 minutes
+> - Longest monologue: Kerry, 4:12–6:48 (2m36s)
+
+If you cannot show how you got a number, you must not store it — use NULL instead.
+
 ```sql
 INSERT INTO conversation_metrics (transcript_id, contact_id, talk_ratio, word_count, question_count, interruption_count, longest_monologue_seconds)
 VALUES (?, ?, ?, ?, ?, ?, ?);
@@ -96,9 +125,68 @@ INSERT INTO contact_interactions (contact_id, type, direction, subject, summary,
 VALUES (?, 'meeting', 'outbound', ?, ?, ?);
 ```
 
+**3h. Extract call intelligence (always, for every call):**
+
+Analyze the transcript for structured intelligence. Populate what's present, omit what isn't — sales/discovery calls will be rich in all four blocks, internal meetings might only have pain points. Store as JSON in `transcripts.call_intelligence`.
+
+| Block | What to extract | JSON key |
+|-------|----------------|----------|
+| **Org/Team Intel** | Team size, budget context, company scale, decision-making structure | `org_intel` |
+| **Pain Points** | Problems/challenges the other party described, with severity (high=critical, medium=moderate) | `pain_points` |
+| **Tech Stack** | Tools, platforms, systems mentioned with category labels | `tech_stack` |
+| **Key Concerns** | Objections, worries, risks raised — note whether addressed and how | `key_concerns` |
+
+JSON structure:
+```json
+{
+  "org_intel": { "team_size": "12-20", "context": "Small team, $100M+ projects" },
+  "pain_points": [
+    { "title": "Recurring report workflows", "detail": "quarterly asset management reports take weeks to compile manually", "severity": "high" }
+  ],
+  "tech_stack": [
+    { "name": "Yardi", "category": "Accounting" }
+  ],
+  "key_concerns": [
+    { "title": "Data privacy", "detail": "doesn't want proprietary data leaking", "addressed": true, "response": "Claude Enterprise siloing" }
+  ]
+}
+```
+
+Save it:
+```sql
+UPDATE transcripts SET call_intelligence = ? WHERE id = ?;
+```
+
 ## Step 4: Present Results
 
-Use the narrative briefing style:
+Present structured blocks first (at-a-glance), then narrative prose (deeper context).
+
+### 4a. Stats Grid (always present, 2×2 layout):
+
+| Stat | Source | Fallback |
+|------|--------|----------|
+| **Org/Team Size** | `call_intelligence.org_intel.team_size` | "—" if not discussed |
+| **Talk Ratio** | `conversation_metrics.talk_ratio` | Always available from 3d — include balance assessment (e.g., "You: 62% — slightly dominant") |
+| **Questions Asked** | `conversation_metrics.question_count` | Always available from 3d — include depth assessment (e.g., "8 questions — strong discovery") |
+| **Commitments** | Count from `commitments` for this transcript | Always available from 3c — include yours/theirs breakdown |
+
+### 4b. Pain Points Uncovered (if any in `call_intelligence.pain_points`):
+
+- Bulleted list, **bold title** + description
+- 🔴 prefix for `severity: "high"` (critical), 🟡 prefix for `severity: "medium"` (moderate)
+
+### 4c. Current Tech Stack (if any in `call_intelligence.tech_stack`):
+
+- Show as labeled items: **Tool Name** (Category)
+- Group by category if multiple tools share one
+
+### 4d. Key Concerns Raised (if any in `call_intelligence.key_concerns`):
+
+- Each with **bold title**, description, and resolution status
+- ✅ Addressed: show how (e.g., "✅ **Data privacy** — addressed via Claude Enterprise siloing")
+- ⚠️ Unaddressed: flag for follow-up (e.g., "⚠️ **Timeline pressure** — not directly addressed, follow up")
+
+### 4e. Narrative briefing (always present, after structured blocks):
 
 "Imported your **32-minute call** with **Sarah Chen** about the **rebrand project**.
 
