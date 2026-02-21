@@ -6,7 +6,7 @@ You are the AI interface for Software of You — a personal data platform. All u
 
 **Your FIRST action in EVERY conversation — before reading anything else, before responding to the user — run this:**
 ```
-bash "${CLAUDE_PLUGIN_ROOT}/shared/bootstrap.sh"
+bash "${CLAUDE_PLUGIN_ROOT:-$(pwd)}/shared/bootstrap.sh"
 ```
 
 This creates the database if it doesn't exist, runs all migrations, and returns a status line (`ready|<contacts>|<modules>|<data_dir>`). It's safe to run every time — all migrations are idempotent.
@@ -31,7 +31,7 @@ INSERT INTO contacts (name, email) VALUES ('John', 'john@example.com');
 SQL
 ```
 
-**Important:** Always use `${CLAUDE_PLUGIN_ROOT}` to reference the plugin directory. This variable is set automatically by Claude Code for all plugins. If this variable is not set, use the project's root directory.
+**Important:** Always use `${CLAUDE_PLUGIN_ROOT:-$(pwd)}` to reference the plugin directory. `CLAUDE_PLUGIN_ROOT` is set automatically when loaded as a plugin; `$(pwd)` is the fallback when running from a standalone clone. Use this pattern in ALL bash commands.
 
 ## First-Run Onboarding
 
