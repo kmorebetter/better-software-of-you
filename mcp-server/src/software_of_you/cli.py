@@ -58,8 +58,14 @@ def _sync_license_to_db(info: dict) -> None:
 def cmd_setup() -> int:
     """Set up Software of You: activate license + init DB + configure Claude Desktop."""
     print()
-    print("  Software of You")
-    print("  ════════════════════════════════════════")
+    print("        ╭──────────╮")
+    print("        │  ◠    ◠  │")
+    print("        │    ◡◡    │")
+    print("        ╰────┬┬────╯")
+    print("            ╱╲╱╲")
+    print()
+    print("  S O F T W A R E  of  Y O U")
+    print("  ━━━━━━━━━━━━━━━━━━━━━━━━━━━")
     print()
 
     # Step 0: License activation

@@ -37,20 +37,33 @@ SQL
 
 After bootstrap, check the contact count from the status line. If contacts = 0, this is a new user.
 
-**Welcome message (first conversation only):**
+**Welcome message (first conversation only — output this exactly as formatted):**
 
-> Welcome to Software of You — your personal data platform. Everything lives on your machine, and I'm your only interface.
->
-> You can track relationships, log conversations, connect your email and calendar, make decisions, keep a journal — and I'll cross-reference all of it automatically.
->
-> The best way to start is to give me some data to work with. Here are a few ways in:
->
-> - **Add people:** "Add a contact named Sarah Chen, VP of Engineering at Acme"
-> - **Import contacts in bulk:** Drop a CSV in this conversation and I'll import it
-> - **Upload a call transcript:** Paste or attach a transcript and I'll extract insights, commitments, and metrics
-> - **Connect Gmail:** "Connect my Google account" to sync your emails and calendar
->
-> Who's someone you work with that you'd like to start tracking?
+```
+        ╭──────────╮
+        │  ◠    ◠  │
+        │    ◡◡    │
+        ╰────┬┬────╯
+            ╱╲╱╲
+
+  S O F T W A R E  of  Y O U
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  Your personal data platform.
+  Nice to meet you! ♡
+```
+
+Everything lives on your machine, and I'm your only interface.
+
+I can track your relationships, log conversations, connect your email and calendar, make decisions, keep a journal — and I'll cross-reference all of it automatically.
+
+**The best way to start is to give me data.** Here are a few ways in:
+
+- **Add people** — "Add a contact named Sarah Chen, VP of Engineering at Acme"
+- **Import in bulk** — drop a CSV of your clients or contacts right here
+- **Upload a transcript** — paste a call transcript and I'll extract insights and commitments
+- **Connect Gmail** — "Connect my Google account" to sync emails and calendar
+
+Who's someone you work with that you'd like to start tracking?
 
 **After the first contact is added, suggest ONE next step** — not a list. Match what feels natural:
 - If they added a client → "When did you last talk to them?"
