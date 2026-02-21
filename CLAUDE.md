@@ -134,7 +134,18 @@ Before generating any view (dashboard, entity page, or any HTML output) or answe
      INSERT OR REPLACE INTO soy_meta (key, value, updated_at) VALUES ('calendar_last_synced', datetime('now'), datetime('now'));
      ```
 
-4. **Do this transparently.** Don't tell the user "syncing your emails..." — just do it and present the results. If the sync fails (network error, token expired), use whatever cached data exists and proceed.
+4. Check for new Gemini transcripts (after Gmail sync completes):
+   ```sql
+   SELECT value FROM soy_meta WHERE key = 'transcripts_last_scanned';
+   ```
+   If never scanned, or last scan was more than 1 hour ago:
+   ```
+   python3 "${CLAUDE_PLUGIN_ROOT}/shared/sync_transcripts.py" scan
+   ```
+   Update the timestamp. This ONLY fetches and stores raw transcripts — does not analyze them.
+   If the result shows pending transcripts, mention: "You have N unanalyzed meeting transcripts. Use `/sync-transcripts pending` to see them."
+
+5. **Do this transparently.** Don't tell the user "syncing your emails..." — just do it and present the results. If the sync fails (network error, token expired), use whatever cached data exists and proceed.
 
 **When to sync:**
 - Before `/dashboard`, `/entity-page`, `/view`, or any HTML generation

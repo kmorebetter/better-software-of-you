@@ -48,6 +48,14 @@ Try:
 - **"Token exchange failed"** → try running `/google-setup` again. If it keeps failing, the OAuth app may need its consent screen published in Google Cloud Console.
 - **"Access denied"** → the user didn't click Allow. Ask them to try again.
 
+## Scope Upgrade (Google Docs access)
+
+If the user gets a 403 error when fetching Google Docs (e.g., from `/sync-transcripts`), they need to re-authorize with the new `documents.readonly` scope.
+
+Tell the user: "I need read access to Google Docs for transcript fetching. Re-running the sign-in flow will add this permission."
+
+Then run the full auth flow from Step 2 above. The `prompt=consent` parameter forces Google to re-show the consent screen with all scopes, including the new Docs scope.
+
 ## Advanced: Custom OAuth Credentials
 
 If a user wants to use their own Google Cloud project instead of the built-in one, they can place a `google_credentials.json` file in `${CLAUDE_PLUGIN_ROOT}/config/`. This overrides the embedded defaults.
