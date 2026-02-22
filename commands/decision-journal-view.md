@@ -33,7 +33,22 @@ SELECT
   SUM(CASE WHEN status = 'regretted' THEN 1 ELSE 0 END) as regretted,
   SUM(CASE WHEN status = 'revisit' THEN 1 ELSE 0 END) as revisit,
   SUM(CASE WHEN status = 'open' THEN 1 ELSE 0 END) as open_count,
-  SUM(CASE WHEN outcome IS NULL AND julianday('now') - julianday(decided_at) > 90 THEN 1 ELSE 0 END) as needs_outcome
+  -- Reviews due: scheduled check-ins that have passed
+  SUM(CASE WHEN
+    (review_30_date <= date('now') AND process_quality IS NULL)
+    OR (review_90_date <= date('now') AND outcome_quality IS NULL)
+    OR (review_180_date <= date('now') AND (outcome_quality IS NULL OR would_do_differently IS NULL))
+    OR (review_30_date IS NULL AND outcome IS NULL AND julianday('now') - julianday(decided_at) > 90)
+  THEN 1 ELSE 0 END) as reviews_due,
+  -- Calibration stats (only decisions with both process and outcome rated)
+  COUNT(CASE WHEN process_quality IS NOT NULL AND outcome_quality IS NOT NULL THEN 1 END) as fully_reviewed,
+  ROUND(AVG(CASE WHEN process_quality IS NOT NULL THEN process_quality END), 1) as avg_process_quality,
+  ROUND(AVG(CASE WHEN outcome_quality IS NOT NULL THEN outcome_quality END), 1) as avg_outcome_quality,
+  -- Quadrant counts (process 4-5 = good, 1-2 = poor; outcome 4-5 = good, 1-2 = poor)
+  SUM(CASE WHEN process_quality >= 4 AND outcome_quality >= 4 THEN 1 ELSE 0 END) as quadrant_skilled,
+  SUM(CASE WHEN process_quality >= 4 AND outcome_quality <= 2 THEN 1 ELSE 0 END) as quadrant_unlucky,
+  SUM(CASE WHEN process_quality <= 2 AND outcome_quality >= 4 THEN 1 ELSE 0 END) as quadrant_lucky,
+  SUM(CASE WHEN process_quality <= 2 AND outcome_quality <= 2 THEN 1 ELSE 0 END) as quadrant_expected
 FROM decisions;
 
 -- Entity pages for linking
@@ -67,20 +82,48 @@ Header card (full width)
     ├── Total: zinc pill (bg-zinc-100 text-zinc-700)
     ├── Validated: green pill (bg-green-100 text-green-700) — count + "Validated"
     ├── Regretted: red pill (bg-red-100 text-red-700) — count + "Regretted"
-    └── Needs Review: amber pill (bg-amber-100 text-amber-700) — needs_outcome count
+    └── Needs Review: amber pill (bg-amber-100 text-amber-700) — reviews_due count
 ```
 
 Only show stat pills that have non-zero counts.
 
-### Decision Score Card (full width, show only if there are at least 3 decisions with outcomes)
+### Decision Calibration Card (full width, show only if `fully_reviewed` >= 3)
 
 `bg-white rounded-xl shadow-sm border border-zinc-200 p-6`
 
-- A visual progress bar showing: validated % (green), regretted % (red), pending % (zinc) — use `rounded-full h-3 overflow-hidden flex` with colored segments
-- Below the bar: "X% of your tracked decisions had positive outcomes" (if any validated exist)
-- Show the raw numbers: "X validated, Y regretted, Z pending outcome"
+Header: "Decision Calibration" (text-lg font-semibold) — subtitle: "Based on X fully-reviewed decisions (process + outcome both rated)"
 
-### Needs Attention Card (show only if `needs_outcome` > 0)
+**Two-metric row:**
+- Process Quality: `avg_process_quality / 5` — label "Avg Process Quality", shown as `X.X / 5` with a thin progress bar (`bg-blue-500`)
+- Outcome Quality: `avg_outcome_quality / 5` — label "Avg Outcome Quality", shown as `X.X / 5` with a thin progress bar (`bg-emerald-500`)
+
+**Quadrant grid** (2×2, show only if any quadrant has count > 0):
+
+```
+┌──────────────────────┬──────────────────────┐
+│  SKILLED             │  UNLUCKY             │
+│  Good process +      │  Good process +      │
+│  good outcome        │  bad outcome         │
+│  (bg-emerald-50)     │  (bg-amber-50)       │
+│  N decisions         │  N decisions         │
+├──────────────────────┼──────────────────────┤
+│  LUCKY               │  EXPECTED            │
+│  Bad process +       │  Bad process +       │
+│  good outcome        │  bad outcome         │
+│  (bg-blue-50)        │  (bg-red-50)         │
+│  N decisions         │  N decisions         │
+└──────────────────────┴──────────────────────┘
+```
+
+Below the grid, one line of interpretation:
+Show interpretation lines for each non-zero quadrant:
+- If quadrant_skilled > 0: "X decision(s) show skilled judgment — good process, good outcome."
+- If quadrant_unlucky > 0: "X decision(s) had a good process but a bad outcome — that's bad luck, not bad judgment. Don't overcorrect the process."
+- If quadrant_lucky > 0: "X decision(s) had a good outcome from a weak process — worth examining before you make similar calls."
+- If quadrant_expected > 0: "X decision(s) had both a poor process and a poor outcome — these are the highest priority to learn from."
+- If all four are non-zero, add one line of overall calibration: "Your process quality averages X.X/5, outcome quality averages X.X/5."
+
+### Needs Attention Card (show only if `reviews_due` > 0)
 
 `bg-amber-50 rounded-xl border border-amber-200 p-6`
 
@@ -145,12 +188,26 @@ Detail rendering rules:
 - **Options considered**: pill badges — `bg-zinc-100 text-zinc-600 rounded-full px-2 py-0.5 text-xs inline-block mr-1`
 - **Rationale**: `text-sm text-zinc-600 italic` — brief text
 - **Linked project/contact**: `text-sm text-zinc-500` — project name linked to project entity page if one exists in `generated_views`; contact name linked to contact entity page if one exists. Use `text-blue-600 hover:text-blue-800 hover:underline` for links.
+- **Confidence at decision time** (if confidence_level is set): small pill `bg-zinc-100 text-zinc-500 text-xs` — "Confidence: X/10 at decision time"
 - **Outcome section** (if outcome recorded):
   - Validated: `bg-green-50 rounded-lg p-3 mt-3` with "Validated" in green + checkmark + outcome text
   - Regretted: `bg-red-50 rounded-lg p-3 mt-3` with "Regretted" in red + x-circle + outcome text
   - Outcome date in `text-xs text-zinc-400`
-- **Worth revisiting callout** (if no outcome and >90 days old):
-  - `bg-amber-50 rounded-lg p-3 mt-3` with amber alert-circle icon + "Worth revisiting — this decision is X days old"
+  - **If process_quality and outcome_quality are both set**, show a two-column mini-grid below the outcome text:
+    - "Process quality: X/5" (blue label)
+    - "Outcome quality: X/5" (green or red label depending on score)
+    - And a quadrant label pill: Skilled / Unlucky / Lucky / Expected with appropriate color
+  - **If within_control or external_factors set**, show them as `text-xs text-zinc-500 mt-2`:
+    - "In your control: [within_control]"
+    - "External factors: [external_factors]"
+  - **If would_do_differently set**, show as `text-xs text-zinc-500 italic`:
+    - "Would do differently: [would_do_differently]"
+- **Review schedule callout** (if no outcome and a review date has passed):
+  - `bg-amber-50 rounded-lg p-3 mt-3` with amber alert-circle icon
+  - "30-day check-in due" / "90-day review due" / "180-day retrospective due" — whichever applies
+  - "Run `/decision review <title>` to check in"
+- **Upcoming review** (if next review is within 14 days but not yet due):
+  - `text-xs text-zinc-400 mt-2` — "30-day check-in coming up on [date]"
 
 Only show fields that have values. If context is empty, skip it. If no options_considered, skip the pills. If no linked project/contact, skip that line.
 
