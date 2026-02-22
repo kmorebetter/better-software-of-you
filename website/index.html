@@ -1,0 +1,2713 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Software of You — Stop Paying for Fragments</title>
+  <meta name="description" content="You're paying $100+/month for tools that don't talk to each other. And none of them talk to Claude. $149, once.">
+  <meta name="robots" content="index, follow">
+  <link rel="canonical" href="https://softwareof.you/">
+  <!-- Open Graph -->
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://softwareof.you/">
+  <meta property="og:title" content="Software of You — Stop Paying for Fragments">
+  <meta property="og:description" content="You're paying $100+/month for tools that don't talk to each other. And none of them talk to Claude. Software of You is a Claude Code plugin that unifies everything for $149, once.">
+  <meta property="og:site_name" content="Software of You">
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Software of You — Stop Paying for Fragments">
+  <meta name="twitter:description" content="You're paying $100+/month for tools that don't talk to each other. And none of them talk to Claude. $149, once.">
+  <!-- JSON-LD Schema -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "SoftwareApplication",
+        "name": "Software of You",
+        "alternateName": "SoY",
+        "description": "A Claude Code plugin that builds a personal context system from your work. Eight modules — CRM, Projects, Gmail, Calendar, Conversations, Decisions, Journal, Notes — unified in a local SQLite database, queryable in plain language through Claude.",
+        "applicationCategory": "ProductivityApplication",
+        "operatingSystem": "macOS, Windows, Linux",
+        "url": "https://softwareof.you/",
+        "offers": {
+          "@type": "Offer",
+          "price": "149",
+          "priceCurrency": "USD",
+          "priceValidUntil": "2026-12-31",
+          "availability": "https://schema.org/InStock",
+          "description": "One-time purchase. All 8 modules. All future updates. No subscription."
+        },
+        "featureList": [
+          "CRM — contacts, interaction history, relationship health scores",
+          "Projects — milestones, status, blockers linked to people",
+          "Gmail sync — emails as Claude context, synced on demand",
+          "Calendar sync — pre-meeting intelligence generated on request",
+          "Conversation intelligence — meeting transcripts, commitments, talk ratios",
+          "Decision log — structured records with Annie Duke process/outcome framework",
+          "Journal — daily entries with mood markers, cross-referenced to contacts",
+          "Notes — hashtag-tagged notes with automatic cross-referencing"
+        ],
+        "softwareRequirements": "Claude Code",
+        "storageRequirements": "Local SQLite database (~/.local/share/software-of-you/soy.db)",
+        "isAccessibleForFree": false,
+        "screenshot": "https://softwareof.you/",
+        "author": {
+          "@type": "Organization",
+          "name": "Software of You",
+          "url": "https://softwareof.you/"
+        }
+      },
+      {
+        "@type": "Organization",
+        "name": "Software of You",
+        "url": "https://softwareof.you/",
+        "description": "Makers of Software of You, a Claude Code plugin for personal context management."
+      },
+      {
+        "@type": "WebPage",
+        "url": "https://softwareof.you/",
+        "name": "Software of You — Stop Paying for Fragments",
+        "description": "You're paying $100+/month for tools that don't talk to each other. And none of them talk to Claude. Software of You is a Claude Code plugin that unifies everything for $149, once.",
+        "isPartOf": { "@type": "WebSite", "url": "https://softwareof.you/", "name": "Software of You" }
+      }
+    ]
+  }
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@300;400;500&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300;1,9..40,400&display=swap" rel="stylesheet">
+
+  <style>
+    /* ─────────────────────────────────────────
+       TOKENS
+    ───────────────────────────────────────── */
+    :root {
+      --bone:       #FAF9F6;
+      --bone-mid:   #F2F0EB;
+      --bone-deep:  #E8E4DC;
+      --ink:        #0F0E0C;
+      --ink-2:      #2C2A26;
+      --ink-3:      #6B6860;
+      --ink-4:      #A8A49C;
+      --ink-5:      #D4D0C8;
+      --forest:     #1A4731;
+      --forest-mid: #245E41;
+      --forest-pale:#EBF2EE;
+      --forest-bg:  #F2F7F4;
+      --ember:      #A63325;
+      --ember-pale: #FBF2F0;
+      --rule:       rgba(15,14,12,0.08);
+      --rule-mid:   rgba(15,14,12,0.13);
+      --rule-heavy: rgba(15,14,12,0.22);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; font-size: 16px; }
+
+    body {
+      background: var(--bone);
+      color: var(--ink);
+      font-family: 'DM Sans', system-ui, sans-serif;
+      line-height: 1.6;
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ─────────────────────────────────────────
+       PAGE LOAD ANIMATION
+    ───────────────────────────────────────── */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to   { opacity: 1; }
+    }
+    @keyframes slideLeft {
+      from { transform: translateX(40px); opacity: 0; }
+      to   { transform: translateX(0);    opacity: 1; }
+    }
+    @keyframes slideRight {
+      from { transform: translateX(-40px); opacity: 0; }
+      to   { transform: translateX(0);     opacity: 1; }
+    }
+    @keyframes countUp {
+      from { opacity: 0; transform: scale(0.92); }
+      to   { opacity: 1; transform: scale(1); }
+    }
+
+    /* scroll-triggered reveal */
+    .reveal {
+      opacity: 0;
+      transform: translateY(24px);
+      transition: opacity 0.6s ease, transform 0.6s ease;
+    }
+    .reveal.in { opacity: 1; transform: none; }
+    .reveal-delay-1 { transition-delay: 0.1s; }
+    .reveal-delay-2 { transition-delay: 0.2s; }
+    .reveal-delay-3 { transition-delay: 0.3s; }
+
+    /* ─────────────────────────────────────────
+       NAVIGATION
+    ───────────────────────────────────────── */
+    .nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      background: rgba(250,249,246,0.92);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--rule);
+    }
+
+    .nav__inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 48px;
+      height: 64px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .nav__logo {
+      font-family: 'DM Serif Display', Georgia, serif;
+      font-size: 17px;
+      color: var(--ink);
+      text-decoration: none;
+      letter-spacing: 0.01em;
+    }
+    .nav__logo span { font-style: italic; color: var(--forest); }
+
+    .nav__links {
+      display: flex;
+      align-items: center;
+      gap: 28px;
+      list-style: none;
+    }
+    .nav__links a {
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--ink-3);
+      text-decoration: none;
+      transition: color 0.18s;
+    }
+    .nav__links a:hover { color: var(--ink); }
+
+    /* Dropdown */
+    .nav__item--has-sub { position: relative; }
+    .nav__item--has-sub > a { cursor: pointer; }
+    .nav__item--has-sub > a::after {
+      content: '';
+      display: inline-block;
+      width: 5px; height: 5px;
+      border-right: 1.5px solid currentColor;
+      border-bottom: 1.5px solid currentColor;
+      transform: rotate(45deg) translateY(-2px);
+      margin-left: 6px;
+      opacity: 0.5;
+      transition: transform 0.18s;
+    }
+    .nav__sub {
+      position: absolute;
+      top: calc(100% + 8px);
+      left: 50%;
+      transform: translateX(-50%);
+      background: white;
+      border: 1px solid var(--rule-heavy);
+      min-width: 220px;
+      padding: 8px 0;
+      list-style: none;
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+      transition: opacity 0.16s, transform 0.16s;
+      transform: translateX(-50%) translateY(-4px);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+    }
+    .nav__item--has-sub.open > a::after { transform:rotate(225deg) translateY(-2px); }
+    .nav__item--has-sub.open .nav__sub { opacity:1; visibility:visible; pointer-events:auto; transform:translateX(-50%) translateY(0); }
+
+    .nav__sub li a {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 9px 20px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 13px;
+      font-weight: 400;
+      letter-spacing: 0;
+      text-transform: none;
+      color: var(--ink-2);
+      text-decoration: none;
+      transition: background 0.12s, color 0.12s;
+    }
+    .nav__sub li a:hover {
+      background: var(--bone);
+      color: var(--ink);
+    }
+    .nav__sub__num {
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      color: var(--ink-5);
+      min-width: 16px;
+    }
+    .nav__sub__divider {
+      height: 1px;
+      background: var(--rule);
+      margin: 6px 20px;
+    }
+
+    .nav__right { display: flex; align-items: center; gap: 36px; }
+
+    .nav__meta {
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      color: var(--ink-4);
+      letter-spacing: 0.06em;
+    }
+
+    .nav__cta {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 13px;
+      font-weight: 500;
+      letter-spacing: 0.04em;
+      color: var(--bone);
+      background: var(--forest);
+      padding: 10px 24px;
+      text-decoration: none;
+      transition: background 0.18s, transform 0.14s;
+      border-radius: 2px;
+    }
+    .nav__cta:hover { background: var(--forest-mid); transform: translateY(-1px); }
+
+    /* ─────────────────────────────────────────
+       HERO — THE SPLIT
+       Left: fragmented chaos / Right: unified clarity
+    ───────────────────────────────────────── */
+    .hero {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding-top: 64px; /* nav height */
+      background: var(--bone);
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Ruled-line texture — full bleed */
+    .hero::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 27px,
+        var(--rule) 27px,
+        var(--rule) 28px
+      );
+      opacity: 0.45;
+      pointer-events: none;
+    }
+
+    /* LEFT — THE PROBLEM (now full width) */
+    .hero__left {
+      max-width: 1200px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 96px 48px 104px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0 80px;
+      align-items: center;
+      position: relative;
+      z-index: 1;
+      animation: fadeIn 0.7s ease both;
+      animation-delay: 0.1s;
+    }
+
+    .hero__audit-tag {
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--ember);
+      border: 1px solid var(--ember);
+      padding: 5px 12px;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 40px;
+      width: fit-content;
+    }
+    .hero__audit-tag::before {
+      content: '';
+      width: 6px; height: 6px;
+      background: var(--ember);
+      border-radius: 50%;
+      animation: pulse 2s infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.3; }
+    }
+
+    /* Left col: headline + body + CTA */
+    .hero__copy {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding-top: 8px;
+    }
+
+    .hero__headline {
+      font-family: 'DM Serif Display', Georgia, serif;
+      font-size: clamp(44px, 5.5vw, 76px);
+      line-height: 1.0;
+      letter-spacing: -0.025em;
+      color: var(--ink);
+      margin-bottom: 12px;
+    }
+    .hero__headline em {
+      font-style: italic;
+      color: var(--ember);
+    }
+
+    .hero__sub {
+      font-family: 'DM Serif Display', Georgia, serif;
+      font-size: clamp(20px, 2.2vw, 26px);
+      font-style: italic;
+      color: var(--ink-3);
+      margin-bottom: 28px;
+      line-height: 1.4;
+    }
+
+    .hero__body {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 16px;
+      color: var(--ink-3);
+      line-height: 1.8;
+      margin-bottom: 44px;
+      max-width: 520px;
+    }
+
+    /* Hero CTA — inline in hero, no pricing jump */
+    .hero__cta-inline {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+    }
+
+    .btn-hero-inline {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 14px;
+      font-weight: 500;
+      letter-spacing: 0.04em;
+      color: var(--bone);
+      background: var(--forest);
+      padding: 16px 36px;
+      text-decoration: none;
+      display: inline-block;
+      border-radius: 2px;
+      transition: background 0.16s, transform 0.14s;
+      width: fit-content;
+    }
+    .btn-hero-inline:hover { background: var(--forest-mid); transform: translateY(-2px); }
+
+    .hero__cta-note {
+      margin-top: 12px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 13px;
+      color: var(--ink-4);
+      font-style: italic;
+    }
+
+    /* Right col: the fragmented stack — receipt card */
+    .hero__stack-col {
+      background: white;
+      border: 1px solid var(--rule-heavy);
+      padding: 32px 36px 28px;
+      position: relative;
+      opacity: 0;
+      animation: fadeUp 0.5s ease both;
+      animation-delay: 0.4s;
+    }
+    .hero__stack-col::before {
+      content: 'YOUR CURRENT STACK';
+      display: block;
+      font-family: 'DM Mono', monospace;
+      font-size: 9px;
+      letter-spacing: 0.2em;
+      color: var(--ink-4);
+      margin-bottom: 20px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--rule);
+    }
+
+    /* The fragmented stack */
+    .frag-stack {
+      margin-bottom: 0;
+    }
+
+    .frag-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--rule);
+      opacity: 0;
+      animation: fadeUp 0.4s ease both;
+    }
+    .frag-item:nth-child(1) { animation-delay: 0.6s; }
+    .frag-item:nth-child(2) { animation-delay: 0.72s; }
+    .frag-item:nth-child(3) { animation-delay: 0.84s; }
+    .frag-item:nth-child(4) { animation-delay: 0.96s; }
+    .frag-item:nth-child(5) { animation-delay: 1.08s; }
+    .frag-item:nth-child(6) { animation-delay: 1.2s; }
+
+    .fi__name {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 13.5px;
+      color: var(--ink-2);
+    }
+    .fi__right { display: flex; align-items: center; gap: 12px; }
+    .fi__price {
+      font-family: 'DM Mono', monospace;
+      font-size: 13px;
+      color: var(--ember);
+      min-width: 52px;
+      text-align: right;
+    }
+    .fi__tag {
+      font-family: 'DM Mono', monospace;
+      font-size: 9px;
+      color: var(--ink-5);
+      background: var(--bone-deep);
+      padding: 2px 7px;
+      letter-spacing: 0.04em;
+      min-width: 96px;
+      text-align: center;
+    }
+
+    .frag-total {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      padding: 14px 0 16px;
+      border-top: 2px solid var(--ink);
+      opacity: 0;
+      animation: fadeUp 0.4s ease both;
+      animation-delay: 1.35s;
+      margin-top: 2px;
+    }
+    .ft__label {
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--ink-3);
+    }
+    .ft__amount {
+      font-family: 'DM Serif Display', Georgia, serif;
+      font-size: 40px;
+      font-style: italic;
+      color: var(--ember);
+      line-height: 1;
+    }
+    .ft__annual {
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      color: var(--ink-4);
+      margin-bottom: 20px;
+      opacity: 0;
+      animation: fadeIn 0.4s ease both;
+      animation-delay: 1.55s;
+    }
+
+    /* The contrast punch — vs SoY */
+    .frag-vs {
+      display: flex;
+      align-items: center;
+      gap: 0;
+      background: var(--forest);
+      margin: 0 -36px -28px;
+      padding: 18px 36px;
+      opacity: 0;
+      animation: fadeUp 0.4s ease both;
+      animation-delay: 1.75s;
+    }
+    .frag-vs__or {
+      font-family: 'DM Mono', monospace;
+      font-size: 9px;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.45);
+      margin-right: 16px;
+      flex-shrink: 0;
+    }
+    .frag-vs__soy {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 13px;
+      color: rgba(255,255,255,0.7);
+      flex: 1;
+    }
+    .frag-vs__price {
+      font-family: 'DM Serif Display', Georgia, serif;
+      font-size: 28px;
+      font-style: italic;
+      color: white;
+      line-height: 1;
+    }
+    .frag-vs__price span {
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      font-style: normal;
+      color: rgba(255,255,255,0.55);
+      margin-left: 4px;
+    }
+
+    /* RIGHT — THE SOLUTION */
+    .hero__right {
+      background: var(--forest);
+      padding: 80px 48px 80px 64px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      position: relative;
+      overflow: hidden;
+      animation: slideLeft 0.8s ease both;
+      animation-delay: 0.1s;
+    }
+
+    /* Subtle grid texture on the green side */
+    .hero__right::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+      background-size: 32px 32px;
+      pointer-events: none;
+    }
+
+    /* Big ghost "149" behind everything */
+    .hero__right::after {
+      content: '149';
+      position: absolute;
+      bottom: -20px;
+      right: -10px;
+      font-family: 'DM Serif Display', Georgia, serif;
+      font-size: 280px;
+      font-style: italic;
+      color: rgba(255,255,255,0.04);
+      line-height: 1;
+      pointer-events: none;
+      user-select: none;
+    }
+
+    .hero__right-tag {
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.4);
+      margin-bottom: 44px;
+    }
+
+    .hero__price {
+      font-family: 'DM Serif Display', Georgia, serif;
+      font-size: clamp(80px, 10vw, 120px);
+      font-style: italic;
+      color: #fff;
+      line-height: 0.88;
+      margin-bottom: 8px;
+      position: relative;
+      z-index: 1;
+      opacity: 0;
+      animation: countUp 0.6s ease both;
+      animation-delay: 1.6s;
+    }
+
+    .hero__once {
+      font-family: 'DM Mono', monospace;
+      font-size: 13px;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.55);
+      margin-bottom: 4px;
+      position: relative;
+      z-index: 1;
+      opacity: 0;
+      animation: fadeIn 0.4s ease both;
+      animation-delay: 1.9s;
+    }
+
+    .hero__day {
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      color: rgba(255,255,255,0.3);
+      margin-bottom: 48px;
+      position: relative;
+      z-index: 1;
+      opacity: 0;
+      animation: fadeIn 0.4s ease both;
+      animation-delay: 2.0s;
+    }
+
+    .hero__features {
+      list-style: none;
+      border-top: 1px solid rgba(255,255,255,0.12);
+      padding-top: 28px;
+      margin-bottom: 44px;
+      position: relative;
+      z-index: 1;
+      opacity: 0;
+      animation: fadeIn 0.5s ease both;
+      animation-delay: 2.1s;
+    }
+    .hero__features li {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 14px;
+      color: rgba(255,255,255,0.6);
+      padding: 6px 0;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .hero__features li::before {
+      content: '';
+      width: 4px; height: 4px;
+      background: rgba(255,255,255,0.35);
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    .hero__cta {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+      opacity: 0;
+      animation: fadeUp 0.5s ease both;
+      animation-delay: 2.2s;
+    }
+
+    .btn-hero {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 14px;
+      font-weight: 500;
+      letter-spacing: 0.04em;
+      color: var(--forest);
+      background: #fff;
+      padding: 16px 36px;
+      text-decoration: none;
+      display: inline-block;
+      border-radius: 2px;
+      transition: background 0.16s, transform 0.14s;
+      width: fit-content;
+    }
+    .btn-hero:hover { background: var(--bone); transform: translateY(-2px); }
+
+    .hero__cta-meta {
+      margin-top: 12px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 13px;
+      color: rgba(255,255,255,0.3);
+      font-style: italic;
+    }
+
+    /* ─────────────────────────────────────────
+       WHO THIS IS FOR strip
+    ───────────────────────────────────────── */
+    .for-strip {
+      background: var(--bone-mid);
+      border-top: 1px solid var(--rule-mid);
+      border-bottom: 1px solid var(--rule-mid);
+      padding: 0;
+    }
+
+    .for-strip__inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 48px;
+      display: flex;
+      align-items: stretch;
+    }
+
+    .for-strip__label {
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--ink-4);
+      padding: 18px 28px 18px 0;
+      border-right: 1px solid var(--rule-mid);
+      display: flex;
+      align-items: center;
+      white-space: nowrap;
+    }
+
+    .for-strip__items {
+      display: flex;
+      flex-wrap: wrap;
+    }
+
+    .for-strip__item {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 13px;
+      color: var(--ink-2);
+      padding: 18px 28px;
+      border-right: 1px solid var(--rule);
+      display: flex;
+      align-items: center;
+    }
+    .for-strip__item:last-child { border-right: none; }
+
+    /* ─────────────────────────────────────────
+       SECTION SHELL
+    ───────────────────────────────────────── */
+    .section {
+      padding: 120px 0;
+    }
+
+    .section--alt { background: #fff; }
+    .section--forest {
+      background: var(--forest);
+      color: #fff;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 48px;
+    }
+
+    /* Oversized ghost section number */
+    .section__number {
+      font-family: 'DM Serif Display', Georgia, serif;
+      font-size: 160px;
+      font-style: italic;
+      color: var(--rule);
+      line-height: 1;
+      margin-bottom: -60px;
+      display: block;
+      pointer-events: none;
+      user-select: none;
+    }
+    .section--forest .section__number {
+      color: rgba(255,255,255,0.05);
+    }
+
+    .section__eyebrow {
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--ink-3);
+      margin-bottom: 20px;
+    }
+    .section--forest .section__eyebrow { color: rgba(255,255,255,0.4); }
+
+    .section__headline {
+      font-family: 'DM Serif Display', Georgia, serif;
+      font-size: clamp(36px, 4.5vw, 60px);
+      line-height: 1.04;
+      letter-spacing: -0.02em;
+      color: var(--ink);
+      margin-bottom: 48px;
+    }
+    .section__headline em { font-style: italic; color: var(--forest); }
+    .section__headline .red { font-style: italic; color: var(--ember); }
+    .section--forest .section__headline { color: #fff; }
+    .section--forest .section__headline em { color: rgba(255,255,255,0.7); }
+
+    /* Two-col section layout */
+    .section__grid {
+      display: grid;
+      grid-template-columns: 1fr 480px;
+      gap: 96px;
+      align-items: start;
+    }
+
+    .section__grid--wide {
+      grid-template-columns: 1fr;
+      max-width: 720px;
+    }
+
+    .body {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 17px;
+      color: var(--ink-2);
+      line-height: 1.85;
+      max-width: 600px;
+    }
+    .body + .body { margin-top: 22px; }
+    .body strong { color: var(--ink); font-weight: 500; }
+    .section--forest .body { color: rgba(255,255,255,0.6); }
+    .section--forest .body strong { color: rgba(255,255,255,0.85); }
+
+    /* Pull quote */
+    .pull {
+      font-family: 'DM Serif Display', Georgia, serif;
+      font-size: clamp(22px, 2.8vw, 30px);
+      font-style: italic;
+      color: var(--ink);
+      line-height: 1.4;
+      padding: 32px 0 32px 36px;
+      border-left: 2px solid var(--forest);
+      margin: 48px 0;
+      max-width: 600px;
+    }
+    .section--forest .pull {
+      color: rgba(255,255,255,0.8);
+      border-left-color: rgba(255,255,255,0.2);
+    }
+
+    /* ─────────────────────────────────────────
+       CONTEXT DEFINITION BOX
+    ───────────────────────────────────────── */
+    .def-box {
+      background: var(--bone-mid);
+      border: 1px solid var(--rule-mid);
+      border-left: 3px solid var(--ink);
+      padding: 40px 44px;
+      margin: 48px 0;
+    }
+
+    .def-box__label {
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--ink-3);
+      margin-bottom: 18px;
+    }
+
+    .def-box__quote {
+      font-family: 'DM Serif Display', Georgia, serif;
+      font-size: clamp(22px, 2.5vw, 28px);
+      font-style: italic;
+      color: var(--ink);
+      line-height: 1.42;
+      margin-bottom: 18px;
+    }
+
+    .def-box__note {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 15px;
+      color: var(--ink-3);
+      line-height: 1.8;
+    }
+
+    /* ─────────────────────────────────────────
+       SILO TABLE
+    ───────────────────────────────────────── */
+    .silo-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 48px 0;
+      font-size: 14px;
+    }
+
+    .silo-table thead tr { border-bottom: 2px solid var(--ink); }
+
+    .silo-table th {
+      font-family: 'DM Mono', monospace;
+      font-size: 9px;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--ink-3);
+      padding: 0 24px 14px 0;
+      text-align: left;
+      font-weight: 400;
+    }
+    .silo-table th:last-child { text-align: center; }
+
+    .silo-table td {
+      padding: 14px 24px 14px 0;
+      border-bottom: 1px solid var(--rule);
+      vertical-align: top;
+    }
+    .silo-table tbody tr:last-child td { border-bottom: none; }
+
+    .td-tool { font-family: 'DM Mono', monospace; font-size: 13px; color: var(--ink); white-space: nowrap; }
+    .td-holds { color: var(--ink-2); font-style: italic; line-height: 1.55; font-size: 14px; }
+    .td-missing { color: var(--ink-3); font-size: 13px; line-height: 1.55; }
+    .td-status { text-align: center; font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; }
+    .td-silo { color: var(--ember); }
+    .td-blank { color: var(--ink-5); }
+
+    .table-note {
+      font-family: 'DM Serif Display', Georgia, serif;
+      font-size: 18px;
+      font-style: italic;
+      color: var(--ink-3);
+      text-align: right;
+      padding-top: 18px;
+      border-top: 1px solid var(--rule-mid);
+    }
+
+    /* ─────────────────────────────────────────
+       BEFORE / AFTER
+    ───────────────────────────────────────── */
+    .ba-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2px;
+      background: var(--rule-mid);
+      margin: 48px 0;
+    }
+
+    .ba-side {
+      background: var(--bone);
+      padding: 44px;
+    }
+    .ba-side--after { background: var(--forest-bg); }
+
+    .ba-label {
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      margin-bottom: 22px;
+    }
+    .ba-side--before .ba-label { color: var(--ink-5); }
+    .ba-side--after  .ba-label { color: var(--forest); }
+
+    .ba-statement {
+      font-family: 'DM Serif Display', Georgia, serif;
+      font-size: 22px;
+      font-style: italic;
+      line-height: 1.42;
+      margin-bottom: 18px;
+    }
+    .ba-side--before .ba-statement { color: var(--ink-3); }
+    .ba-side--after  .ba-statement { color: var(--ink); }
+
+    .ba-note {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 14px;
+      color: var(--ink-3);
+      line-height: 1.75;
+    }
+
+    /* ─────────────────────────────────────────
+       FOUNDER BLOCK
+    ───────────────────────────────────────── */
+    .founder {
+      background: #fff;
+      border: 1px solid var(--rule-mid);
+      padding: 60px 64px;
+      margin: 48px 0;
+      position: relative;
+    }
+
+    .founder__label {
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--ink-3);
+      margin-bottom: 32px;
+    }
+
+    .founder__quote {
+      font-family: 'DM Serif Display', Georgia, serif;
+      font-size: clamp(22px, 2.8vw, 30px);
+      font-style: italic;
+      color: var(--ink);
+      line-height: 1.42;
+      padding-left: 32px;
+      border-left: 2px solid var(--forest);
+      margin-bottom: 36px;
+      max-width: 640px;
+    }
+
+    .founder__body {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 16px;
+      color: var(--ink-2);
+      line-height: 1.9;
+      max-width: 600px;
+    }
+    .founder__body + .founder__body { margin-top: 18px; }
+
+    .founder__sig {
+      margin-top: 40px;
+      padding-top: 28px;
+      border-top: 1px solid var(--rule);
+      display: flex;
+      align-items: center;
+      gap: 18px;
+    }
+
+    .founder__avatar {
+      width: 52px; height: 52px;
+      border-radius: 50%;
+      background: var(--forest-bg);
+      border: 1px solid rgba(26,71,49,0.2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'DM Serif Display', Georgia, serif;
+      font-size: 22px;
+      font-style: italic;
+      color: var(--forest);
+      flex-shrink: 0;
+    }
+
+    .founder__name {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 15px;
+      font-weight: 500;
+      color: var(--ink);
+    }
+    .founder__title {
+      font-family: 'DM Mono', monospace;
+      font-size: 12px;
+      color: var(--ink-3);
+    }
+
+    /* ─────────────────────────────────────────
+       MODULES
+    ───────────────────────────────────────── */
+    .module-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1px;
+      background: var(--rule-mid);
+      margin: 48px 0;
+      border: 1px solid var(--rule-mid);
+    }
+
+    .module {
+      background: var(--bone);
+      padding: 32px 36px;
+      transition: background 0.18s;
+    }
+    .module:hover { background: var(--forest-bg); }
+
+    .module__name {
+      font-family: 'DM Mono', monospace;
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--forest);
+      letter-spacing: 0.06em;
+      margin-bottom: 12px;
+    }
+
+    .module__desc {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 14px;
+      color: var(--ink-2);
+      line-height: 1.75;
+      margin-bottom: 12px;
+    }
+
+    .module__outcome {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--forest);
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      line-height: 1.5;
+    }
+    .module__outcome::before {
+      content: '→';
+      flex-shrink: 0;
+    }
+
+    .module-footer {
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--forest);
+      text-align: right;
+      padding-top: 18px;
+      border-top: 1px solid var(--rule-mid);
+    }
+
+    /* ─────────────────────────────────────────
+       CROSS-REFERENCE BLOCK
+    ───────────────────────────────────────── */
+    .xref {
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.1);
+      padding: 40px 44px;
+      margin: 48px 0;
+    }
+
+    .xref__label {
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.35);
+      margin-bottom: 22px;
+    }
+
+    .xref__row {
+      display: flex;
+      gap: 20px;
+      padding: 12px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+      align-items: baseline;
+    }
+    .xref__row:last-child { border-bottom: none; }
+
+    .xr-entity {
+      font-family: 'DM Mono', monospace;
+      font-size: 13px;
+      color: rgba(255,255,255,0.75);
+      min-width: 220px;
+    }
+    .xr-arrow { color: rgba(255,255,255,0.2); font-size: 13px; }
+    .xr-data {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 14px;
+      font-style: italic;
+      color: rgba(255,255,255,0.4);
+    }
+
+    /* ─────────────────────────────────────────
+       CAPABILITY ROWS
+    ───────────────────────────────────────── */
+    .cap-rows { margin: 36px 0; }
+
+    .cap-row {
+      display: flex;
+      border-bottom: 1px solid rgba(255,255,255,0.07);
+    }
+    .cap-row:first-child { border-top: 1px solid rgba(255,255,255,0.1); }
+
+    .cap-key {
+      font-family: 'DM Mono', monospace;
+      font-size: 12px;
+      color: rgba(255,255,255,0.5);
+      padding: 20px 24px;
+      min-width: 200px;
+      border-right: 1px solid rgba(255,255,255,0.07);
+      display: flex;
+      align-items: center;
+      letter-spacing: 0.04em;
+    }
+    .cap-val {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 15px;
+      color: rgba(255,255,255,0.5);
+      padding: 20px 28px;
+      line-height: 1.7;
+    }
+
+    /* ─────────────────────────────────────────
+       PRIVACY
+    ───────────────────────────────────────── */
+    .warning-box {
+      background: var(--ember-pale);
+      border: 1px solid rgba(166,51,37,0.15);
+      border-left: 3px solid var(--ember);
+      padding: 28px 36px;
+      margin: 40px 0;
+    }
+
+    .warning-box__label {
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--ember);
+      margin-bottom: 12px;
+    }
+
+    .warning-box__text {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 15px;
+      color: var(--ink-2);
+      line-height: 1.8;
+    }
+
+    .arch-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 36px 0;
+      font-size: 14px;
+    }
+    .arch-table thead th {
+      font-family: 'DM Mono', monospace;
+      font-size: 9px;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--ink-3);
+      padding: 0 0 14px;
+      border-bottom: 1px solid var(--rule-heavy);
+      text-align: left;
+      font-weight: 400;
+    }
+    .arch-table tbody td {
+      padding: 13px 0;
+      border-bottom: 1px solid var(--rule);
+      font-family: 'DM Sans', sans-serif;
+      color: var(--ink-2);
+    }
+    .arch-table tbody tr:last-child td { border-bottom: none; }
+    .arch-table tbody td:first-child { font-weight: 500; color: var(--ink); }
+    .arch-table tbody td:nth-child(2) { font-family: 'DM Mono', monospace; font-size: 12px; color: var(--ink-3); }
+    .arch-yes { color: var(--forest) !important; font-weight: 500 !important; font-family: 'DM Sans', sans-serif !important; }
+    .arch-no  { color: var(--ember) !important; font-weight: 500 !important; font-family: 'DM Sans', sans-serif !important; }
+
+    .bridge {
+      margin-top: 36px;
+      padding: 28px 36px;
+      background: var(--forest-bg);
+      border: 1px solid rgba(26,71,49,0.18);
+      display: flex;
+      align-items: baseline;
+      gap: 20px;
+    }
+    .bridge__arrow {
+      font-family: 'DM Serif Display', Georgia, serif;
+      font-size: 28px;
+      font-style: italic;
+      color: var(--forest);
+      flex-shrink: 0;
+      line-height: 1.2;
+    }
+    .bridge__text {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 16px;
+      color: var(--ink-2);
+      line-height: 1.75;
+    }
+    .bridge__text strong { color: var(--ink); font-weight: 500; }
+
+    /* ─────────────────────────────────────────
+       SAME PROMPT — BEFORE / AFTER COMPARISON
+    ───────────────────────────────────────── */
+    .prompt-section {
+      padding: 100px 0;
+      background: var(--bone);
+      border-top: 1px solid var(--rule);
+    }
+
+    .prompt-intro {
+      max-width: 640px;
+      margin-bottom: 64px;
+    }
+
+    .prompt-eyebrow {
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--ink-4);
+      margin-bottom: 20px;
+    }
+
+    .prompt-headline {
+      font-family: 'DM Serif Display', Georgia, serif;
+      font-size: clamp(32px, 4vw, 52px);
+      line-height: 1.05;
+      letter-spacing: -0.02em;
+      color: var(--ink);
+      margin-bottom: 20px;
+    }
+    .prompt-headline em { font-style: italic; color: var(--forest); }
+
+    .prompt-subline {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 17px;
+      color: var(--ink-3);
+      line-height: 1.7;
+    }
+
+    .prompt-pairs {
+      display: flex;
+      flex-direction: column;
+      gap: 40px;
+    }
+
+    .prompt-pair {
+      border: 1px solid var(--rule-mid);
+    }
+
+    .prompt-pair__query {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 18px 28px;
+      background: var(--bone-mid);
+      border-bottom: 1px solid var(--rule-mid);
+    }
+
+    .ppq-label {
+      font-family: 'DM Mono', monospace;
+      font-size: 9px;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--ink-4);
+      white-space: nowrap;
+    }
+
+    .ppq-text {
+      font-family: 'DM Mono', monospace;
+      font-size: 14px;
+      color: var(--ink);
+      font-style: italic;
+    }
+
+    .prompt-pair__cols {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+    }
+
+    .pp-col {
+      padding: 28px 32px;
+    }
+
+    .pp-col--before {
+      border-right: 1px solid var(--rule-mid);
+      background: var(--bone);
+    }
+
+    .pp-col--after {
+      background: var(--forest-bg);
+    }
+
+    .pp-col__label {
+      font-family: 'DM Mono', monospace;
+      font-size: 9px;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .pp-col--before .pp-col__label { color: var(--ember); }
+    .pp-col--after  .pp-col__label { color: var(--forest); }
+
+    .pp-col__label::before {
+      content: '';
+      display: inline-block;
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .pp-col--before .pp-col__label::before { background: var(--ember); }
+    .pp-col--after  .pp-col__label::before { background: var(--forest); }
+
+    .pp-col__response {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 14px;
+      line-height: 1.75;
+      color: var(--ink-2);
+    }
+
+    .pp-col--before .pp-col__response { color: var(--ink-3); font-style: italic; }
+    .pp-col--after  .pp-col__response { color: var(--ink-2); }
+
+    .pp-col__response strong {
+      font-weight: 500;
+      color: var(--ink);
+    }
+
+    .pp-col__response .forest { color: var(--forest); font-weight: 500; }
+    .pp-col__response .ember  { color: var(--ember); }
+
+    .prompt-footnote {
+      margin-top: 52px;
+      padding: 28px 36px;
+      background: var(--forest-bg);
+      border: 1px solid rgba(26,71,49,0.18);
+      border-left: 3px solid var(--forest);
+      max-width: 720px;
+    }
+
+    .prompt-footnote p {
+      font-family: 'DM Serif Display', Georgia, serif;
+      font-size: 18px;
+      font-style: italic;
+      color: var(--ink-2);
+      line-height: 1.65;
+    }
+
+    .prompt-footnote em { color: var(--forest); font-style: normal; font-weight: 400; }
+
+    /* ─────────────────────────────────────────
+       PRICING — DARK INVERSION
+    ───────────────────────────────────────── */
+    .pricing {
+      background: var(--ink);
+      padding: 100px 0;
+    }
+
+    .pricing__head {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      margin-bottom: 60px;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+      padding-bottom: 40px;
+    }
+
+    .pricing__headline {
+      font-family: 'DM Serif Display', Georgia, serif;
+      font-size: clamp(44px, 6vw, 72px);
+      font-style: italic;
+      color: #fff;
+      line-height: 1;
+    }
+    .pricing__headline span { color: rgba(255,255,255,0.25); }
+
+    .pricing__meta {
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.25);
+    }
+
+    .duel {
+      display: grid;
+      grid-template-columns: 1fr 64px 1fr;
+      align-items: stretch;
+    }
+
+    .duel__col {
+      padding: 44px;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.07);
+    }
+    .duel__col--them { border-right: none; }
+
+    .duel__label {
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      margin-bottom: 28px;
+    }
+    .duel__col--them .duel__label { color: rgba(255,255,255,0.25); }
+    .duel__col--us   .duel__label { color: #6bab8a; }
+
+    .duel__price {
+      font-family: 'DM Serif Display', Georgia, serif;
+      font-size: 60px;
+      font-style: italic;
+      line-height: 1;
+      margin-bottom: 8px;
+    }
+    .duel__col--them .duel__price { color: rgba(255,255,255,0.18); }
+    .duel__col--us   .duel__price { color: #fff; }
+
+    .duel__period {
+      font-family: 'DM Mono', monospace;
+      font-size: 12px;
+      margin-bottom: 4px;
+    }
+    .duel__col--them .duel__period { color: rgba(255,255,255,0.2); }
+    .duel__col--us   .duel__period { color: #6bab8a; }
+
+    .duel__day {
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      color: rgba(255,255,255,0.18);
+      margin-bottom: 28px;
+    }
+
+    .duel__items { margin-top: 4px; }
+
+    .duel__item {
+      display: flex;
+      justify-content: space-between;
+      padding: 9px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 14px;
+    }
+    .duel__col--them .di-name { color: rgba(255,255,255,0.3); }
+    .duel__col--them .di-val  { font-family: 'DM Mono', monospace; font-size: 13px; color: rgba(255,255,255,0.22); }
+    .duel__col--us   .di-name { color: rgba(255,255,255,0.45); }
+    .duel__col--us   .di-tick { color: #6bab8a; }
+
+    .duel__sep {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'DM Serif Display', Georgia, serif;
+      font-size: 24px;
+      font-style: italic;
+      color: rgba(255,255,255,0.1);
+      border-top: 1px solid rgba(255,255,255,0.07);
+      border-bottom: 1px solid rgba(255,255,255,0.07);
+    }
+
+    .pricing__verdict {
+      margin-top: 44px;
+      font-family: 'DM Serif Display', Georgia, serif;
+      font-size: clamp(18px, 2.4vw, 24px);
+      font-style: italic;
+      color: rgba(255,255,255,0.35);
+      max-width: 680px;
+      line-height: 1.6;
+    }
+
+    .pricing__cta {
+      margin-top: 48px;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 0;
+    }
+
+    .btn-pricing {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 14px;
+      font-weight: 500;
+      letter-spacing: 0.04em;
+      color: var(--ink);
+      background: var(--bone);
+      padding: 18px 40px;
+      text-decoration: none;
+      border-radius: 2px;
+      display: inline-block;
+      transition: background 0.16s, transform 0.14s;
+    }
+    .btn-pricing:hover { background: #fff; transform: translateY(-2px); }
+
+    .pricing__cta-notes {
+      margin-top: 14px;
+      display: flex;
+      align-items: center;
+      gap: 28px;
+      flex-wrap: wrap;
+    }
+    .pcn {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 13px;
+      font-style: italic;
+      color: rgba(255,255,255,0.22);
+    }
+
+    /* What happens next */
+    .next-steps {
+      margin-top: 52px;
+      padding: 36px 44px;
+      border: 1px solid rgba(255,255,255,0.07);
+    }
+    .next-steps__label {
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.2);
+      margin-bottom: 24px;
+    }
+    .next-steps__grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 32px;
+    }
+    .ns-step__num {
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      color: #6bab8a;
+      margin-bottom: 8px;
+    }
+    .ns-step__text {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 13px;
+      color: rgba(255,255,255,0.35);
+      line-height: 1.65;
+    }
+
+    /* ─────────────────────────────────────────
+       FAQ
+    ───────────────────────────────────────── */
+    .faq-list { margin: 48px 0; }
+
+    .faq-item { border-bottom: 1px solid var(--rule); }
+    .faq-item:first-child { border-top: 1px solid var(--rule-mid); }
+
+    .faq-q {
+      padding: 24px 0;
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 28px;
+      font-family: 'DM Serif Display', Georgia, serif;
+      font-size: 20px;
+      color: var(--ink);
+      transition: color 0.15s;
+      user-select: none;
+    }
+    .faq-q:hover { color: var(--forest); }
+
+    .faq-icon {
+      font-family: 'DM Serif Display', Georgia, serif;
+      font-size: 28px;
+      font-style: italic;
+      color: var(--ink-4);
+      flex-shrink: 0;
+      transition: transform 0.22s;
+      line-height: 1;
+    }
+    .faq-item.open .faq-icon { transform: rotate(45deg); color: var(--forest); }
+
+    .faq-a {
+      display: none;
+      padding: 4px 0 28px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 16px;
+      color: var(--ink-2);
+      line-height: 1.85;
+      max-width: 640px;
+    }
+    .faq-item.open .faq-a { display: block; }
+
+    /* ─────────────────────────────────────────
+       CLOSING
+    ───────────────────────────────────────── */
+    .closing {
+      padding: 128px 0;
+      background: var(--bone);
+      border-top: 2px solid var(--ink);
+      text-align: center;
+    }
+
+    .closing__headline {
+      font-family: 'DM Serif Display', Georgia, serif;
+      font-size: clamp(44px, 7vw, 84px);
+      line-height: 0.96;
+      letter-spacing: -0.025em;
+      color: var(--ink);
+      margin-bottom: 36px;
+    }
+    .closing__headline em { font-style: italic; color: var(--forest); }
+
+    .closing__body {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 18px;
+      color: var(--ink-2);
+      max-width: 560px;
+      margin: 0 auto 56px;
+      line-height: 1.9;
+    }
+    .closing__body strong { color: var(--ink); font-weight: 500; }
+
+    .closing__cta { display: flex; flex-direction: column; align-items: center; }
+
+    .btn-close {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 15px;
+      font-weight: 500;
+      letter-spacing: 0.04em;
+      color: var(--bone);
+      background: var(--forest);
+      padding: 20px 52px;
+      text-decoration: none;
+      border-radius: 2px;
+      display: inline-block;
+      transition: background 0.16s, transform 0.14s, box-shadow 0.16s;
+    }
+    .btn-close:hover {
+      background: var(--forest-mid);
+      transform: translateY(-2px);
+      box-shadow: 0 10px 36px rgba(26,71,49,0.22);
+    }
+
+    .closing__support {
+      margin-top: 16px;
+      display: flex;
+      align-items: center;
+      gap: 24px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+    .closing__note {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 14px;
+      color: var(--ink-4);
+      font-style: italic;
+    }
+    .closing__guarantee {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 14px;
+      color: var(--forest);
+      font-weight: 500;
+    }
+
+    /* What happens after */
+    .closing__next {
+      margin-top: 48px;
+      padding: 32px 44px;
+      background: #fff;
+      border: 1px solid var(--rule-mid);
+      border-left: 2px solid var(--forest);
+      text-align: left;
+      display: inline-block;
+      min-width: 380px;
+    }
+    .cn__label {
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--forest);
+      margin-bottom: 20px;
+    }
+    .cn__steps { list-style: none; }
+    .cn__step {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 14px;
+      color: var(--ink-2);
+      padding: 7px 0;
+      display: flex;
+      align-items: flex-start;
+      gap: 16px;
+    }
+    .cn__num {
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      color: var(--forest);
+      flex-shrink: 0;
+      padding-top: 3px;
+    }
+
+    .closing__sig {
+      font-family: 'DM Serif Display', Georgia, serif;
+      font-size: 22px;
+      font-style: italic;
+      color: var(--ink-4);
+      margin-top: 72px;
+    }
+
+    /* ─────────────────────────────────────────
+       FOOTER
+    ───────────────────────────────────────── */
+    footer {
+      border-top: 1px solid var(--rule-mid);
+      padding: 28px 48px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-family: 'DM Mono', monospace;
+      font-size: 12px;
+      color: var(--ink-4);
+      letter-spacing: 0.03em;
+    }
+    footer a { color: var(--ink-4); text-decoration: none; }
+    footer a:hover { color: var(--forest); }
+    .footer-email { font-family: \'DM Mono\', monospace; font-size: 12px; color: var(--forest); letter-spacing: 0.02em; text-decoration: none; transition: opacity 0.2s; }
+    .footer-email:hover { opacity: 0.7; }
+
+    /* ─────────────────────────────────────────
+       RESPONSIVE
+    ───────────────────────────────────────── */
+    @media (max-width: 900px) {
+      .nav__links { display: none; }
+      .hero { min-height: auto; }
+      .hero__left { grid-template-columns: 1fr; gap: 48px; padding: 64px 24px 80px; }
+      .hero__body { font-size: 15px; }
+      .hero__stack-col { border-top: none; margin-top: 0; }
+      .frag-vs { margin: 0 -36px -28px; }
+      .for-strip__inner { flex-direction: column; padding: 0 24px; }
+      .for-strip__label { border-right: none; padding: 16px 0 8px; }
+      .for-strip__items { flex-direction: column; }
+      .for-strip__item { border-right: none; border-bottom: 1px solid var(--rule); padding: 10px 0; }
+      .section { padding: 80px 0; }
+      .container { padding: 0 24px; }
+      .section__grid { grid-template-columns: 1fr; gap: 0; }
+      .section__number { font-size: 100px; margin-bottom: -40px; }
+      .section__headline { font-size: 36px; }
+      .module-grid { grid-template-columns: 1fr; }
+      .prompt-pair__cols { grid-template-columns: 1fr; }
+      .pp-col--before { border-right: none; border-bottom: 1px solid var(--rule-mid); }
+      .ba-grid { grid-template-columns: 1fr; }
+      .duel { grid-template-columns: 1fr; }
+      .duel__sep { display: none; }
+      .duel__col--them { border-right: 1px solid rgba(255,255,255,0.07); border-bottom: none; }
+      .next-steps__grid { grid-template-columns: 1fr 1fr; gap: 20px; }
+      .pricing { padding: 72px 0; }
+      .pricing__head { flex-direction: column; gap: 12px; }
+      .closing { padding: 88px 0; }
+      .closing__next { min-width: unset; width: 100%; }
+      .founder { padding: 36px 28px; }
+      .xref__row { flex-wrap: wrap; gap: 6px; }
+      .xr-entity { min-width: unset; width: 100%; }
+      .cap-row { flex-direction: column; }
+      .cap-key { border-right: none; border-bottom: 1px solid rgba(255,255,255,0.07); min-width: unset; }
+      .bridge { flex-direction: column; gap: 8px; }
+      nav .nav__meta { display: none; }
+      footer { padding: 24px; }
+    }
+
+    @media (max-width: 480px) {
+      .next-steps__grid { grid-template-columns: 1fr; }
+      .silo-table { font-size: 12px; }
+      .silo-table td, .silo-table th { padding-right: 12px; }
+      .hero__right::before { display: none; }
+    }
+  </style>
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-TQFFERGZW1"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-TQFFERGZW1');
+  </script>
+</head>
+<body>
+
+  <!-- ══════════ NAV ══════════ -->
+  <nav class="nav">
+    <div class="nav__inner">
+      <a href="https://softwareof.you" class="nav__logo">Software<span>Of</span>You</a>
+      <ul class="nav__links">
+        <li><a href="features.html">Features</a></li>
+        <li class="nav__item--has-sub">
+          <a href="features.html#modules">Modules</a>
+          <ul class="nav__sub">
+            <li><a href="modules/crm.html"><span class="nav__sub__num">01</span>CRM</a></li>
+            <li><a href="modules/projects.html"><span class="nav__sub__num">02</span>Projects</a></li>
+            <li><a href="modules/gmail.html"><span class="nav__sub__num">03</span>Gmail</a></li>
+            <li><a href="modules/calendar.html"><span class="nav__sub__num">04</span>Calendar</a></li>
+            <li><a href="modules/conversations.html"><span class="nav__sub__num">05</span>Conversations</a></li>
+            <li><a href="modules/decisions.html"><span class="nav__sub__num">06</span>Decisions</a></li>
+            <li><a href="modules/journal.html"><span class="nav__sub__num">07</span>Journal</a></li>
+            <li><a href="modules/notes.html"><span class="nav__sub__num">08</span>Notes</a></li>
+            <div class="nav__sub__divider"></div>
+            <li><a href="features.html#modules"><span class="nav__sub__num">→</span>All modules</a></li>
+          </ul>
+        </li>
+        <li><a href="why-claude.html">Why Claude</a></li>
+        <li><a href="your-data.html">Your Data</a></li>
+        <li><a href="pricing.html">Pricing</a></li>
+      </ul>
+      <div class="nav__right">
+        <a href="https://softwareof.you" class="nav__cta">Get SoY — $149</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- ══════════ HERO ══════════ -->
+  <div class="hero">
+    <div class="hero__left">
+
+      <!-- LEFT COL: Headline + body + CTA -->
+      <div class="hero__copy">
+        <div class="hero__audit-tag">Finding: Fragmented</div>
+
+        <h1 class="hero__headline">
+          You're paying<br>
+          <em>$100+/month</em><br>
+          for tools that don't<br>
+          talk to each other.
+        </h1>
+        <p class="hero__sub">And none of them talk to Claude.</p>
+
+        <p class="hero__body">Your contacts are in HubSpot. Your conversations are trapped in Zoom. Your decisions are scattered across Slack. Your email is in Gmail, your calendar in Google Calendar, your notes in Notion. Twelve tools holding fragments of your context — none of them connected, none of them talking to your AI.</p>
+
+        <div class="hero__cta-inline">
+          <a href="https://softwareof.you" class="btn-hero-inline">Get Software of You — $149 →</a>
+          <p class="hero__cta-note">Setup in 5 minutes &nbsp;·&nbsp; 30-day money-back guarantee</p>
+          <a href="/demo/" style="display:inline-block; margin-top:12px; font-family:'DM Mono',monospace; font-size:12px; letter-spacing:0.06em; color:var(--forest); text-decoration:none; border-bottom:1px solid rgba(26,71,49,0.3); padding-bottom:1px; transition:border-color 0.15s;" onmouseover="this.style.borderColor='var(--forest)'" onmouseout="this.style.borderColor='rgba(26,71,49,0.3)'">Not sure yet? Explore a live demo →</a>
+        </div>
+      </div>
+
+      <!-- RIGHT COL: The fragmented stack -->
+      <div class="hero__stack-col">
+        <div class="frag-stack">
+          <div class="frag-item">
+            <span class="fi__name">HubSpot Starter</span>
+            <div class="fi__right">
+              <span class="fi__price">$20/mo</span>
+              <span class="fi__tag">contacts only</span>
+            </div>
+          </div>
+          <div class="frag-item">
+            <span class="fi__name">Otter.ai Pro</span>
+            <div class="fi__right">
+              <span class="fi__price">$17/mo</span>
+              <span class="fi__tag">meetings only</span>
+            </div>
+          </div>
+          <div class="frag-item">
+            <span class="fi__name">Notion Plus</span>
+            <div class="fi__right">
+              <span class="fi__price">$16/mo</span>
+              <span class="fi__tag">notes only</span>
+            </div>
+          </div>
+          <div class="frag-item">
+            <span class="fi__name">Gmail</span>
+            <div class="fi__right">
+              <span class="fi__price">—</span>
+              <span class="fi__tag">email only</span>
+            </div>
+          </div>
+          <div class="frag-item">
+            <span class="fi__name">Google Calendar</span>
+            <div class="fi__right">
+              <span class="fi__price">—</span>
+              <span class="fi__tag">scheduling only</span>
+            </div>
+          </div>
+          <div class="frag-item">
+            <span class="fi__name">Slack / Notion / Notes</span>
+            <div class="fi__right">
+              <span class="fi__price">$8–30/mo</span>
+              <span class="fi__tag">decisions, scattered</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="frag-total">
+          <span class="ft__label">Monthly total</span>
+          <span class="ft__amount">$95+<em style="font-size:0.55em">/mo</em></span>
+        </div>
+        <p class="ft__annual">$1,140/year &nbsp;·&nbsp; zero integration &nbsp;·&nbsp; none of it talks to Claude</p>
+
+        <div class="frag-vs">
+          <span class="frag-vs__or">or</span>
+          <span class="frag-vs__soy">Software of You — everything, connected, Claude-native</span>
+          <span class="frag-vs__price">$149<span>once</span></span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ══════════ WHO THIS IS FOR ══════════ -->
+  <div class="for-strip">
+    <div class="for-strip__inner">
+      <span class="for-strip__label">Built for</span>
+      <div class="for-strip__items">
+        <span class="for-strip__item">Daily Claude Code users</span>
+        <span class="for-strip__item">Freelancers &amp; consultants</span>
+        <span class="for-strip__item">Founders &amp; operators</span>
+        <span class="for-strip__item">Anyone managing clients, projects &amp; commitments</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════ 01 — PROBLEM ══════════ -->
+  <div class="section section--alt">
+    <div class="container">
+      <span class="section__number">01</span>
+      <p class="section__eyebrow">Finding — Fragmentation</p>
+      <h2 class="section__headline">
+        When you ask Claude about Marcus —<br>
+        <span class="red">it has nothing.</span>
+      </h2>
+
+      <div class="section__grid">
+        <div>
+          <p class="body">No relationship history. No shared context. No record of the commitment you made last week. It gives you a generic answer because it has no other choice. <strong>You know more about your own work than your AI does.</strong></p>
+
+          <div class="pull reveal">"That is not a productivity tool. That is an assistant with permanent amnesia."</div>
+
+          <p class="body">Every session you spend pasting context back in — that's time your competitors aren't wasting. Every insight in a transcript no one re-reads — that's leverage you're leaving behind. Every relationship going cold because no tool told you — that's compounding cost that doesn't show up on an invoice.</p>
+
+          <p class="body" style="margin-top:22px">This is not a Claude problem. The models are extraordinary. This is a <strong>context problem</strong> — your professional world lives in a dozen silos, and none of them connect to the tool you use to think.</p>
+        </div>
+
+        <div>
+          <table class="silo-table reveal">
+            <thead>
+              <tr>
+                <th>Tool</th>
+                <th>Holds</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="td-tool">HubSpot</td>
+                <td class="td-holds">Contacts &amp; companies — no meetings, no AI</td>
+                <td class="td-status td-silo">Silo</td>
+              </tr>
+              <tr>
+                <td class="td-tool">Gmail</td>
+                <td class="td-holds">Email threads — no CRM link</td>
+                <td class="td-status td-silo">Silo</td>
+              </tr>
+              <tr>
+                <td class="td-tool">Notion</td>
+                <td class="td-holds">Notes &amp; docs — no commitments</td>
+                <td class="td-status td-silo">Silo</td>
+              </tr>
+              <tr>
+                <td class="td-tool">Otter.ai</td>
+                <td class="td-holds">Transcripts — not linked to contacts</td>
+                <td class="td-status td-silo">Silo</td>
+              </tr>
+              <tr>
+                <td class="td-tool">Google Cal</td>
+                <td class="td-holds">Events — no history, no follow-up</td>
+                <td class="td-status td-silo">Silo</td>
+              </tr>
+              <tr>
+                <td class="td-tool">Claude</td>
+                <td class="td-holds">Knows none of the above. Starts from zero.</td>
+                <td class="td-status td-blank">Blank</td>
+              </tr>
+            </tbody>
+          </table>
+          <p class="table-note">Every tool holds a fragment. None connect. None talk to Claude.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════ 02 — THE SHIFT ══════════ -->
+  <div class="section">
+    <div class="container">
+      <span class="section__number">02</span>
+      <p class="section__eyebrow">The Shift</p>
+      <h2 class="section__headline">
+        Context engineering is<br>
+        what comes after<br>
+        <em>prompt engineering.</em>
+      </h2>
+
+      <div class="def-box reveal">
+        <p class="def-box__label">What is context engineering?</p>
+        <p class="def-box__quote">"Building what your AI knows — not just how you ask it."</p>
+        <p class="def-box__note">Prompt engineering optimises the question. Context engineering builds the world the AI operates in. The difference between asking a stranger for directions versus asking someone who's been living in your life for a year. Same question. Completely different answer.</p>
+      </div>
+
+      <div class="ba-grid reveal">
+        <div class="ba-side ba-side--before">
+          <p class="ba-label">Prompt Engineering</p>
+          <p class="ba-statement">"Craft a better question and hope the model infers what you mean."</p>
+          <p class="ba-note">Every session starts fresh. Every gain expires. The ceiling is how much you remembered to paste in.</p>
+        </div>
+        <div class="ba-side ba-side--after">
+          <p class="ba-label">Context Engineering</p>
+          <p class="ba-statement">"Build what the AI knows — and every future question gets smarter."</p>
+          <p class="ba-note">Compounds. Every contact you add, every conversation you log — each one makes every future interaction more precise. Not because the model improved. Because the context did.</p>
+        </div>
+      </div>
+
+      <p class="body"><strong>Software of You is the context engineering platform for Claude Code.</strong> One SQLite database on your machine. Eight cross-referenced modules. 45+ slash commands. Claude is the interface.</p>
+    </div>
+  </div>
+
+  <!-- ══════════ FOUNDER ══════════ -->
+  <div class="section section--alt">
+    <div class="container">
+      <span class="section__number" style="color: var(--rule-mid);">✦</span>
+      <p class="section__eyebrow">Why This Exists</p>
+      <h2 class="section__headline">
+        I kept having the same<br>
+        conversation with Claude.<br>
+        <em>Starting from zero.</em>
+      </h2>
+
+      <div class="founder reveal">
+        <p class="founder__label">From Kerry Morrison — Founder, Software of You</p>
+
+        <p class="founder__quote">"I was spending fifteen minutes before every AI conversation just paste-dumping context. Client history. Meeting notes. The decision we'd made last Tuesday. I was the integration layer. That felt wrong."</p>
+
+        <p class="founder__body">I use Claude Code every day. It's genuinely the most capable thinking tool I've ever used. But every session, I was starting from nothing. Every time I wanted to draft a client follow-up, I had to remember to include who they were, what we'd agreed, what stage the project was at. Half the time I forgot something. The result was AI help that felt generic — because it didn't know anything.</p>
+
+        <p class="founder__body">I looked for something that would solve this. The honest answer is: it didn't exist. Not for Claude Code users. The tools that came close required you to trust your data to a cloud service. Or they were enterprise-priced and built for teams. Or they'd already been acquired and shut down.</p>
+
+        <p class="founder__body">So I built it. One file on your machine. Eight modules that cross-reference each other. Claude as the interface. If you use Claude Code the way I do, this will change how it feels to work.</p>
+
+        <div class="founder__sig">
+          <div class="founder__avatar">K</div>
+          <div>
+            <p class="founder__name">Kerry Morrison</p>
+            <p class="founder__title">Founder, Software of You · softwareof.you</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════ 03 — MODULES ══════════ -->
+  <div class="section">
+    <div class="container">
+      <span class="section__number">03</span>
+      <p class="section__eyebrow">What's Included</p>
+      <h2 class="section__headline">
+        Eight modules.<br>
+        <em>All cross-referenced.</em><br>
+        All included.
+      </h2>
+
+      <p class="body">No tiers. No add-ons. Every module in the one-time purchase.</p>
+
+      <div class="module-grid reveal" style="margin-top: 40px;">
+        <div class="module">
+          <p class="module__name">CRM</p>
+          <p class="module__desc">Contacts, interactions, follow-up nudges, and relationship scoring derived from interaction frequency and email tone. Every person you know, queryable by Claude.</p>
+          <p class="module__outcome">Ask Claude "who have I been neglecting?" and it actually knows.</p>
+        </div>
+        <div class="module">
+          <p class="module__name">Project Tracker</p>
+          <p class="module__desc">Projects linked to the contacts driving them. Milestones, status, and meeting history connected. "What's the status on Meridian?" gets the full picture.</p>
+          <p class="module__outcome">No more context switching to answer one simple question.</p>
+        </div>
+        <div class="module">
+          <p class="module__name">Gmail</p>
+          <p class="module__desc">Email sync with contact context. Full thread history linked to people and projects. Google OAuth runs machine → API directly. SoY servers never see your email.</p>
+          <p class="module__outcome">Draft follow-ups with full email history loaded automatically.</p>
+        </div>
+        <div class="module">
+          <p class="module__name">Calendar</p>
+          <p class="module__desc">Event sync for the last 7 and next 14 days. Attendees linked to contacts. Scheduling with relationship history — not just names, but context.</p>
+          <p class="module__outcome">"Prep me for my 3pm" — Claude knows who's there and what's outstanding.</p>
+        </div>
+        <div class="module">
+          <p class="module__name">Conv. Intelligence</p>
+          <p class="module__desc">Import any meeting transcript. Extract commitments. Measure talk ratios. Track relationship health over time. The context that disappears after a call — captured.</p>
+          <p class="module__outcome">Never lose a commitment to a transcript you never re-read.</p>
+        </div>
+        <div class="module">
+          <p class="module__name">Decision Log</p>
+          <p class="module__desc">Structured records with options, rationale, and outcome tracking. Annie Duke's process/outcome framework. When you face the same situation again — your past reasoning is available.</p>
+          <p class="module__outcome">Stop making the same decisions from scratch.</p>
+        </div>
+        <div class="module">
+          <p class="module__name">Journal</p>
+          <p class="module__desc">Daily entries with mood and energy markers, cross-referenced to contacts and projects you mention. Longitudinal context about how you work.</p>
+          <p class="module__outcome">Weekly reviews write themselves from what's already in the system.</p>
+        </div>
+        <div class="module">
+          <p class="module__name">Notes</p>
+          <p class="module__desc">Hashtag-tagged notes with automatic cross-referencing. A note about a client meeting links to the client. Structured memory Claude can query — not a flat file to parse.</p>
+          <p class="module__outcome">Your notes become context. Every thought you capture compounds.</p>
+        </div>
+      </div>
+
+      <p class="module-footer">All 8 modules · All included · $149 once · No tiers · No seat limits</p>
+    </div>
+  </div>
+
+  <!-- ══════════ SAME PROMPT — BEFORE / AFTER ══════════ -->
+  <div class="prompt-section">
+    <div class="container">
+      <div class="prompt-intro reveal">
+        <p class="prompt-eyebrow">What context actually changes</p>
+        <h2 class="prompt-headline">The same prompt.<br><em>Completely different output.</em></h2>
+        <p class="prompt-subline">SoY doesn't change Claude's intelligence. It changes what Claude's intelligence can be applied to. Here's what that looks like in practice.</p>
+      </div>
+
+      <div class="prompt-pairs">
+
+        <!-- Pair 1 -->
+        <div class="prompt-pair reveal">
+          <div class="prompt-pair__query">
+            <span class="ppq-label">Prompt</span>
+            <span class="ppq-text">"Draft a follow-up to Rebecca about the proposal"</span>
+          </div>
+          <div class="prompt-pair__cols">
+            <div class="pp-col pp-col--before">
+              <div class="pp-col__label">Without SoY</div>
+              <p class="pp-col__response">I'd be happy to help draft a follow-up email! Could you tell me: Who is Rebecca? What's your relationship with her? What proposal are you referring to? What happened in your last conversation? What outcome are you hoping for with this message?</p>
+            </div>
+            <div class="pp-col pp-col--after">
+              <div class="pp-col__label">With SoY</div>
+              <p class="pp-col__response">Claude already has: <span class="forest">Rebecca Chen's full CRM profile</span>, your last 3 emails, the Meridian project brief, <span class="forest">2 open commitments from your last call</span>, and the pricing decision from last week. It writes the email. You describe the tone.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Pair 2 -->
+        <div class="prompt-pair reveal reveal-delay-1">
+          <div class="prompt-pair__query">
+            <span class="ppq-label">Prompt</span>
+            <span class="ppq-text">"Who should I follow up with this week?"</span>
+          </div>
+          <div class="prompt-pair__cols">
+            <div class="pp-col pp-col--before">
+              <div class="pp-col__label">Without SoY</div>
+              <p class="pp-col__response">I don't have access to your contacts or communication history. You could try reviewing your email sent folder, checking your calendar for recent meetings, or going through your CRM manually to identify anyone you haven't spoken to recently.</p>
+            </div>
+            <div class="pp-col pp-col--after">
+              <div class="pp-col__label">With SoY</div>
+              <p class="pp-col__response"><span class="forest">Daniel Reyes</span> — 3 weeks no contact, open commitment outstanding. <span class="forest">Marcus Webb</span> — Meridian stalled, last email 11 days ago. <span class="forest">Sarah Chen</span> — met at SaaStr, said you'd connect in January. It's February.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Pair 3 -->
+        <div class="prompt-pair reveal reveal-delay-2">
+          <div class="prompt-pair__query">
+            <span class="ppq-label">Prompt</span>
+            <span class="ppq-text">"Prep me for my 2pm with Marcus"</span>
+          </div>
+          <div class="prompt-pair__cols">
+            <div class="pp-col pp-col--before">
+              <div class="pp-col__label">Without SoY</div>
+              <p class="pp-col__response">To prep you for your meeting, it would help to know: What's the context of this meeting? What's your relationship with Marcus? What were the key topics from your last conversation? What do you want to achieve today?</p>
+            </div>
+            <div class="pp-col pp-col--after">
+              <div class="pp-col__label">With SoY</div>
+              <p class="pp-col__response"><strong>Marcus Webb, Meridian CEO.</strong> Last contact: 4 days ago. <span class="forest">3 emails this month</span>, topic shifting from scope to timeline. Your open commitments: send revised proposal by Friday. His open commitment: legal sign-off. Suggested opening: address the timeline concern directly.</p>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="prompt-footnote reveal">
+        <p>SoY is the brief. For everything. A brilliant analyst reading a 10-page brief writes a better memo than a brilliant analyst reading nothing. <em>Now Claude reads everything.</em></p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════ EXPLAINER ══════════ -->
+  <div class="section section--alt">
+    <div class="container">
+      <span class="section__number">✦</span>
+      <p class="section__eyebrow">A real example</p>
+      <h2 class="section__headline reveal">Two things you said.<br><em>Everything else, it knew.</em></h2>
+      <p class="body reveal" style="max-width:560px; margin-bottom: 40px;">A real follow-up email, drafted by Claude with SoY installed. Annotated to show exactly where each piece came from.</p>
+      <div class="explainer-wrap reveal">
+        <style>
+          .explainer-wrap { max-width: 100%; }
+          .exp-legend { display: flex; gap: 24px; margin-bottom: 28px; flex-wrap: wrap; }
+          .exp-legend-item { display: flex; align-items: center; gap: 8px; font-family: 'DM Mono', monospace; font-size: 12px; color: var(--ink-2); letter-spacing: 0.04em; }
+          .exp-legend-dot { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; }
+          .exp-dot-sys { background: var(--forest); }
+          .exp-dot-you { background: #7c5c2a; }
+          .exp-layout { display: grid; grid-template-columns: 1fr 320px; gap: 20px; align-items: start; }
+          @media (max-width: 860px) { .exp-layout { grid-template-columns: 1fr; } }
+          .exp-email { background: white; border: 1px solid var(--rule-mid); border-radius: 6px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.06); }
+          .exp-chrome { background: var(--bone-mid); border-bottom: 1px solid var(--rule); padding: 12px 18px; display: flex; gap: 7px; align-items: center; }
+          .exp-chrome-dot { width: 10px; height: 10px; border-radius: 50%; }
+          .exp-chrome-dot:nth-child(1){background:#ff5f57;} .exp-chrome-dot:nth-child(2){background:#ffbd2e;} .exp-chrome-dot:nth-child(3){background:#28c840;}
+          .exp-meta { padding: 18px 22px 14px; border-bottom: 1px solid var(--bone-deep); }
+          .exp-subject { font-size: 15px; font-weight: 600; color: var(--ink); margin-bottom: 6px; }
+          .exp-to { font-family: 'DM Mono', monospace; font-size: 12px; color: var(--ink-4); }
+          .exp-body { padding: 22px; font-size: 15px; line-height: 1.85; color: var(--ink-2); }
+          .exp-body p + p { margin-top: 16px; }
+          .exp-tag { border-radius: 3px; padding: 1px 3px; }
+          .exp-tag-sys { background: rgba(26,71,49,0.1); border-bottom: 2px solid var(--forest); color: #0f2e1e; }
+          .exp-tag-you { background: rgba(124,92,42,0.1); border-bottom: 2px solid #a07030; color: #3a2a10; }
+          .exp-sidebar { display: flex; flex-direction: column; gap: 14px; }
+          .exp-card { border-radius: 6px; overflow: hidden; border: 1px solid var(--rule); }
+          .exp-card-head { padding: 9px 14px; display: flex; align-items: center; gap: 8px; font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; font-weight: 600; }
+          .exp-card-head.sys { background: var(--forest); color: rgba(235,242,238,0.9); }
+          .exp-card-head.you { background: #7c5c2a; color: rgba(250,245,235,0.9); }
+          .exp-card-head-dot { width: 7px; height: 7px; border-radius: 50%; background: rgba(255,255,255,0.4); flex-shrink: 0; }
+          .exp-card-body { background: white; padding: 12px; }
+          .exp-row { display: flex; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--bone-deep); align-items: flex-start; }
+          .exp-row:last-child { border-bottom: none; }
+          .exp-src { font-family: 'DM Mono', monospace; font-size: 9px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-4); padding-top: 2px; min-width: 64px; line-height: 1.4; }
+          .exp-txt { font-size: 13px; color: var(--ink-2); line-height: 1.55; }
+          .exp-txt strong { color: var(--ink); font-weight: 600; }
+          .exp-footer { margin-top: 20px; padding: 18px 22px; background: var(--forest); border-radius: 6px; display: flex; gap: 16px; align-items: center; }
+          .exp-footer-label { font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: rgba(235,242,238,0.5); white-space: nowrap; }
+          .exp-footer-text { font-size: 14px; color: #ebf2ee; line-height: 1.6; }
+          .exp-footer-text em { font-style: italic; color: rgba(235,242,238,0.7); }
+        </style>
+        <div class="exp-legend">
+          <div class="exp-legend-item"><div class="exp-legend-dot exp-dot-sys"></div>Pulled from SoY — you said nothing</div>
+          <div class="exp-legend-item"><div class="exp-legend-dot exp-dot-you"></div>You provided in the prompt</div>
+        </div>
+        <div class="exp-layout">
+          <div class="exp-email">
+            <div class="exp-chrome"><div class="exp-chrome-dot"></div><div class="exp-chrome-dot"></div><div class="exp-chrome-dot"></div></div>
+            <div class="exp-meta">
+              <div class="exp-subject">Following up — materials for the AI proof of concept</div>
+              <div class="exp-to">To: Alex Brennan &lt;alex@northgatecapital.ca&gt;</div>
+            </div>
+            <div class="exp-body">
+              <p>Hi <span class="exp-tag exp-tag-sys" title="Name from CRM contact record">Alex</span>,</p>
+              <p>Wanted to follow up on <span class="exp-tag exp-tag-sys" title="Date derived from transcript timestamp">our conversation from last week</span>. You mentioned you'd <span class="exp-tag exp-tag-sys" title="Open commitment extracted from transcript">send over a couple of presentations and a non-proprietary document</span> so we could <span class="exp-tag exp-tag-sys" title="Kerry's commitment from the same call">build out a proof of concept for you</span>.</p>
+              <p>Also — <span class="exp-tag exp-tag-you" title="You mentioned this in your prompt">I've been thinking about the video production piece</span> for the <span class="exp-tag exp-tag-sys" title="Project name from follow-up call transcript">Build Canada Homes pitch</span>. <span class="exp-tag exp-tag-you" title="You provided this detail">I have a few people in mind and will put something together for you once I track down the right fit.</span></p>
+              <p><span class="exp-tag exp-tag-you" title="Tone direction you provided">No rush on the materials if things got busy</span> — just didn't want it to <span class="exp-tag exp-tag-sys" title="Surfaced by SoY: open commitment, 4 days since contact">slip through the cracks on either end</span>.</p>
+              <p>Kerry</p>
+            </div>
+          </div>
+          <div class="exp-sidebar">
+            <div class="exp-card">
+              <div class="exp-card-head sys"><div class="exp-card-head-dot"></div>What SoY already knew</div>
+              <div class="exp-card-body">
+                <div class="exp-row"><div class="exp-src">CRM</div><div class="exp-txt"><strong>Alex Brennan</strong>, President at Northgate Capital — 2 calls logged</div></div>
+                <div class="exp-row"><div class="exp-src">Transcript</div><div class="exp-txt">Call occurred <strong>last week</strong> — timestamp from transcript</div></div>
+                <div class="exp-row"><div class="exp-src">Commitments</div><div class="exp-txt">Open: <strong>Alex to send presentations + doc</strong> — extracted, still open</div></div>
+                <div class="exp-row"><div class="exp-src">Commitments</div><div class="exp-txt">Open: <strong>Kerry to build proof of concept</strong> — offered on the call</div></div>
+                <div class="exp-row"><div class="exp-src">Transcript</div><div class="exp-txt"><strong>Build Canada Homes</strong> — project from follow-up call summary</div></div>
+                <div class="exp-row"><div class="exp-src">Nudge</div><div class="exp-txt">No contact in <strong>4 days</strong>, open commitments on both sides</div></div>
+              </div>
+            </div>
+            <div class="exp-card">
+              <div class="exp-card-head you"><div class="exp-card-head-dot"></div>What you provided</div>
+              <div class="exp-card-body">
+                <div class="exp-row"><div class="exp-src">Prompt</div><div class="exp-txt">The video production piece — that you're thinking about it</div></div>
+                <div class="exp-row"><div class="exp-src">Prompt</div><div class="exp-txt">Tone: <strong>no pressure, easy</strong></div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="exp-footer">
+          <div class="exp-footer-label">The point</div>
+          <div class="exp-footer-text">You said two things. The system supplied everything else — <em>who, when, what was agreed, what's still open, what project it's tied to.</em> That's context engineering.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════ 04 — INTELLIGENCE ══════════ -->
+  <div class="section section--forest">
+    <div class="container">
+      <span class="section__number">04</span>
+      <p class="section__eyebrow">The Intelligence Layer</p>
+      <h2 class="section__headline">
+        <em>Everything knows</em><br>
+        about everything else.
+      </h2>
+
+      <p class="body">A memory tool retrieves. Context engineering <strong>connects.</strong> When you log a conversation with a contact, SoY links it to every project you share, every email in your thread, every decision they influenced — so when you ask Claude anything about that person, it has the full picture.</p>
+
+      <div class="xref reveal">
+        <p class="xref__label">Live cross-references — example</p>
+        <div class="xref__row">
+          <span class="xr-entity">Contact: Rebecca Chen</span>
+          <span class="xr-arrow">→</span>
+          <span class="xr-data">Projects × 2, Emails × 47, Meetings × 8, Decisions × 3</span>
+        </div>
+        <div class="xref__row">
+          <span class="xr-entity">Project: Meridian</span>
+          <span class="xr-arrow">→</span>
+          <span class="xr-data">Client: Rebecca, Decisions × 3, Meetings × 8, Commitments × 4</span>
+        </div>
+        <div class="xref__row">
+          <span class="xr-entity">Meeting: Jan 14</span>
+          <span class="xr-arrow">→</span>
+          <span class="xr-data">Attendees × 3, Commitments extracted × 2, Project linked</span>
+        </div>
+        <div class="xref__row">
+          <span class="xr-entity">Decision: Pricing</span>
+          <span class="xr-arrow">→</span>
+          <span class="xr-data">Options × 3, Made by: Kerry + Rebecca, Outcome: pending</span>
+        </div>
+      </div>
+
+      <p class="body">When you ask Claude <em>"draft a follow-up to Rebecca about the proposal"</em> — it has her email history, the meeting notes, the open commitments, and the decision from last week. Not because you pasted any of that in.</p>
+
+      <div class="cap-rows reveal" style="margin-top: 40px;">
+        <div class="cap-row">
+          <span class="cap-key">Nudges</span>
+          <span class="cap-val">Contacts going cold, overdue commitments, and stale projects surface automatically. Nothing important quietly disappears.</span>
+        </div>
+        <div class="cap-row">
+          <span class="cap-key">Rel. Scoring</span>
+          <span class="cap-val">Derived from interaction frequency, email tone, and follow-through. Not a number you assign — a signal the system derives.</span>
+        </div>
+        <div class="cap-row">
+          <span class="cap-key">Commitments</span>
+          <span class="cap-val">Extracted from transcripts, tracked against outcomes. You know what you said you'd do — and whether you did it.</span>
+        </div>
+        <div class="cap-row">
+          <span class="cap-key">Weekly Review</span>
+          <span class="cap-val">What happened, who mattered, what moved. The summary writes itself from what's already in the system.</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════ 05 — PRIVACY ══════════ -->
+  <div class="section section--alt">
+    <div class="container">
+      <span class="section__number">05</span>
+      <p class="section__eyebrow">Ownership &amp; Privacy</p>
+      <h2 class="section__headline">
+        Your data stays<br>
+        on your machine.<br>
+        <em>That is the architecture.</em>
+      </h2>
+
+      <div class="warning-box reveal">
+        <p class="warning-box__label">What happened to Limitless AI</p>
+        <p class="warning-box__text">Limitless AI built one of the most ambitious personal AI memory products in the category. It raised funding, attracted users, and asked people to trust it with their professional context. In December 2025, Meta acquired it and shut it down. The users who built years of context in their platform lost it. This is not a risk you take with SoY.</p>
+      </div>
+
+      <table class="arch-table reveal">
+        <thead>
+          <tr>
+            <th>Component</th>
+            <th>Implementation</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Database</td>
+            <td>~/.local/share/software-of-you/soy.db</td>
+            <td class="arch-yes">Local</td>
+          </tr>
+          <tr>
+            <td>Format</td>
+            <td>Standard SQLite — any client can read it</td>
+            <td class="arch-yes">Open</td>
+          </tr>
+          <tr>
+            <td>Cloud component</td>
+            <td>—</td>
+            <td class="arch-no">None</td>
+          </tr>
+          <tr>
+            <td>Analytics / telemetry</td>
+            <td>—</td>
+            <td class="arch-no">None</td>
+          </tr>
+          <tr>
+            <td>Google OAuth</td>
+            <td>Your machine → Google API directly</td>
+            <td class="arch-yes">Private</td>
+          </tr>
+          <tr>
+            <td>Auto-backup</td>
+            <td>Before every migration</td>
+            <td class="arch-yes">Automatic</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <p class="body">No acquisition changes that. No shutdown erases it. No price increase holds it hostage. <strong>Standard SQLite, readable by any client, backed up automatically, exportable on demand.</strong></p>
+
+      <div class="bridge">
+        <span class="bridge__arrow">↓</span>
+        <p class="bridge__text">The only AI context tool built to last as long as you need it to. And it costs less than two months of the subscriptions it can replace. <strong>$149, once.</strong></p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════ PRICING ══════════ -->
+  <div class="pricing">
+    <div class="container">
+      <div class="pricing__head">
+        <h2 class="pricing__headline">$149, <span>once.</span></h2>
+        <p class="pricing__meta">That is the full price.</p>
+      </div>
+
+      <div class="duel">
+        <div class="duel__col duel__col--them">
+          <p class="duel__label">What you're currently paying</p>
+          <p class="duel__price">$876</p>
+          <p class="duel__period">per year</p>
+          <p class="duel__day">&nbsp;</p>
+          <div class="duel__items">
+            <div class="duel__item"><span class="di-name">HubSpot Starter</span><span class="di-val">$20/mo</span></div>
+            <div class="duel__item"><span class="di-name">Otter.ai Pro</span><span class="di-val">$17/mo</span></div>
+            <div class="duel__item"><span class="di-name">Notion Plus</span><span class="di-val">$16/mo</span></div>
+            <div class="duel__item"><span class="di-name">Scheduling tool</span><span class="di-val">$12/mo</span></div>
+            <div class="duel__item"><span class="di-name">Note-taking app</span><span class="di-val">$8/mo</span></div>
+          </div>
+        </div>
+
+        <div class="duel__sep">vs</div>
+
+        <div class="duel__col duel__col--us">
+          <p class="duel__label">Software of You</p>
+          <p class="duel__price">$149</p>
+          <p class="duel__period">once · forever</p>
+          <p class="duel__day">$0.41/day in year one</p>
+          <div class="duel__items">
+            <div class="duel__item"><span class="di-name">All 8 modules</span><span class="di-tick">✓</span></div>
+            <div class="duel__item"><span class="di-name">No seat limits</span><span class="di-tick">✓</span></div>
+            <div class="duel__item"><span class="di-name">No feature tiers</span><span class="di-tick">✓</span></div>
+            <div class="duel__item"><span class="di-name">No annual renewal</span><span class="di-tick">✓</span></div>
+            <div class="duel__item"><span class="di-name">Every update included</span><span class="di-tick">✓</span></div>
+          </div>
+        </div>
+      </div>
+
+      <p class="pricing__verdict">SoY pays for itself in two months if you cancel two subscriptions. But that's the wrong frame — those subscriptions store data. SoY connects it. What's the compounding cost of an AI that never learns your world?</p>
+
+      <div class="pricing__cta">
+        <a href="https://softwareof.you" class="btn-pricing">Get Software of You — $149, once →</a>
+        <div class="pricing__cta-notes">
+          <span class="pcn">Setup takes 5 minutes.</span>
+          <span class="pcn">↩ 30-day money-back guarantee — no questions.</span>
+        </div>
+      </div>
+
+      <div class="next-steps">
+        <p class="next-steps__label">What happens after you buy</p>
+        <div class="next-steps__grid">
+          <div class="ns-step"><p class="ns-step__num">01</p><p class="ns-step__text">Download the Claude Code plugin — 30 seconds</p></div>
+          <div class="ns-step"><p class="ns-step__num">02</p><p class="ns-step__text">Run /soy-setup inside Claude Code — 5 minutes</p></div>
+          <div class="ns-step"><p class="ns-step__num">03</p><p class="ns-step__text">Add your first contact or project</p></div>
+          <div class="ns-step"><p class="ns-step__num">04</p><p class="ns-step__text">Ask Claude anything — now it knows</p></div>
+        </div>
+      </div>
+
+      <!-- Early adopter -->
+      <div style="margin-top: 36px; padding: 24px 32px; border: 1px solid rgba(255,255,255,0.07); display: flex; align-items: baseline; gap: 20px;">
+        <span style="font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase; color: #6bab8a; white-space: nowrap; flex-shrink: 0;">Early Access</span>
+        <p style="font-family: 'DM Sans', sans-serif; font-size: 14px; color: rgba(255,255,255,0.3); line-height: 1.7;">SoY is <strong style="color:rgba(255,255,255,0.45); font-weight:500;">built in public</strong>. You're joining the first cohort of users who'll shape what it becomes — and every future module is included at no extra cost.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════ 06 — FAQ ══════════ -->
+  <div class="section">
+    <div class="container">
+      <span class="section__number">06</span>
+      <p class="section__eyebrow">Before You Buy</p>
+      <h2 class="section__headline">Common questions.</h2>
+
+      <div class="faq-list" style="max-width: 720px;">
+        <div class="faq-item">
+          <div class="faq-q" onclick="toggleFaq(this)">
+            I already use Claude's built-in memory. Why do I need this?
+            <span class="faq-icon">+</span>
+          </div>
+          <div class="faq-a">Claude's native memory stores summaries and preferences — useful for knowing your name and tone. SoY builds a structured, cross-referenced database: 45+ slash commands, contact relationship scores derived from email tone, meeting transcripts with extracted commitments, projects linked to the clients who drive them, decisions tracked against outcomes. Native memory gives Claude a sticky note. SoY gives it a filing system.</div>
+        </div>
+        <div class="faq-item">
+          <div class="faq-q" onclick="toggleFaq(this)">
+            I don't use Claude Code that heavily. Is this still worth it?
+            <span class="faq-icon">+</span>
+          </div>
+          <div class="faq-a">SoY compounds with use — but it doesn't require heavy use to be valuable. If you have meetings, clients, projects, or decisions worth remembering, SoY makes them available to Claude from the first query. The question isn't how often you use Claude Code today — it's how often you wished Claude knew more about your work. If that's more than once a week, SoY earns its place.</div>
+        </div>
+        <div class="faq-item">
+          <div class="faq-q" onclick="toggleFaq(this)">
+            I'm not a developer. Can I use this?
+            <span class="faq-icon">+</span>
+          </div>
+          <div class="faq-a">SoY runs inside Claude Code, so you need Claude Code installed. If you use Claude Code regularly, SoY installs in minutes. You interact entirely through natural language — no SQL, no terminal commands, no configuration. If Claude Code is part of your workflow, SoY fits inside it.</div>
+        </div>
+        <div class="faq-item">
+          <div class="faq-q" onclick="toggleFaq(this)">
+            What happens to my data if I stop using it?
+            <span class="faq-icon">+</span>
+          </div>
+          <div class="faq-a">Nothing. The database lives on your machine in standard SQLite format. SoY never had your data. You always did. Stop using the plugin and the database stays exactly where it is — readable, exportable, yours.</div>
+        </div>
+        <div class="faq-item">
+          <div class="faq-q" onclick="toggleFaq(this)">
+            How is this different from a CRM like HubSpot?
+            <span class="faq-icon">+</span>
+          </div>
+          <div class="faq-a">HubSpot is a team sales tool optimised for pipeline management. SoY is a personal context system. In HubSpot, a contact is a contact. In SoY, a contact is linked to every project you share, every conversation you've logged, every email in your thread, every decision they influenced. And all of it is queryable by Claude in natural language, inside the environment where you work.</div>
+        </div>
+        <div class="faq-item">
+          <div class="faq-q" onclick="toggleFaq(this)">
+            What if product updates break my data?
+            <span class="faq-icon">+</span>
+          </div>
+          <div class="faq-a">Auto-backup runs before every migration. If anything goes wrong during an update, the system auto-restores from the last snapshot. Your data has never been at risk from an update.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════ CLOSING ══════════ -->
+  <div class="closing">
+    <div class="container">
+      <h2 class="closing__headline">
+        Every conversation you've had<br>
+        with Claude starts from nothing.<br>
+        <em>That ends today.</em>
+      </h2>
+
+      <p class="closing__body">
+        You've already invested in the best AI available. You've learned to use it well.
+        The one thing standing between you and an AI that actually knows your work
+        is the context layer. SoY is that layer. One database. Your machine. Five minutes to set up.
+        And from the first query, Claude becomes something it has never been for you before: <strong>informed.</strong>
+      </p>
+
+      <div class="closing__cta">
+        <a href="https://softwareof.you" class="btn-close">Get Software of You — $149, once →</a>
+        <div class="closing__support">
+          <span class="closing__note">All 8 modules · No subscription · No cloud · No lock-in</span>
+          <span class="closing__guarantee">↩ 30-day money-back guarantee</span>
+        </div>
+
+        <div class="closing__next">
+          <p class="cn__label">What happens after you buy</p>
+          <ul class="cn__steps">
+            <li class="cn__step"><span class="cn__num">01</span>Download plugin — 30 seconds</li>
+            <li class="cn__step"><span class="cn__num">02</span>Run /soy-setup in Claude Code — 5 minutes</li>
+            <li class="cn__step"><span class="cn__num">03</span>Add a contact or project — and start</li>
+            <li class="cn__step"><span class="cn__num">04</span>Ask Claude anything — now it knows</li>
+          </ul>
+        </div>
+      </div>
+
+      <p class="closing__sig">You are not talking to AI. You are thinking with it.</p>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <footer>
+    <span>© 2026 Software of You · Built by Kerry Morrison</span>
+    <a href="https://softwareof.you">softwareof.you</a>
+  
+    <a class="footer-email" data-u="kerry" data-d="softwareof.you" href="#" onclick="this.href='mailto:'+this.dataset.u+'@'+this.dataset.d;return false;" title="Email Kerry">kerry<span aria-hidden="true" style="display:none">&#8203;</span>&#64;softwareof.you</a>
+  </footer>
+
+  <script>
+    // FAQ
+    function toggleFaq(el) {
+      const item = el.parentElement;
+      const isOpen = item.classList.contains('open');
+      document.querySelectorAll('.faq-item').forEach(i => i.classList.remove('open'));
+      if (!isOpen) item.classList.add('open');
+    }
+
+    // Scroll reveals
+    if ('IntersectionObserver' in window) {
+      const io = new IntersectionObserver((entries) => {
+        entries.forEach(e => {
+          if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); }
+        });
+      }, { threshold: 0.06, rootMargin: '0px 0px -32px 0px' });
+
+      document.querySelectorAll('.reveal').forEach(el => io.observe(el));
+    } else {
+      document.querySelectorAll('.reveal').forEach(el => el.classList.add('in'));
+    }
+  </script>
+
+<script>
+(function() {
+  function closeAll() {
+    document.querySelectorAll('.nav__item--has-sub.open').forEach(function(el) {
+      el.classList.remove('open');
+    });
+  }
+  document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.nav__item--has-sub > a').forEach(function(trigger) {
+      trigger.addEventListener('click', function(e) {
+        e.preventDefault();
+        var item = trigger.parentElement;
+        var isOpen = item.classList.contains('open');
+        closeAll();
+        if (!isOpen) item.classList.add('open');
+      });
+    });
+    document.addEventListener('click', function(e) {
+      if (!e.target.closest('.nav__item--has-sub')) closeAll();
+    });
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') closeAll();
+    });
+  });
+})();
+</script>
+</body>
+</html>

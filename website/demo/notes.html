@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notes — Software of You</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'system-ui', 'sans-serif'] }
+                }
+            }
+        }
+    </script>
+    <style>
+        .nav-item {
+            display: flex; align-items: center; gap: 0.375rem; padding: 0.375rem 0.75rem;
+            border-radius: 0.5rem; font-size: 0.8125rem; color: #71717a; white-space: nowrap;
+            transition: all 0.15s; text-decoration: none;
+        }
+        .nav-item:hover { background: #f4f4f5; color: #18181b; }
+        .nav-item.active { background: #f4f4f5; color: #18181b; font-weight: 600; }
+        .nav-badge {
+            font-size: 0.6875rem; background: #e4e4e7; color: #52525b;
+            padding: 0.0625rem 0.375rem; border-radius: 9999px; font-weight: 500;
+        }
+        .nav-item.active .nav-badge, .nav-dropdown-item.active .nav-badge { background: #3b82f6; color: white; }
+        .nav-group { position: relative; }
+        .nav-group-label {
+            display: flex; align-items: center; gap: 0.25rem; padding: 0.375rem 0.75rem;
+            border-radius: 0.5rem; font-size: 0.8125rem; color: #71717a; cursor: pointer;
+            white-space: nowrap; transition: all 0.15s; user-select: none;
+        }
+        .nav-group-label:hover, .nav-group.active > .nav-group-label { background: #f4f4f5; color: #18181b; }
+        .nav-group.active > .nav-group-label { font-weight: 600; }
+        .nav-chevron { transition: transform 0.15s; opacity: 0.5; }
+        .nav-group:hover .nav-chevron, .nav-group.open .nav-chevron { opacity: 1; }
+        .nav-group.open .nav-chevron { transform: rotate(180deg); }
+        .nav-dropdown {
+            display: none; position: absolute; top: 100%; left: 0; margin-top: 0.25rem;
+            min-width: 10rem; background: white; border: 1px solid #e4e4e7; border-radius: 0.75rem;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -2px rgba(0,0,0,0.1);
+            padding: 0.375rem; z-index: 50;
+        }
+        .nav-group:hover > .nav-dropdown { display: block; }
+        .nav-group.open > .nav-dropdown { display: block; }
+        .nav-dropdown-item {
+            display: flex; align-items: center; gap: 0.375rem; padding: 0.375rem 0.625rem;
+            border-radius: 0.375rem; font-size: 0.8125rem; color: #71717a; white-space: nowrap;
+            transition: all 0.15s; text-decoration: none;
+        }
+        .nav-dropdown-item:hover { background: #f4f4f5; color: #18181b; }
+        .nav-dropdown-item.active { background: #eff6ff; color: #1d4ed8; font-weight: 600; }
+    </style>
+</head>
+<body class="bg-zinc-50 text-zinc-900 font-sans antialiased">
+
+    <!-- Nav Bar -->
+    <nav class="bg-white border-b border-zinc-200 mb-6">
+        <div class="max-w-6xl mx-auto px-4">
+            <div class="flex items-center gap-1 py-3">
+                <a href="dashboard.html" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-semibold text-zinc-900 hover:bg-zinc-50 transition-colors shrink-0">
+                    <i data-lucide="hexagon" class="w-4 h-4"></i>
+                    SoY
+                </a>
+                <span class="w-px h-5 bg-zinc-200 mx-1"></span>
+                <a href="dashboard.html" class="nav-item">
+                    <i data-lucide="layout-dashboard" class="w-3.5 h-3.5"></i>
+                    Dashboard
+                </a>
+                <!-- People group -->
+                <div class="nav-group" onclick="this.classList.toggle('open')">
+                    <div class="nav-group-label">
+                        <span>People</span>
+                        <i data-lucide="chevron-down" class="w-3 h-3 nav-chevron"></i>
+                    </div>
+                    <div class="nav-dropdown">
+                        <a href="contacts.html" class="nav-dropdown-item">
+                            <i data-lucide="users" class="w-3.5 h-3.5"></i>
+                            Contacts
+                            <span class="nav-badge">7</span>
+                        </a>
+                        <a href="network-map.html" class="nav-dropdown-item">
+                            <i data-lucide="share-2" class="w-3.5 h-3.5"></i>
+                            Network
+                        </a>
+                    </div>
+                </div>
+                <!-- Comms group -->
+                <div class="nav-group" onclick="this.classList.toggle('open')">
+                    <div class="nav-group-label">
+                        <span>Comms</span>
+                        <i data-lucide="chevron-down" class="w-3 h-3 nav-chevron"></i>
+                    </div>
+                    <div class="nav-dropdown">
+                        <a href="email-hub.html" class="nav-dropdown-item">
+                            <i data-lucide="mail" class="w-3.5 h-3.5"></i>
+                            Email
+                            <span class="nav-badge">58</span>
+                        </a>
+                        <a href="week-view.html" class="nav-dropdown-item">
+                            <i data-lucide="calendar" class="w-3.5 h-3.5"></i>
+                            Calendar
+                            <span class="nav-badge">28</span>
+                        </a>
+                    </div>
+                </div>
+                <!-- Intelligence group -->
+                <div class="nav-group active" onclick="this.classList.toggle('open')">
+                    <div class="nav-group-label">
+                        <span>Intelligence</span>
+                        <i data-lucide="chevron-down" class="w-3 h-3 nav-chevron"></i>
+                    </div>
+                    <div class="nav-dropdown">
+                        <a href="conversations.html" class="nav-dropdown-item">
+                            <i data-lucide="message-square" class="w-3.5 h-3.5"></i>
+                            Conversations
+                            <span class="nav-badge">3</span>
+                        </a>
+                        <a href="decision-journal.html" class="nav-dropdown-item">
+                            <i data-lucide="git-branch" class="w-3.5 h-3.5"></i>
+                            Decisions
+                            <span class="nav-badge">5</span>
+                        </a>
+                        <a href="journal.html" class="nav-dropdown-item">
+                            <i data-lucide="book-open" class="w-3.5 h-3.5"></i>
+                            Journal
+                            <span class="nav-badge">1</span>
+                        </a>
+                        <a href="notes.html" class="nav-dropdown-item active">
+                            <i data-lucide="sticky-note" class="w-3.5 h-3.5"></i>
+                            Notes
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <!-- Breadcrumb -->
+            <div class="flex items-center justify-between pb-3 -mt-1">
+                <div class="flex items-center gap-1.5 text-sm">
+                    <a href="dashboard.html" class="text-zinc-400 hover:text-zinc-600">Dashboard</a>
+                    <span class="text-zinc-300">&rsaquo;</span>
+                    <span class="text-zinc-700 font-medium">Notes</span>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="max-w-6xl mx-auto px-4 pb-8">
+
+        <!-- Header Card -->
+        <div class="bg-white rounded-xl shadow-sm border border-zinc-200 p-6 mb-6">
+            <div class="flex items-center justify-between flex-wrap gap-4">
+                <div>
+                    <div class="flex items-center gap-2">
+                        <i data-lucide="sticky-note" class="w-5 h-5 text-zinc-700"></i>
+                        <h1 class="text-2xl font-bold text-zinc-900">Notes</h1>
+                    </div>
+                    <p class="text-sm text-zinc-500 mt-1">0 notes captured</p>
+                </div>
+                <div class="flex items-center gap-3 flex-wrap">
+                    <span class="px-3 py-1 rounded-full text-xs font-medium bg-blue-50 text-blue-700">0 total</span>
+                    <span class="px-3 py-1 rounded-full text-xs font-medium bg-amber-50 text-amber-700">0 pinned</span>
+                    <span class="px-3 py-1 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700">0 this week</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main content grid -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+            <!-- Left: Notes (col-span-2) -->
+            <div class="lg:col-span-2">
+                <!-- Empty State -->
+                <div class="bg-white rounded-xl shadow-sm border border-zinc-200 p-8 text-center">
+                    <i data-lucide="sticky-note" class="w-8 h-8 text-zinc-300 mx-auto mb-3"></i>
+                    <p class="text-sm text-zinc-500">No notes yet.</p>
+                    <p class="text-xs text-zinc-400 mt-1">Capture a thought with /note &mdash; it'll auto-link to your contacts and projects.</p>
+                </div>
+            </div>
+
+            <!-- Right sidebar -->
+            <div class="lg:col-span-1">
+
+                <!-- Most Referenced Contacts -->
+                <div class="bg-white rounded-xl shadow-sm border border-zinc-200 p-5 mb-4">
+                    <div class="flex items-center gap-2 mb-4">
+                        <i data-lucide="users" class="w-5 h-5 text-zinc-400"></i>
+                        <h3 class="text-sm font-semibold">Most Referenced</h3>
+                    </div>
+                    <p class="text-xs text-zinc-400">No contacts referenced yet.</p>
+                </div>
+
+                <!-- Most Referenced Projects -->
+                <div class="bg-white rounded-xl shadow-sm border border-zinc-200 p-5 mb-4">
+                    <div class="flex items-center gap-2 mb-4">
+                        <i data-lucide="folder-open" class="w-5 h-5 text-zinc-400"></i>
+                        <h3 class="text-sm font-semibold">Projects Referenced</h3>
+                    </div>
+                    <p class="text-xs text-zinc-400">No projects referenced yet.</p>
+                </div>
+
+                <!-- Popular Tags -->
+                <div class="bg-white rounded-xl shadow-sm border border-zinc-200 p-5">
+                    <div class="flex items-center gap-2 mb-4">
+                        <i data-lucide="hash" class="w-5 h-5 text-zinc-400"></i>
+                        <h3 class="text-sm font-semibold">Popular Tags</h3>
+                    </div>
+                    <p class="text-xs text-zinc-400">No tags used yet. Add #hashtags to your notes.</p>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <footer class="mt-8 pt-4 border-t border-zinc-100 text-center">
+            <p class="text-xs text-zinc-400">Generated by Software of You &middot; February 20, 2026 at 3:45 PM</p>
+        </footer>
+
+    </div>
+
+    <script>lucide.createIcons();</script>
+<!-- DEMO BANNER -->
+<div id="demo-banner" style="position:fixed;bottom:0;left:0;right:0;z-index:9999;background:#1A4731;color:white;font-family:'DM Mono',monospace;font-size:12px;letter-spacing:0.04em;display:flex;align-items:center;justify-content:center;gap:24px;padding:10px 24px;box-shadow:0 -2px 16px rgba(0,0,0,0.2);">
+  <span style="opacity:0.7;">✦ LIVE DEMO — anonymized data</span>
+  <span style="opacity:0.4;">|</span>
+  <span>This is what Software of You looks like with 3 months of real use.</span>
+  <span style="opacity:0.4;">|</span>
+  <a href="https://softwareof.you" style="color:#a8e6c0;text-decoration:none;font-weight:500;white-space:nowrap;" target="_top">Get it for yourself →</a>
+  <button onclick="document.getElementById('demo-banner').style.display='none'" style="margin-left:8px;background:none;border:none;color:rgba(255,255,255,0.4);cursor:pointer;font-size:16px;line-height:1;padding:0 4px;" title="Dismiss">×</button>
+</div>
+<div style="height:44px;"></div><!-- spacer so banner doesn't cover content -->
+</body>
+</html>

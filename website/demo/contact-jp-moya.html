@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sofia Reyes — Software of You</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'system-ui', 'sans-serif'] }
+                }
+            }
+        }
+    </script>
+    <style>
+        .nav-item { display: flex; align-items: center; gap: 0.375rem; padding: 0.375rem 0.75rem; border-radius: 0.5rem; font-size: 0.8125rem; color: #71717a; white-space: nowrap; transition: all 0.15s; text-decoration: none; }
+        .nav-item:hover { background: #f4f4f5; color: #18181b; }
+        .nav-item.active { background: #f4f4f5; color: #18181b; font-weight: 600; }
+        .nav-badge { font-size: 0.6875rem; background: #e4e4e7; color: #52525b; padding: 0.0625rem 0.375rem; border-radius: 9999px; font-weight: 500; }
+        .nav-item.active .nav-badge, .nav-dropdown-item.active .nav-badge { background: #3b82f6; color: white; }
+        .nav-group { position: relative; }
+        .nav-group-label { display: flex; align-items: center; gap: 0.25rem; padding: 0.375rem 0.75rem; border-radius: 0.5rem; font-size: 0.8125rem; color: #71717a; cursor: pointer; white-space: nowrap; transition: all 0.15s; user-select: none; }
+        .nav-group-label:hover, .nav-group.active > .nav-group-label { background: #f4f4f5; color: #18181b; }
+        .nav-group.active > .nav-group-label { font-weight: 600; }
+        .nav-chevron { transition: transform 0.15s; opacity: 0.5; }
+        .nav-group:hover .nav-chevron, .nav-group.open .nav-chevron { opacity: 1; }
+        .nav-group.open .nav-chevron { transform: rotate(180deg); }
+        .nav-dropdown { display: none; position: absolute; top: 100%; left: 0; margin-top: 0.25rem; min-width: 10rem; background: white; border: 1px solid #e4e4e7; border-radius: 0.75rem; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -2px rgba(0,0,0,0.1); padding: 0.375rem; z-index: 50; }
+        .nav-group:hover > .nav-dropdown { display: block; }
+        .nav-group.open > .nav-dropdown { display: block; }
+        .nav-dropdown-item { display: flex; align-items: center; gap: 0.375rem; padding: 0.375rem 0.625rem; border-radius: 0.375rem; font-size: 0.8125rem; color: #71717a; white-space: nowrap; transition: all 0.15s; text-decoration: none; }
+        .nav-dropdown-item:hover { background: #f4f4f5; color: #18181b; }
+        .nav-dropdown-item.active { background: #eff6ff; color: #1d4ed8; font-weight: 600; }
+    </style>
+</head>
+<body class="bg-zinc-50 text-zinc-900 font-sans antialiased">
+
+    <!-- Navigation -->
+    <nav class="bg-white border-b border-zinc-200 mb-6">
+        <div class="max-w-6xl mx-auto px-4">
+            <div class="flex items-center gap-1 py-3">
+                <a href="dashboard.html" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-semibold text-zinc-900 hover:bg-zinc-50 transition-colors shrink-0">
+                    <i data-lucide="hexagon" class="w-4 h-4"></i> SoY
+                </a>
+                <span class="w-px h-5 bg-zinc-200 mx-1"></span>
+                <a href="dashboard.html" class="nav-item"><i data-lucide="layout-dashboard" class="w-3.5 h-3.5"></i> Dashboard</a>
+                <div class="nav-group active" onclick="this.classList.toggle('open')">
+                    <div class="nav-group-label"><span>People</span><i data-lucide="chevron-down" class="w-3 h-3 nav-chevron"></i></div>
+                    <div class="nav-dropdown">
+                        <a href="contacts.html" class="nav-dropdown-item active"><i data-lucide="users" class="w-3.5 h-3.5"></i> Contacts <span class="nav-badge">7</span></a>
+                        <a href="network-map.html" class="nav-dropdown-item"><i data-lucide="share-2" class="w-3.5 h-3.5"></i> Network</a>
+                    </div>
+                </div>
+                <div class="nav-group" onclick="this.classList.toggle('open')">
+                    <div class="nav-group-label"><span>Comms</span><i data-lucide="chevron-down" class="w-3 h-3 nav-chevron"></i></div>
+                    <div class="nav-dropdown">
+                        <a href="email-hub.html" class="nav-dropdown-item"><i data-lucide="mail" class="w-3.5 h-3.5"></i> Email <span class="nav-badge">58</span></a>
+                        <a href="week-view.html" class="nav-dropdown-item"><i data-lucide="calendar" class="w-3.5 h-3.5"></i> Calendar <span class="nav-badge">29</span></a>
+                    </div>
+                </div>
+                <div class="nav-group" onclick="this.classList.toggle('open')">
+                    <div class="nav-group-label"><span>Intelligence</span><i data-lucide="chevron-down" class="w-3 h-3 nav-chevron"></i></div>
+                    <div class="nav-dropdown">
+                        <a href="conversations.html" class="nav-dropdown-item"><i data-lucide="message-square" class="w-3.5 h-3.5"></i> Conversations <span class="nav-badge">3</span></a>
+                        <a href="decision-journal.html" class="nav-dropdown-item"><i data-lucide="git-branch" class="w-3.5 h-3.5"></i> Decisions <span class="nav-badge">5</span></a>
+                        <a href="journal.html" class="nav-dropdown-item"><i data-lucide="book-open" class="w-3.5 h-3.5"></i> Journal <span class="nav-badge">1</span></a>
+                        <a href="notes.html" class="nav-dropdown-item"><i data-lucide="sticky-note" class="w-3.5 h-3.5"></i> Notes</a>
+                    </div>
+                </div>
+            </div>
+            <div class="flex items-center justify-between pb-3 -mt-1">
+                <div class="flex items-center gap-1.5 text-sm">
+                    <a href="dashboard.html" class="text-zinc-400 hover:text-zinc-600">Dashboard</a>
+                    <span class="text-zinc-300">&rsaquo;</span>
+                    <a href="contacts.html" class="text-zinc-400 hover:text-zinc-600">Contacts</a>
+                    <span class="text-zinc-300">&rsaquo;</span>
+                    <span class="text-zinc-700 font-medium">Sofia Reyes</span>
+                </div>
+                <div class="flex items-center gap-1.5">
+                    <a href="contact-daniel-byrne.html" class="px-2 py-0.5 rounded text-xs bg-zinc-100 text-zinc-500 hover:bg-zinc-200 hover:text-zinc-700 transition-colors">Marcus Webb</a>
+                    <a href="contact-charles-bernard.html" class="px-2 py-0.5 rounded text-xs bg-zinc-100 text-zinc-500 hover:bg-zinc-200 hover:text-zinc-700 transition-colors">James Okafor</a>
+                    <a href="contact-benjis.html" class="px-2 py-0.5 rounded text-xs bg-zinc-100 text-zinc-500 hover:bg-zinc-200 hover:text-zinc-700 transition-colors">Verdant Co</a>
+                    <a href="contact-emma-cuddy.html" class="px-2 py-0.5 rounded text-xs bg-zinc-100 text-zinc-500 hover:bg-zinc-200 hover:text-zinc-700 transition-colors">Priya Nair</a>
+                    <a href="contact-gigi-presentey.html" class="px-2 py-0.5 rounded text-xs bg-zinc-100 text-zinc-500 hover:bg-zinc-200 hover:text-zinc-700 transition-colors">Zoe Hartley</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pb-8">
+
+        <!-- Contact Header -->
+        <div class="bg-white rounded-xl shadow-sm border border-zinc-200 p-6 mb-6">
+            <div class="flex items-start justify-between">
+                <div class="flex items-start gap-5">
+                    <div class="w-16 h-16 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
+                        <span class="text-2xl font-bold text-blue-700">JP</span>
+                    </div>
+                    <div>
+                        <h1 class="text-2xl font-bold">Sofia Reyes</h1>
+                        <p class="text-zinc-500 mt-0.5">Owner at <a href="contact-benjis.html" class="font-medium text-blue-600 hover:text-blue-800 hover:underline">Verdant Co</a></p>
+                        <div class="flex items-center gap-4 mt-3">
+                            <div class="flex items-center gap-1.5 text-sm text-zinc-500">
+                                <i data-lucide="briefcase" class="w-4 h-4"></i>
+                                <span>Friend &amp; business partner</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="flex items-center gap-2">
+                    <span class="px-2.5 py-1 rounded-full text-xs font-medium bg-green-50 text-green-700">Active</span>
+                    <span class="px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700">Trusted</span>
+                    <span class="px-2.5 py-1 rounded-full text-xs font-medium bg-green-50 text-green-700">Stable</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Grid -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+            <!-- Left Column -->
+            <div class="lg:col-span-2 space-y-6">
+
+                <!-- Relationship Context -->
+                <div class="bg-white rounded-xl shadow-sm border border-zinc-200 p-6">
+                    <div class="flex items-center gap-2 mb-4">
+                        <i data-lucide="link" class="w-5 h-5 text-zinc-400"></i>
+                        <h2 class="text-lg font-semibold">Relationship Context</h2>
+                    </div>
+                    <div class="space-y-3 text-sm text-zinc-600 leading-relaxed">
+                        <p>JP is your <span class="font-medium text-zinc-800">friend and business partner</span> &mdash; the deepest relationship in the system. He's the main business owner at Verdant Co and you work together across strategic, operational, and interpersonal domains with high trust and frequent contact (weekly syncs plus the team kickoff).</p>
+                        <p>The relationship is evolving: JP is expanding from advisory to operational support, volunteering for RFPs, recruiting pipeline management, and SOP review. You're actively delegating to him and he's absorbing it well, though the commitment load is heavy &mdash; 16 open items from the last two conversations alone, spanning hiring (Laser CEO outreach, Carol, Marissa), finance (Orion review, CFO meeting), policy (Code of Conduct, lawyer), and capacity planning.</p>
+                        <p>A notable moment: JP directly asked you to acknowledge more explicitly &mdash; he wants to see reactions, emojis, or brief confirmations when he shares updates on Slack. This kind of direct communication feedback is rare and valuable, and you committed to using more Slack reactions as acknowledgment markers. The risk is that it feels trivial and drops off your radar in a week.</p>
+                        <p>Talk ratio from the weekly call: JP spoke ~18% of the time in the one-on-one, which suggests you may be driving most of the conversation. Worth monitoring whether this is comfortable for him or if he'd benefit from more space.</p>
+                    </div>
+                </div>
+
+                <!-- Company Context -->
+                <div class="bg-white rounded-xl shadow-sm border border-zinc-200 p-6">
+                    <div class="flex items-center gap-2 mb-4">
+                        <i data-lucide="building" class="w-5 h-5 text-zinc-400"></i>
+                        <h2 class="text-lg font-semibold">Verdant Co</h2>
+                        <span class="text-xs text-zinc-400 ml-1">verdantco.com</span>
+                    </div>
+                    <div class="space-y-2 text-sm text-zinc-600">
+                        <p>Interior plant care and landscaping services. Kerry is a partner. The company is in a high-velocity operations period with multiple hiring pipelines, a finance transition, and policy rollouts happening simultaneously.</p>
+                    </div>
+                    <div class="mt-5 pt-4 border-t border-zinc-100">
+                        <p class="text-xs text-zinc-400 font-medium uppercase tracking-wide mb-3">Key Team</p>
+                        <div class="grid grid-cols-2 gap-2 text-sm">
+                            <div class="flex items-center gap-2">
+                                <div class="w-6 h-6 rounded-full bg-blue-100 flex items-center justify-center"><span class="text-[10px] font-bold text-blue-700">EC</span></div>
+                                <div><a href="contact-emma-cuddy.html" class="font-medium text-blue-600 hover:underline">Priya Nair</a> <span class="text-zinc-400">&mdash; Ops Lead</span></div>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <div class="w-6 h-6 rounded-full bg-blue-100 flex items-center justify-center"><span class="text-[10px] font-bold text-blue-700">GP</span></div>
+                                <div><a href="contact-gigi-presentey.html" class="font-medium text-blue-600 hover:underline">Zoe Hartley</a> <span class="text-zinc-400">&mdash; Finance</span></div>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <div class="w-6 h-6 rounded-full bg-blue-100 flex items-center justify-center"><span class="text-[10px] font-bold text-blue-700">NF</span></div>
+                                <div><a href="contact-nawid-fatahi.html" class="font-medium text-blue-600 hover:underline">Tariq Hassan</a> <span class="text-zinc-400">&mdash; Ops</span></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Conversation Intelligence -->
+                <div class="bg-white rounded-xl shadow-sm border border-zinc-200 p-6">
+                    <div class="flex items-center gap-2 mb-4">
+                        <i data-lucide="message-square" class="w-5 h-5 text-zinc-400"></i>
+                        <h2 class="text-lg font-semibold">Conversation Intelligence</h2>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="p-4 bg-zinc-50 rounded-lg">
+                            <div class="flex items-center gap-2 mb-2">
+                                <p class="text-sm font-medium text-zinc-800">Kerry / Sofia Reyes &mdash; Verdant Co Weekly</p>
+                                <span class="text-xs text-zinc-400">Feb 19</span>
+                            </div>
+                            <p class="text-sm text-zinc-600 mb-3">Wide-ranging sync: hiring, financials ($3K loss), policy rollout, RFP agent, Orion model, communication style feedback. 12 commitments captured &mdash; 4 yours, 8 JP's.</p>
+                        </div>
+                        <div class="p-4 bg-zinc-50 rounded-lg">
+                            <div class="flex items-center gap-2 mb-2">
+                                <p class="text-sm font-medium text-zinc-800">Weekly Kickoff &mdash; Verdant Co</p>
+                                <span class="text-xs text-zinc-400">Feb 17 &middot; 64 min</span>
+                            </div>
+                            <p class="text-sm text-zinc-600">Full-team kickoff. JP stepped up as support layer &mdash; volunteered to back up Tariq. Kerry actively delegating to him on RFPs, recruiting, SOP review.</p>
+                        </div>
+                    </div>
+                    <div class="mt-4 pt-4 border-t border-zinc-100 space-y-3">
+                        <div class="flex gap-3">
+                            <div class="w-6 h-6 rounded-full bg-green-50 flex items-center justify-center flex-shrink-0 mt-0.5">
+                                <i data-lucide="heart" class="w-3 h-3 text-green-600"></i>
+                            </div>
+                            <div>
+                                <p class="text-xs font-medium text-zinc-500 uppercase tracking-wide mb-0.5">Relationship Pulse</p>
+                                <p class="text-sm text-zinc-600">High-trust working relationship. JP felt safe enough to give direct communication feedback mid-meeting. Conversation moves fluidly across strategic, operational, and interpersonal topics. Both comfortable context-switching together.</p>
+                            </div>
+                        </div>
+                        <div class="flex gap-3">
+                            <div class="w-6 h-6 rounded-full bg-amber-50 flex items-center justify-center flex-shrink-0 mt-0.5">
+                                <i data-lucide="alert-circle" class="w-3 h-3 text-amber-600"></i>
+                            </div>
+                            <div>
+                                <p class="text-xs font-medium text-zinc-500 uppercase tracking-wide mb-0.5">Pattern Alert</p>
+                                <p class="text-sm text-zinc-600">One call generated 12 commitments &mdash; JP carrying 2x your count spanning hiring, finance, policy, capacity, and legal. Worth checking if he can absorb all of this or if some items need explicit deprioritization.</p>
+                            </div>
+                        </div>
+                        <div class="flex gap-3">
+                            <div class="w-6 h-6 rounded-full bg-blue-50 flex items-center justify-center flex-shrink-0 mt-0.5">
+                                <i data-lucide="lightbulb" class="w-3 h-3 text-blue-600"></i>
+                            </div>
+                            <div>
+                                <p class="text-xs font-medium text-zinc-500 uppercase tracking-wide mb-0.5">Coach Note</p>
+                                <p class="text-sm text-zinc-600">JP asked you to acknowledge more explicitly. Consider a daily micro-habit: before closing Slack each day, scan JP's last few messages and react to at least one. The breadth of topics covered suggests the weekly meeting is becoming a catch-all &mdash; some items may belong in dedicated check-ins.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column -->
+            <div class="space-y-6">
+
+                <!-- Relationship Score -->
+                <div class="bg-white rounded-xl shadow-sm border border-zinc-200 p-5">
+                    <div class="flex items-center gap-2 mb-4">
+                        <i data-lucide="activity" class="w-5 h-5 text-zinc-400"></i>
+                        <h3 class="text-sm font-semibold">Relationship Score</h3>
+                    </div>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div class="rounded-lg bg-zinc-50 p-3 text-center">
+                            <p class="text-lg font-bold text-zinc-800">5.0/wk</p>
+                            <p class="text-xs text-zinc-500">Meeting Freq</p>
+                        </div>
+                        <div class="rounded-lg bg-zinc-50 p-3 text-center">
+                            <p class="text-lg font-bold text-zinc-800">18%</p>
+                            <p class="text-xs text-zinc-500">JP Talk Ratio</p>
+                        </div>
+                        <div class="rounded-lg bg-zinc-50 p-3 text-center">
+                            <p class="text-lg font-bold text-zinc-800">75%</p>
+                            <p class="text-xs text-zinc-500">Follow-through</p>
+                        </div>
+                        <div class="rounded-lg bg-zinc-50 p-3 text-center">
+                            <p class="text-lg font-bold text-zinc-800">95%</p>
+                            <p class="text-xs text-zinc-500">Topic Diversity</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Open Commitments -->
+                <div class="bg-white rounded-xl shadow-sm border border-zinc-200 p-5">
+                    <div class="flex items-center gap-2 mb-4">
+                        <i data-lucide="check-square" class="w-5 h-5 text-zinc-400"></i>
+                        <h3 class="text-sm font-semibold">JP's Open Commitments</h3>
+                        <span class="text-xs text-zinc-400 ml-auto">16 open</span>
+                    </div>
+                    <div class="space-y-2 max-h-72 overflow-y-auto">
+                        <div class="flex items-start gap-2 text-sm">
+                            <i data-lucide="square" class="w-4 h-4 text-blue-400 mt-0.5 flex-shrink-0"></i>
+                            <span>Add Code of Conduct to leadership meeting agenda</span>
+                        </div>
+                        <div class="flex items-start gap-2 text-sm">
+                            <i data-lucide="square" class="w-4 h-4 text-blue-400 mt-0.5 flex-shrink-0"></i>
+                            <span>Get Claude CFO to review Orion financials, then book 30-min meeting</span>
+                        </div>
+                        <div class="flex items-start gap-2 text-sm">
+                            <i data-lucide="square" class="w-4 h-4 text-blue-400 mt-0.5 flex-shrink-0"></i>
+                            <span>Continue 1-2 interviews/day across departments</span>
+                        </div>
+                        <div class="flex items-start gap-2 text-sm">
+                            <i data-lucide="square" class="w-4 h-4 text-blue-400 mt-0.5 flex-shrink-0"></i>
+                            <span>Ask Emma if Code of Conduct can live in project tool</span>
+                        </div>
+                        <div class="flex items-start gap-2 text-sm">
+                            <i data-lucide="square" class="w-4 h-4 text-blue-400 mt-0.5 flex-shrink-0"></i>
+                            <span>Update lawyer on incomplete legal documents</span>
+                        </div>
+                        <div class="flex items-start gap-2 text-sm">
+                            <i data-lucide="square" class="w-4 h-4 text-blue-400 mt-0.5 flex-shrink-0"></i>
+                            <span>Clean up P&amp;L structure for profitability measure</span>
+                        </div>
+                        <div class="flex items-start gap-2 text-sm">
+                            <i data-lucide="square" class="w-4 h-4 text-blue-400 mt-0.5 flex-shrink-0"></i>
+                            <span>Ask Ned for capacity model</span>
+                        </div>
+                        <div class="flex items-start gap-2 text-sm">
+                            <i data-lucide="square" class="w-4 h-4 text-blue-400 mt-0.5 flex-shrink-0"></i>
+                            <span>Reach out to CEO of Laser re: Marissa</span>
+                        </div>
+                        <div class="flex items-start gap-2 text-sm text-zinc-400">
+                            <i data-lucide="square" class="w-4 h-4 mt-0.5 flex-shrink-0"></i>
+                            <span>+ 8 more from Weekly Kickoff</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Follow-ups -->
+                <div class="bg-white rounded-xl shadow-sm border border-zinc-200 p-5">
+                    <div class="flex items-center gap-2 mb-4">
+                        <i data-lucide="clock" class="w-5 h-5 text-zinc-400"></i>
+                        <h3 class="text-sm font-semibold">Pending Follow-ups</h3>
+                    </div>
+                    <div class="space-y-3">
+                        <div class="pb-3 border-b border-zinc-100">
+                            <p class="text-sm font-medium text-zinc-800">Review Code of Conduct docs</p>
+                            <p class="text-xs text-zinc-500 mt-0.5">Due Feb 24 &mdash; before JP sends to leadership</p>
+                        </div>
+                        <div>
+                            <p class="text-sm font-medium text-zinc-800">Orion business model review</p>
+                            <p class="text-xs text-zinc-500 mt-0.5">Due Feb 26 &mdash; JP should have CFO-reviewed financials ready</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- About -->
+                <div class="bg-white rounded-xl shadow-sm border border-zinc-200 p-5">
+                    <div class="flex items-center gap-2 mb-4">
+                        <i data-lucide="user" class="w-5 h-5 text-zinc-400"></i>
+                        <h3 class="text-sm font-semibold">About JP</h3>
+                    </div>
+                    <div class="space-y-2 text-sm text-zinc-600">
+                        <p>Main business owner of Verdant Co and Kerry's friend/partner. Manages operations, hiring, legal, and finance.</p>
+                        <p>Currently working on the Orion business model and building an RFP Search Agent with Claude. Expanding from advisory to hands-on operational support.</p>
+                        <p>Values explicit acknowledgment in communication &mdash; asked Kerry directly for more Slack reactions and confirmation signals.</p>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <footer class="mt-8 pt-4 border-t border-zinc-100 text-center">
+            <p class="text-xs text-zinc-400">Generated by Software of You &middot; February 20, 2026 at 3:30 PM</p>
+        </footer>
+
+    </div>
+
+    <script>lucide.createIcons();</script>
+<!-- DEMO BANNER -->
+<div id="demo-banner" style="position:fixed;bottom:0;left:0;right:0;z-index:9999;background:#1A4731;color:white;font-family:'DM Mono',monospace;font-size:12px;letter-spacing:0.04em;display:flex;align-items:center;justify-content:center;gap:24px;padding:10px 24px;box-shadow:0 -2px 16px rgba(0,0,0,0.2);">
+  <span style="opacity:0.7;">✦ LIVE DEMO — anonymized data</span>
+  <span style="opacity:0.4;">|</span>
+  <span>This is what Software of You looks like with 3 months of real use.</span>
+  <span style="opacity:0.4;">|</span>
+  <a href="https://softwareof.you" style="color:#a8e6c0;text-decoration:none;font-weight:500;white-space:nowrap;" target="_top">Get it for yourself →</a>
+  <button onclick="document.getElementById('demo-banner').style.display='none'" style="margin-left:8px;background:none;border:none;color:rgba(255,255,255,0.4);cursor:pointer;font-size:16px;line-height:1;padding:0 4px;" title="Dismiss">×</button>
+</div>
+<div style="height:44px;"></div><!-- spacer so banner doesn't cover content -->
+</body>
+</html>

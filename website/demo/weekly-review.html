@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weekly Review — Software of You</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'system-ui', 'sans-serif'] }
+                }
+            }
+        }
+    </script>
+    <style>
+        .nav-item {
+            display: flex; align-items: center; gap: 0.375rem; padding: 0.375rem 0.75rem;
+            border-radius: 0.5rem; font-size: 0.8125rem; color: #71717a; white-space: nowrap;
+            transition: all 0.15s; text-decoration: none;
+        }
+        .nav-item:hover { background: #f4f4f5; color: #18181b; }
+        .nav-item.active { background: #f4f4f5; color: #18181b; font-weight: 600; }
+        .nav-badge {
+            font-size: 0.6875rem; background: #e4e4e7; color: #52525b;
+            padding: 0.0625rem 0.375rem; border-radius: 9999px; font-weight: 500;
+        }
+        .nav-item.active .nav-badge, .nav-dropdown-item.active .nav-badge { background: #3b82f6; color: white; }
+        .nav-group { position: relative; }
+        .nav-group-label {
+            display: flex; align-items: center; gap: 0.25rem; padding: 0.375rem 0.75rem;
+            border-radius: 0.5rem; font-size: 0.8125rem; color: #71717a; cursor: pointer;
+            white-space: nowrap; transition: all 0.15s; user-select: none;
+        }
+        .nav-group-label:hover, .nav-group.active > .nav-group-label { background: #f4f4f5; color: #18181b; }
+        .nav-group.active > .nav-group-label { font-weight: 600; }
+        .nav-chevron { transition: transform 0.15s; opacity: 0.5; }
+        .nav-group:hover .nav-chevron, .nav-group.open .nav-chevron { opacity: 1; }
+        .nav-group.open .nav-chevron { transform: rotate(180deg); }
+        .nav-dropdown {
+            display: none; position: absolute; top: 100%; left: 0; margin-top: 0.25rem;
+            min-width: 10rem; background: white; border: 1px solid #e4e4e7; border-radius: 0.75rem;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -2px rgba(0,0,0,0.1);
+            padding: 0.375rem; z-index: 50;
+        }
+        .nav-group:hover > .nav-dropdown { display: block; }
+        .nav-group.open > .nav-dropdown { display: block; }
+        .nav-dropdown-item {
+            display: flex; align-items: center; gap: 0.375rem; padding: 0.375rem 0.625rem;
+            border-radius: 0.375rem; font-size: 0.8125rem; color: #71717a; white-space: nowrap;
+            transition: all 0.15s; text-decoration: none;
+        }
+        .nav-dropdown-item:hover { background: #f4f4f5; color: #18181b; }
+        .nav-dropdown-item.active { background: #eff6ff; color: #1d4ed8; font-weight: 600; }
+    </style>
+</head>
+<body class="bg-zinc-50 text-zinc-900 font-sans antialiased">
+
+    <!-- Nav Bar -->
+    <nav class="bg-white border-b border-zinc-200 mb-6">
+        <div class="max-w-6xl mx-auto px-4">
+            <div class="flex items-center gap-1 py-3">
+                <a href="dashboard.html" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-semibold text-zinc-900 hover:bg-zinc-50 transition-colors shrink-0">
+                    <i data-lucide="hexagon" class="w-4 h-4"></i>
+                    SoY
+                </a>
+                <span class="w-px h-5 bg-zinc-200 mx-1"></span>
+                <a href="dashboard.html" class="nav-item active">
+                    <i data-lucide="layout-dashboard" class="w-3.5 h-3.5"></i>
+                    Dashboard
+                </a>
+                <div class="nav-group" onclick="this.classList.toggle('open')">
+                    <div class="nav-group-label">
+                        <span>People</span>
+                        <i data-lucide="chevron-down" class="w-3 h-3 nav-chevron"></i>
+                    </div>
+                    <div class="nav-dropdown">
+                        <a href="contacts.html" class="nav-dropdown-item">
+                            <i data-lucide="users" class="w-3.5 h-3.5"></i>
+                            Contacts <span class="nav-badge">7</span>
+                        </a>
+                        <a href="network-map.html" class="nav-dropdown-item">
+                            <i data-lucide="share-2" class="w-3.5 h-3.5"></i>
+                            Network
+                        </a>
+                    </div>
+                </div>
+                <div class="nav-group" onclick="this.classList.toggle('open')">
+                    <div class="nav-group-label">
+                        <span>Comms</span>
+                        <i data-lucide="chevron-down" class="w-3 h-3 nav-chevron"></i>
+                    </div>
+                    <div class="nav-dropdown">
+                        <a href="email-hub.html" class="nav-dropdown-item">
+                            <i data-lucide="mail" class="w-3.5 h-3.5"></i>
+                            Email <span class="nav-badge">58</span>
+                        </a>
+                        <a href="week-view.html" class="nav-dropdown-item">
+                            <i data-lucide="calendar" class="w-3.5 h-3.5"></i>
+                            Calendar <span class="nav-badge">28</span>
+                        </a>
+                    </div>
+                </div>
+                <div class="nav-group" onclick="this.classList.toggle('open')">
+                    <div class="nav-group-label">
+                        <span>Intelligence</span>
+                        <i data-lucide="chevron-down" class="w-3 h-3 nav-chevron"></i>
+                    </div>
+                    <div class="nav-dropdown">
+                        <a href="conversations.html" class="nav-dropdown-item">
+                            <i data-lucide="message-square" class="w-3.5 h-3.5"></i>
+                            Conversations <span class="nav-badge">3</span>
+                        </a>
+                        <a href="decision-journal.html" class="nav-dropdown-item">
+                            <i data-lucide="git-branch" class="w-3.5 h-3.5"></i>
+                            Decisions <span class="nav-badge">5</span>
+                        </a>
+                        <a href="journal.html" class="nav-dropdown-item">
+                            <i data-lucide="book-open" class="w-3.5 h-3.5"></i>
+                            Journal <span class="nav-badge">1</span>
+                        </a>
+                        <a href="notes.html" class="nav-dropdown-item">
+                            <i data-lucide="sticky-note" class="w-3.5 h-3.5"></i>
+                            Notes
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="flex items-center justify-between pb-3 -mt-1">
+                <div class="flex items-center gap-1.5 text-sm">
+                    <a href="dashboard.html" class="text-zinc-400 hover:text-zinc-600">Dashboard</a>
+                    <span class="text-zinc-300">&rsaquo;</span>
+                    <span class="text-zinc-700 font-medium">Review</span>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="max-w-6xl mx-auto px-4 pb-8">
+
+        <!-- Header -->
+        <div class="bg-white rounded-xl shadow-sm border border-zinc-200 p-6 mb-6">
+            <div>
+                <h1 class="text-2xl font-bold text-zinc-900">Week of Feb 16&ndash;22, 2026</h1>
+                <p class="text-sm text-zinc-500 mt-1">Your weekly intelligence brief</p>
+            </div>
+            <div class="flex items-center gap-2 mt-4 flex-wrap">
+                <span class="px-3 py-1 rounded-full text-xs font-medium bg-blue-50 text-blue-700">3 calls</span>
+                <span class="px-3 py-1 rounded-full text-xs font-medium bg-indigo-50 text-indigo-700">58 emails</span>
+                <span class="px-3 py-1 rounded-full text-xs font-medium bg-amber-50 text-amber-700">5 decisions</span>
+                <span class="px-3 py-1 rounded-full text-xs font-medium bg-rose-50 text-rose-700">1 journal entry</span>
+            </div>
+        </div>
+
+        <!-- Two-column layout -->
+        <div class="grid grid-cols-1 lg:grid-cols-5 gap-6">
+
+            <!-- LEFT COLUMN: THIS WEEK -->
+            <div class="lg:col-span-3">
+                <div class="flex items-center gap-2 mb-4">
+                    <h2 class="text-xs font-semibold text-zinc-400 uppercase tracking-wider">This Week</h2>
+                    <div class="flex-1 h-px bg-zinc-200"></div>
+                </div>
+
+                <!-- Relationship Pulse -->
+                <div class="bg-white rounded-xl shadow-sm border border-zinc-200 p-5 mb-4">
+                    <div class="flex items-center gap-2 mb-4">
+                        <i data-lucide="heart-pulse" class="w-4 h-4 text-zinc-400"></i>
+                        <h3 class="text-sm font-semibold text-zinc-700">Relationship Pulse</h3>
+                        <span class="text-xs text-zinc-400 ml-auto">6 contacts active</span>
+                    </div>
+
+                    <div class="space-y-2 mb-4">
+                        <div class="flex items-center justify-between py-1">
+                            <div class="flex items-center gap-2">
+                                <div class="w-6 h-6 rounded-full bg-blue-100 flex items-center justify-center text-blue-700 text-[10px] font-semibold">DB</div>
+                                <a href="contact-daniel-byrne.html" class="text-sm font-medium text-blue-600 hover:text-blue-800 hover:underline">Marcus Webb</a>
+                                <span class="text-xs text-zinc-400">Northgate Development</span>
+                            </div>
+                            <span class="text-xs text-zinc-500">Discovery call + emails + follow-up</span>
+                        </div>
+                        <div class="flex items-center justify-between py-1">
+                            <div class="flex items-center gap-2">
+                                <div class="w-6 h-6 rounded-full bg-blue-100 flex items-center justify-center text-blue-700 text-[10px] font-semibold">JP</div>
+                                <a href="contact-jp-moya.html" class="text-sm font-medium text-blue-600 hover:text-blue-800 hover:underline">Sofia Reyes</a>
+                                <span class="text-xs text-zinc-400">Verdant Co</span>
+                            </div>
+                            <span class="text-xs text-zinc-500">Weekly call + kickoff</span>
+                        </div>
+                        <div class="flex items-center justify-between py-1">
+                            <div class="flex items-center gap-2">
+                                <div class="w-6 h-6 rounded-full bg-blue-100 flex items-center justify-center text-blue-700 text-[10px] font-semibold">EC</div>
+                                <a href="contact-emma-cuddy.html" class="text-sm font-medium text-blue-600 hover:text-blue-800 hover:underline">Priya Nair</a>
+                                <span class="text-xs text-zinc-400">Verdant Co</span>
+                            </div>
+                            <span class="text-xs text-zinc-500">Weekly kickoff</span>
+                        </div>
+                        <div class="flex items-center justify-between py-1">
+                            <div class="flex items-center gap-2">
+                                <div class="w-6 h-6 rounded-full bg-blue-100 flex items-center justify-center text-blue-700 text-[10px] font-semibold">GP</div>
+                                <a href="contact-gigi-presentey.html" class="text-sm font-medium text-blue-600 hover:text-blue-800 hover:underline">Zoe Hartley</a>
+                                <span class="text-xs text-zinc-400">Verdant Co</span>
+                            </div>
+                            <span class="text-xs text-zinc-500">Weekly kickoff</span>
+                        </div>
+                        <div class="flex items-center justify-between py-1">
+                            <div class="flex items-center gap-2">
+                                <div class="w-6 h-6 rounded-full bg-blue-100 flex items-center justify-center text-blue-700 text-[10px] font-semibold">NF</div>
+                                <a href="contact-nawid-fatahi.html" class="text-sm font-medium text-blue-600 hover:text-blue-800 hover:underline">Tariq Hassan</a>
+                                <span class="text-xs text-zinc-400">Verdant Co</span>
+                            </div>
+                            <span class="text-xs text-zinc-500">Weekly kickoff</span>
+                        </div>
+                        <div class="flex items-center justify-between py-1">
+                            <div class="flex items-center gap-2">
+                                <div class="w-6 h-6 rounded-full bg-blue-100 flex items-center justify-center text-blue-700 text-[10px] font-semibold">CB</div>
+                                <a href="contact-charles-bernard.html" class="text-sm font-medium text-blue-600 hover:text-blue-800 hover:underline">James Okafor</a>
+                                <span class="text-xs text-zinc-400">Apex Group</span>
+                            </div>
+                            <span class="text-xs text-zinc-500">Scheduling emails</span>
+                        </div>
+                    </div>
+
+                    <!-- No cold contacts alert needed - all are active this week -->
+                </div>
+
+                <!-- Conversations -->
+                <div class="bg-white rounded-xl shadow-sm border border-zinc-200 p-5 mb-4">
+                    <div class="flex items-center gap-2 mb-4">
+                        <i data-lucide="message-square" class="w-4 h-4 text-zinc-400"></i>
+                        <h3 class="text-sm font-semibold text-zinc-700">Conversations</h3>
+                        <span class="text-xs text-zinc-400 ml-auto">3 calls</span>
+                    </div>
+                    <div class="space-y-3">
+                        <div class="flex items-start gap-3 py-1">
+                            <div class="w-1.5 h-1.5 rounded-full bg-cyan-400 mt-1.5 shrink-0"></div>
+                            <div>
+                                <p class="text-sm text-zinc-900 font-medium">Kerry / Marcus Webb &mdash; Discovery Call</p>
+                                <p class="text-xs text-zinc-500">Feb 20 &middot; 37 min &middot; With <a href="contact-daniel-byrne.html" class="text-blue-600 hover:text-blue-800 hover:underline">Marcus Webb</a></p>
+                            </div>
+                        </div>
+                        <div class="flex items-start gap-3 py-1">
+                            <div class="w-1.5 h-1.5 rounded-full bg-cyan-400 mt-1.5 shrink-0"></div>
+                            <div>
+                                <p class="text-sm text-zinc-900 font-medium">Kerry / Sofia Reyes &mdash; Verdant Co Weekly</p>
+                                <p class="text-xs text-zinc-500">Feb 19 &middot; With <a href="contact-jp-moya.html" class="text-blue-600 hover:text-blue-800 hover:underline">Sofia Reyes</a></p>
+                            </div>
+                        </div>
+                        <div class="flex items-start gap-3 py-1">
+                            <div class="w-1.5 h-1.5 rounded-full bg-cyan-400 mt-1.5 shrink-0"></div>
+                            <div>
+                                <p class="text-sm text-zinc-900 font-medium">Weekly Kickoff &mdash; Verdant Co</p>
+                                <p class="text-xs text-zinc-500">Feb 17 &middot; 64 min &middot; With <a href="contact-emma-cuddy.html" class="text-blue-600 hover:text-blue-800 hover:underline">Priya Nair</a>, <a href="contact-gigi-presentey.html" class="text-blue-600 hover:text-blue-800 hover:underline">Zoe Hartley</a>, <a href="contact-jp-moya.html" class="text-blue-600 hover:text-blue-800 hover:underline">Sofia Reyes</a>, <a href="contact-nawid-fatahi.html" class="text-blue-600 hover:text-blue-800 hover:underline">Tariq Hassan</a></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Email Activity -->
+                <div class="bg-white rounded-xl shadow-sm border border-zinc-200 p-5 mb-4">
+                    <div class="flex items-center gap-2 mb-4">
+                        <i data-lucide="mail" class="w-4 h-4 text-zinc-400"></i>
+                        <h3 class="text-sm font-semibold text-zinc-700">Email Activity</h3>
+                        <span class="text-xs text-zinc-400 ml-auto">58 this week</span>
+                    </div>
+                    <div class="grid grid-cols-4 gap-3 mb-4">
+                        <div class="text-center p-2 rounded-lg bg-zinc-50">
+                            <p class="text-lg font-bold text-zinc-900">52</p>
+                            <p class="text-[10px] text-zinc-500 uppercase tracking-wider">Received</p>
+                        </div>
+                        <div class="text-center p-2 rounded-lg bg-zinc-50">
+                            <p class="text-lg font-bold text-zinc-900">6</p>
+                            <p class="text-[10px] text-zinc-500 uppercase tracking-wider">Sent</p>
+                        </div>
+                        <div class="text-center p-2 rounded-lg bg-zinc-50">
+                            <p class="text-lg font-bold text-amber-600">48</p>
+                            <p class="text-[10px] text-zinc-500 uppercase tracking-wider">Unread</p>
+                        </div>
+                        <div class="text-center p-2 rounded-lg bg-zinc-50">
+                            <p class="text-lg font-bold text-zinc-900">10</p>
+                            <p class="text-[10px] text-zinc-500 uppercase tracking-wider">Read</p>
+                        </div>
+                    </div>
+                    <p class="text-xs text-zinc-500 mb-2 font-medium">Key threads this week:</p>
+                    <div class="space-y-2">
+                        <div class="flex items-start gap-2 text-xs">
+                            <span class="text-zinc-400 mt-0.5 shrink-0">&swarr;</span>
+                            <div>
+                                <p class="text-zinc-700 font-medium">Re: AI for Northgate Development</p>
+                                <p class="text-zinc-500">With <a href="contact-daniel-byrne.html" class="text-blue-600 hover:text-blue-800 hover:underline">Marcus Webb</a> &middot; Calendar issue resolved, call confirmed</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start gap-2 text-xs">
+                            <span class="text-zinc-400 mt-0.5 shrink-0">&nearr;</span>
+                            <div>
+                                <p class="text-zinc-700 font-medium">Appointment booked: James Okafor @ Fri Feb 20</p>
+                                <p class="text-zinc-500">With <a href="contact-charles-bernard.html" class="text-blue-600 hover:text-blue-800 hover:underline">James Okafor</a> &middot; Later cancelled, rescheduled to Mon Feb 23</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Decisions Made -->
+                <div class="bg-white rounded-xl shadow-sm border border-zinc-200 p-5 mb-4">
+                    <div class="flex items-center gap-2 mb-4">
+                        <i data-lucide="git-branch" class="w-4 h-4 text-zinc-400"></i>
+                        <h3 class="text-sm font-semibold text-zinc-700">Decisions Made</h3>
+                        <span class="text-xs text-zinc-400 ml-auto">5 this week</span>
+                    </div>
+                    <div class="space-y-3">
+                        <div class="flex items-start gap-3">
+                            <span class="px-1.5 py-0.5 rounded text-[10px] bg-amber-50 text-amber-700 font-medium mt-0.5 shrink-0">decided</span>
+                            <div>
+                                <p class="text-sm text-zinc-900">Start with free proof of concept for Northgate Development</p>
+                                <p class="text-xs text-zinc-500">Feb 20</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start gap-3">
+                            <span class="px-1.5 py-0.5 rounded text-[10px] bg-amber-50 text-amber-700 font-medium mt-0.5 shrink-0">decided</span>
+                            <div>
+                                <p class="text-sm text-zinc-900">Trust-but-verify approach for Marissa's bookkeeping</p>
+                                <p class="text-xs text-zinc-500">Feb 19</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start gap-3">
+                            <span class="px-1.5 py-0.5 rounded text-[10px] bg-amber-50 text-amber-700 font-medium mt-0.5 shrink-0">decided</span>
+                            <div>
+                                <p class="text-sm text-zinc-900">Policy sign-off process: leadership first, then technicians</p>
+                                <p class="text-xs text-zinc-500">Feb 19</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start gap-3">
+                            <span class="px-1.5 py-0.5 rounded text-[10px] bg-amber-50 text-amber-700 font-medium mt-0.5 shrink-0">decided</span>
+                            <div>
+                                <p class="text-sm text-zinc-900">Hire Carol as next technician if Spring is let go</p>
+                                <p class="text-xs text-zinc-500">Feb 19</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start gap-3">
+                            <span class="px-1.5 py-0.5 rounded text-[10px] bg-amber-50 text-amber-700 font-medium mt-0.5 shrink-0">decided</span>
+                            <div>
+                                <p class="text-sm text-zinc-900">Company does not need ChatGPT licenses</p>
+                                <p class="text-xs text-zinc-500">Feb 19</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Journal Insights -->
+                <div class="bg-white rounded-xl shadow-sm border border-zinc-200 p-5 mb-4">
+                    <div class="flex items-center gap-2 mb-4">
+                        <i data-lucide="book-open" class="w-4 h-4 text-zinc-400"></i>
+                        <h3 class="text-sm font-semibold text-zinc-700">Journal Insights</h3>
+                        <span class="text-xs text-zinc-400 ml-auto">1 entry</span>
+                    </div>
+                    <div class="flex items-start gap-3">
+                        <div class="flex flex-col items-center gap-1">
+                            <span class="text-xs text-zinc-400">Feb 19</span>
+                            <span class="px-2 py-0.5 rounded-full text-[10px] bg-emerald-50 text-emerald-700 font-medium">A-plus</span>
+                        </div>
+                        <p class="text-sm text-zinc-600 line-clamp-3">Massive breakthrough day with the Software of You project. High energy, high momentum.</p>
+                    </div>
+                    <p class="text-xs text-zinc-400 italic mt-3">Not enough data for trends this week.</p>
+                </div>
+
+                <!-- Commitments -->
+                <div class="bg-white rounded-xl shadow-sm border border-zinc-200 p-5 mb-4">
+                    <div class="flex items-center gap-2 mb-4">
+                        <i data-lucide="target" class="w-4 h-4 text-zinc-400"></i>
+                        <h3 class="text-sm font-semibold text-zinc-700">Commitments</h3>
+                        <span class="text-xs text-zinc-400 ml-auto">35 open</span>
+                    </div>
+                    <p class="text-xs text-zinc-500 mb-3 font-medium">New this week (from calls):</p>
+                    <div class="space-y-2 mb-4">
+                        <div class="flex items-start gap-2 text-xs">
+                            <span class="text-amber-500 mt-0.5 shrink-0">&bull;</span>
+                            <div>
+                                <p class="text-zinc-700">Build a design skill/proof of concept from Marcus's brand materials and send it back</p>
+                                <p class="text-zinc-500">Owner: You &middot; No deadline</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start gap-2 text-xs">
+                            <span class="text-amber-500 mt-0.5 shrink-0">&bull;</span>
+                            <div>
+                                <p class="text-zinc-700">Send Kerry presentations and a non-proprietary document for the design skill PoC</p>
+                                <p class="text-zinc-500">Owner: <a href="contact-daniel-byrne.html" class="text-blue-600 hover:text-blue-800 hover:underline">Marcus Webb</a> &middot; No deadline</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start gap-2 text-xs">
+                            <span class="text-amber-500 mt-0.5 shrink-0">&bull;</span>
+                            <div>
+                                <p class="text-zinc-700">Evaluate Kerry vs. industry-specific AI subscription service</p>
+                                <p class="text-zinc-500">Owner: <a href="contact-daniel-byrne.html" class="text-blue-600 hover:text-blue-800 hover:underline">Marcus Webb</a> &middot; No deadline</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-red-50 border-l-4 border-red-400 rounded-r-lg p-3">
+                        <p class="text-xs font-medium text-red-700 mb-1">17 commitments overdue</p>
+                        <p class="text-xs text-red-600">12 from Feb 17 (3 days overdue), 5 from Feb 18 (2 days overdue). Owners: You, Emma, Gigi, JP, Tariq.</p>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- RIGHT COLUMN: LOOKING AHEAD -->
+            <div class="lg:col-span-2">
+                <div class="flex items-center gap-2 mb-4">
+                    <h2 class="text-xs font-semibold text-zinc-400 uppercase tracking-wider">Looking Ahead</h2>
+                    <div class="flex-1 h-px bg-zinc-200"></div>
+                </div>
+
+                <!-- Next Week Calendar -->
+                <div class="bg-white rounded-xl shadow-sm border border-zinc-200 p-5 mb-4">
+                    <div class="flex items-center gap-2 mb-4">
+                        <i data-lucide="calendar-days" class="w-4 h-4 text-zinc-400"></i>
+                        <h3 class="text-sm font-semibold text-zinc-700">Upcoming</h3>
+                    </div>
+                    <div class="space-y-3">
+                        <div>
+                            <p class="text-[10px] text-zinc-400 uppercase tracking-wider font-semibold mb-1.5">Today &mdash; Feb 20</p>
+                            <div class="flex items-start gap-2 text-xs mb-1">
+                                <span class="text-zinc-400 shrink-0 w-16">12:30 PM</span>
+                                <div>
+                                    <p class="text-zinc-700 font-medium">Marcus / Kerry follow-up</p>
+                                    <p class="text-zinc-500">Google Meet</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div>
+                            <p class="text-[10px] text-zinc-400 uppercase tracking-wider font-semibold mb-1.5">Mon &mdash; Feb 23</p>
+                            <div class="flex items-start gap-2 text-xs mb-1">
+                                <span class="text-zinc-400 shrink-0 w-16">7:00 AM</span>
+                                <div>
+                                    <p class="text-zinc-700 font-medium">Kerry's Calendar (<a href="contact-charles-bernard.html" class="text-blue-600 hover:text-blue-800 hover:underline">James Okafor</a>)</p>
+                                    <p class="text-zinc-500">Google Meet &middot; Rescheduled from Feb 20</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Due Soon -->
+                <div class="bg-white rounded-xl shadow-sm border border-zinc-200 p-5 mb-4">
+                    <div class="flex items-center gap-2 mb-4">
+                        <i data-lucide="alert-circle" class="w-4 h-4 text-zinc-400"></i>
+                        <h3 class="text-sm font-semibold text-zinc-700">Due Soon</h3>
+                    </div>
+
+                    <p class="text-[10px] text-zinc-400 uppercase tracking-wider font-semibold mb-2">Follow-ups</p>
+                    <div class="space-y-2 mb-4">
+                        <div class="bg-amber-50 border-l-4 border-amber-400 rounded-r-lg p-2.5">
+                            <p class="text-xs text-zinc-700 font-medium"><a href="contact-daniel-byrne.html" class="text-blue-600 hover:text-blue-800 hover:underline">Marcus Webb</a> &mdash; Follow-up call</p>
+                            <p class="text-[10px] text-zinc-500">Due today</p>
+                        </div>
+                        <div class="bg-amber-50 border-l-4 border-amber-400 rounded-r-lg p-2.5">
+                            <p class="text-xs text-zinc-700 font-medium"><a href="contact-daniel-byrne.html" class="text-blue-600 hover:text-blue-800 hover:underline">Marcus Webb</a> &mdash; Design skill PoC</p>
+                            <p class="text-[10px] text-zinc-500">Due today</p>
+                        </div>
+                    </div>
+
+                    <p class="text-[10px] text-zinc-400 uppercase tracking-wider font-semibold mb-2">Commitment deadlines</p>
+                    <div class="space-y-2">
+                        <div class="bg-red-50 border-l-4 border-red-400 rounded-r-lg p-2.5">
+                            <p class="text-xs text-zinc-700 font-medium">12 commitments &mdash; 3 days overdue (Feb 17)</p>
+                            <p class="text-[10px] text-zinc-500">Owners: You, Emma, Gigi, JP, Tariq</p>
+                        </div>
+                        <div class="bg-red-50 border-l-4 border-red-400 rounded-r-lg p-2.5">
+                            <p class="text-xs text-zinc-700 font-medium">5 commitments &mdash; 2 days overdue (Feb 18)</p>
+                            <p class="text-[10px] text-zinc-500">Owners: You, Emma, JP</p>
+                        </div>
+                        <div class="bg-amber-50 border-l-4 border-amber-400 rounded-r-lg p-2.5">
+                            <p class="text-xs text-zinc-700 font-medium">4 commitments due today (Feb 20)</p>
+                            <p class="text-[10px] text-zinc-500">Marcus follow-up, Emma quotes, You</p>
+                        </div>
+                        <div class="bg-amber-50 border-l-4 border-amber-400 rounded-r-lg p-2.5">
+                            <p class="text-xs text-zinc-700 font-medium">14 commitments due tomorrow (Feb 21)</p>
+                            <p class="text-[10px] text-zinc-500">Kyle note, General Assembly, WeWork audit, and more</p>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+    </div>
+
+    <footer class="max-w-6xl mx-auto px-4 mt-8 pt-4 border-t border-zinc-100 text-center pb-8">
+        <p class="text-xs text-zinc-400">Generated by Software of You &middot; February 20, 2026 at 3:45 PM</p>
+    </footer>
+
+    <script>lucide.createIcons();</script>
+<!-- DEMO BANNER -->
+<div id="demo-banner" style="position:fixed;bottom:0;left:0;right:0;z-index:9999;background:#1A4731;color:white;font-family:'DM Mono',monospace;font-size:12px;letter-spacing:0.04em;display:flex;align-items:center;justify-content:center;gap:24px;padding:10px 24px;box-shadow:0 -2px 16px rgba(0,0,0,0.2);">
+  <span style="opacity:0.7;">✦ LIVE DEMO — anonymized data</span>
+  <span style="opacity:0.4;">|</span>
+  <span>This is what Software of You looks like with 3 months of real use.</span>
+  <span style="opacity:0.4;">|</span>
+  <a href="https://softwareof.you" style="color:#a8e6c0;text-decoration:none;font-weight:500;white-space:nowrap;" target="_top">Get it for yourself →</a>
+  <button onclick="document.getElementById('demo-banner').style.display='none'" style="margin-left:8px;background:none;border:none;color:rgba(255,255,255,0.4);cursor:pointer;font-size:16px;line-height:1;padding:0 4px;" title="Dismiss">×</button>
+</div>
+<div style="height:44px;"></div><!-- spacer so banner doesn't cover content -->
+</body>
+</html>
