@@ -99,11 +99,11 @@ The primary nav uses **grouped dropdown menus** to avoid horizontal overcrowding
       </a>
 
       <!-- People group (if CRM installed) -->
-      <div class="nav-group" onclick="this.classList.toggle('open')">
-        <div class="nav-group-label">
+      <div class="nav-group" id="nav-people">
+        <button class="nav-group-label" onclick="toggleNav('nav-people')">
           <span>People</span>
           <i data-lucide="chevron-down" class="w-3 h-3 nav-chevron"></i>
-        </div>
+        </button>
         <div class="nav-dropdown">
           <!-- Always (CRM is always installed if this group shows) -->
           <a href="contacts.html" class="nav-dropdown-item">
@@ -120,11 +120,11 @@ The primary nav uses **grouped dropdown menus** to avoid horizontal overcrowding
       </div>
 
       <!-- Comms group (if Gmail or Calendar installed) -->
-      <div class="nav-group" onclick="this.classList.toggle('open')">
-        <div class="nav-group-label">
+      <div class="nav-group" id="nav-comms">
+        <button class="nav-group-label" onclick="toggleNav('nav-comms')">
           <span>Comms</span>
           <i data-lucide="chevron-down" class="w-3 h-3 nav-chevron"></i>
-        </div>
+        </button>
         <div class="nav-dropdown">
           <!-- If Gmail installed -->
           <a href="email-hub.html" class="nav-dropdown-item">
@@ -142,11 +142,11 @@ The primary nav uses **grouped dropdown menus** to avoid horizontal overcrowding
       </div>
 
       <!-- Intelligence group (if any intelligence module installed) -->
-      <div class="nav-group" onclick="this.classList.toggle('open')">
-        <div class="nav-group-label">
+      <div class="nav-group" id="nav-intelligence">
+        <button class="nav-group-label" onclick="toggleNav('nav-intelligence')">
           <span>Intelligence</span>
           <i data-lucide="chevron-down" class="w-3 h-3 nav-chevron"></i>
-        </div>
+        </button>
         <div class="nav-dropdown">
           <!-- If Conversation Intelligence installed -->
           <a href="conversations.html" class="nav-dropdown-item">
@@ -245,32 +245,32 @@ The primary nav uses **grouped dropdown menus** to avoid horizontal overcrowding
   white-space: nowrap;
   transition: all 0.15s;
   user-select: none;
+  background: none;
+  border: none;
+  font-family: inherit;
 }
-.nav-group-label:hover,
-.nav-group.active > .nav-group-label {
+.nav-group-label:hover {
   background: #f4f4f5;
   color: #18181b;
 }
 .nav-group.active > .nav-group-label {
+  background: #f4f4f5;
+  color: #18181b;
   font-weight: 600;
 }
 .nav-chevron {
   transition: transform 0.15s;
   opacity: 0.5;
 }
-.nav-group:hover .nav-chevron,
-.nav-group.open .nav-chevron {
-  opacity: 1;
-}
 .nav-group.open .nav-chevron {
   transform: rotate(180deg);
+  opacity: 1;
 }
 .nav-dropdown {
   display: none;
   position: absolute;
-  top: 100%;
+  top: calc(100% + 2px);
   left: 0;
-  margin-top: 0.25rem;
   min-width: 10rem;
   background: white;
   border: 1px solid #e4e4e7;
@@ -279,11 +279,7 @@ The primary nav uses **grouped dropdown menus** to avoid horizontal overcrowding
   padding: 0.375rem;
   z-index: 50;
 }
-/* Desktop: show on hover */
-.nav-group:hover > .nav-dropdown {
-  display: block;
-}
-/* Mobile: show on tap (toggle .open class) */
+/* Open only via JS-controlled class — no hover */
 .nav-group.open > .nav-dropdown {
   display: block;
 }
@@ -411,6 +407,41 @@ On these sub-pages:
 9. **Links use relative paths.** All pages live in `output/` together.
 10. **If a view hasn't been generated, still include the nav item** — just point to the expected filename.
 11. **Active state propagates upward.** When a dropdown item is active, its parent `.nav-group` also gets the `active` class.
+12. **Dropdowns open on click only — no hover.** Use `toggleNav(id)` via the button's `onclick`. Never use CSS `:hover` to show dropdowns. This prevents accidental dismissal when moving the mouse toward a menu item.
+13. **Each nav group needs a unique `id`** (`nav-people`, `nav-comms`, `nav-intelligence`) for the `toggleNav()` function to target.
+14. **Nav group labels use `<button>` not `<div>`.** This ensures keyboard accessibility and correct click behavior.
+
+---
+
+## Required JavaScript (include in every page's `<script>` block)
+
+Every generated page **must** include this nav JS. It handles click-to-open, close-on-outside-click, and keyboard escape.
+
+```javascript
+// ── NAV DROPDOWN TOGGLE ──
+function toggleNav(id) {
+  const group = document.getElementById(id);
+  const isOpen = group.classList.contains('open');
+  // Close all open groups first
+  document.querySelectorAll('.nav-group.open').forEach(g => g.classList.remove('open'));
+  // Then open the clicked one (unless it was already open)
+  if (!isOpen) group.classList.add('open');
+}
+
+// Close dropdowns when clicking outside the nav
+document.addEventListener('click', function(e) {
+  if (!e.target.closest('.nav-group')) {
+    document.querySelectorAll('.nav-group.open').forEach(g => g.classList.remove('open'));
+  }
+});
+
+// Close dropdowns on Escape key
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') {
+    document.querySelectorAll('.nav-group.open').forEach(g => g.classList.remove('open'));
+  }
+});
+```
 
 ---
 
