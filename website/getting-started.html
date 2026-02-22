@@ -1,0 +1,868 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Getting Started — Software of You</title>
+  <meta name="description" content="Welcome to Software of You. Your step-by-step guide to getting set up, adding your first data, and getting value out of day one.">
+  <meta name="robots" content="noindex">
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-TQFFERGZW1"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-TQFFERGZW1');
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300;1,400&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300;1,9..40,400&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bone:       #FAF9F6;
+      --bone-mid:   #F2F0EB;
+      --bone-deep:  #E8E4DC;
+      --ink:        #0F0E0C;
+      --ink-2:      #2C2A26;
+      --ink-3:      #6B6860;
+      --ink-4:      #A8A49C;
+      --ink-5:      #D4D0C8;
+      --forest:     #1A4731;
+      --forest-mid: #245E41;
+      --forest-pale:#EBF2EE;
+      --forest-bg:  #F2F7F4;
+      --rule:       rgba(15,14,12,0.08);
+      --rule-mid:   rgba(15,14,12,0.13);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bone);
+      color: var(--ink);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 17px;
+      line-height: 1.65;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ─── NAV ─── */
+    .nav {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(250,249,246,0.92);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--rule-mid);
+      padding: 0 48px;
+      height: 64px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .nav__logo {
+      font-family: 'DM Serif Display', serif;
+      font-size: 17px;
+      color: var(--ink);
+      text-decoration: none;
+    }
+    .nav__logo span { font-style: italic; color: var(--forest); }
+    .nav__back {
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--ink-3);
+      text-decoration: none;
+      transition: color 0.18s;
+    }
+    .nav__back:hover { color: var(--ink); }
+
+    /* ─── LAYOUT ─── */
+    .page { max-width: 720px; margin: 0 auto; padding: 72px 32px 120px; }
+
+    /* ─── HERO ─── */
+    .hero {
+      margin-bottom: 64px;
+      padding-bottom: 64px;
+      border-bottom: 1px solid var(--rule-mid);
+    }
+    .hero__eyebrow {
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--forest);
+      margin-bottom: 16px;
+    }
+    .hero__title {
+      font-family: 'DM Serif Display', serif;
+      font-size: clamp(36px, 5vw, 52px);
+      line-height: 1.1;
+      letter-spacing: -0.02em;
+      color: var(--ink);
+      margin-bottom: 20px;
+    }
+    .hero__title em { font-style: italic; color: var(--forest); }
+    .hero__sub {
+      font-size: 18px;
+      line-height: 1.7;
+      color: var(--ink-3);
+      max-width: 560px;
+    }
+    .hero__time {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 24px;
+      padding: 8px 16px;
+      background: var(--forest-pale);
+      border-radius: 4px;
+      font-family: 'DM Mono', monospace;
+      font-size: 12px;
+      letter-spacing: 0.06em;
+      color: var(--forest);
+    }
+
+    /* ─── SECTION HEADERS ─── */
+    .section {
+      margin-bottom: 64px;
+    }
+    .section__label {
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--ink-4);
+      margin-bottom: 8px;
+    }
+    .section__title {
+      font-family: 'DM Serif Display', serif;
+      font-size: 28px;
+      line-height: 1.2;
+      color: var(--ink);
+      letter-spacing: -0.01em;
+      margin-bottom: 12px;
+    }
+    .section__title em { font-style: italic; color: var(--forest); }
+    .section__intro {
+      font-size: 16px;
+      color: var(--ink-3);
+      line-height: 1.7;
+      margin-bottom: 32px;
+    }
+
+    /* ─── PREREQ CARDS ─── */
+    .prereq-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-bottom: 8px;
+    }
+    @media (max-width: 560px) { .prereq-grid { grid-template-columns: 1fr; } }
+    .prereq-card {
+      background: white;
+      border: 1px solid var(--rule-mid);
+      border-radius: 8px;
+      padding: 20px 22px;
+    }
+    .prereq-card__num {
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--ink-4);
+      margin-bottom: 8px;
+    }
+    .prereq-card__name {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--ink);
+      margin-bottom: 6px;
+    }
+    .prereq-card__desc {
+      font-size: 13px;
+      color: var(--ink-3);
+      line-height: 1.55;
+    }
+    .prereq-card__link {
+      display: inline-block;
+      margin-top: 10px;
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 0.04em;
+      color: var(--forest);
+      text-decoration: none;
+    }
+    .prereq-card__link:hover { text-decoration: underline; }
+    .prereq-card--free .prereq-card__name::after {
+      content: ' — free';
+      font-weight: 400;
+      color: var(--ink-4);
+      font-size: 13px;
+    }
+
+    /* ─── STEPS ─── */
+    .steps { display: flex; flex-direction: column; gap: 0; }
+    .step {
+      display: grid;
+      grid-template-columns: 48px 1fr;
+      gap: 0 24px;
+      position: relative;
+    }
+    .step:not(:last-child)::before {
+      content: '';
+      position: absolute;
+      left: 23px;
+      top: 52px;
+      bottom: -16px;
+      width: 2px;
+      background: var(--rule-mid);
+    }
+    .step__num-col {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding-top: 4px;
+    }
+    .step__num {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background: var(--forest);
+      color: white;
+      font-family: 'DM Mono', monospace;
+      font-size: 15px;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      position: relative;
+      z-index: 1;
+    }
+    .step__body {
+      padding-bottom: 48px;
+    }
+    .step:last-child .step__body { padding-bottom: 0; }
+    .step__title {
+      font-family: 'DM Serif Display', serif;
+      font-size: 22px;
+      color: var(--ink);
+      letter-spacing: -0.01em;
+      margin-bottom: 8px;
+      padding-top: 10px;
+    }
+    .step__title em { font-style: italic; color: var(--forest); }
+    .step__desc {
+      font-size: 15px;
+      color: var(--ink-3);
+      line-height: 1.7;
+      margin-bottom: 16px;
+    }
+
+    /* ─── COMMAND BLOCKS ─── */
+    .cmd {
+      background: var(--ink-2);
+      border-radius: 6px;
+      padding: 14px 18px;
+      margin: 12px 0;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .cmd__prefix {
+      font-family: 'DM Mono', monospace;
+      font-size: 13px;
+      color: var(--ink-4);
+      flex-shrink: 0;
+    }
+    .cmd__text {
+      font-family: 'DM Mono', monospace;
+      font-size: 13px;
+      color: #e8e5df;
+      word-break: break-all;
+    }
+    .cmd__copy {
+      margin-left: auto;
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--ink-4);
+      background: none;
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 3px;
+      padding: 3px 8px;
+      cursor: pointer;
+      transition: color 0.15s, border-color 0.15s;
+      flex-shrink: 0;
+    }
+    .cmd__copy:hover { color: white; border-color: rgba(255,255,255,0.3); }
+
+    /* ─── PROMPT EXAMPLES ─── */
+    .prompt-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin: 12px 0;
+    }
+    .prompt {
+      background: white;
+      border: 1px solid var(--rule-mid);
+      border-radius: 6px;
+      padding: 12px 16px;
+      font-family: 'DM Mono', monospace;
+      font-size: 13px;
+      color: var(--ink-2);
+      line-height: 1.5;
+    }
+    .prompt::before {
+      content: '"';
+      color: var(--forest);
+      font-size: 18px;
+      line-height: 1;
+      margin-right: 4px;
+    }
+    .prompt::after {
+      content: '"';
+      color: var(--forest);
+      font-size: 18px;
+      line-height: 1;
+      margin-left: 2px;
+    }
+
+    /* ─── CALLOUT BOXES ─── */
+    .callout {
+      border-radius: 6px;
+      padding: 16px 20px;
+      margin: 16px 0;
+      font-size: 14px;
+      line-height: 1.65;
+    }
+    .callout--tip {
+      background: var(--forest-pale);
+      border-left: 3px solid var(--forest);
+      color: var(--ink-2);
+    }
+    .callout--tip strong { color: var(--forest); }
+    .callout--note {
+      background: var(--bone-mid);
+      border-left: 3px solid var(--ink-5);
+      color: var(--ink-3);
+    }
+    .callout--note strong { color: var(--ink-2); }
+
+    /* ─── INLINE CODE ─── */
+    code {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.88em;
+      background: var(--bone-mid);
+      padding: 2px 6px;
+      border-radius: 3px;
+      color: var(--ink-2);
+    }
+
+    /* ─── MODULE QUICK-REF ─── */
+    .module-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+    @media (max-width: 500px) { .module-grid { grid-template-columns: 1fr; } }
+    .module-row {
+      background: white;
+      border: 1px solid var(--rule-mid);
+      border-radius: 6px;
+      padding: 14px 16px;
+    }
+    .module-row__name {
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--forest);
+      margin-bottom: 4px;
+    }
+    .module-row__prompt {
+      font-size: 13px;
+      color: var(--ink-3);
+      line-height: 1.5;
+      font-style: italic;
+    }
+
+    /* ─── DIVIDER ─── */
+    .divider {
+      border: none;
+      border-top: 1px solid var(--rule-mid);
+      margin: 64px 0;
+    }
+
+    /* ─── WHAT'S NEXT ─── */
+    .next-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 12px;
+    }
+    @media (max-width: 600px) { .next-grid { grid-template-columns: 1fr; } }
+    .next-card {
+      background: white;
+      border: 1px solid var(--rule-mid);
+      border-radius: 8px;
+      padding: 20px;
+      text-decoration: none;
+      color: inherit;
+      transition: box-shadow 0.2s, transform 0.2s;
+      display: block;
+    }
+    .next-card:hover {
+      box-shadow: 0 4px 16px rgba(0,0,0,0.07);
+      transform: translateY(-2px);
+    }
+    .next-card__num {
+      font-family: 'DM Mono', monospace;
+      font-size: 9px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--ink-4);
+      margin-bottom: 8px;
+    }
+    .next-card__title {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--ink);
+      margin-bottom: 6px;
+    }
+    .next-card__desc {
+      font-size: 12px;
+      color: var(--ink-3);
+      line-height: 1.5;
+    }
+    .next-card__arrow {
+      display: block;
+      margin-top: 12px;
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      color: var(--forest);
+    }
+
+    /* ─── FOOTER ─── */
+    .footer-cta {
+      background: var(--forest);
+      border-radius: 8px;
+      padding: 48px 40px;
+      text-align: center;
+      margin-top: 64px;
+    }
+    .footer-cta__eyebrow {
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: rgba(235,242,238,0.5);
+      margin-bottom: 12px;
+    }
+    .footer-cta__title {
+      font-family: 'DM Serif Display', serif;
+      font-size: 28px;
+      color: white;
+      line-height: 1.2;
+      margin-bottom: 8px;
+    }
+    .footer-cta__title em { font-style: italic; color: rgba(235,242,238,0.75); }
+    .footer-cta__sub {
+      font-size: 15px;
+      color: rgba(235,242,238,0.65);
+      margin-bottom: 24px;
+    }
+    .footer-cta__email {
+      font-family: 'DM Mono', monospace;
+      font-size: 13px;
+      color: rgba(235,242,238,0.8);
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 4px;
+      padding: 8px 16px;
+      text-decoration: none;
+      transition: background 0.2s;
+    }
+    .footer-cta__email:hover { background: rgba(255,255,255,0.14); }
+
+    @media (max-width: 640px) {
+      .nav { padding: 0 24px; }
+      .page { padding: 48px 24px 80px; }
+      .step { grid-template-columns: 36px 1fr; }
+      .step__num { width: 36px; height: 36px; font-size: 13px; }
+      .step:not(:last-child)::before { left: 17px; }
+    }
+  </style>
+</head>
+<body>
+
+<nav class="nav">
+  <a href="https://softwareof.you" class="nav__logo">Software <span>of You</span></a>
+  <a href="https://softwareof.you" class="nav__back">← Back to site</a>
+</nav>
+
+<div class="page">
+
+  <!-- ── HERO ── -->
+  <div class="hero">
+    <p class="hero__eyebrow">Welcome to Software of You</p>
+    <h1 class="hero__title">Let's get you<br><em>up and running.</em></h1>
+    <p class="hero__sub">This guide walks you through everything — from installing the software to having your first real conversation with it. You don't need to be technical. If you can type a sentence, you can use this.</p>
+    <div class="hero__time">⏱ Up and running in two minutes</div>
+  </div>
+
+  <!-- ── BEFORE YOU START ── -->
+  <div class="section">
+    <p class="section__label">Before you start</p>
+    <h2 class="section__title">Two things you'll need</h2>
+    <p class="section__intro">Software of You runs inside Claude Code — Anthropic's AI tool for your computer. You'll need both of these before anything else.</p>
+
+    <div class="prereq-grid">
+      <div class="prereq-card prereq-card--free">
+        <div class="prereq-card__num">Required · 01</div>
+        <div class="prereq-card__name">Claude Code</div>
+        <div class="prereq-card__desc">The AI environment SoY lives inside. It runs on your computer — nothing goes to a server except what you ask Claude directly.</div>
+        <a href="https://claude.ai/download" class="prereq-card__link" target="_blank">Download Claude Code →</a>
+      </div>
+      <div class="prereq-card">
+        <div class="prereq-card__num">Required · 02</div>
+        <div class="prereq-card__name">Claude subscription</div>
+        <div class="prereq-card__desc">You need an active Claude Pro or Team plan — Claude Code uses your existing Claude account to power the AI responses.</div>
+        <a href="https://claude.ai" class="prereq-card__link" target="_blank">Get Claude Pro →</a>
+      </div>
+    </div>
+
+    <div class="callout callout--tip" style="margin-top: 16px;">
+      <strong>Already have Claude Code?</strong> Skip straight to Step 1. If you're not sure, open your Applications folder and look for Claude — if it's there, you're good.
+    </div>
+  </div>
+
+  <!-- ── STEPS ── -->
+  <div class="section">
+    <p class="section__label">The setup</p>
+    <h2 class="section__title">Six steps.<br><em>Then you're in.</em></h2>
+    <p class="section__intro" style="margin-bottom: 40px;">Follow these in order. Each one takes two minutes or less.</p>
+
+    <div class="steps">
+
+      <!-- STEP 1 -->
+      <div class="step">
+        <div class="step__num-col">
+          <div class="step__num">1</div>
+        </div>
+        <div class="step__body">
+          <h3 class="step__title">Open Claude Code</h3>
+          <p class="step__desc">Open the Claude Code application on your computer. You'll see a chat interface — like a conversation window. This is where everything happens. You'll type in plain English and Claude will respond.</p>
+          <div class="callout callout--note">
+            <strong>First time?</strong> Claude Code will ask you to log in with your Anthropic account. Use the same email you signed up with for Claude Pro.
+          </div>
+        </div>
+      </div>
+
+      <!-- STEP 2 -->
+      <div class="step">
+        <div class="step__num-col">
+          <div class="step__num">2</div>
+        </div>
+        <div class="step__body">
+          <h3 class="step__title">Run the install command</h3>
+          <p class="step__desc">Copy the line below and paste it into the Claude Code chat window, then press Enter. This installs Software of You on your machine. It takes about 30 seconds.</p>
+          <div class="cmd">
+            <span class="cmd__prefix">$</span>
+            <span class="cmd__text" id="install-cmd">curl -sSL https://raw.githubusercontent.com/kmorebetter/better-software-of-you/main/install.sh | bash</span>
+            <button class="cmd__copy" onclick="copyCmd('install-cmd', this)">Copy</button>
+          </div>
+          <p class="step__desc" style="margin-top: 12px;">You'll see a few lines of output confirming the install. When it's done, it'll say something like <code>✓ Software of You installed</code>.</p>
+          <div class="callout callout--tip">
+            <strong>What is this doing?</strong> It's downloading the SoY plugin files to your computer and connecting them to Claude Code. Nothing is sent to any server — everything lives locally on your machine.
+          </div>
+        </div>
+      </div>
+
+      <!-- STEP 3 -->
+      <div class="step">
+        <div class="step__num-col">
+          <div class="step__num">3</div>
+        </div>
+        <div class="step__body">
+          <h3 class="step__title">Launch Software of You</h3>
+          <p class="step__desc">Open a terminal window and run these two commands — first to navigate into the SoY folder, then to launch it:</p>
+          <div class="cmd">
+            <span class="cmd__prefix">$</span>
+            <span class="cmd__text" id="cd-cmd">cd ~/.software-of-you</span>
+            <button class="cmd__copy" onclick="copyCmd('cd-cmd', this)">Copy</button>
+          </div>
+          <div class="cmd">
+            <span class="cmd__prefix">$</span>
+            <span class="cmd__text" id="launch-cmd">claude --dangerously-skip-permissions</span>
+            <button class="cmd__copy" onclick="copyCmd('launch-cmd', this)">Copy</button>
+          </div>
+          <p class="step__desc" style="margin-top: 10px;">Run the <code>cd</code> first, then the <code>claude</code> command. Claude needs to be launched from inside the SoY folder so it can find the plugin.</p>
+          <div class="callout callout--tip" style="margin-top: 12px;">
+            <strong>What does "dangerously-skip-permissions" mean?</strong> We know — that flag sounds scary. Here's what it actually does: it tells Claude to stop asking for your approval before reading or writing files on your computer. Without it, Claude pauses every few seconds and asks "is it okay if I read this file?" or "can I save this record?" — which gets exhausting fast when you're just trying to track a contact or log a note.<br><br>
+            When you run SoY this way, Claude can read and write to your local database without interrupting you at every step. It <em>cannot</em> access the internet, other apps, or anything outside the SoY folder without you explicitly asking it to.<br><br>
+            <strong>Prefer to approve every action?</strong> That's completely fine — just run <code>claude</code> without the flag. SoY works either way; you'll just get more confirmation prompts as it works.
+          </div>
+        </div>
+      </div>
+
+      <!-- STEP 4 -->
+      <div class="step">
+        <div class="step__num-col">
+          <div class="step__num">4</div>
+        </div>
+        <div class="step__body">
+          <h3 class="step__title">Say hello and get your bearings</h3>
+          <p class="step__desc">Claude Code will open in your terminal. Start a new conversation — type this to kick things off:</p>
+          <div class="prompt-list">
+            <div class="prompt">Hey — let's get my Software of You set up. What should I do first?</div>
+          </div>
+          <p class="step__desc" style="margin-top: 12px;">SoY will run a quick setup check, confirm everything is installed, and walk you through next steps based on what you already have. If you're a new user, it'll say hello and ask who you want to start tracking.</p>
+          <div class="callout callout--note">
+            <strong>Nothing happening?</strong> Make sure you ran the <code>cd ~/.software-of-you</code> command first, then launched Claude from that folder. If it still doesn't respond as SoY, type <code>/help-soy</code> — if you see a command list, you're in.
+          </div>
+
+          <!-- DATA SEEDING BANNER -->
+          <div style="margin-top: 24px; background: var(--bone-mid); border: 1px solid var(--rule-mid); border-left: 3px solid var(--forest); border-radius: 6px; padding: 18px 20px;">
+            <div style="font-family: 'DM Serif Display', serif; font-size: 17px; color: var(--ink); margin-bottom: 6px;">The more you put in, the more you get out.</div>
+            <div style="font-size: 13px; color: var(--ink-3); line-height: 1.65;">SoY doesn't invent context — it works from <em>yours</em>. The richer the data you feed it, the more useful every answer becomes. The best first sessions are ones where you arrive with something to import.</div>
+          </div>
+
+          <p class="step__desc" style="margin-top: 20px; font-weight: 600; color: var(--ink-2);">Five ways to seed it fast:</p>
+          <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 10px;">
+
+            <div style="background: white; border: 1px solid var(--rule-mid); border-radius: 6px; padding: 14px 16px; display: grid; grid-template-columns: 28px 1fr; gap: 10px; align-items: start;">
+              <div style="font-family: 'DM Mono', monospace; font-size: 11px; color: var(--forest); font-weight: 600; padding-top: 2px;">01</div>
+              <div>
+                <div style="font-size: 14px; font-weight: 600; color: var(--ink); margin-bottom: 4px;">Import your contacts</div>
+                <div style="font-size: 13px; color: var(--ink-3); line-height: 1.55;">Export a CSV from HubSpot, Attio, your old CRM, or even your phone's contacts app — and paste it directly into the terminal, or drag the file in. Then say: <em>"Import these contacts into SoY."</em> It'll pull in names, companies, emails, and any notes you had on them.</div>
+              </div>
+            </div>
+
+            <div style="background: white; border: 1px solid var(--rule-mid); border-radius: 6px; padding: 14px 16px; display: grid; grid-template-columns: 28px 1fr; gap: 10px; align-items: start;">
+              <div style="font-family: 'DM Mono', monospace; font-size: 11px; color: var(--forest); font-weight: 600; padding-top: 2px;">02</div>
+              <div>
+                <div style="font-size: 14px; font-weight: 600; color: var(--ink); margin-bottom: 4px;">Connect Google — then ask about your week</div>
+                <div style="font-size: 13px; color: var(--ink-3); line-height: 1.55;">Type <code>Connect my Google account</code> and follow the browser prompt. Once connected, ask: <em>"What's on my calendar this week and who should I prep for?"</em> — you'll get a full briefing in seconds.</div>
+              </div>
+            </div>
+
+            <div style="background: white; border: 1px solid var(--rule-mid); border-radius: 6px; padding: 14px 16px; display: grid; grid-template-columns: 28px 1fr; gap: 10px; align-items: start;">
+              <div style="font-family: 'DM Mono', monospace; font-size: 11px; color: var(--forest); font-weight: 600; padding-top: 2px;">03</div>
+              <div>
+                <div style="font-size: 14px; font-weight: 600; color: var(--ink); margin-bottom: 4px;">Paste in a meeting transcript</div>
+                <div style="font-size: 13px; color: var(--ink-3); line-height: 1.55;">Copy any transcript from Zoom, Google Meet, Fathom, or Granola and type: <em>"/import-call [paste transcript here]"</em>. SoY will extract every commitment, calculate talk time, and generate a coaching note — all in under a minute.</div>
+              </div>
+            </div>
+
+            <div style="background: white; border: 1px solid var(--rule-mid); border-radius: 6px; padding: 14px 16px; display: grid; grid-template-columns: 28px 1fr; gap: 10px; align-items: start;">
+              <div style="font-family: 'DM Mono', monospace; font-size: 11px; color: var(--forest); font-weight: 600; padding-top: 2px;">04</div>
+              <div>
+                <div style="font-size: 14px; font-weight: 600; color: var(--ink); margin-bottom: 4px;">Drop in a project you're working on</div>
+                <div style="font-size: 13px; color: var(--ink-3); line-height: 1.55;">Paste in a brief, a proposal, a scope doc — anything describing a project in motion. Tell Claude who the stakeholders are, what the goal is, and where things stand. It'll create the project and link it to your contacts automatically. Next time you prep for a call, it'll be there.</div>
+              </div>
+            </div>
+
+            <div style="background: white; border: 1px solid var(--rule-mid); border-radius: 6px; padding: 14px 16px; display: grid; grid-template-columns: 28px 1fr; gap: 10px; align-items: start;">
+              <div style="font-family: 'DM Mono', monospace; font-size: 11px; color: var(--forest); font-weight: 600; padding-top: 2px;">05</div>
+              <div>
+                <div style="font-size: 14px; font-weight: 600; color: var(--ink); margin-bottom: 4px;">Build your dashboard</div>
+                <div style="font-size: 13px; color: var(--ink-3); line-height: 1.55;">Once you've added a few contacts and connected Google, type <code>/build-all</code> to generate your full dashboard — every contact page, your email hub, network map, timeline, and more. <strong>This takes 2–5 minutes</strong> the first time. Worth the wait.</div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      <!-- STEP 5 -->
+      <div class="step">
+        <div class="step__num-col">
+          <div class="step__num">5</div>
+        </div>
+        <div class="step__body">
+          <h3 class="step__title">Add your first contact</h3>
+          <p class="step__desc">SoY needs data to work with. The easiest way to start is to tell Claude about someone you work with. Just type naturally — like you'd tell a colleague. For example:</p>
+          <div class="prompt-list">
+            <div class="prompt">Add a contact: Sarah Chen, VP of Engineering at Acme Corp. Met her at a conference last month. We're working on a potential integration.</div>
+            <div class="prompt">Add Marcus Webb — he's the CEO at Meridian. We've been working on a proposal together since January.</div>
+          </div>
+          <p class="step__desc" style="margin-top: 12px;">Claude will confirm it's been saved and ask if you want to log any interaction history. You don't have to — but the more context you give it now, the more useful it gets immediately.</p>
+          <div class="callout callout--tip">
+            <strong>Have a lot of contacts?</strong> You can paste in a CSV export from your existing contacts app and SoY will import them all at once. Just say "Import these contacts" and paste the data.
+          </div>
+        </div>
+      </div>
+
+      <!-- STEP 6 -->
+      <div class="step">
+        <div class="step__num-col">
+          <div class="step__num">6</div>
+        </div>
+        <div class="step__body">
+          <h3 class="step__title">Connect your Google account <em>(optional but powerful)</em></h3>
+          <p class="step__desc">Connecting Gmail and Google Calendar is what makes SoY dramatically more useful. Once connected, Claude has access to your email threads and upcoming meetings — so instead of you pasting context in, it's already there.</p>
+          <div class="prompt-list">
+            <div class="prompt">Connect my Google account</div>
+          </div>
+          <p class="step__desc" style="margin-top: 12px;">Claude will walk you through the OAuth flow — you'll see a browser window asking you to log in with Google and grant read access to Gmail and Calendar. This is the same type of permission any email app uses.</p>
+          <div class="callout callout--note">
+            <strong>What access does it need?</strong> Read-only access to Gmail and Calendar. SoY can read your emails to build context — it cannot send emails without you explicitly asking it to, and even then you review the draft before anything goes out. Your Google credentials never touch our servers.
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- ── JUST TALK TO IT ── -->
+  <div class="section">
+    <p class="section__label">The most important thing</p>
+    <h2 class="section__title">You don't need<br><em>to learn anything.</em></h2>
+    <p class="section__intro">SoY has slash commands and structured features — but you never have to use them. The whole point is that it works the way you think, not the way software usually makes you think.</p>
+
+    <div style="background: var(--forest); border-radius: 8px; padding: 32px 36px; margin-bottom: 24px;">
+      <p style="font-family: 'DM Serif Display', serif; font-size: 22px; color: white; line-height: 1.4; margin-bottom: 16px;">Give it context. Ask it anything.<br><em style="color: rgba(235,242,238,0.75);">That's the whole interface.</em></p>
+      <p style="font-size: 15px; color: rgba(235,242,238,0.7); line-height: 1.7; margin: 0;">The more you put in — contacts, transcripts, emails, notes, decisions — the more it can do. And you interact with all of it the same way: by talking. No menus to navigate, no fields to fill in, no workflow to learn.</p>
+    </div>
+
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+      <div style="background: white; border: 1px solid var(--rule-mid); border-radius: 6px; padding: 16px 18px;">
+        <div style="font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-4); margin-bottom: 8px;">You could type a command</div>
+        <div style="font-family: 'DM Mono', monospace; font-size: 12px; color: var(--forest); background: var(--forest-pale); padding: 8px 12px; border-radius: 4px;">/import-call [transcript]</div>
+      </div>
+      <div style="background: white; border: 1px solid var(--rule-mid); border-radius: 6px; padding: 16px 18px;">
+        <div style="font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-4); margin-bottom: 8px;">Or just describe what you want</div>
+        <div style="font-size: 13px; color: var(--ink-2); font-style: italic; line-height: 1.5;">"Here's a transcript from my call with Sarah — what did we agree to?"</div>
+      </div>
+      <div style="background: white; border: 1px solid var(--rule-mid); border-radius: 6px; padding: 16px 18px;">
+        <div style="font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-4); margin-bottom: 8px;">You could use a command</div>
+        <div style="font-family: 'DM Mono', monospace; font-size: 12px; color: var(--forest); background: var(--forest-pale); padding: 8px 12px; border-radius: 4px;">/nudges</div>
+      </div>
+      <div style="background: white; border: 1px solid var(--rule-mid); border-radius: 6px; padding: 16px 18px;">
+        <div style="font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-4); margin-bottom: 8px;">Or just ask</div>
+        <div style="font-size: 13px; color: var(--ink-2); font-style: italic; line-height: 1.5;">"Who have I been neglecting lately and what should I say to them?"</div>
+      </div>
+    </div>
+    <p style="font-size: 14px; color: var(--ink-4); text-align: center; margin-top: 16px; font-style: italic;">Both work. Use whichever feels natural.</p>
+  </div>
+
+  <hr class="divider">
+
+  <!-- ── ALL MODULES ── -->
+  <div class="section">
+    <p class="section__label">The full system</p>
+    <h2 class="section__title">Eight modules.<br><em>All included.</em></h2>
+    <p class="section__intro">You don't need to use all of these on day one. But they're here when you need them — each one activated just by talking to Claude.</p>
+
+    <div class="module-grid">
+      <div class="module-row">
+        <div class="module-row__name">01 · CRM</div>
+        <div class="module-row__prompt">"Add Sarah Chen, met at SaaStr, VP Eng at Acme"</div>
+      </div>
+      <div class="module-row">
+        <div class="module-row__name">02 · Projects</div>
+        <div class="module-row__prompt">"Create a project for the Meridian proposal, target close Q2"</div>
+      </div>
+      <div class="module-row">
+        <div class="module-row__name">03 · Gmail</div>
+        <div class="module-row__prompt">"Show me everything from Rebecca in the last two weeks"</div>
+      </div>
+      <div class="module-row">
+        <div class="module-row__name">04 · Calendar</div>
+        <div class="module-row__prompt">"What's on my schedule this week and who should I prep for?"</div>
+      </div>
+      <div class="module-row">
+        <div class="module-row__name">05 · Conversations</div>
+        <div class="module-row__prompt">"What did I commit to in my last call with Daniel?"</div>
+      </div>
+      <div class="module-row">
+        <div class="module-row__name">06 · Decisions</div>
+        <div class="module-row__prompt">"Log a decision: going with annual pricing. Rationale: lower churn."</div>
+      </div>
+      <div class="module-row">
+        <div class="module-row__name">07 · Journal</div>
+        <div class="module-row__prompt">"Journal: draining call with Meridian today, Rebecca seemed checked out"</div>
+      </div>
+      <div class="module-row">
+        <div class="module-row__name">08 · Notes</div>
+        <div class="module-row__prompt">"Note: competitor dropped pricing 18% in Q4. #pricing #enterprise"</div>
+      </div>
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- ── COMMON QUESTIONS ── -->
+  <div class="section">
+    <p class="section__label">Common questions</p>
+    <h2 class="section__title">Things people ask<br><em>in the first week</em></h2>
+
+    <div style="display: flex; flex-direction: column; gap: 0; border: 1px solid var(--rule-mid); border-radius: 8px; overflow: hidden; background: white;">
+
+      <div style="padding: 20px 24px; border-bottom: 1px solid var(--rule);">
+        <div style="font-weight: 600; color: var(--ink); margin-bottom: 6px; font-size: 15px;">Where does my data live?</div>
+        <div style="font-size: 14px; color: var(--ink-3); line-height: 1.65;">On your computer. Specifically in a folder at <code>~/.local/share/software-of-you/</code>. It's a standard database file you can open, back up, or delete at any time. Nothing is stored on our servers.</div>
+      </div>
+
+      <div style="padding: 20px 24px; border-bottom: 1px solid var(--rule);">
+        <div style="font-weight: 600; color: var(--ink); margin-bottom: 6px; font-size: 15px;">Does Claude read all my emails automatically?</div>
+        <div style="font-size: 14px; color: var(--ink-3); line-height: 1.65;">Only when you're in an active Claude Code session and ask about your email or open an email-related view. There's no background process running. When you ask, SoY checks if more than 15 minutes have passed since the last sync, and if so, fetches recent messages from Gmail. You can also ask it to use cached data if you'd prefer.</div>
+      </div>
+
+      <div style="padding: 20px 24px; border-bottom: 1px solid var(--rule);">
+        <div style="font-weight: 600; color: var(--ink); margin-bottom: 6px; font-size: 15px;">Can it send emails on my behalf?</div>
+        <div style="font-size: 14px; color: var(--ink-3); line-height: 1.65;">Yes, but only when you explicitly ask it to — and only after you've reviewed the draft. Claude will write the email, show it to you, and only send if you confirm. It will never send anything without your approval.</div>
+      </div>
+
+      <div style="padding: 20px 24px; border-bottom: 1px solid var(--rule);">
+        <div style="font-weight: 600; color: var(--ink); margin-bottom: 6px; font-size: 15px;">What if I make a mistake — can I undo things?</div>
+        <div style="font-size: 14px; color: var(--ink-3); line-height: 1.65;">Yes. Every session backs up your database before making changes. You can ask Claude to restore a backup at any time: <em>"Restore my data from this morning's backup."</em></div>
+      </div>
+
+      <div style="padding: 20px 24px; border-bottom: 1px solid var(--rule);">
+        <div style="font-weight: 600; color: var(--ink); margin-bottom: 6px; font-size: 15px;">I'm not sure what to say — is there a list of commands?</div>
+        <div style="font-size: 14px; color: var(--ink-3); line-height: 1.65;">Just type <code>/help-soy</code> in Claude Code at any time and you'll get a full list of available commands with examples. But honestly — you can also just describe what you want in plain English and Claude will figure it out.</div>
+      </div>
+
+      <div style="padding: 20px 24px;">
+        <div style="font-weight: 600; color: var(--ink); margin-bottom: 6px; font-size: 15px;">I reinstalled Claude Code / got a new computer. Is my data gone?</div>
+        <div style="font-size: 14px; color: var(--ink-3); line-height: 1.65;">No. Your data lives outside the SoY plugin folder, so it survives reinstalls, updates, and repo re-downloads. As long as you're on the same machine, it'll all be there. Moving to a new computer? Ask Claude to export your data and it'll give you a file you can import on the new machine.</div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ── FOOTER CTA ── -->
+  <div class="footer-cta">
+    <p class="footer-cta__eyebrow">Need help?</p>
+    <h2 class="footer-cta__title">Stuck on something?<br><em>Just ask.</em></h2>
+    <p class="footer-cta__sub">Kerry personally responds to every email. If something isn't working or you're not sure how to do something, reach out.</p>
+    <a href="mailto:kerry@softwareof.you" class="footer-cta__email">kerry@softwareof.you</a>
+  </div>
+
+</div>
+
+<script>
+function copyCmd(id, btn) {
+  var text = document.getElementById(id).textContent;
+  navigator.clipboard.writeText(text).then(function() {
+    var orig = btn.textContent;
+    btn.textContent = 'Copied!';
+    btn.style.color = '#a8e6c0';
+    setTimeout(function() {
+      btn.textContent = orig;
+      btn.style.color = '';
+    }, 1800);
+  });
+}
+</script>
+
+</body>
+</html>

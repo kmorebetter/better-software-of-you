@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Week View — Software of You</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'system-ui', 'sans-serif'] }
+                }
+            }
+        }
+    </script>
+    <style>
+        .nav-item {
+            display: flex; align-items: center; gap: 0.375rem; padding: 0.375rem 0.75rem;
+            border-radius: 0.5rem; font-size: 0.8125rem; color: #71717a; white-space: nowrap;
+            transition: all 0.15s; text-decoration: none;
+        }
+        .nav-item:hover { background: #f4f4f5; color: #18181b; }
+        .nav-item.active { background: #f4f4f5; color: #18181b; font-weight: 600; }
+        .nav-badge {
+            font-size: 0.6875rem; background: #e4e4e7; color: #52525b;
+            padding: 0.0625rem 0.375rem; border-radius: 9999px; font-weight: 500;
+        }
+        .nav-item.active .nav-badge, .nav-dropdown-item.active .nav-badge { background: #3b82f6; color: white; }
+        .nav-group { position: relative; }
+        .nav-group-label {
+            display: flex; align-items: center; gap: 0.25rem; padding: 0.375rem 0.75rem;
+            border-radius: 0.5rem; font-size: 0.8125rem; color: #71717a; cursor: pointer;
+            white-space: nowrap; transition: all 0.15s; user-select: none;
+        }
+        .nav-group-label:hover, .nav-group.active > .nav-group-label { background: #f4f4f5; color: #18181b; }
+        .nav-group.active > .nav-group-label { font-weight: 600; }
+        .nav-chevron { transition: transform 0.15s; opacity: 0.5; }
+        .nav-group:hover .nav-chevron, .nav-group.open .nav-chevron { opacity: 1; }
+        .nav-group.open .nav-chevron { transform: rotate(180deg); }
+        .nav-dropdown {
+            display: none; position: absolute; top: 100%; left: 0; margin-top: 0.25rem;
+            min-width: 10rem; background: white; border: 1px solid #e4e4e7; border-radius: 0.75rem;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -2px rgba(0,0,0,0.1);
+            padding: 0.375rem; z-index: 50;
+        }
+        .nav-group:hover > .nav-dropdown { display: block; }
+        .nav-group.open > .nav-dropdown { display: block; }
+        .nav-dropdown-item {
+            display: flex; align-items: center; gap: 0.375rem; padding: 0.375rem 0.625rem;
+            border-radius: 0.375rem; font-size: 0.8125rem; color: #71717a; white-space: nowrap;
+            transition: all 0.15s; text-decoration: none;
+        }
+        .nav-dropdown-item:hover { background: #f4f4f5; color: #18181b; }
+        .nav-dropdown-item.active { background: #eff6ff; color: #1d4ed8; font-weight: 600; }
+    </style>
+</head>
+<body class="bg-zinc-50 text-zinc-900 font-sans antialiased">
+
+<!-- Nav Bar -->
+<nav class="bg-white border-b border-zinc-200 mb-6">
+    <div class="max-w-6xl mx-auto px-4">
+        <div class="flex items-center gap-1 py-3">
+            <a href="dashboard.html" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-semibold text-zinc-900 hover:bg-zinc-50 transition-colors shrink-0">
+                <i data-lucide="hexagon" class="w-4 h-4"></i>
+                SoY
+            </a>
+            <span class="w-px h-5 bg-zinc-200 mx-1"></span>
+            <a href="dashboard.html" class="nav-item">
+                <i data-lucide="layout-dashboard" class="w-3.5 h-3.5"></i>
+                Dashboard
+            </a>
+            <div class="nav-group" onclick="this.classList.toggle('open')">
+                <div class="nav-group-label">
+                    <span>People</span>
+                    <i data-lucide="chevron-down" class="w-3 h-3 nav-chevron"></i>
+                </div>
+                <div class="nav-dropdown">
+                    <a href="contacts.html" class="nav-dropdown-item">
+                        <i data-lucide="users" class="w-3.5 h-3.5"></i>
+                        Contacts
+                        <span class="nav-badge">7</span>
+                    </a>
+                    <a href="network-map.html" class="nav-dropdown-item">
+                        <i data-lucide="share-2" class="w-3.5 h-3.5"></i>
+                        Network
+                    </a>
+                </div>
+            </div>
+            <div class="nav-group active" onclick="this.classList.toggle('open')">
+                <div class="nav-group-label">
+                    <span>Comms</span>
+                    <i data-lucide="chevron-down" class="w-3 h-3 nav-chevron"></i>
+                </div>
+                <div class="nav-dropdown">
+                    <a href="email-hub.html" class="nav-dropdown-item">
+                        <i data-lucide="mail" class="w-3.5 h-3.5"></i>
+                        Email
+                        <span class="nav-badge">58</span>
+                    </a>
+                    <a href="week-view.html" class="nav-dropdown-item active">
+                        <i data-lucide="calendar" class="w-3.5 h-3.5"></i>
+                        Calendar
+                        <span class="nav-badge">28</span>
+                    </a>
+                </div>
+            </div>
+            <div class="nav-group" onclick="this.classList.toggle('open')">
+                <div class="nav-group-label">
+                    <span>Intelligence</span>
+                    <i data-lucide="chevron-down" class="w-3 h-3 nav-chevron"></i>
+                </div>
+                <div class="nav-dropdown">
+                    <a href="conversations.html" class="nav-dropdown-item">
+                        <i data-lucide="message-square" class="w-3.5 h-3.5"></i>
+                        Conversations
+                        <span class="nav-badge">3</span>
+                    </a>
+                    <a href="decision-journal.html" class="nav-dropdown-item">
+                        <i data-lucide="git-branch" class="w-3.5 h-3.5"></i>
+                        Decisions
+                        <span class="nav-badge">5</span>
+                    </a>
+                    <a href="journal.html" class="nav-dropdown-item">
+                        <i data-lucide="book-open" class="w-3.5 h-3.5"></i>
+                        Journal
+                        <span class="nav-badge">1</span>
+                    </a>
+                    <a href="notes.html" class="nav-dropdown-item">
+                        <i data-lucide="sticky-note" class="w-3.5 h-3.5"></i>
+                        Notes
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div class="flex items-center justify-between pb-3 -mt-1">
+            <div class="flex items-center gap-1.5 text-sm">
+                <a href="dashboard.html" class="text-zinc-400 hover:text-zinc-600">Dashboard</a>
+                <span class="text-zinc-300">&rsaquo;</span>
+                <span class="text-zinc-700 font-medium">Calendar</span>
+            </div>
+        </div>
+    </div>
+</nav>
+
+<div class="max-w-6xl mx-auto px-4 pb-8">
+
+    <!-- Header Card -->
+    <div class="bg-white rounded-xl shadow-sm border border-zinc-200 p-6 mb-6">
+        <div class="flex items-center justify-between flex-wrap gap-4">
+            <div>
+                <div class="flex items-center gap-2">
+                    <i data-lucide="calendar" class="w-5 h-5 text-zinc-700"></i>
+                    <h1 class="text-2xl font-bold text-zinc-900">This Week</h1>
+                </div>
+                <p class="text-sm text-zinc-500 mt-1">Feb 16 &ndash; 22, 2026</p>
+            </div>
+            <div class="flex items-center gap-3 flex-wrap">
+                <span class="px-3 py-1 rounded-full text-xs font-medium bg-blue-50 text-blue-700">18 events</span>
+                <span class="px-3 py-1 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700">5 days with meetings</span>
+                <span class="px-3 py-1 rounded-full text-xs font-medium bg-zinc-100 text-zinc-600">2 days free</span>
+            </div>
+        </div>
+        <p class="text-xs text-zinc-400 mt-3">Next week: 6 events</p>
+    </div>
+
+    <!-- Week Grid: 7 Day Columns -->
+    <div class="grid grid-cols-1 md:grid-cols-7 gap-3 mb-8">
+
+        <!-- Monday Feb 16 (past) -->
+        <div class="bg-white rounded-xl shadow-sm border border-zinc-200 p-3 min-h-[200px] opacity-70">
+            <div class="text-center mb-3 pb-2 border-b border-zinc-100">
+                <div class="text-xs font-medium text-zinc-500 uppercase">Monday</div>
+                <div class="text-lg font-semibold text-zinc-900">16</div>
+                <div class="text-xs text-zinc-400">Feb</div>
+            </div>
+            <div class="bg-zinc-50 rounded-lg p-2 mb-2 border-l-[3px] border-zinc-300">
+                <div class="text-xs font-medium text-zinc-500">10:00 AM</div>
+                <div class="text-sm font-semibold text-zinc-900 truncate">Busy</div>
+                <div class="text-xs text-zinc-400">2 hrs</div>
+            </div>
+            <div class="bg-zinc-50 rounded-lg p-2 mb-2 border-l-[3px] border-zinc-300">
+                <div class="text-xs font-medium text-zinc-500">12:00 PM</div>
+                <div class="text-sm font-semibold text-zinc-900 truncate">Busy</div>
+                <div class="text-xs text-zinc-400">30 min</div>
+            </div>
+            <div class="bg-zinc-50 rounded-lg p-2 mb-2 border-l-[3px] border-zinc-300">
+                <div class="text-xs font-medium text-zinc-500">12:30 PM</div>
+                <div class="text-sm font-semibold text-zinc-900 truncate">Busy</div>
+                <div class="text-xs text-zinc-400">30 min</div>
+            </div>
+            <div class="bg-zinc-50 rounded-lg p-2 mb-2 border-l-[3px] border-zinc-300">
+                <div class="text-xs font-medium text-zinc-500">1:00 PM</div>
+                <div class="text-sm font-semibold text-zinc-900 truncate">Busy</div>
+                <div class="text-xs text-zinc-400">30 min</div>
+            </div>
+            <div class="bg-zinc-50 rounded-lg p-2 mb-2 border-l-[3px] border-zinc-300">
+                <div class="text-xs font-medium text-zinc-500">1:30 PM</div>
+                <div class="text-sm font-semibold text-zinc-900 truncate">Busy</div>
+                <div class="text-xs text-zinc-400">30 min</div>
+            </div>
+        </div>
+
+        <!-- Tuesday Feb 17 (past) -->
+        <div class="bg-white rounded-xl shadow-sm border border-zinc-200 p-3 min-h-[200px] opacity-70">
+            <div class="text-center mb-3 pb-2 border-b border-zinc-100">
+                <div class="text-xs font-medium text-zinc-500 uppercase">Tuesday</div>
+                <div class="text-lg font-semibold text-zinc-900">17</div>
+                <div class="text-xs text-zinc-400">Feb</div>
+            </div>
+            <div class="bg-zinc-50 rounded-lg p-2 mb-2 border-l-[3px] border-zinc-300">
+                <div class="text-xs font-medium text-zinc-500">7:00 AM</div>
+                <div class="text-sm font-semibold text-zinc-900 truncate">Busy</div>
+                <div class="text-xs text-zinc-400">1 hr</div>
+            </div>
+            <div class="bg-zinc-50 rounded-lg p-2 mb-2 border-l-[3px] border-blue-400">
+                <div class="text-xs font-medium text-zinc-500">9:00 AM</div>
+                <div class="text-sm font-semibold text-zinc-900 truncate">Weekly Kickoff</div>
+                <div class="text-xs text-zinc-400">1 hr</div>
+                <div class="text-xs text-zinc-500 mt-1">Ana, Gigi, <a href="contact-emma-cuddy.html" class="text-blue-600 hover:text-blue-800 hover:underline">Emma</a>, <a href="contact-nawid-fatahi.html" class="text-blue-600 hover:text-blue-800 hover:underline">Tariq</a>, <a href="contact-jp-moya.html" class="text-blue-600 hover:text-blue-800 hover:underline">JP</a> +2</div>
+            </div>
+            <div class="bg-zinc-50 rounded-lg p-2 mb-2 border-l-[3px] border-zinc-300">
+                <div class="text-xs font-medium text-zinc-500">11:15 AM</div>
+                <div class="text-sm font-semibold text-zinc-900 truncate">Busy</div>
+                <div class="text-xs text-zinc-400">30 min</div>
+            </div>
+            <div class="bg-zinc-50 rounded-lg p-2 mb-2 border-l-[3px] border-zinc-300">
+                <div class="text-xs font-medium text-zinc-500">1:00 PM</div>
+                <div class="text-sm font-semibold text-zinc-900 truncate">Busy</div>
+                <div class="text-xs text-zinc-400">1 hr</div>
+            </div>
+            <div class="bg-zinc-50 rounded-lg p-2 mb-2 border-l-[3px] border-zinc-300">
+                <div class="text-xs font-medium text-zinc-500">2:30 PM</div>
+                <div class="text-sm font-semibold text-zinc-900 truncate">Busy</div>
+                <div class="text-xs text-zinc-400">45 min</div>
+            </div>
+        </div>
+
+        <!-- Wednesday Feb 18 (past) -->
+        <div class="bg-white rounded-xl shadow-sm border border-zinc-200 p-3 min-h-[200px] opacity-70">
+            <div class="text-center mb-3 pb-2 border-b border-zinc-100">
+                <div class="text-xs font-medium text-zinc-500 uppercase">Wednesday</div>
+                <div class="text-lg font-semibold text-zinc-900">18</div>
+                <div class="text-xs text-zinc-400">Feb</div>
+            </div>
+            <div class="bg-zinc-50 rounded-lg p-2 mb-2 border-l-[3px] border-zinc-300">
+                <div class="text-xs font-medium text-zinc-500">9:00 AM</div>
+                <div class="text-sm font-semibold text-zinc-900 truncate">Busy</div>
+                <div class="text-xs text-zinc-400">1 hr</div>
+            </div>
+            <div class="bg-zinc-50 rounded-lg p-2 mb-2 border-l-[3px] border-zinc-300">
+                <div class="text-xs font-medium text-zinc-500">10:00 AM</div>
+                <div class="text-sm font-semibold text-zinc-900 truncate">Busy</div>
+                <div class="text-xs text-zinc-400">30 min</div>
+            </div>
+            <div class="bg-zinc-50 rounded-lg p-2 mb-2 border-l-[3px] border-emerald-400">
+                <div class="text-xs font-medium text-zinc-500">3:30 PM</div>
+                <div class="text-sm font-semibold text-zinc-900 truncate">Micro Onboarding</div>
+                <div class="text-xs text-zinc-400">30 min</div>
+                <div class="text-xs text-zinc-500 mt-1">Brett Goldstein</div>
+                <div class="flex items-center gap-1 text-xs text-zinc-400 mt-0.5">
+                    <i data-lucide="map-pin" class="w-3 h-3"></i>
+                    <span>Google Meet</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Thursday Feb 19 (past) -->
+        <div class="bg-white rounded-xl shadow-sm border border-zinc-200 p-3 min-h-[200px] opacity-70">
+            <div class="text-center mb-3 pb-2 border-b border-zinc-100">
+                <div class="text-xs font-medium text-zinc-500 uppercase">Thursday</div>
+                <div class="text-lg font-semibold text-zinc-900">19</div>
+                <div class="text-xs text-zinc-400">Feb</div>
+            </div>
+            <div class="bg-zinc-50 rounded-lg p-2 mb-2 border-l-[3px] border-zinc-300">
+                <div class="text-xs font-medium text-zinc-500">7:00 AM</div>
+                <div class="text-sm font-semibold text-zinc-900 truncate">Busy</div>
+                <div class="text-xs text-zinc-400">1 hr</div>
+            </div>
+            <div class="bg-zinc-50 rounded-lg p-2 mb-2 border-l-[3px] border-zinc-300">
+                <div class="text-xs font-medium text-zinc-500">9:00 AM</div>
+                <div class="text-sm font-semibold text-zinc-900 truncate">Busy</div>
+                <div class="text-xs text-zinc-400">1 hr</div>
+            </div>
+        </div>
+
+        <!-- Friday Feb 20 (TODAY) -->
+        <div class="bg-amber-50/50 rounded-xl shadow-sm border border-amber-200 p-3 min-h-[200px]">
+            <div class="text-center mb-3 pb-2 border-b border-amber-200">
+                <div class="text-xs font-medium text-amber-600 uppercase">Friday</div>
+                <div class="text-lg font-semibold text-amber-900">20</div>
+                <div class="text-xs text-amber-500">Today</div>
+            </div>
+            <div class="bg-white/80 rounded-lg p-2 mb-2 border-l-[3px] border-emerald-400">
+                <div class="text-xs font-medium text-zinc-500">8:30 AM</div>
+                <div class="text-sm font-semibold text-zinc-900 truncate">Marcus W Call</div>
+                <div class="text-xs text-zinc-400">45 min</div>
+                <div class="text-xs text-zinc-500 mt-1"><a href="contact-daniel-byrne.html" class="text-blue-600 hover:text-blue-800 hover:underline">Marcus</a></div>
+            </div>
+            <div class="bg-white/80 rounded-lg p-2 mb-2 border-l-[3px] border-emerald-400">
+                <div class="text-xs font-medium text-zinc-500">10:00 AM</div>
+                <div class="text-sm font-semibold text-zinc-900 truncate">James OKAFOR</div>
+                <div class="text-xs text-zinc-400">45 min</div>
+                <div class="text-xs text-zinc-500 mt-1"><a href="contact-charles-bernard.html" class="text-blue-600 hover:text-blue-800 hover:underline">Charles</a></div>
+            </div>
+            <div class="bg-white/80 rounded-lg p-2 mb-2 border-l-[3px] border-emerald-400">
+                <div class="text-xs font-medium text-zinc-500">12:30 PM</div>
+                <div class="text-sm font-semibold text-zinc-900 truncate">Marcus / Kerry</div>
+                <div class="text-xs text-zinc-400">40 min</div>
+                <div class="text-xs text-zinc-500 mt-1"><a href="contact-daniel-byrne.html" class="text-blue-600 hover:text-blue-800 hover:underline">Marcus</a></div>
+            </div>
+        </div>
+
+        <!-- Saturday Feb 21 -->
+        <div class="bg-white rounded-xl shadow-sm border border-zinc-200 p-3 min-h-[200px]">
+            <div class="text-center mb-3 pb-2 border-b border-zinc-100">
+                <div class="text-xs font-medium text-zinc-500 uppercase">Saturday</div>
+                <div class="text-lg font-semibold text-zinc-900">21</div>
+                <div class="text-xs text-zinc-400">Feb</div>
+            </div>
+            <div class="flex items-center justify-center h-24 text-zinc-300">
+                <div class="text-center">
+                    <i data-lucide="sun" class="w-5 h-5 mx-auto mb-1"></i>
+                    <span class="text-xs">Free</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sunday Feb 22 -->
+        <div class="bg-white rounded-xl shadow-sm border border-zinc-200 p-3 min-h-[200px]">
+            <div class="text-center mb-3 pb-2 border-b border-zinc-100">
+                <div class="text-xs font-medium text-zinc-500 uppercase">Sunday</div>
+                <div class="text-lg font-semibold text-zinc-900">22</div>
+                <div class="text-xs text-zinc-400">Feb</div>
+            </div>
+            <div class="flex items-center justify-center h-24 text-zinc-300">
+                <div class="text-center">
+                    <i data-lucide="sun" class="w-5 h-5 mx-auto mb-1"></i>
+                    <span class="text-xs">Free</span>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Event Detail Cards -->
+    <h2 class="text-sm font-semibold text-zinc-700 mb-3">Event Details</h2>
+
+    <div class="bg-white rounded-xl shadow-sm border border-zinc-200 p-4 mb-3">
+        <div class="flex items-start justify-between">
+            <div>
+                <h3 class="font-semibold text-zinc-900">Weekly Kickoff - Verdant Co</h3>
+                <p class="text-sm text-zinc-500">Tuesday, Feb 17 &middot; 9:00 AM &ndash; 10:00 AM &middot; 1 hr</p>
+            </div>
+        </div>
+        <div class="mt-3 flex flex-wrap gap-2">
+            <span class="inline-flex items-center gap-1.5 px-2 py-1 rounded-full text-xs bg-zinc-100 text-zinc-600">
+                <span class="w-5 h-5 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center text-xs font-medium">EC</span>
+                <a href="contact-emma-cuddy.html" class="text-blue-600 hover:text-blue-800 hover:underline">Priya Nair</a> &middot; Verdant Co
+            </span>
+            <span class="inline-flex items-center gap-1.5 px-2 py-1 rounded-full text-xs bg-zinc-100 text-zinc-600">
+                <span class="w-5 h-5 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center text-xs font-medium">GP</span>
+                <a href="contact-gigi-presentey.html" class="text-blue-600 hover:text-blue-800 hover:underline">Zoe Hartley</a> &middot; Verdant Co
+            </span>
+            <span class="inline-flex items-center gap-1.5 px-2 py-1 rounded-full text-xs bg-zinc-100 text-zinc-600">
+                <span class="w-5 h-5 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center text-xs font-medium">NF</span>
+                <a href="contact-nawid-fatahi.html" class="text-blue-600 hover:text-blue-800 hover:underline">Tariq Hassan</a> &middot; Verdant Co
+            </span>
+            <span class="inline-flex items-center gap-1.5 px-2 py-1 rounded-full text-xs bg-zinc-100 text-zinc-600">
+                <span class="w-5 h-5 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center text-xs font-medium">JP</span>
+                <a href="contact-jp-moya.html" class="text-blue-600 hover:text-blue-800 hover:underline">Sofia Reyes</a> &middot; Verdant Co
+            </span>
+            <span class="inline-flex items-center gap-1.5 px-2 py-1 rounded-full text-xs bg-zinc-100 text-zinc-600">
+                <span class="w-5 h-5 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center text-xs font-medium">XG</span>
+                Ana +2 others
+            </span>
+        </div>
+    </div>
+
+    <div class="bg-white rounded-xl shadow-sm border border-zinc-200 p-4 mb-3">
+        <div class="flex items-start justify-between">
+            <div>
+                <h3 class="font-semibold text-zinc-900">Micro Onboarding &mdash; Brett Goldstein</h3>
+                <p class="text-sm text-zinc-500">Wednesday, Feb 18 &middot; 3:30 PM &ndash; 4:00 PM &middot; 30 min</p>
+            </div>
+        </div>
+        <div class="mt-3 flex flex-wrap gap-2">
+            <span class="inline-flex items-center gap-1.5 px-2 py-1 rounded-full text-xs bg-zinc-100 text-zinc-600">
+                <span class="w-5 h-5 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center text-xs font-medium">BG</span>
+                Brett Goldstein &middot; Micro
+            </span>
+        </div>
+        <div class="mt-2 flex items-center gap-1.5 text-xs text-zinc-500">
+            <i data-lucide="map-pin" class="w-3 h-3"></i>
+            <span>Google Meet</span>
+        </div>
+    </div>
+
+    <div class="bg-white rounded-xl shadow-sm border border-zinc-200 p-4 mb-3">
+        <div class="flex items-start justify-between">
+            <div>
+                <h3 class="font-semibold text-zinc-900">Kerry's Calendar (Marcus Webb) &mdash; Discovery Call</h3>
+                <p class="text-sm text-zinc-500">Friday, Feb 20 &middot; 8:30 AM &ndash; 9:15 AM &middot; 45 min</p>
+            </div>
+            <a href="contact-daniel-byrne.html" class="text-xs text-blue-600 hover:text-blue-800 hover:underline flex items-center gap-1">
+                <span>View prep</span>
+                <i data-lucide="arrow-right" class="w-3 h-3"></i>
+            </a>
+        </div>
+        <div class="mt-3 flex flex-wrap gap-2">
+            <span class="inline-flex items-center gap-1.5 px-2 py-1 rounded-full text-xs bg-zinc-100 text-zinc-600">
+                <span class="w-5 h-5 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center text-xs font-medium">DB</span>
+                <a href="contact-daniel-byrne.html" class="text-blue-600 hover:text-blue-800 hover:underline">Marcus Webb</a> &middot; Northgate Development &middot; VP
+            </span>
+        </div>
+    </div>
+
+    <div class="bg-white rounded-xl shadow-sm border border-zinc-200 p-4 mb-3">
+        <div class="flex items-start justify-between">
+            <div>
+                <h3 class="font-semibold text-zinc-900">Kerry's Calendar (James Okafor)</h3>
+                <p class="text-sm text-zinc-500">Friday, Feb 20 &middot; 10:00 AM &ndash; 10:45 AM &middot; 45 min</p>
+            </div>
+            <a href="contact-charles-bernard.html" class="text-xs text-blue-600 hover:text-blue-800 hover:underline flex items-center gap-1">
+                <span>View prep</span>
+                <i data-lucide="arrow-right" class="w-3 h-3"></i>
+            </a>
+        </div>
+        <div class="mt-3 flex flex-wrap gap-2">
+            <span class="inline-flex items-center gap-1.5 px-2 py-1 rounded-full text-xs bg-zinc-100 text-zinc-600">
+                <span class="w-5 h-5 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center text-xs font-medium">CB</span>
+                <a href="contact-charles-bernard.html" class="text-blue-600 hover:text-blue-800 hover:underline">James Okafor</a> &middot; Apex Group &middot; Head of Retail
+            </span>
+        </div>
+    </div>
+
+    <div class="bg-white rounded-xl shadow-sm border border-zinc-200 p-4 mb-3">
+        <div class="flex items-start justify-between">
+            <div>
+                <h3 class="font-semibold text-zinc-900">Marcus / Kerry &mdash; Follow-up Call</h3>
+                <p class="text-sm text-zinc-500">Friday, Feb 20 &middot; 12:30 PM &ndash; 1:10 PM &middot; 40 min</p>
+            </div>
+            <a href="contact-daniel-byrne.html" class="text-xs text-blue-600 hover:text-blue-800 hover:underline flex items-center gap-1">
+                <span>View prep</span>
+                <i data-lucide="arrow-right" class="w-3 h-3"></i>
+            </a>
+        </div>
+        <div class="mt-3 flex flex-wrap gap-2">
+            <span class="inline-flex items-center gap-1.5 px-2 py-1 rounded-full text-xs bg-zinc-100 text-zinc-600">
+                <span class="w-5 h-5 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center text-xs font-medium">DB</span>
+                <a href="contact-daniel-byrne.html" class="text-blue-600 hover:text-blue-800 hover:underline">Marcus Webb</a> &middot; Northgate Development &middot; VP
+            </span>
+        </div>
+    </div>
+
+    <!-- Next Week Preview -->
+    <div class="bg-white rounded-xl shadow-sm border border-zinc-200 p-5 mb-6 mt-6">
+        <div class="flex items-center gap-2 mb-3">
+            <i data-lucide="calendar-plus" class="w-4 h-4 text-zinc-500"></i>
+            <h2 class="text-sm font-semibold text-zinc-700">Next Week &mdash; 6 events</h2>
+            <span class="text-xs text-zinc-400">Feb 23 &ndash; Mar 1</span>
+        </div>
+        <div class="space-y-1.5">
+            <div class="flex items-center gap-3 text-sm">
+                <span class="text-zinc-400 w-20">Mon 23</span>
+                <span class="text-zinc-500 w-16">7:00 AM</span>
+                <span class="text-zinc-700"><a href="contact-charles-bernard.html" class="text-blue-600 hover:text-blue-800 hover:underline">James Okafor</a> Call</span>
+            </div>
+            <div class="flex items-center gap-3 text-sm">
+                <span class="text-zinc-400 w-20">Mon 23</span>
+                <span class="text-zinc-500 w-16">10:00 AM</span>
+                <span class="text-zinc-700">Busy</span>
+            </div>
+            <div class="flex items-center gap-3 text-sm">
+                <span class="text-zinc-400 w-20">Tue 24</span>
+                <span class="text-zinc-500 w-16">2:30 PM</span>
+                <span class="text-zinc-700">Busy</span>
+            </div>
+            <div class="flex items-center gap-3 text-sm">
+                <span class="text-zinc-400 w-20">Wed 25</span>
+                <span class="text-zinc-500 w-16">9:00 AM</span>
+                <span class="text-zinc-700">Busy</span>
+            </div>
+            <div class="flex items-center gap-3 text-sm">
+                <span class="text-zinc-400 w-20">Thu 26</span>
+                <span class="text-zinc-500 w-16">9:00 AM</span>
+                <span class="text-zinc-700">Busy</span>
+            </div>
+            <div class="flex items-center gap-3 text-sm">
+                <span class="text-zinc-400 w-20">Sat 28</span>
+                <span class="text-zinc-500 w-16">11:00 AM</span>
+                <span class="text-zinc-700">Busy</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="mt-8 pt-4 border-t border-zinc-100 text-center">
+        <p class="text-xs text-zinc-400">Generated by Software of You &middot; February 20, 2026 at 3:45 PM</p>
+    </footer>
+
+</div>
+
+<script>lucide.createIcons();</script>
+<!-- DEMO BANNER -->
+<div id="demo-banner" style="position:fixed;bottom:0;left:0;right:0;z-index:9999;background:#1A4731;color:white;font-family:'DM Mono',monospace;font-size:12px;letter-spacing:0.04em;display:flex;align-items:center;justify-content:center;gap:24px;padding:10px 24px;box-shadow:0 -2px 16px rgba(0,0,0,0.2);">
+  <span style="opacity:0.7;">✦ LIVE DEMO — anonymized data</span>
+  <span style="opacity:0.4;">|</span>
+  <span>This is what Software of You looks like with 3 months of real use.</span>
+  <span style="opacity:0.4;">|</span>
+  <a href="https://softwareof.you" style="color:#a8e6c0;text-decoration:none;font-weight:500;white-space:nowrap;" target="_top">Get it for yourself →</a>
+  <button onclick="document.getElementById('demo-banner').style.display='none'" style="margin-left:8px;background:none;border:none;color:rgba(255,255,255,0.4);cursor:pointer;font-size:16px;line-height:1;padding:0 4px;" title="Dismiss">×</button>
+</div>
+<div style="height:44px;"></div><!-- spacer so banner doesn't cover content -->
+</body>
+</html>

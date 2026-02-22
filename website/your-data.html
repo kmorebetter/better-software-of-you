@@ -1,0 +1,1589 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Your Data — Software of You</title>
+  <meta name="description" content="Your context is yours. Full stop. SoY is designed so you can't give your data to us even if you wanted to. Local-first, SQLite, zero cloud.">
+  <meta name="robots" content="index, follow">
+  <link rel="canonical" href="https://softwareof.you/your-data.html">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://softwareof.you/your-data.html">
+  <meta property="og:title" content="Your Data — Software of You">
+  <meta property="og:description" content="Your context is yours. Full stop. SoY is designed so you can't give your data to us even if you wanted to. Local-first, SQLite, zero cloud.">
+  <meta property="og:site_name" content="Software of You">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Your Data — Software of You">
+  <meta name="twitter:description" content="Your context is yours. Full stop. Local-first, SQLite, zero cloud. SoY can't access your data even if it wanted to.">
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"WebPage","url":"https://softwareof.you/your-data.html","name":"Your Data — Software of You","description":"Your context is yours. Full stop. SoY is designed so you can't give your data to us even if you wanted to. Local-first, SQLite, zero cloud.","isPartOf":{"@type":"WebSite","url":"https://softwareof.you/","name":"Software of You"},"about":{"@type":"SoftwareApplication","name":"Software of You","offers":{"@type":"Offer","price":"149","priceCurrency":"USD"}}}</script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300;1,400&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300;1,9..40,400&display=swap" rel="stylesheet">
+
+  <style>
+    /* ─────────────────────────────────────────
+       DESIGN TOKENS
+    ───────────────────────────────────────── */
+    :root {
+      --bone:        #FAF9F6;
+      --bone-mid:    #F2F0EB;
+      --bone-deep:   #E8E4DC;
+      --ink:         #0F0E0C;
+      --ink-2:       #2C2A26;
+      --ink-3:       #6B6860;
+      --ink-4:       #A8A49C;
+      --ink-5:       #D4D0C8;
+      --forest:      #1A4731;
+      --forest-mid:  #245E41;
+      --forest-pale: #EBF2EE;
+      --forest-bg:   #F2F7F4;
+      --ember:       #A63325;
+      --ember-pale:  #FBF2F0;
+      --rule:        rgba(15,14,12,0.08);
+      --rule-mid:    rgba(15,14,12,0.13);
+      --rule-heavy:  rgba(15,14,12,0.22);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; font-size: 16px; }
+
+    body {
+      background: var(--bone);
+      color: var(--ink);
+      font-family: 'DM Sans', system-ui, sans-serif;
+      line-height: 1.6;
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ─────────────────────────────────────────
+       SCROLL REVEAL
+    ───────────────────────────────────────── */
+    .reveal {
+      opacity: 0;
+      transform: translateY(24px);
+      transition: opacity 0.65s ease, transform 0.65s ease;
+    }
+    .reveal.in { opacity: 1; transform: none; }
+    .reveal-delay-1 { transition-delay: 0.1s; }
+    .reveal-delay-2 { transition-delay: 0.2s; }
+    .reveal-delay-3 { transition-delay: 0.3s; }
+    .reveal-delay-4 { transition-delay: 0.4s; }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to   { opacity: 1; }
+    }
+
+    /* ─────────────────────────────────────────
+       NAVIGATION
+    ───────────────────────────────────────── */
+    .nav { position:fixed; top:0; left:0; right:0; z-index:100; background:rgba(250,249,246,0.92); backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px); border-bottom:1px solid var(--rule); }
+    .nav__inner { max-width:1200px; margin:0 auto; padding:0 48px; height:64px; display:flex; align-items:center; justify-content:space-between; }
+    .nav__logo { font-family:'DM Serif Display',Georgia,serif; font-size:17px; color:var(--ink); text-decoration:none; letter-spacing:0.01em; }
+    .nav__logo span { font-style:italic; color:var(--forest); }
+    .nav__links { display:flex; align-items:center; gap:28px; list-style:none; }
+    .nav__links a { font-family:'DM Mono',monospace; font-size:11px; letter-spacing:0.08em; text-transform:uppercase; color:var(--ink-3); text-decoration:none; transition:color 0.18s; }
+    .nav__links a:hover, .nav__links a.active { color:var(--ink); }
+    .nav__item--has-sub { position:relative; }
+    .nav__item--has-sub > a { cursor: pointer; }
+    .nav__item--has-sub > a::after { content:''; display:inline-block; width:5px; height:5px; border-right:1.5px solid currentColor; border-bottom:1.5px solid currentColor; transform:rotate(45deg) translateY(-2px); margin-left:6px; opacity:0.5; transition:transform 0.18s; }
+    .nav__sub { position:absolute; top:calc(100% + 8px); left:50%; transform:translateX(-50%) translateY(-4px); background:white; border:1px solid var(--rule-heavy); min-width:220px; padding:8px 0; list-style:none; opacity:0; visibility:hidden; pointer-events:none; transition:opacity 0.16s,transform 0.16s; box-shadow:0 8px 24px rgba(0,0,0,0.08); }
+    .nav__item--has-sub.open > a::after { transform:rotate(225deg) translateY(-2px); }
+    .nav__item--has-sub.open .nav__sub { opacity:1; visibility:visible; pointer-events:auto; transform:translateX(-50%) translateY(0); }
+
+    .nav__sub li a { display:flex; align-items:center; gap:10px; padding:9px 20px; font-family:'DM Sans',sans-serif; font-size:13px; letter-spacing:0; text-transform:none; color:var(--ink-2); transition:background 0.12s; }
+    .nav__sub li a:hover { background:var(--bone); color:var(--ink); }
+    .nav__sub__num { font-family:'DM Mono',monospace; font-size:10px; color:var(--ink-5); min-width:16px; }
+    .nav__sub__divider { height:1px; background:var(--rule); margin:6px 20px; }
+    .nav__right { display:flex; align-items:center; gap:36px; }
+    .nav__cta { font-family:'DM Sans',sans-serif; font-size:13px; font-weight:500; letter-spacing:0.04em; color:var(--bone); background:var(--forest); padding:10px 24px; text-decoration:none; border-radius:2px; transition:background 0.18s,transform 0.14s; }
+    .nav__cta:hover { background:var(--forest-mid); transform:translateY(-1px); }
+
+    /* ─────────────────────────────────────────
+       HERO — DARK FOREST
+    ───────────────────────────────────────── */
+    .hero {
+      background: var(--forest);
+      min-height: 100vh;
+      padding-top: 64px;
+      display: flex;
+      align-items: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Ghost watermark */
+    .hero__watermark {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-family: 'DM Mono', monospace;
+      font-size: clamp(140px, 22vw, 260px);
+      font-weight: 500;
+      letter-spacing: -0.04em;
+      color: rgba(255,255,255,0.04);
+      white-space: nowrap;
+      pointer-events: none;
+      user-select: none;
+      line-height: 1;
+    }
+
+    .hero__inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 120px 48px;
+      position: relative;
+      z-index: 2;
+    }
+
+    .hero__label {
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: rgba(235,242,238,0.55);
+      margin-bottom: 40px;
+      animation: fadeIn 0.8s ease both;
+      animation-delay: 0.1s;
+    }
+
+    .hero__headline {
+      font-family: 'DM Serif Display', Georgia, serif;
+      font-size: clamp(52px, 7vw, 96px);
+      line-height: 1.0;
+      letter-spacing: -0.025em;
+      color: var(--bone);
+      margin-bottom: 36px;
+      max-width: 820px;
+      animation: fadeUp 0.9s ease both;
+      animation-delay: 0.2s;
+    }
+
+    .hero__sub {
+      font-family: 'DM Serif Display', Georgia, serif;
+      font-size: clamp(22px, 2.8vw, 32px);
+      font-style: italic;
+      color: rgba(235,242,238,0.72);
+      max-width: 580px;
+      line-height: 1.45;
+      margin-bottom: 64px;
+      animation: fadeUp 0.9s ease both;
+      animation-delay: 0.35s;
+    }
+
+    .hero__pull-quote {
+      border-left: 2px solid rgba(235,242,238,0.25);
+      padding: 28px 36px;
+      max-width: 680px;
+      background: rgba(255,255,255,0.04);
+      animation: fadeUp 0.9s ease both;
+      animation-delay: 0.5s;
+    }
+
+    .hero__pull-quote p {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 16px;
+      line-height: 1.7;
+      color: rgba(235,242,238,0.78);
+      margin-bottom: 16px;
+    }
+
+    .hero__pull-quote p:last-child { margin-bottom: 0; }
+
+    .hero__pull-quote .source {
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 0.10em;
+      text-transform: uppercase;
+      color: rgba(235,242,238,0.38);
+      margin-top: 20px;
+    }
+
+    /* ─────────────────────────────────────────
+       SECTION BASE
+    ───────────────────────────────────────── */
+    .section {
+      padding: 120px 0;
+      position: relative;
+    }
+
+    .section--bone   { background: var(--bone); }
+    .section--mid    { background: var(--bone-mid); }
+    .section--forest { background: var(--forest); }
+    .section--forest-bg { background: var(--forest-bg); }
+
+    .section__inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 48px;
+    }
+
+    .section__number {
+      font-family: 'DM Mono', monospace;
+      font-size: clamp(100px, 14vw, 160px);
+      font-weight: 500;
+      line-height: 1;
+      color: rgba(15,14,12,0.05);
+      position: absolute;
+      top: 64px;
+      right: 48px;
+      pointer-events: none;
+      user-select: none;
+      letter-spacing: -0.04em;
+    }
+
+    .section--forest .section__number {
+      color: rgba(255,255,255,0.05);
+    }
+
+    .section__label {
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--ink-4);
+      margin-bottom: 24px;
+    }
+
+    .section--forest .section__label { color: rgba(235,242,238,0.45); }
+
+    .section__headline {
+      font-family: 'DM Serif Display', Georgia, serif;
+      font-size: clamp(36px, 4.5vw, 56px);
+      line-height: 1.08;
+      letter-spacing: -0.02em;
+      color: var(--ink);
+      margin-bottom: 32px;
+      max-width: 700px;
+    }
+
+    .section--forest .section__headline { color: var(--bone); }
+
+    .section__body {
+      font-size: 17px;
+      line-height: 1.75;
+      color: var(--ink-2);
+      max-width: 640px;
+    }
+
+    .section--forest .section__body { color: rgba(235,242,238,0.78); }
+
+    .section__body p + p { margin-top: 20px; }
+
+    /* ─────────────────────────────────────────
+       01 — ACQUISITION STORY
+    ───────────────────────────────────────── */
+    .story-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 80px;
+      align-items: start;
+      margin-top: 64px;
+    }
+
+    .story-timeline {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+    }
+
+    .story-event {
+      display: flex;
+      gap: 24px;
+      padding-bottom: 40px;
+      position: relative;
+    }
+
+    .story-event:not(:last-child)::after {
+      content: '';
+      position: absolute;
+      left: 11px;
+      top: 28px;
+      bottom: 0;
+      width: 1px;
+      background: var(--rule-heavy);
+    }
+
+    .story-event__dot {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      border: 2px solid var(--rule-heavy);
+      background: var(--bone);
+      flex-shrink: 0;
+      margin-top: 2px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .story-event--critical .story-event__dot {
+      background: var(--ember);
+      border-color: var(--ember);
+    }
+
+    .story-event__date {
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--ink-4);
+      margin-bottom: 6px;
+    }
+
+    .story-event__title {
+      font-family: 'DM Serif Display', Georgia, serif;
+      font-size: 20px;
+      color: var(--ink);
+      margin-bottom: 8px;
+      line-height: 1.2;
+    }
+
+    .story-event--critical .story-event__title { color: var(--ember); }
+
+    .story-event__body {
+      font-size: 15px;
+      line-height: 1.65;
+      color: var(--ink-3);
+    }
+
+    .story-callout {
+      background: var(--ember-pale);
+      border: 1px solid rgba(166,51,37,0.15);
+      padding: 40px;
+      position: relative;
+    }
+
+    .story-callout__label {
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--ember);
+      margin-bottom: 20px;
+    }
+
+    .story-callout__quote {
+      font-family: 'DM Serif Display', Georgia, serif;
+      font-size: clamp(22px, 2.5vw, 30px);
+      font-style: italic;
+      color: var(--ink-2);
+      line-height: 1.4;
+      margin-bottom: 24px;
+    }
+
+    .story-callout__body {
+      font-size: 15px;
+      line-height: 1.7;
+      color: var(--ink-3);
+    }
+
+    /* ─────────────────────────────────────────
+       02 — ARCHITECTURE DIAGRAM
+    ───────────────────────────────────────── */
+    .arch-compare {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2px;
+      margin-top: 64px;
+      border: 1px solid var(--rule-heavy);
+    }
+
+    .arch-col {
+      padding: 52px 48px;
+      position: relative;
+    }
+
+    .arch-col--them {
+      background: var(--bone-mid);
+    }
+
+    .arch-col--us {
+      background: var(--forest);
+    }
+
+    .arch-col__label {
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      margin-bottom: 36px;
+    }
+
+    .arch-col--them .arch-col__label { color: var(--ink-4); }
+    .arch-col--us .arch-col__label   { color: rgba(235,242,238,0.5); }
+
+    .arch-flow {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+    }
+
+    .arch-step {
+      display: flex;
+      align-items: flex-start;
+      gap: 16px;
+      padding: 16px 0;
+      position: relative;
+    }
+
+    .arch-step:not(:last-child) {
+      border-bottom: 1px solid;
+    }
+
+    .arch-col--them .arch-step:not(:last-child) { border-color: var(--rule-mid); }
+    .arch-col--us   .arch-step:not(:last-child) { border-color: rgba(255,255,255,0.08); }
+
+    .arch-step__icon {
+      width: 32px;
+      height: 32px;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      font-size: 14px;
+    }
+
+    .arch-col--them .arch-step__icon {
+      background: var(--bone-deep);
+      color: var(--ink-3);
+    }
+
+    .arch-col--us .arch-step__icon {
+      background: rgba(255,255,255,0.1);
+      color: rgba(235,242,238,0.8);
+    }
+
+    .arch-step__content {}
+
+    .arch-step__title {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 14px;
+      font-weight: 600;
+      margin-bottom: 2px;
+    }
+
+    .arch-col--them .arch-step__title { color: var(--ink-2); }
+    .arch-col--us   .arch-step__title { color: var(--bone); }
+
+    .arch-step__detail {
+      font-family: 'DM Mono', monospace;
+      font-size: 12px;
+      line-height: 1.5;
+    }
+
+    .arch-col--them .arch-step__detail { color: var(--ink-3); }
+    .arch-col--us   .arch-step__detail { color: rgba(235,242,238,0.55); }
+
+    .arch-path {
+      margin-top: 36px;
+      padding: 20px 24px;
+      border-radius: 3px;
+    }
+
+    .arch-col--them .arch-path {
+      background: var(--bone-deep);
+      border: 1px solid var(--rule-heavy);
+    }
+
+    .arch-col--us .arch-path {
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.12);
+    }
+
+    .arch-path__label {
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+
+    .arch-col--them .arch-path__label { color: var(--ink-4); }
+    .arch-col--us   .arch-path__label { color: rgba(235,242,238,0.4); }
+
+    .arch-path__value {
+      font-family: 'DM Mono', monospace;
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    .arch-col--them .arch-path__value { color: var(--ink-3); }
+    .arch-col--us   .arch-path__value { color: rgba(235,242,238,0.85); }
+
+    .arch-path__value .path-highlight {
+      color: #7BB89F;
+    }
+
+    /* ─────────────────────────────────────────
+       03 — WHAT LOCAL-FIRST MEANS
+    ───────────────────────────────────────── */
+    .truths-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2px;
+      margin-top: 64px;
+      border: 1px solid var(--rule-heavy);
+      overflow: hidden;
+    }
+
+    .truth-card {
+      padding: 44px 48px;
+      background: var(--bone);
+      position: relative;
+      border-right: 1px solid var(--rule);
+      border-bottom: 1px solid var(--rule);
+    }
+
+    .truth-card:nth-child(even) { border-right: none; }
+    .truth-card:nth-last-child(-n+2) { border-bottom: none; }
+    .truth-card:last-child:nth-child(odd) {
+      grid-column: 1 / -1;
+      border-right: none;
+    }
+
+    .truth-card__number {
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 0.15em;
+      color: var(--ink-5);
+      margin-bottom: 20px;
+    }
+
+    .truth-card__scenario {
+      font-family: 'DM Mono', monospace;
+      font-size: 12px;
+      letter-spacing: 0.06em;
+      color: var(--forest);
+      background: var(--forest-pale);
+      padding: 8px 14px;
+      display: inline-block;
+      margin-bottom: 20px;
+      border-radius: 2px;
+    }
+
+    .truth-card__statement {
+      font-family: 'DM Serif Display', Georgia, serif;
+      font-size: clamp(18px, 2vw, 22px);
+      color: var(--ink);
+      line-height: 1.35;
+      margin-bottom: 12px;
+    }
+
+    .truth-card__detail {
+      font-size: 14px;
+      line-height: 1.65;
+      color: var(--ink-3);
+    }
+
+    /* Full-width last card */
+    .truth-card--full {
+      grid-column: 1 / -1;
+      border-right: none;
+      border-bottom: none;
+      background: var(--forest-bg);
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 48px;
+      align-items: center;
+    }
+
+    .truth-card--full .truth-card__statement {
+      font-size: clamp(22px, 2.5vw, 28px);
+    }
+
+    /* ─────────────────────────────────────────
+       04 — WHY CLAUDE MAKES THIS POSSIBLE
+    ───────────────────────────────────────── */
+    .claude-path {
+      margin-top: 64px;
+      display: flex;
+      align-items: stretch;
+      gap: 0;
+      border: 1px solid var(--rule-heavy);
+      overflow: hidden;
+    }
+
+    .claude-path__step {
+      flex: 1;
+      padding: 44px 36px;
+      position: relative;
+      background: var(--bone);
+      border-right: 1px solid var(--rule-heavy);
+    }
+
+    .claude-path__step:last-child { border-right: none; }
+
+    .claude-path__step::after {
+      content: '→';
+      position: absolute;
+      right: -14px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-family: 'DM Mono', monospace;
+      font-size: 18px;
+      color: var(--ink-4);
+      z-index: 2;
+      background: var(--bone);
+      padding: 4px;
+    }
+
+    .claude-path__step:last-child::after { display: none; }
+
+    .claude-path__icon {
+      font-size: 24px;
+      margin-bottom: 16px;
+    }
+
+    .claude-path__label {
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--ink-4);
+      margin-bottom: 10px;
+    }
+
+    .claude-path__name {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--ink);
+      margin-bottom: 8px;
+    }
+
+    .claude-path__desc {
+      font-size: 13px;
+      line-height: 1.6;
+      color: var(--ink-3);
+    }
+
+    .claude-path__step--highlight {
+      background: var(--forest-bg);
+    }
+
+    .claude-note {
+      margin-top: 48px;
+      padding: 36px 44px;
+      background: var(--forest-pale);
+      border: 1px solid rgba(26,71,49,0.15);
+      max-width: 760px;
+    }
+
+    .claude-note p {
+      font-size: 16px;
+      line-height: 1.75;
+      color: var(--ink-2);
+    }
+
+    .claude-note strong {
+      color: var(--forest);
+      font-weight: 600;
+    }
+
+    /* ─────────────────────────────────────────
+       05 — THE PARADOX
+    ───────────────────────────────────────── */
+    .paradox-section {
+      background: var(--forest);
+      padding: 140px 0;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .paradox-section__watermark {
+      position: absolute;
+      bottom: -20px;
+      right: -20px;
+      font-family: 'DM Mono', monospace;
+      font-size: clamp(100px, 18vw, 200px);
+      font-weight: 500;
+      letter-spacing: -0.04em;
+      color: rgba(255,255,255,0.035);
+      pointer-events: none;
+      user-select: none;
+      line-height: 1;
+    }
+
+    .paradox-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 48px;
+      position: relative;
+      z-index: 2;
+    }
+
+    .paradox-eyebrow {
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: rgba(235,242,238,0.4);
+      margin-bottom: 40px;
+    }
+
+    .paradox-quote {
+      font-family: 'DM Serif Display', Georgia, serif;
+      font-size: clamp(32px, 5vw, 64px);
+      font-style: italic;
+      color: var(--bone);
+      line-height: 1.2;
+      letter-spacing: -0.02em;
+      max-width: 900px;
+      margin-bottom: 48px;
+    }
+
+    .paradox-quote em {
+      font-style: normal;
+      color: rgba(235,242,238,0.5);
+    }
+
+    .paradox-explain {
+      font-size: 17px;
+      line-height: 1.75;
+      color: rgba(235,242,238,0.72);
+      max-width: 580px;
+    }
+
+    .paradox-explain p + p { margin-top: 20px; }
+
+    /* ─────────────────────────────────────────
+       06 — PRIVACY VS. CAPABILITY TABLE
+    ───────────────────────────────────────── */
+    .flow-compare {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2px;
+      margin-top: 64px;
+      border: 1px solid var(--rule-heavy);
+    }
+
+    .flow-col {
+      padding: 0;
+    }
+
+    .flow-col__header {
+      padding: 28px 40px;
+      border-bottom: 1px solid;
+    }
+
+    .flow-col--them .flow-col__header {
+      background: var(--bone-mid);
+      border-color: var(--rule-mid);
+    }
+
+    .flow-col--us .flow-col__header {
+      background: var(--forest);
+      border-color: rgba(255,255,255,0.1);
+    }
+
+    .flow-col__header-label {
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      margin-bottom: 4px;
+    }
+
+    .flow-col--them .flow-col__header-label { color: var(--ink-4); }
+    .flow-col--us   .flow-col__header-label { color: rgba(235,242,238,0.45); }
+
+    .flow-col__header-title {
+      font-family: 'DM Serif Display', Georgia, serif;
+      font-size: 20px;
+      line-height: 1.2;
+    }
+
+    .flow-col--them .flow-col__header-title { color: var(--ink); }
+    .flow-col--us   .flow-col__header-title { color: var(--bone); }
+
+    .flow-steps {
+      padding: 36px 40px;
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+    }
+
+    .flow-step {
+      display: flex;
+      gap: 14px;
+      align-items: flex-start;
+      padding: 16px 0;
+      border-bottom: 1px solid;
+    }
+
+    .flow-col--them .flow-step { border-color: var(--rule); }
+    .flow-col--us   .flow-step { border-color: rgba(255,255,255,0.07); }
+
+    .flow-step:last-child { border-bottom: none; }
+
+    .flow-step__arrow {
+      font-family: 'DM Mono', monospace;
+      font-size: 14px;
+      margin-top: 1px;
+      flex-shrink: 0;
+    }
+
+    .flow-col--them .flow-step__arrow { color: var(--ink-4); }
+    .flow-col--us   .flow-step__arrow { color: rgba(235,242,238,0.4); }
+
+    .flow-step__text {
+      font-size: 15px;
+      line-height: 1.55;
+    }
+
+    .flow-col--them .flow-step__text { color: var(--ink-2); }
+    .flow-col--us   .flow-step__text { color: rgba(235,242,238,0.82); }
+
+    .flow-step--warning .flow-step__text { color: var(--ember); }
+    .flow-step--warning .flow-step__arrow { color: var(--ember); }
+
+    .flow-step--good .flow-step__text { color: var(--forest-mid); }
+    .flow-step--good .flow-step__arrow { color: var(--forest-mid); }
+
+    .flow-col--us .flow-step--good .flow-step__text { color: #7BB89F; }
+    .flow-col--us .flow-step--good .flow-step__arrow { color: #7BB89F; }
+
+    .flow-addendum {
+      padding: 24px 40px;
+      border-top: 1px solid;
+      font-size: 13px;
+      line-height: 1.6;
+    }
+
+    .flow-col--them .flow-addendum {
+      border-color: var(--rule-mid);
+      background: var(--ember-pale);
+      color: var(--ember);
+    }
+
+    .flow-col--us .flow-addendum {
+      border-color: rgba(255,255,255,0.1);
+      background: rgba(255,255,255,0.04);
+      color: rgba(235,242,238,0.55);
+    }
+
+    /* ─────────────────────────────────────────
+       07 — CLOSING CTA
+    ───────────────────────────────────────── */
+    .cta-section {
+      background: var(--forest);
+      padding: 140px 0;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .cta-section__watermark {
+      position: absolute;
+      top: -30px;
+      left: -20px;
+      font-family: 'DM Mono', monospace;
+      font-size: clamp(120px, 20vw, 220px);
+      font-weight: 500;
+      letter-spacing: -0.04em;
+      color: rgba(255,255,255,0.04);
+      pointer-events: none;
+      user-select: none;
+      line-height: 1;
+    }
+
+    .cta-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 48px;
+      position: relative;
+      z-index: 2;
+    }
+
+    .cta-eyebrow {
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: rgba(235,242,238,0.4);
+      margin-bottom: 40px;
+    }
+
+    .cta-headline {
+      font-family: 'DM Serif Display', Georgia, serif;
+      font-size: clamp(36px, 5vw, 60px);
+      line-height: 1.1;
+      letter-spacing: -0.02em;
+      color: var(--bone);
+      max-width: 760px;
+      margin-bottom: 28px;
+    }
+
+    .cta-sub {
+      font-family: 'DM Serif Display', Georgia, serif;
+      font-size: clamp(18px, 2.2vw, 24px);
+      font-style: italic;
+      color: rgba(235,242,238,0.62);
+      max-width: 540px;
+      line-height: 1.5;
+      margin-bottom: 56px;
+    }
+
+    .cta-button-row {
+      display: flex;
+      align-items: center;
+      gap: 28px;
+      flex-wrap: wrap;
+    }
+
+    .btn-primary {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 15px;
+      font-weight: 500;
+      letter-spacing: 0.03em;
+      color: var(--forest);
+      background: var(--bone);
+      padding: 16px 36px;
+      text-decoration: none;
+      border-radius: 2px;
+      transition: background 0.18s, transform 0.14s;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn-primary:hover { background: var(--bone-mid); transform: translateY(-1px); }
+
+    .cta-price {
+      font-family: 'DM Mono', monospace;
+      font-size: 13px;
+      color: rgba(235,242,238,0.5);
+      letter-spacing: 0.05em;
+    }
+
+    .cta-thesis {
+      margin-top: 80px;
+      padding-top: 56px;
+      border-top: 1px solid rgba(255,255,255,0.1);
+    }
+
+    .cta-thesis__quote {
+      font-family: 'DM Serif Display', Georgia, serif;
+      font-size: clamp(22px, 3vw, 36px);
+      font-style: italic;
+      color: rgba(235,242,238,0.85);
+      line-height: 1.35;
+      max-width: 680px;
+    }
+
+    /* ─────────────────────────────────────────
+       FOOTER
+    ───────────────────────────────────────── */
+    .footer {
+      background: var(--bone-mid);
+      border-top: 1px solid var(--rule-mid);
+      padding: 28px 0;
+    }
+
+    .footer__inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 48px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .footer__copy {
+      font-family: 'DM Mono', monospace;
+      font-size: 12px;
+      color: var(--ink-4);
+      letter-spacing: 0.04em;
+    }
+
+    .footer__link {
+      font-family: 'DM Mono', monospace;
+      font-size: 12px;
+      color: var(--forest);
+      text-decoration: none;
+      letter-spacing: 0.04em;
+      transition: color 0.15s;
+    }
+    .footer__link:hover { color: var(--forest-mid); }
+
+    /* ─────────────────────────────────────────
+       RESPONSIVE
+    ───────────────────────────────────────── */
+    @media (max-width: 900px) {
+      .nav__inner { padding: 0 24px; }
+      .nav__links { gap: 20px; }
+
+      .hero__inner { padding: 80px 24px; }
+
+      .section__inner { padding: 0 24px; }
+      .section__number { font-size: 80px; right: 24px; top: 40px; }
+
+      .story-grid         { grid-template-columns: 1fr; gap: 48px; }
+      .arch-compare       { grid-template-columns: 1fr; }
+      .arch-col           { border-right: none !important; border-bottom: 1px solid var(--rule-mid); }
+      .truths-grid        { grid-template-columns: 1fr; }
+      .truth-card--full   { grid-template-columns: 1fr; }
+      .truth-card:nth-child(even) { border-right: 1px solid var(--rule); }
+      .claude-path        { flex-direction: column; }
+      .claude-path__step::after { display: none; }
+      .flow-compare       { grid-template-columns: 1fr; }
+
+      .paradox-inner { padding: 0 24px; }
+      .cta-inner     { padding: 0 24px; }
+      .footer__inner { padding: 0 24px; flex-direction: column; gap: 8px; text-align: center; }
+    }
+
+    @media (max-width: 640px) {
+      .nav__links { display: none; }
+      .section { padding: 80px 0; }
+    }
+  </style>
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-TQFFERGZW1"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-TQFFERGZW1');
+  </script>
+</head>
+
+<body>
+
+  <!-- ────────────────────────────────────────────
+       NAVIGATION
+  ──────────────────────────────────────────────── -->
+  <nav class="nav" role="navigation" aria-label="Main navigation">
+    <div class="nav__inner">
+      <a href="https://softwareof.you" class="nav__logo">Software<span>Of</span>You</a>
+      <ul class="nav__links">
+        <li><a href="features.html">Features</a></li>
+        <li class="nav__item--has-sub">
+          <a href="features.html#modules">Modules</a>
+          <ul class="nav__sub">
+            <li><a href="modules/crm.html"><span class="nav__sub__num">01</span>CRM</a></li>
+            <li><a href="modules/projects.html"><span class="nav__sub__num">02</span>Projects</a></li>
+            <li><a href="modules/gmail.html"><span class="nav__sub__num">03</span>Gmail</a></li>
+            <li><a href="modules/calendar.html"><span class="nav__sub__num">04</span>Calendar</a></li>
+            <li><a href="modules/conversations.html"><span class="nav__sub__num">05</span>Conversations</a></li>
+            <li><a href="modules/decisions.html"><span class="nav__sub__num">06</span>Decisions</a></li>
+            <li><a href="modules/journal.html"><span class="nav__sub__num">07</span>Journal</a></li>
+            <li><a href="modules/notes.html"><span class="nav__sub__num">08</span>Notes</a></li>
+            <div class="nav__sub__divider"></div>
+            <li><a href="features.html#modules"><span class="nav__sub__num">→</span>All modules</a></li>
+          </ul>
+        </li>
+        <li><a href="why-claude.html">Why Claude</a></li>
+        <li><a href="your-data.html" class="active">Your Data</a></li>
+        <li><a href="pricing.html">Pricing</a></li>
+      </ul>
+      <div class="nav__right">
+        <a href="https://softwareof.you" class="nav__cta">Get SoY — $149</a>
+      </div>
+    </div>
+  </nav>
+
+
+  <!-- ────────────────────────────────────────────
+       HERO
+  ──────────────────────────────────────────────── -->
+  <section class="hero">
+    <div class="hero__watermark" aria-hidden="true">LOCAL</div>
+    <div class="hero__inner">
+      <p class="hero__label">Your Data — Data Sovereignty</p>
+      <h1 class="hero__headline">
+        Your context is yours.<br>Full stop.
+      </h1>
+      <p class="hero__sub">
+        The most valuable thing you produce as a knowledge worker is context.<br>
+        SoY was designed so you can't give it to us — even if you wanted to.
+      </p>
+      <div class="hero__pull-quote">
+        <p>
+          In December 2025, Meta acquired Limitless AI. Limitless was an AI wearable that captured everything you said throughout your day — your meetings, your conversations, your relationships. All of it, centralized in their cloud.
+        </p>
+        <p>
+          Then Meta owned it.
+        </p>
+        <p>
+          This is not a warning about Limitless. It's proof of a design problem. When your data lives on someone else's server, your context becomes an acquisition asset — not yours.
+        </p>
+        <p class="source">Acquired by Meta · December 2025</p>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ────────────────────────────────────────────
+       01 — THE ACQUISITION STORY
+  ──────────────────────────────────────────────── -->
+  <section class="section section--bone">
+    <span class="section__number" aria-hidden="true">01</span>
+    <div class="section__inner">
+      <p class="section__label reveal">The Data Centralization Problem</p>
+      <h2 class="section__headline reveal reveal-delay-1">
+        When your data centralizes,<br>so does the risk.
+      </h2>
+
+      <div class="story-grid">
+        <div class="story-timeline reveal reveal-delay-2">
+          <div class="story-event">
+            <div class="story-event__dot"></div>
+            <div>
+              <p class="story-event__date">2023</p>
+              <p class="story-event__title">Limitless ships its AI wearable</p>
+              <p class="story-event__body">The product promise: capture everything — your meetings, your phone calls, your conversations — and let AI surface insights. Useful. The data lived on Limitless's servers.</p>
+            </div>
+          </div>
+          <div class="story-event">
+            <div class="story-event__dot"></div>
+            <div>
+              <p class="story-event__date">2024–2025</p>
+              <p class="story-event__title">Users build context over time</p>
+              <p class="story-event__body">People wore the device. Built up months of captured context. Their professional relationships, client conversations, personal discussions — all of it accumulating in Limitless's cloud.</p>
+            </div>
+          </div>
+          <div class="story-event story-event--critical">
+            <div class="story-event__dot"></div>
+            <div>
+              <p class="story-event__date">December 2025</p>
+              <p class="story-event__title">Meta acquires Limitless AI</p>
+              <p class="story-event__body">The users' context — everything they'd said and heard for two years — was now owned by Meta. Not because they chose to share it with Meta. Because the architecture made it possible.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="story-callout reveal reveal-delay-3">
+          <p class="story-callout__label">The structural problem</p>
+          <p class="story-callout__quote">
+            "Central storage creates acquisition value. Acquisition value creates acquisition risk."
+          </p>
+          <p class="story-callout__body">
+            This isn't a story about one company making a bad deal. It's a story about a design pattern. Any tool that stores your data centrally has created something that can be bought, sold, breached, or shut down.
+          </p>
+          <br>
+          <p class="story-callout__body">
+            The solution isn't better terms of service. It's architecture that makes centralization structurally impossible. SoY has no servers to acquire. There is nothing to breach. Your context was never there.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ────────────────────────────────────────────
+       02 — ARCHITECTURE DIAGRAM
+  ──────────────────────────────────────────────── -->
+  <section class="section section--mid">
+    <span class="section__number" aria-hidden="true">02</span>
+    <div class="section__inner">
+      <p class="section__label reveal">Architecture</p>
+      <h2 class="section__headline reveal reveal-delay-1">
+        The data goes one place.<br>Your machine.
+      </h2>
+      <p class="section__body reveal reveal-delay-2">
+        Zero cloud. Zero servers. Zero sync. Every module SoY tracks — your contacts, clients, projects, decisions — writes directly to a SQLite database on your local filesystem. Nothing else.
+      </p>
+
+      <div class="arch-compare reveal reveal-delay-2">
+
+        <div class="arch-col arch-col--them">
+          <p class="arch-col__label">Every other tool</p>
+          <div class="arch-flow">
+            <div class="arch-step">
+              <div class="arch-step__icon">💻</div>
+              <div class="arch-step__content">
+                <p class="arch-step__title">Your machine</p>
+                <p class="arch-step__detail">Where you enter the data.</p>
+              </div>
+            </div>
+            <div class="arch-step">
+              <div class="arch-step__icon">☁</div>
+              <div class="arch-step__content">
+                <p class="arch-step__title">Their cloud</p>
+                <p class="arch-step__detail">Where your data actually lives. Their servers. Their infrastructure. Their rules.</p>
+              </div>
+            </div>
+            <div class="arch-step">
+              <div class="arch-step__icon">📊</div>
+              <div class="arch-step__content">
+                <p class="arch-step__title">Their model training</p>
+                <p class="arch-step__detail">Your data as product. Check the ToS.</p>
+              </div>
+            </div>
+            <div class="arch-step">
+              <div class="arch-step__icon">💰</div>
+              <div class="arch-step__content">
+                <p class="arch-step__title">Their acquisition value</p>
+                <p class="arch-step__detail">When they sell, your context sells with them.</p>
+              </div>
+            </div>
+          </div>
+          <div class="arch-path">
+            <p class="arch-path__label">Data location</p>
+            <p class="arch-path__value">https://theirapp.com/api/your-data/...</p>
+          </div>
+        </div>
+
+        <div class="arch-col arch-col--us">
+          <p class="arch-col__label">SoY</p>
+          <div class="arch-flow">
+            <div class="arch-step">
+              <div class="arch-step__icon">💻</div>
+              <div class="arch-step__content">
+                <p class="arch-step__title">Your machine</p>
+                <p class="arch-step__detail">Where you enter the data.</p>
+              </div>
+            </div>
+            <div class="arch-step">
+              <div class="arch-step__icon">🗄</div>
+              <div class="arch-step__content">
+                <p class="arch-step__title">Your machine</p>
+                <p class="arch-step__detail">Where your data actually lives. SQLite file. Your filesystem. Your control.</p>
+              </div>
+            </div>
+            <div class="arch-step">
+              <div class="arch-step__icon">✓</div>
+              <div class="arch-step__content">
+                <p class="arch-step__title">Full stop.</p>
+                <p class="arch-step__detail">That's the entire chain. Nothing else is in it.</p>
+              </div>
+            </div>
+          </div>
+          <div class="arch-path">
+            <p class="arch-path__label">Data location</p>
+            <p class="arch-path__value"><span class="path-highlight">~/.local/share/software-of-you/</span>soy.db</p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ────────────────────────────────────────────
+       03 — WHAT LOCAL-FIRST ACTUALLY MEANS
+  ──────────────────────────────────────────────── -->
+  <section class="section section--bone">
+    <span class="section__number" aria-hidden="true">03</span>
+    <div class="section__inner">
+      <p class="section__label reveal">Local-First</p>
+      <h2 class="section__headline reveal reveal-delay-1">
+        What "local-first" actually means.
+      </h2>
+      <p class="section__body reveal reveal-delay-2">
+        Not a marketing claim. Five concrete truths about what it means for your data to live on your machine.
+      </p>
+
+      <div class="truths-grid">
+
+        <div class="truth-card reveal">
+          <p class="truth-card__number">01 / 05</p>
+          <p class="truth-card__scenario">If SoY shuts down tomorrow</p>
+          <p class="truth-card__statement">Your data doesn't.</p>
+          <p class="truth-card__detail">It's already a SQLite file on your machine. SoY can cease to exist and your context continues to exist, intact, on your filesystem — readable by any SQLite client.</p>
+        </div>
+
+        <div class="truth-card reveal reveal-delay-1">
+          <p class="truth-card__number">02 / 05</p>
+          <p class="truth-card__scenario">If you cancel and want to export</p>
+          <p class="truth-card__statement">There's nothing to export.</p>
+          <p class="truth-card__detail">You already own the file. There's no export button because there's no centralized data to extract. The file is already yours. It was always yours.</p>
+        </div>
+
+        <div class="truth-card reveal">
+          <p class="truth-card__number">03 / 05</p>
+          <p class="truth-card__scenario">If your internet goes down</p>
+          <p class="truth-card__statement">SoY works.</p>
+          <p class="truth-card__detail">It doesn't know the internet exists. There's no API call to fail, no sync to interrupt, no cloud dependency to lose. Your context is on your machine. That's where it runs.</p>
+        </div>
+
+        <div class="truth-card reveal reveal-delay-1">
+          <p class="truth-card__number">04 / 05</p>
+          <p class="truth-card__scenario">If you want to delete everything</p>
+          <p class="truth-card__statement"><code style="font-family:'DM Mono',monospace;font-size:0.85em;background:var(--bone-deep);padding:2px 8px;border-radius:2px;">rm ~/.local/share/software-of-you/soy.db</code></p>
+          <p class="truth-card__detail" style="margin-top:12px;">Done. No deletion request, no support ticket, no 30-day hold period. One command. It's gone because it was yours to remove.</p>
+        </div>
+
+        <div class="truth-card truth-card--full reveal">
+          <div>
+            <p class="truth-card__number">05 / 05</p>
+            <p class="truth-card__scenario">What SoY has seen of your data</p>
+            <p class="truth-card__statement">Nothing. It was never designed to.</p>
+          </div>
+          <div>
+            <p class="truth-card__detail">SoY has no telemetry pipeline pointed at your database. No sync process that uploads context to our servers. No analytics that phone home with your records. This is not a privacy policy promise — it's a structural fact. We built no mechanism to receive it.</p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ────────────────────────────────────────────
+       04 — WHY CLAUDE MAKES THIS POSSIBLE
+  ──────────────────────────────────────────────── -->
+  <section class="section section--forest-bg">
+    <span class="section__number" aria-hidden="true">04</span>
+    <div class="section__inner">
+      <p class="section__label reveal">The Technical Case</p>
+      <h2 class="section__headline reveal reveal-delay-1">
+        Why Claude makes this possible.
+      </h2>
+      <p class="section__body reveal reveal-delay-2">
+        Claude Code runs locally — or via an API key you control. SoY passes context directly from your local database to your local Claude session. The data path is complete.
+      </p>
+
+      <div class="claude-path reveal reveal-delay-2">
+        <div class="claude-path__step">
+          <p class="claude-path__icon">🗄</p>
+          <p class="claude-path__label">Source</p>
+          <p class="claude-path__name">soy.db</p>
+          <p class="claude-path__desc">SQLite database on your local filesystem. Your contacts, clients, projects, decisions — structured and cross-referenced.</p>
+        </div>
+        <div class="claude-path__step claude-path__step--highlight">
+          <p class="claude-path__icon">⚡</p>
+          <p class="claude-path__label">SoY Plugin</p>
+          <p class="claude-path__name">Context injection</p>
+          <p class="claude-path__desc">SoY reads the local database and injects structured context directly into your Claude Code session. No intermediary. No upload.</p>
+        </div>
+        <div class="claude-path__step">
+          <p class="claude-path__icon">🤖</p>
+          <p class="claude-path__label">Destination</p>
+          <p class="claude-path__name">Your Claude session</p>
+          <p class="claude-path__desc">Claude receives your context. Locally, through the API key you already control. The model processes it and returns to you.</p>
+        </div>
+        <div class="claude-path__step">
+          <p class="claude-path__icon">✓</p>
+          <p class="claude-path__label">What leaves your machine</p>
+          <p class="claude-path__name">Your Claude API call</p>
+          <p class="claude-path__desc">The same API call you'd make anyway. SoY adds context to it. Nothing more is transmitted.</p>
+        </div>
+      </div>
+
+      <div class="claude-note reveal reveal-delay-3">
+        <p>
+          No middleware. No SoY servers in the path. No third party sitting between your database and your model. The entire chain: <strong>your machine → your Claude</strong>. SoY is a plugin, not a platform. It was designed to stay out of the way.
+        </p>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ────────────────────────────────────────────
+       05 — THE PARADOX
+  ──────────────────────────────────────────────── -->
+  <section class="paradox-section">
+    <div class="paradox-section__watermark" aria-hidden="true">YOURS</div>
+    <div class="paradox-inner">
+      <p class="paradox-eyebrow reveal">The Design Paradox</p>
+      <blockquote class="paradox-quote reveal reveal-delay-1">
+        The most useful AI needs the most context. Most tools solve this by centralizing your data. <em>We solved it by never having it.</em>
+      </blockquote>
+      <div class="paradox-explain reveal reveal-delay-2">
+        <p>
+          There's a design assumption in AI tooling: to give you intelligence, we need your data on our servers. So the model can be trained on it. So we can sync it. So we can analyze it across users.
+        </p>
+        <p>
+          SoY proves that assumption wrong. The context you need isn't on our servers — it's on your machine. We connect your local database to your local Claude. The intelligence comes from structure and locality, not from centralization.
+        </p>
+        <p>
+          You shouldn't have to trade privacy for intelligence. You don't.
+        </p>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ────────────────────────────────────────────
+       06 — PRIVACY VS. CAPABILITY TABLE
+  ──────────────────────────────────────────────── -->
+  <section class="section section--bone">
+    <span class="section__number" aria-hidden="true">06</span>
+    <div class="section__inner">
+      <p class="section__label reveal">How It Works vs. How They Work</p>
+      <h2 class="section__headline reveal reveal-delay-1">
+        Two data flows.<br>One clear difference.
+      </h2>
+
+      <div class="flow-compare reveal reveal-delay-2">
+
+        <div class="flow-col flow-col--them">
+          <div class="flow-col__header">
+            <p class="flow-col__header-label">How most AI tools work</p>
+            <p class="flow-col__header-title">Your data → their cloud</p>
+          </div>
+          <div class="flow-steps">
+            <div class="flow-step">
+              <span class="flow-step__arrow">→</span>
+              <p class="flow-step__text">Your data enters the tool</p>
+            </div>
+            <div class="flow-step">
+              <span class="flow-step__arrow">→</span>
+              <p class="flow-step__text">Stored on their servers, in their database, under their terms</p>
+            </div>
+            <div class="flow-step">
+              <span class="flow-step__arrow">→</span>
+              <p class="flow-step__text">Processed by their model (trained on what, exactly?)</p>
+            </div>
+            <div class="flow-step">
+              <span class="flow-step__arrow">→</span>
+              <p class="flow-step__text">Insights returned to you</p>
+            </div>
+            <div class="flow-step flow-step--warning">
+              <span class="flow-step__arrow">+</span>
+              <p class="flow-step__text">Their ad targeting. Their model training. Their acquisition value. Check the ToS.</p>
+            </div>
+          </div>
+          <div class="flow-addendum">
+            Your data is the cost of the product. Even when you're the paying customer.
+          </div>
+        </div>
+
+        <div class="flow-col flow-col--us">
+          <div class="flow-col__header">
+            <p class="flow-col__header-label">How SoY works</p>
+            <p class="flow-col__header-title">Your data → your machine</p>
+          </div>
+          <div class="flow-steps">
+            <div class="flow-step">
+              <span class="flow-step__arrow">→</span>
+              <p class="flow-step__text">Your data enters SoY</p>
+            </div>
+            <div class="flow-step flow-step--good">
+              <span class="flow-step__arrow">→</span>
+              <p class="flow-step__text">Stored on your machine, in your SQLite file, under your control</p>
+            </div>
+            <div class="flow-step flow-step--good">
+              <span class="flow-step__arrow">→</span>
+              <p class="flow-step__text">Passed to your Claude session via API key you already own</p>
+            </div>
+            <div class="flow-step flow-step--good">
+              <span class="flow-step__arrow">→</span>
+              <p class="flow-step__text">Insights returned to you</p>
+            </div>
+            <div class="flow-step flow-step--good">
+              <span class="flow-step__arrow">↓</span>
+              <p class="flow-step__text">Full stop. Nothing else is in this chain.</p>
+            </div>
+          </div>
+          <div class="flow-addendum">
+            $149 one-time. No subscription. No data product. No acquisition value. You are the only customer.
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ────────────────────────────────────────────
+       07 — CLOSING CTA
+  ──────────────────────────────────────────────── -->
+  <section class="cta-section">
+    <div class="cta-section__watermark" aria-hidden="true">LOCAL</div>
+    <div class="cta-inner">
+      <p class="cta-eyebrow reveal">Built Differently</p>
+      <h2 class="cta-headline reveal reveal-delay-1">
+        Built for people who don't want to trade privacy for intelligence.
+      </h2>
+      <p class="cta-sub reveal reveal-delay-2">
+        You shouldn't have to choose. With SoY, you don't.
+      </p>
+      <div class="cta-button-row reveal reveal-delay-3">
+        <a href="https://softwareof.you" class="btn-primary">
+          Get Software of You — $149 →
+        </a>
+        <p class="cta-price">One-time. No subscription. No data product.</p>
+      </div>
+
+      <div class="cta-thesis reveal reveal-delay-4">
+        <p class="cta-thesis__quote">
+          "You are not talking to AI. You are thinking with it."
+        </p>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ────────────────────────────────────────────
+       FOOTER
+  ──────────────────────────────────────────────── -->
+  <footer class="footer">
+    <div class="footer__inner">
+      <p class="footer__copy">© 2026 Software of You · Built by Kerry Morrison</p>
+      <a href="https://softwareof.you" class="footer__link">softwareof.you</a>
+    
+    <a class="footer-email" data-u="kerry" data-d="softwareof.you" href="#" onclick="this.href='mailto:'+this.dataset.u+'@'+this.dataset.d;return false;" title="Email Kerry">kerry<span aria-hidden="true" style="display:none">&#8203;</span>&#64;softwareof.you</a>
+</div>
+  
+  </footer>
+
+
+  <!-- ────────────────────────────────────────────
+       SCROLL REVEAL SCRIPT
+  ──────────────────────────────────────────────── -->
+  <script>
+    (function () {
+      var revealEls = document.querySelectorAll('.reveal');
+
+      if ('IntersectionObserver' in window) {
+        var observer = new IntersectionObserver(function (entries) {
+          entries.forEach(function (entry) {
+            if (entry.isIntersecting) {
+              entry.target.classList.add('in');
+              observer.unobserve(entry.target);
+            }
+          });
+        }, {
+          threshold: 0.12,
+          rootMargin: '0px 0px -40px 0px'
+        });
+
+        revealEls.forEach(function (el) {
+          observer.observe(el);
+        });
+      } else {
+        // Fallback: show all immediately if IntersectionObserver not supported
+        revealEls.forEach(function (el) {
+          el.classList.add('in');
+        });
+      }
+    })();
+  </script>
+
+<script>
+(function() {
+  function closeAll() {
+    document.querySelectorAll('.nav__item--has-sub.open').forEach(function(el) {
+      el.classList.remove('open');
+    });
+  }
+  document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.nav__item--has-sub > a').forEach(function(trigger) {
+      trigger.addEventListener('click', function(e) {
+        e.preventDefault();
+        var item = trigger.parentElement;
+        var isOpen = item.classList.contains('open');
+        closeAll();
+        if (!isOpen) item.classList.add('open');
+      });
+    });
+    document.addEventListener('click', function(e) {
+      if (!e.target.closest('.nav__item--has-sub')) closeAll();
+    });
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') closeAll();
+    });
+  });
+})();
+</script>
+</body>
+</html>

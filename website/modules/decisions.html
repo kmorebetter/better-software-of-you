@@ -1,0 +1,1374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Decision Log — Software of You</title>
+  <meta name="description" content="Structured decision records — options considered, rationale, expected outcome, revisit date. Grounded in Annie Duke's process/outcome framework. Module 06 of Software of You.">
+  <meta name="robots" content="index, follow">
+  <link rel="canonical" href="https://softwareof.you/modules/decisions.html">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://softwareof.you/modules/decisions.html">
+  <meta property="og:title" content="Decision Log — Software of You">
+  <meta property="og:description" content="Structured decision records grounded in Annie Duke's process/outcome framework. Options, rationale, expected outcome, revisit date. Module 06 of Software of You.">
+  <meta property="og:site_name" content="Software of You">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Decision Log — Software of You">
+  <meta name="twitter:description" content="Structured decision records. Options considered, rationale, expected outcome, revisit date. Grounded in Annie Duke's process/outcome framework.">
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"WebPage","url":"https://softwareof.you/modules/decisions.html","name":"Decision Log — Software of You","description":"Structured decision records grounded in Annie Duke's process/outcome framework. Options, rationale, expected outcome, revisit date. Module 06 of Software of You.","isPartOf":{"@type":"WebSite","url":"https://softwareof.you/","name":"Software of You"},"about":{"@type":"SoftwareApplication","name":"Software of You","offers":{"@type":"Offer","price":"149","priceCurrency":"USD"}}}</script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@300;400;500&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300;1,9..40,400&display=swap" rel="stylesheet">
+
+  <style>
+    /* ─────────────────────────────────────────
+       TOKENS
+    ───────────────────────────────────────── */
+    :root {
+      --bone:       #FAF9F6;
+      --bone-mid:   #F2F0EB;
+      --bone-deep:  #E8E4DC;
+      --ink:        #0F0E0C;
+      --ink-2:      #2C2A26;
+      --ink-3:      #6B6860;
+      --ink-4:      #A8A49C;
+      --ink-5:      #D4D0C8;
+      --forest:     #1A4731;
+      --forest-mid: #245E41;
+      --forest-pale:#EBF2EE;
+      --forest-bg:  #F2F7F4;
+      --ember:      #A63325;
+      --ember-pale: #FBF2F0;
+      --rule:       rgba(15,14,12,0.08);
+      --rule-mid:   rgba(15,14,12,0.13);
+      --rule-heavy: rgba(15,14,12,0.22);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; font-size: 16px; }
+
+    body {
+      background: var(--bone);
+      color: var(--ink);
+      font-family: 'DM Sans', system-ui, sans-serif;
+      line-height: 1.6;
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ─────────────────────────────────────────
+       ANIMATIONS
+    ───────────────────────────────────────── */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to   { opacity: 1; }
+    }
+
+    .reveal {
+      opacity: 0;
+      transform: translateY(24px);
+      transition: opacity 0.6s ease, transform 0.6s ease;
+    }
+    .reveal.in { opacity: 1; transform: none; }
+    .reveal-delay-1 { transition-delay: 0.1s; }
+    .reveal-delay-2 { transition-delay: 0.2s; }
+    .reveal-delay-3 { transition-delay: 0.3s; }
+    .reveal-delay-4 { transition-delay: 0.4s; }
+
+    /* ─────────────────────────────────────────
+       NAVIGATION
+    ───────────────────────────────────────── */
+    .nav { position:fixed; top:0; left:0; right:0; z-index:100; background:rgba(250,249,246,0.92); backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px); border-bottom:1px solid var(--rule); }
+    .nav__inner { max-width:1200px; margin:0 auto; padding:0 48px; height:64px; display:flex; align-items:center; justify-content:space-between; }
+    .nav__logo { font-family:'DM Serif Display',Georgia,serif; font-size:17px; color:var(--ink); text-decoration:none; letter-spacing:0.01em; }
+    .nav__logo span { font-style:italic; color:var(--forest); }
+    .nav__links { display:flex; align-items:center; gap:28px; list-style:none; }
+    .nav__links a { font-family:'DM Mono',monospace; font-size:11px; letter-spacing:0.08em; text-transform:uppercase; color:var(--ink-3); text-decoration:none; transition:color 0.18s; }
+    .nav__links a:hover, .nav__links a.active { color:var(--ink); }
+    .nav__item--has-sub { position:relative; }
+    .nav__item--has-sub > a { cursor: pointer; }
+    .nav__item--has-sub > a::after { content:''; display:inline-block; width:5px; height:5px; border-right:1.5px solid currentColor; border-bottom:1.5px solid currentColor; transform:rotate(45deg) translateY(-2px); margin-left:6px; opacity:0.5; transition:transform 0.18s; }
+    .nav__sub { position:absolute; top:calc(100% + 8px); left:50%; transform:translateX(-50%) translateY(-4px); background:white; border:1px solid var(--rule-heavy); min-width:220px; padding:8px 0; list-style:none; opacity:0; visibility:hidden; pointer-events:none; transition:opacity 0.16s,transform 0.16s; box-shadow:0 8px 24px rgba(0,0,0,0.08); }
+    .nav__item--has-sub.open > a::after { transform:rotate(225deg) translateY(-2px); }
+    .nav__item--has-sub.open .nav__sub { opacity:1; visibility:visible; pointer-events:auto; transform:translateX(-50%) translateY(0); }
+
+    .nav__sub li a { display:flex; align-items:center; gap:10px; padding:9px 20px; font-family:'DM Sans',sans-serif; font-size:13px; letter-spacing:0; text-transform:none; color:var(--ink-2); transition:background 0.12s; }
+    .nav__sub li a:hover { background:var(--bone); color:var(--ink); }
+    .nav__sub__num { font-family:'DM Mono',monospace; font-size:10px; color:var(--ink-5); min-width:16px; }
+    .nav__sub__divider { height:1px; background:var(--rule); margin:6px 20px; }
+    .nav__right { display:flex; align-items:center; gap:36px; }
+    .nav__cta { font-family:'DM Sans',sans-serif; font-size:13px; font-weight:500; letter-spacing:0.04em; color:var(--bone); background:var(--forest); padding:10px 24px; text-decoration:none; border-radius:2px; transition:background 0.18s,transform 0.14s; }
+    .nav__cta:hover { background:var(--forest-mid); transform:translateY(-1px); }
+
+    /* ─────────────────────────────────────────
+       HERO
+    ───────────────────────────────────────── */
+    .hero {
+      padding-top: 64px;
+      min-height: 72vh;
+      background: var(--forest);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Subtle grid texture */
+    .hero::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+      background-size: 40px 40px;
+      pointer-events: none;
+    }
+
+    /* Ghost module number */
+    .hero__ghost {
+      position: absolute;
+      right: -20px;
+      bottom: -60px;
+      font-family: 'DM Serif Display', Georgia, serif;
+      font-style: italic;
+      font-size: clamp(200px, 28vw, 380px);
+      line-height: 1;
+      color: rgba(255,255,255,0.04);
+      pointer-events: none;
+      user-select: none;
+      letter-spacing: -0.04em;
+    }
+
+    .hero__inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 80px 48px 96px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .hero__breadcrumb {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: rgba(235,242,238,0.5);
+      text-decoration: none;
+      margin-bottom: 40px;
+      transition: color 0.18s;
+    }
+    .hero__breadcrumb:hover { color: var(--forest-pale); }
+    .hero__breadcrumb svg { width: 14px; height: 14px; }
+
+    .hero__label {
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: rgba(235,242,238,0.55);
+      margin-bottom: 28px;
+      animation: fadeIn 0.6s ease both;
+      animation-delay: 0.1s;
+    }
+
+    .hero__headline {
+      font-family: 'DM Serif Display', Georgia, serif;
+      font-size: clamp(44px, 6vw, 80px);
+      line-height: 1.0;
+      letter-spacing: -0.02em;
+      color: var(--forest-pale);
+      margin-bottom: 32px;
+      max-width: 840px;
+      animation: fadeUp 0.7s ease both;
+      animation-delay: 0.2s;
+    }
+    .hero__headline em {
+      font-style: italic;
+      color: #ffffff;
+    }
+
+    .hero__sub {
+      font-family: 'DM Serif Display', Georgia, serif;
+      font-size: clamp(18px, 2vw, 24px);
+      font-style: italic;
+      color: rgba(235,242,238,0.65);
+      max-width: 600px;
+      line-height: 1.5;
+      animation: fadeUp 0.7s ease both;
+      animation-delay: 0.35s;
+    }
+
+    /* ─────────────────────────────────────────
+       CONTENT WRAPPER
+    ───────────────────────────────────────── */
+    .content {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 48px;
+    }
+
+    /* ─────────────────────────────────────────
+       SECTIONS — SHARED
+    ───────────────────────────────────────── */
+    .section {
+      padding: 96px 0;
+      border-bottom: 1px solid var(--rule);
+    }
+    .section:last-of-type { border-bottom: none; }
+
+    .section__eyebrow {
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--forest);
+      margin-bottom: 24px;
+    }
+
+    .section__headline {
+      font-family: 'DM Serif Display', Georgia, serif;
+      font-size: clamp(32px, 4vw, 48px);
+      line-height: 1.08;
+      letter-spacing: -0.02em;
+      color: var(--ink);
+      margin-bottom: 32px;
+      max-width: 720px;
+    }
+    .section__headline em { font-style: italic; color: var(--forest); }
+
+    .section__body {
+      font-size: 17px;
+      color: var(--ink-2);
+      line-height: 1.75;
+      max-width: 680px;
+    }
+    .section__body p + p { margin-top: 20px; }
+
+    /* Two-column layout */
+    .two-col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 80px;
+      align-items: start;
+    }
+    .two-col--wide { grid-template-columns: 5fr 4fr; }
+    .two-col--even { grid-template-columns: 1fr 1fr; }
+
+    /* ─────────────────────────────────────────
+       QUERY BLOCKS
+    ───────────────────────────────────────── */
+    .query-block {
+      background: var(--ink-2);
+      color: var(--forest-pale);
+      font-family: 'DM Mono', monospace;
+      font-size: 14px;
+      line-height: 1.6;
+      padding: 16px 20px;
+      border-left: 3px solid var(--forest);
+      margin-bottom: 12px;
+      border-radius: 0 2px 2px 0;
+    }
+
+    .query-block--log {
+      border-left-color: var(--ink-4);
+      font-size: 14px;
+    }
+
+    .query-result {
+      background: var(--forest-bg);
+      border: 1px solid var(--forest-pale);
+      border-left: 3px solid var(--forest);
+      padding: 16px 20px;
+      font-family: 'DM Mono', monospace;
+      font-size: 14px;
+      color: var(--forest);
+      line-height: 1.65;
+      margin-top: 8px;
+      margin-bottom: 12px;
+      border-radius: 0 2px 2px 0;
+    }
+
+    .query-label {
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--ink-4);
+      margin-bottom: 16px;
+      margin-top: 32px;
+    }
+    .query-label:first-child { margin-top: 0; }
+
+    /* ─────────────────────────────────────────
+       DATA PANEL
+    ───────────────────────────────────────── */
+    .data-panel {
+      background: var(--forest-bg);
+      border: 1px solid var(--forest-pale);
+      padding: 24px 32px;
+      border-radius: 2px;
+    }
+
+    .data-panel__title {
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--forest);
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--rule-mid);
+    }
+
+    .data-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      padding: 11px 0;
+      border-bottom: 1px solid var(--rule);
+      gap: 16px;
+    }
+    .data-row:last-child { border-bottom: none; }
+
+    .data-row__label {
+      font-size: 13px;
+      color: var(--ink-3);
+      flex-shrink: 0;
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
+    .data-row__value {
+      font-size: 14px;
+      color: var(--ink-2);
+      text-align: right;
+      line-height: 1.5;
+    }
+
+    /* ─────────────────────────────────────────
+       FRAMEWORK CALLOUT — Duke
+    ───────────────────────────────────────── */
+    .framework-block {
+      background: var(--bone-deep);
+      border: 1px solid var(--rule-heavy);
+      padding: 40px 48px;
+      border-radius: 2px;
+      position: relative;
+    }
+    .framework-block__eyebrow {
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--ink-4);
+      margin-bottom: 20px;
+    }
+    .framework-block__quote {
+      font-family: 'DM Serif Display', Georgia, serif;
+      font-size: clamp(18px, 2.2vw, 24px);
+      font-style: italic;
+      color: var(--ink);
+      line-height: 1.5;
+      margin-bottom: 24px;
+    }
+
+    /* Process vs Outcome grid */
+    .process-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2px;
+      margin-top: 32px;
+    }
+    .process-cell {
+      padding: 20px 24px;
+      border: 1px solid var(--rule-mid);
+    }
+    .process-cell--good-process {
+      background: var(--forest-bg);
+      border-color: var(--forest-pale);
+    }
+    .process-cell--bad-process {
+      background: var(--ember-pale);
+      border-color: rgba(166,51,37,0.15);
+    }
+    .process-cell__header {
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      margin-bottom: 12px;
+    }
+    .process-cell--good-process .process-cell__header { color: var(--forest); }
+    .process-cell--bad-process .process-cell__header { color: var(--ember); }
+    .process-cell__verdict {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--ink-2);
+      margin-bottom: 6px;
+    }
+    .process-cell__note {
+      font-size: 14px;
+      color: var(--ink-3);
+      line-height: 1.5;
+    }
+
+    .framework-block__attribution {
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 0.08em;
+      color: var(--ink-4);
+      margin-top: 24px;
+      padding-top: 20px;
+      border-top: 1px solid var(--rule);
+    }
+
+    /* ─────────────────────────────────────────
+       DECISION RECORD CARD
+    ───────────────────────────────────────── */
+    .decision-card {
+      background: var(--bone);
+      border: 1px solid var(--rule-heavy);
+      border-top: 3px solid var(--forest);
+      border-radius: 0 0 2px 2px;
+      overflow: hidden;
+    }
+
+    .decision-card__header {
+      padding: 24px 32px;
+      border-bottom: 1px solid var(--rule-mid);
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+      background: var(--forest-bg);
+    }
+
+    .decision-card__title {
+      font-family: 'DM Serif Display', Georgia, serif;
+      font-size: 20px;
+      color: var(--ink);
+      line-height: 1.3;
+      max-width: 480px;
+    }
+
+    .decision-card__status {
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--forest);
+      background: var(--forest-pale);
+      border: 1px solid var(--forest-pale);
+      padding: 5px 12px;
+      border-radius: 40px;
+      white-space: nowrap;
+    }
+
+    .decision-card__body {
+      padding: 0;
+    }
+
+    .dc-row {
+      display: flex;
+      border-bottom: 1px solid var(--rule);
+    }
+    .dc-row:last-child { border-bottom: none; }
+
+    .dc-row__key {
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--ink-4);
+      padding: 16px 20px 16px 32px;
+      width: 180px;
+      flex-shrink: 0;
+      display: flex;
+      align-items: flex-start;
+      padding-top: 18px;
+      background: var(--bone-mid);
+      border-right: 1px solid var(--rule);
+    }
+
+    .dc-row__val {
+      font-size: 14px;
+      color: var(--ink-2);
+      padding: 16px 32px;
+      line-height: 1.6;
+      flex: 1;
+    }
+    .dc-row__val strong {
+      font-weight: 500;
+      color: var(--ink);
+    }
+
+    .dc-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 0.04em;
+      color: var(--ink-3);
+      background: var(--bone-mid);
+      border: 1px solid var(--rule-mid);
+      padding: 4px 10px;
+      border-radius: 2px;
+      margin-right: 6px;
+      margin-bottom: 4px;
+    }
+
+    /* ─────────────────────────────────────────
+       RECORD FIELD LIST
+    ───────────────────────────────────────── */
+    .field-list {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .field-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 16px;
+      padding: 18px 24px;
+      background: var(--bone-mid);
+      border: 1px solid var(--rule-mid);
+    }
+
+    .field-item__number {
+      font-family: 'DM Serif Display', Georgia, serif;
+      font-size: 22px;
+      font-style: italic;
+      color: var(--forest);
+      line-height: 1;
+      min-width: 28px;
+      flex-shrink: 0;
+      padding-top: 2px;
+    }
+
+    .field-item__label {
+      font-size: 15px;
+      font-weight: 500;
+      color: var(--ink);
+      margin-bottom: 4px;
+      line-height: 1.3;
+    }
+    .field-item__desc {
+      font-size: 14px;
+      color: var(--ink-3);
+      line-height: 1.55;
+    }
+
+    /* ─────────────────────────────────────────
+       REVISIT PROMPT
+    ───────────────────────────────────────── */
+    .revisit-block {
+      background: var(--ink-2);
+      padding: 36px 40px;
+      position: relative;
+      overflow: hidden;
+      border-radius: 2px;
+    }
+    .revisit-block::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
+      background-size: 28px 28px;
+      pointer-events: none;
+    }
+    .revisit-block__eyebrow {
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: rgba(168,164,156,0.5);
+      margin-bottom: 16px;
+      position: relative;
+      z-index: 1;
+    }
+    .revisit-block__prompt {
+      font-family: 'DM Serif Display', Georgia, serif;
+      font-size: clamp(17px, 2vw, 22px);
+      font-style: italic;
+      color: var(--forest-pale);
+      line-height: 1.55;
+      margin-bottom: 24px;
+      position: relative;
+      z-index: 1;
+    }
+    .revisit-block__prompt em {
+      font-style: normal;
+      color: #ffffff;
+    }
+    .revisit-block__response {
+      font-family: 'DM Mono', monospace;
+      font-size: 14px;
+      color: rgba(235,242,238,0.5);
+      padding: 14px 18px;
+      border: 1px dashed rgba(235,242,238,0.15);
+      line-height: 1.6;
+      position: relative;
+      z-index: 1;
+      border-radius: 2px;
+    }
+
+    /* ─────────────────────────────────────────
+       OUTCOME LOOP DIAGRAM
+    ───────────────────────────────────────── */
+    .loop-steps {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+      position: relative;
+    }
+    .loop-step {
+      display: flex;
+      align-items: flex-start;
+      gap: 20px;
+      padding: 20px 24px;
+      background: var(--bone-mid);
+      border: 1px solid var(--rule-mid);
+      border-bottom: none;
+      position: relative;
+    }
+    .loop-step:last-child { border-bottom: 1px solid var(--rule-mid); }
+    .loop-step__num {
+      font-family: 'DM Serif Display', Georgia, serif;
+      font-size: 28px;
+      font-style: italic;
+      color: var(--forest);
+      line-height: 1;
+      min-width: 32px;
+      flex-shrink: 0;
+    }
+    .loop-step__label {
+      font-size: 15px;
+      font-weight: 500;
+      color: var(--ink);
+      margin-bottom: 4px;
+      line-height: 1.3;
+    }
+    .loop-step__desc {
+      font-size: 14px;
+      color: var(--ink-3);
+      line-height: 1.55;
+    }
+
+    /* ─────────────────────────────────────────
+       CTA SECTION
+    ───────────────────────────────────────── */
+    .cta-section {
+      padding: 96px 0;
+      background: var(--ink);
+      position: relative;
+      overflow: hidden;
+    }
+    .cta-section::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
+      background-size: 40px 40px;
+      pointer-events: none;
+    }
+    .cta-section__inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 48px;
+      position: relative;
+      z-index: 1;
+    }
+    .cta-section__label {
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: rgba(168,164,156,0.4);
+      margin-bottom: 24px;
+    }
+    .cta-section__headline {
+      font-family: 'DM Serif Display', Georgia, serif;
+      font-size: clamp(36px, 5vw, 60px);
+      line-height: 1.05;
+      letter-spacing: -0.02em;
+      color: var(--bone-mid);
+      margin-bottom: 16px;
+      max-width: 640px;
+    }
+    .cta-section__headline em {
+      font-style: italic;
+      color: var(--forest-pale);
+    }
+    .cta-section__sub {
+      font-size: 16px;
+      color: rgba(168,164,156,0.65);
+      margin-bottom: 48px;
+      max-width: 480px;
+      line-height: 1.6;
+    }
+    .cta-row {
+      display: flex;
+      align-items: center;
+      gap: 24px;
+      flex-wrap: wrap;
+    }
+    .cta-primary {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 15px;
+      font-weight: 500;
+      letter-spacing: 0.04em;
+      color: var(--ink);
+      background: var(--forest-pale);
+      padding: 14px 32px;
+      text-decoration: none;
+      border-radius: 2px;
+      transition: background 0.18s, transform 0.14s;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .cta-primary:hover { background: #ffffff; transform: translateY(-1px); }
+
+    .cta-next {
+      font-family: 'DM Mono', monospace;
+      font-size: 12px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: rgba(168,164,156,0.45);
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: color 0.18s;
+    }
+    .cta-next:hover { color: var(--ink-4); }
+
+    /* ─────────────────────────────────────────
+       FOOTER
+    ───────────────────────────────────────── */
+    footer {
+      background: var(--ink);
+      border-top: 1px solid rgba(255,255,255,0.06);
+      padding: 40px 48px;
+    }
+    .footer__inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 24px;
+      flex-wrap: wrap;
+    }
+    .footer__copy {
+      font-family: 'DM Mono', monospace;
+      font-size: 12px;
+      letter-spacing: 0.06em;
+      color: var(--ink-4);
+    }
+    .footer__domain {
+      font-family: 'DM Mono', monospace;
+      font-size: 12px;
+      letter-spacing: 0.08em;
+      color: var(--ink-3);
+      text-decoration: none;
+      transition: color 0.18s;
+    }
+    .footer__domain:hover { color: var(--forest-pale); }
+
+    /* ─────────────────────────────────────────
+       RESPONSIVE
+    ───────────────────────────────────────── */
+    @media (max-width: 900px) {
+      .nav__inner { padding: 0 24px; }
+      .nav__links { display: none; }
+      .hero__inner { padding: 60px 24px 80px; }
+      .content { padding: 0 24px; }
+      .section { padding: 64px 0; }
+      .two-col { grid-template-columns: 1fr; gap: 48px; }
+      .two-col--wide { grid-template-columns: 1fr; }
+      .two-col--even { grid-template-columns: 1fr; }
+      .process-grid { grid-template-columns: 1fr; }
+      .framework-block { padding: 28px 24px; }
+      .revisit-block { padding: 28px 24px; }
+      .cta-section__inner { padding: 0 24px; }
+      footer { padding: 32px 24px; }
+      .hero__ghost { font-size: 160px; right: -10px; bottom: -20px; }
+      .dc-row { flex-direction: column; }
+      .dc-row__key { width: 100%; border-right: none; border-bottom: 1px solid var(--rule); padding: 12px 20px; }
+      .dc-row__val { padding: 12px 20px; }
+    }
+  </style>
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-TQFFERGZW1"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-TQFFERGZW1');
+  </script>
+</head>
+
+<body>
+
+  <!-- ─────────────────────────────────────────
+       NAVIGATION
+  ───────────────────────────────────────── -->
+  <nav class="nav" role="navigation" aria-label="Main navigation">
+    <div class="nav__inner">
+      <a href="../" class="nav__logo">Software<span>Of</span>You</a>
+      <ul class="nav__links">
+        <li><a href="../features.html">Features</a></li>
+        <li class="nav__item--has-sub">
+          <a href="../features.html#modules">Modules</a>
+          <ul class="nav__sub">
+            <li><a href="crm.html"><span class="nav__sub__num">01</span>CRM</a></li>
+            <li><a href="projects.html"><span class="nav__sub__num">02</span>Projects</a></li>
+            <li><a href="gmail.html"><span class="nav__sub__num">03</span>Gmail</a></li>
+            <li><a href="calendar.html"><span class="nav__sub__num">04</span>Calendar</a></li>
+            <li><a href="conversations.html"><span class="nav__sub__num">05</span>Conversations</a></li>
+            <li><a href="decisions.html"><span class="nav__sub__num">06</span>Decisions</a></li>
+            <li><a href="journal.html"><span class="nav__sub__num">07</span>Journal</a></li>
+            <li><a href="notes.html"><span class="nav__sub__num">08</span>Notes</a></li>
+            <div class="nav__sub__divider"></div>
+            <li><a href="../features.html#modules"><span class="nav__sub__num">→</span>All modules</a></li>
+          </ul>
+        </li>
+        <li><a href="../why-claude.html">Why Claude</a></li>
+        <li><a href="../your-data.html">Your Data</a></li>
+        <li><a href="../pricing.html">Pricing</a></li>
+      </ul>
+      <div class="nav__right">
+        <a href="https://softwareof.you" class="nav__cta">Get SoY — $149</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- ─────────────────────────────────────────
+       HERO
+  ───────────────────────────────────────── -->
+  <section class="hero">
+    <div class="hero__ghost" aria-hidden="true">06</div>
+    <div class="hero__inner">
+      <a href="../features.html#modules" class="hero__breadcrumb">
+        <svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5">
+          <path d="M9 2L4 7l5 5"/>
+        </svg>
+        All modules
+      </a>
+      <p class="hero__label">Module 06 — Decision Log</p>
+      <h1 class="hero__headline">Six months from now,<br>will you remember <em>why?</em></h1>
+      <p class="hero__sub">Decision amnesia is real. Without a record of your reasoning, you can't tell good process from bad luck — or learn anything from either.</p>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────────────────────
+       CONTENT
+  ───────────────────────────────────────── -->
+  <main>
+
+    <!-- SECTION 1: Decision amnesia -->
+    <section class="section">
+      <div class="content">
+        <div class="two-col two-col--wide">
+          <div>
+            <p class="section__eyebrow reveal">The problem</p>
+            <h2 class="section__headline reveal reveal-delay-1">You forget what you decided. More importantly, you forget <em>why.</em></h2>
+            <div class="section__body reveal reveal-delay-2">
+              <p>Six months after a decision, you can't recall the options you considered, the information you had at the time, or what made you choose what you chose.</p>
+              <p>So when things go wrong, you're left with two bad options: relitigate the decision unfairly — judging past-you with information they didn't have — or repeat the same mistake because you can't trace the pattern.</p>
+              <p>The decision log exists so future-you has access to past-you's reasoning. Not to second-guess it. To learn from it.</p>
+            </div>
+          </div>
+          <div class="reveal reveal-delay-2">
+            <div class="data-panel" style="border-top: 3px solid var(--ink);">
+              <div class="data-panel__title">Without a decision log</div>
+              <div class="data-row">
+                <span class="data-row__label" style="font-size: 14px; color: var(--ink-2);">Options you considered</span>
+                <span class="data-row__value" style="color: var(--ember);">Gone</span>
+              </div>
+              <div class="data-row">
+                <span class="data-row__label" style="font-size: 14px; color: var(--ink-2);">Information you had</span>
+                <span class="data-row__value" style="color: var(--ember);">Gone</span>
+              </div>
+              <div class="data-row">
+                <span class="data-row__label" style="font-size: 14px; color: var(--ink-2);">Rationale for choosing</span>
+                <span class="data-row__value" style="color: var(--ember);">Gone</span>
+              </div>
+              <div class="data-row">
+                <span class="data-row__label" style="font-size: 14px; color: var(--ink-2);">What you expected</span>
+                <span class="data-row__value" style="color: var(--ember);">Gone</span>
+              </div>
+              <div class="data-row">
+                <span class="data-row__label" style="font-size: 14px; color: var(--ink-2);">Ability to learn from it</span>
+                <span class="data-row__value" style="color: var(--ember);">Gone</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 2: Annie Duke framework -->
+    <section class="section" style="background: var(--bone-mid);">
+      <div class="content">
+        <p class="section__eyebrow reveal">The framework</p>
+        <h2 class="section__headline reveal reveal-delay-1">A good decision with a bad outcome is still a good decision.</h2>
+        <div class="two-col">
+          <div>
+            <div class="section__body reveal reveal-delay-2">
+              <p>Annie Duke's core insight in <em>Thinking in Bets</em>: you can't judge the quality of a decision by its outcome. Sometimes good processes produce bad outcomes. Sometimes bad processes get lucky.</p>
+              <p>Conflating the two is how intelligent people stop improving. They avoid decisions that produced bad outcomes — even when the decision itself was sound. They repeat decisions that produced good outcomes — even when they were pure luck.</p>
+              <p>Separating process quality from outcome quality is the only way to actually improve. The decision log makes this distinction concrete — because you can only evaluate process quality if you recorded the process.</p>
+            </div>
+          </div>
+          <div class="reveal reveal-delay-2">
+            <div class="framework-block">
+              <div class="framework-block__eyebrow">Process vs. Outcome — Duke's matrix</div>
+              <div class="process-grid">
+                <div class="process-cell process-cell--good-process">
+                  <div class="process-cell__header">Good process + good outcome</div>
+                  <div class="process-cell__verdict">Deserved win</div>
+                  <div class="process-cell__note">The best case. Reinforce the process.</div>
+                </div>
+                <div class="process-cell process-cell--good-process">
+                  <div class="process-cell__header">Good process + bad outcome</div>
+                  <div class="process-cell__verdict">Still a good decision</div>
+                  <div class="process-cell__note">Bad luck. Don't change the process.</div>
+                </div>
+                <div class="process-cell process-cell--bad-process">
+                  <div class="process-cell__header">Bad process + good outcome</div>
+                  <div class="process-cell__verdict">Got lucky</div>
+                  <div class="process-cell__note">Fix the process before luck runs out.</div>
+                </div>
+                <div class="process-cell process-cell--bad-process">
+                  <div class="process-cell__header">Bad process + bad outcome</div>
+                  <div class="process-cell__verdict">Expected result</div>
+                  <div class="process-cell__note">Fix the process. The outcome was inevitable.</div>
+                </div>
+              </div>
+              <div class="framework-block__attribution">Based on Annie Duke · <em>Thinking in Bets</em> (2018)</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 3: How you use it -->
+    <section class="section">
+      <div class="content">
+        <p class="section__eyebrow reveal">How you use it</p>
+        <h2 class="section__headline reveal reveal-delay-1">Log it in plain language. Query it like memory.</h2>
+        <div class="two-col" style="margin-top: 48px;">
+          <div>
+            <p class="query-label reveal">Log a new decision</p>
+            <div class="query-block query-block--log reveal reveal-delay-1">"Log a decision: we're going with annual pricing over monthly. Options were monthly, annual, lifetime. Rationale: lower churn risk, better cash flow. Revisit in 90 days."</div>
+            <div class="query-result reveal reveal-delay-2">
+              → Decision logged. Revisit date set: Apr 15 2026.<br>
+              → 3 options recorded (monthly, annual, lifetime).<br>
+              → Tagged: pricing, strategy.
+            </div>
+
+            <p class="query-label reveal">Query your decision history</p>
+            <div class="query-block reveal reveal-delay-1">"What decisions have I made about pricing in the last year?"</div>
+            <div class="query-block reveal reveal-delay-2">"What decisions are due for revisit this month?"</div>
+            <div class="query-block reveal reveal-delay-3">"Show me decisions involving Rebecca"</div>
+            <div class="query-block reveal reveal-delay-4">"What was the rationale for choosing Stripe over Paddle?"</div>
+          </div>
+          <div class="reveal reveal-delay-2">
+            <div class="loop-steps">
+              <div class="loop-step">
+                <div class="loop-step__num">1</div>
+                <div>
+                  <div class="loop-step__label">Log the decision</div>
+                  <div class="loop-step__desc">Plain language. No forms. Claude extracts the structured fields automatically.</div>
+                </div>
+              </div>
+              <div class="loop-step">
+                <div class="loop-step__num">2</div>
+                <div>
+                  <div class="loop-step__label">Set a revisit date</div>
+                  <div class="loop-step__desc">When the outcome becomes knowable. 30 days for tactical decisions, 90 days for strategic ones.</div>
+                </div>
+              </div>
+              <div class="loop-step">
+                <div class="loop-step__num">3</div>
+                <div>
+                  <div class="loop-step__label">Get surfaced when it's time</div>
+                  <div class="loop-step__desc">SoY prompts you with the original reasoning and expected outcome. No digging required.</div>
+                </div>
+              </div>
+              <div class="loop-step">
+                <div class="loop-step__num">4</div>
+                <div>
+                  <div class="loop-step__label">Record the actual outcome</div>
+                  <div class="loop-step__desc">What happened vs. what you expected. This is where learning gets compounded over time.</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 4: What a record contains -->
+    <section class="section" style="background: var(--bone-mid);">
+      <div class="content">
+        <p class="section__eyebrow reveal">What a record contains</p>
+        <h2 class="section__headline reveal reveal-delay-1">Seven fields. Everything you need to evaluate the decision later.</h2>
+        <p class="section__body reveal reveal-delay-2" style="margin-bottom: 48px;">Not a journal entry. Not a post-mortem. A structured record of process — captured at the moment of decision, before outcome bias sets in.</p>
+        <div class="two-col two-col--even">
+          <div class="field-list reveal reveal-delay-1">
+            <div class="field-item">
+              <div class="field-item__number">1</div>
+              <div>
+                <div class="field-item__label">The decision made</div>
+                <div class="field-item__desc">A clear, unambiguous statement of what was chosen.</div>
+              </div>
+            </div>
+            <div class="field-item">
+              <div class="field-item__number">2</div>
+              <div>
+                <div class="field-item__label">Options considered</div>
+                <div class="field-item__desc">What you could have done instead. These are the counterfactuals future-you needs.</div>
+              </div>
+            </div>
+            <div class="field-item">
+              <div class="field-item__number">3</div>
+              <div>
+                <div class="field-item__label">Rationale</div>
+                <div class="field-item__desc">Why this option. What information or reasoning led here.</div>
+              </div>
+            </div>
+            <div class="field-item">
+              <div class="field-item__number">4</div>
+              <div>
+                <div class="field-item__label">People involved</div>
+                <div class="field-item__desc">Who was consulted or had input. Auto-linked to your contacts.</div>
+              </div>
+            </div>
+          </div>
+          <div class="field-list reveal reveal-delay-2">
+            <div class="field-item">
+              <div class="field-item__number">5</div>
+              <div>
+                <div class="field-item__label">Expected outcome</div>
+                <div class="field-item__desc">What you thought would happen. This is the prediction you'll evaluate against.</div>
+              </div>
+            </div>
+            <div class="field-item">
+              <div class="field-item__number">6</div>
+              <div>
+                <div class="field-item__label">Revisit date</div>
+                <div class="field-item__desc">When the outcome becomes knowable. SoY surfaces the decision automatically on this date.</div>
+              </div>
+            </div>
+            <div class="field-item">
+              <div class="field-item__number">7</div>
+              <div>
+                <div class="field-item__label">Actual outcome</div>
+                <div class="field-item__desc">Recorded on revisit. What actually happened vs. what you expected. The learning lives here.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 5: Revisit prompts -->
+    <section class="section">
+      <div class="content">
+        <div class="two-col two-col--wide">
+          <div>
+            <p class="section__eyebrow reveal">Revisit prompts</p>
+            <h2 class="section__headline reveal reveal-delay-1">When the date arrives, SoY brings the decision back.</h2>
+            <div class="section__body reveal reveal-delay-2">
+              <p>Most decision logs fail because the revisit never happens. You forget to check, or by the time you remember the outcome you've lost the thread of the original reasoning.</p>
+              <p>SoY surfaces the decision automatically — with the original record fully loaded. Your only job is to record what happened.</p>
+              <p>Over time, this builds a real picture of your decision quality. Not your feelings about your decisions — your actual track record of prediction accuracy, separated from outcome luck.</p>
+            </div>
+          </div>
+          <div class="reveal reveal-delay-2">
+            <div class="revisit-block">
+              <div class="revisit-block__eyebrow">Revisit prompt — Apr 15 2026</div>
+              <div class="revisit-block__prompt">
+                "90 days ago you decided to go with <em>annual pricing</em> over monthly. You expected lower churn risk and stronger cash flow. What actually happened?"
+              </div>
+              <div class="revisit-block__response">
+                → Type your outcome here...<br><br>
+                Claude will record it, compare it to your prediction, and update your decision quality score.
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 6: Example decision record -->
+    <section class="section" style="background: var(--bone-mid);">
+      <div class="content">
+        <p class="section__eyebrow reveal">Example record</p>
+        <h2 class="section__headline reveal reveal-delay-1">What a logged decision looks like.</h2>
+        <p class="section__body reveal reveal-delay-2" style="margin-bottom: 48px;">This is a real record structure — clean, queryable, and retrievable months later with a single question to Claude.</p>
+
+        <div class="decision-card reveal reveal-delay-3">
+          <div class="decision-card__header">
+            <div class="decision-card__title">Annual pricing model over monthly</div>
+            <div class="decision-card__status">Awaiting revisit</div>
+          </div>
+          <div class="decision-card__body">
+            <div class="dc-row">
+              <div class="dc-row__key">Date logged</div>
+              <div class="dc-row__val">Jan 15, 2026</div>
+            </div>
+            <div class="dc-row">
+              <div class="dc-row__key">Revisit date</div>
+              <div class="dc-row__val"><strong>Apr 15, 2026</strong> — 90 days</div>
+            </div>
+            <div class="dc-row">
+              <div class="dc-row__key">Options considered</div>
+              <div class="dc-row__val">
+                <span class="dc-tag">Monthly billing</span>
+                <span class="dc-tag">Annual billing</span>
+                <span class="dc-tag">Lifetime license</span>
+              </div>
+            </div>
+            <div class="dc-row">
+              <div class="dc-row__key">Rationale</div>
+              <div class="dc-row__val">Lower churn risk on annual vs. monthly. Stronger cash flow signal for planning. Simpler operations — one billing event per customer per year. Lifetime felt too early given unknown retention rates.</div>
+            </div>
+            <div class="dc-row">
+              <div class="dc-row__key">People involved</div>
+              <div class="dc-row__val">
+                <span class="dc-tag">Kerry Morrison</span>
+                <span class="dc-tag">Marcus (advisor)</span>
+              </div>
+            </div>
+            <div class="dc-row">
+              <div class="dc-row__key">Expected outcome</div>
+              <div class="dc-row__val">Lower monthly churn rate. Upfront revenue concentration in Jan/Feb. Some conversion friction vs. monthly option.</div>
+            </div>
+            <div class="dc-row">
+              <div class="dc-row__key">Actual outcome</div>
+              <div class="dc-row__val" style="color: var(--ink-4); font-style: italic;">Not yet recorded — revisit Apr 15, 2026</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ══════════ EXPLAINER ══════════ -->
+  <section style="background: #f0ede8; border-top: 1px solid #dedad3; padding: 80px 0;">
+    <div class="container" style="max-width: 960px; margin: 0 auto; padding: 0 32px;">
+      <p style="font-family: 'DM Mono', monospace; font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: #7c7c6e; margin-bottom: 10px;">✦ · A real example</p>
+      <h2 style="font-size: 32px; line-height: 1.2; color: #0f0e0c; letter-spacing: -0.01em; margin-bottom: 12px; max-width: 600px;">What you logged.<br><em>What it surfaces 90 days later.</em></h2>
+      <p style="font-size: 16px; color: #5c5b55; max-width: 520px; line-height: 1.7; margin-bottom: 40px;">A decision record, split into what you entered and what the system tracks and resurfaces automatically.</p>
+      <div>
+        <style>
+          .dec-exp-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+          @media (max-width: 820px) { .dec-exp-layout { grid-template-columns: 1fr; } }
+          .dec-panel { background: white; border: 1px solid #dedad3; border-radius: 6px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+          .dec-panel-head { padding: 10px 16px; font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; font-weight: 600; display: flex; align-items: center; gap: 8px; }
+          .dec-panel-head.input { background: #f8f7f4; border-bottom: 1px solid #e8e5e0; color: #7c5c2a; }
+          .dec-panel-head.output { background: #1a4731; color: rgba(235,242,238,0.9); }
+          .dec-panel-head-dot { width: 7px; height: 7px; border-radius: 50%; background: rgba(255,255,255,0.35); flex-shrink: 0; }
+          .dec-panel-body { padding: 0; }
+          .dec-field { padding: 12px 16px; border-bottom: 1px solid #f0ede8; }
+          .dec-field:last-child { border-bottom: none; }
+          .dec-field-label { font-family: 'DM Mono', monospace; font-size: 9px; letter-spacing: 0.1em; text-transform: uppercase; color: #a8a49c; margin-bottom: 5px; }
+          .dec-field-val { font-size: 13px; color: #3c3b37; line-height: 1.6; }
+          .dec-field-val strong { color: #0f0e0c; font-weight: 600; }
+          .dec-option { display: flex; gap: 8px; align-items: baseline; font-size: 13px; color: #3c3b37; margin-bottom: 5px; }
+          .dec-option-marker { font-family: 'DM Mono', monospace; font-size: 10px; color: #a8a49c; }
+          .dec-option.chosen .dec-option-marker { color: #1a4731; font-weight: 700; }
+          .dec-revisit-badge { display: inline-block; font-family: 'DM Mono', monospace; font-size: 10px; padding: 3px 8px; border-radius: 3px; margin-top: 4px; }
+          .dec-revisit-overdue { background: rgba(185,40,40,0.1); color: #8b1a1a; }
+          .dec-revisit-upcoming { background: rgba(26,71,49,0.1); color: #1a4731; }
+          .dec-linked { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px; }
+          .dec-linked-tag { font-family: 'DM Mono', monospace; font-size: 10px; padding: 2px 8px; border-radius: 3px; background: rgba(26,71,49,0.08); color: #1a4731; }
+          .dec-outcome-bar { display: flex; gap: 8px; align-items: center; }
+          .dec-outcome-score { font-family: 'DM Mono', monospace; font-size: 22px; font-weight: 600; color: #0f0e0c; }
+          .dec-outcome-labels { font-size: 12px; color: #8a8880; line-height: 1.5; }
+          .dec-outcome-process { color: #1a4731; font-weight: 600; }
+          .dec-exp-footer { margin-top: 20px; padding: 18px 22px; background: #1a4731; border-radius: 6px; display: flex; gap: 16px; align-items: center; }
+          .dec-exp-footer-label { font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: rgba(235,242,238,0.5); white-space: nowrap; }
+          .dec-exp-footer-text { font-size: 14px; color: #ebf2ee; line-height: 1.6; }
+          .dec-exp-footer-text em { font-style: italic; color: rgba(235,242,238,0.7); }
+        </style>
+        <div class="dec-exp-layout">
+          <div class="dec-panel">
+            <div class="dec-panel-head input">What you logged</div>
+            <div class="dec-panel-body">
+              <div class="dec-field">
+                <div class="dec-field-label">Decision</div>
+                <div class="dec-field-val"><strong>Go with annual pricing over monthly</strong></div>
+              </div>
+              <div class="dec-field">
+                <div class="dec-field-label">Options considered</div>
+                <div>
+                  <div class="dec-option chosen"><span class="dec-option-marker">✓</span> Annual — lower churn risk, better cash flow predictability</div>
+                  <div class="dec-option"><span class="dec-option-marker">—</span> Monthly — easier conversion, higher flexibility for customers</div>
+                  <div class="dec-option"><span class="dec-option-marker">—</span> Hybrid — both offered, discount for annual</div>
+                </div>
+              </div>
+              <div class="dec-field">
+                <div class="dec-field-label">Rationale</div>
+                <div class="dec-field-val">Monthly churn in the first cohort was the primary risk. Predictable ARR lets us hire 6 months ahead instead of reacting.</div>
+              </div>
+              <div class="dec-field">
+                <div class="dec-field-label">Revisit date</div>
+                <div class="dec-field-val">90 days — after Q1 conversion data is in</div>
+              </div>
+            </div>
+          </div>
+          <div class="dec-panel">
+            <div class="dec-panel-head output"><div class="dec-panel-head-dot"></div>What the system tracks</div>
+            <div class="dec-panel-body">
+              <div class="dec-field">
+                <div class="dec-field-label">Status</div>
+                <div class="dec-field-val">
+                  Logged Feb 3 — revisit window: May 3
+                  <div><span class="dec-revisit-upcoming">↻ revisit in 69 days</span></div>
+                </div>
+              </div>
+              <div class="dec-field">
+                <div class="dec-field-label">Linked contacts</div>
+                <div class="dec-linked">
+                  <span class="dec-linked-tag">Rebecca Chen</span>
+                  <span class="dec-linked-tag">Marcus Webb</span>
+                </div>
+                <div class="dec-field-val" style="margin-top: 6px; font-size: 12px; color: #8a8880;">Both were present when decision was made — linked from transcript</div>
+              </div>
+              <div class="dec-field">
+                <div class="dec-field-label">Process / outcome rating</div>
+                <div class="dec-outcome-bar">
+                  <div class="dec-outcome-score">—</div>
+                  <div class="dec-outcome-labels"><span class="dec-outcome-process">Process: strong</span><br>Outcome: not yet recordable<br><span style="font-size:11px;">Check back May 3</span></div>
+                </div>
+              </div>
+              <div class="dec-field">
+                <div class="dec-field-label">Related decisions</div>
+                <div class="dec-field-val" style="font-size: 13px;">2 other pricing decisions in the log — one from Oct (monthly trialed, abandoned) surfaces as direct evidence for this call.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="dec-exp-footer">
+          <div class="dec-exp-footer-label">The point</div>
+          <div class="dec-exp-footer-text">You logged the reasoning once. The system <em>links it to the people in the room, surfaces the revisit automatically, and connects it to prior decisions you'd already forgotten about.</em> That's decision memory.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────────────────────
+       CTA
+  ───────────────────────────────────────── -->
+  <section class="cta-section">
+    <div class="cta-section__inner">
+      <p class="cta-section__label reveal">Software of You</p>
+      <h2 class="cta-section__headline reveal reveal-delay-1">Build a real picture of <em>how you decide.</em></h2>
+      <p class="cta-section__sub reveal reveal-delay-2">One-time payment. No subscription. Works with your existing Claude subscription.</p>
+      <div class="cta-row reveal reveal-delay-3">
+        <a href="https://softwareof.you" class="cta-primary">
+          Get SoY — $149
+          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </a>
+        <a href="journal.html" class="cta-next">
+          Next: Module 07 — Journal
+          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────────────────────
+       FOOTER
+  ───────────────────────────────────────── -->
+  <footer>
+    <div class="footer__inner">
+      <span class="footer__copy">© 2026 Software of You · Built by Kerry Morrison</span>
+      <a href="https://softwareof.you" class="footer__domain">softwareof.you</a>
+    
+    <a class="footer-email" data-u="kerry" data-d="softwareof.you" href="#" onclick="this.href='mailto:'+this.dataset.u+'@'+this.dataset.d;return false;" title="Email Kerry">kerry<span aria-hidden="true" style="display:none">&#8203;</span>&#64;softwareof.you</a>
+</div>
+  
+  </footer>
+
+  <!-- ─────────────────────────────────────────
+       SCROLL REVEAL
+  ───────────────────────────────────────── -->
+  <script>
+    (function() {
+      var reveals = document.querySelectorAll('.reveal');
+
+      if (!('IntersectionObserver' in window)) {
+        // Fallback: show all immediately
+        reveals.forEach(function(el) { el.classList.add('in'); });
+        return;
+      }
+
+      var observer = new IntersectionObserver(function(entries) {
+        entries.forEach(function(entry) {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('in');
+            observer.unobserve(entry.target);
+          }
+        });
+      }, {
+        threshold: 0.1,
+        rootMargin: '0px 0px -40px 0px'
+      });
+
+      reveals.forEach(function(el) { observer.observe(el); });
+    })();
+  </script>
+
+<script>
+(function() {
+  function closeAll() {
+    document.querySelectorAll('.nav__item--has-sub.open').forEach(function(el) {
+      el.classList.remove('open');
+    });
+  }
+  document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.nav__item--has-sub > a').forEach(function(trigger) {
+      trigger.addEventListener('click', function(e) {
+        e.preventDefault();
+        var item = trigger.parentElement;
+        var isOpen = item.classList.contains('open');
+        closeAll();
+        if (!isOpen) item.classList.add('open');
+      });
+    });
+    document.addEventListener('click', function(e) {
+      if (!e.target.closest('.nav__item--has-sub')) closeAll();
+    });
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') closeAll();
+    });
+  });
+})();
+</script>
+</body>
+</html>

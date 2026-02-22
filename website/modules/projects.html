@@ -1,0 +1,943 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Projects Module — Software of You</title>
+  <meta name="description" content="Projects and tasks linked to the people driving them. Milestones, status, blockers — all connected to your CRM. Every project knows its people." />
+  <meta name="robots" content="index, follow">
+  <link rel="canonical" href="https://softwareof.you/modules/projects.html">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://softwareof.you/modules/projects.html">
+  <meta property="og:title" content="Projects Module — Software of You">
+  <meta property="og:description" content="Projects and tasks linked to the people driving them. Milestones, status, blockers — all connected to your CRM and queryable through Claude. Module 02 of Software of You.">
+  <meta property="og:site_name" content="Software of You">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Projects Module — Software of You">
+  <meta name="twitter:description" content="Projects and tasks linked to the people driving them. Milestones, status, blockers — all connected to your CRM.">
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"WebPage","url":"https://softwareof.you/modules/projects.html","name":"Projects Module — Software of You","description":"Projects and tasks linked to the people driving them. Milestones, status, blockers — all connected to your CRM and queryable through Claude. Module 02 of Software of You.","isPartOf":{"@type":"WebSite","url":"https://softwareof.you/","name":"Software of You"},"about":{"@type":"SoftwareApplication","name":"Software of You","offers":{"@type":"Offer","price":"149","priceCurrency":"USD"}}}</script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300;1,400;1,500&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300;1,9..40,400;1,9..40,500&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet" />
+  <style>
+    /* ─── TOKENS ─────────────────────────────────────────────────── */
+    :root {
+      --bone:       #FAF9F6;
+      --bone-mid:   #F2F0EB;
+      --bone-deep:  #E8E4DC;
+      --ink:        #0F0E0C;
+      --ink-2:      #2C2A26;
+      --ink-3:      #6B6860;
+      --ink-4:      #A8A49C;
+      --ink-5:      #D4D0C8;
+      --forest:     #1A4731;
+      --forest-mid: #245E41;
+      --forest-pale:#EBF2EE;
+      --forest-bg:  #F2F7F4;
+      --ember:      #A63325;
+      --ember-pale: #FBF2F0;
+      --rule:       rgba(15,14,12,0.08);
+      --rule-mid:   rgba(15,14,12,0.13);
+      --rule-heavy: rgba(15,14,12,0.22);
+    }
+
+    /* ─── RESET ─────────────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      background: var(--bone);
+      color: var(--ink);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 17px;
+      line-height: 1.65;
+      -webkit-font-smoothing: antialiased;
+    }
+    a { color: inherit; text-decoration: none; }
+    img { display: block; max-width: 100%; }
+    ul { list-style: none; }
+
+    /* ─── NAV ────────────────────────────────────────────────────── */
+    .nav { position:fixed; top:0; left:0; right:0; z-index:100; background:rgba(250,249,246,0.92); backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px); border-bottom:1px solid var(--rule); }
+    .nav__inner { max-width:1200px; margin:0 auto; padding:0 48px; height:64px; display:flex; align-items:center; justify-content:space-between; }
+    .nav__logo { font-family:'DM Serif Display',Georgia,serif; font-size:17px; color:var(--ink); text-decoration:none; letter-spacing:0.01em; }
+    .nav__logo span { font-style:italic; color:var(--forest); }
+    .nav__links { display:flex; align-items:center; gap:28px; list-style:none; }
+    .nav__links a { font-family:'DM Mono',monospace; font-size:11px; letter-spacing:0.08em; text-transform:uppercase; color:var(--ink-3); text-decoration:none; transition:color 0.18s; }
+    .nav__links a:hover, .nav__links a.active { color:var(--ink); }
+    .nav__item--has-sub { position:relative; }
+    .nav__item--has-sub > a { cursor: pointer; }
+    .nav__item--has-sub > a::after { content:''; display:inline-block; width:5px; height:5px; border-right:1.5px solid currentColor; border-bottom:1.5px solid currentColor; transform:rotate(45deg) translateY(-2px); margin-left:6px; opacity:0.5; transition:transform 0.18s; }
+    .nav__sub { position:absolute; top:calc(100% + 8px); left:50%; transform:translateX(-50%) translateY(-4px); background:white; border:1px solid var(--rule-heavy); min-width:220px; padding:8px 0; list-style:none; opacity:0; visibility:hidden; pointer-events:none; transition:opacity 0.16s,transform 0.16s; box-shadow:0 8px 24px rgba(0,0,0,0.08); }
+    .nav__item--has-sub.open > a::after { transform:rotate(225deg) translateY(-2px); }
+    .nav__item--has-sub.open .nav__sub { opacity:1; visibility:visible; pointer-events:auto; transform:translateX(-50%) translateY(0); }
+
+    .nav__sub li a { display:flex; align-items:center; gap:10px; padding:9px 20px; font-family:'DM Sans',sans-serif; font-size:13px; letter-spacing:0; text-transform:none; color:var(--ink-2); transition:background 0.12s; }
+    .nav__sub li a:hover { background:var(--bone); color:var(--ink); }
+    .nav__sub__num { font-family:'DM Mono',monospace; font-size:10px; color:var(--ink-5); min-width:16px; }
+    .nav__sub__divider { height:1px; background:var(--rule); margin:6px 20px; }
+    .nav__right { display:flex; align-items:center; gap:36px; }
+    .nav__cta { font-family:'DM Sans',sans-serif; font-size:13px; font-weight:500; letter-spacing:0.04em; color:var(--bone); background:var(--forest); padding:10px 24px; text-decoration:none; border-radius:2px; transition:background 0.18s,transform 0.14s; }
+    .nav__cta:hover { background:var(--forest-mid); transform:translateY(-1px); }
+
+    /* ─── BREADCRUMB ─────────────────────────────────────────────── */
+    .breadcrumb {
+      margin-top: 64px;
+      padding: 16px 0;
+      border-bottom: 1px solid var(--rule);
+      display: none; /* breadcrumb now lives in hero */
+    }
+    .breadcrumb-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 32px;
+    }
+    .breadcrumb a {
+      font-family: 'DM Mono', monospace;
+      font-size: 12px;
+      color: var(--ink-3);
+      letter-spacing: 0.04em;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: color 0.2s;
+    }
+    .breadcrumb a:hover { color: var(--forest); }
+    .breadcrumb-arrow { font-size: 14px; }
+    /* Hero breadcrumb link (dark background) */
+    .hero-breadcrumb {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: rgba(235,242,238,0.5);
+      text-decoration: none;
+      margin-bottom: 32px;
+      transition: color 0.18s;
+    }
+    .hero-breadcrumb:hover { color: var(--forest-pale); }
+
+    /* ─── LAYOUT ─────────────────────────────────────────────────── */
+    .page-wrap {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 32px;
+    }
+    .narrow {
+      max-width: 720px;
+    }
+    .section {
+      padding: 96px 0;
+      border-bottom: 1px solid var(--rule);
+    }
+    .section:last-of-type { border-bottom: none; }
+
+    /* ─── HERO ───────────────────────────────────────────────────── */
+    .hero {
+      padding-top: 64px;
+      min-height: 72vh;
+      background: var(--forest);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      position: relative;
+      overflow: hidden;
+    }
+    /* Grid texture overlay */
+    .hero::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+      background-size: 40px 40px;
+      pointer-events: none;
+    }
+    /* Ghost module number */
+    .hero__ghost {
+      position: absolute;
+      right: -20px;
+      bottom: -60px;
+      font-family: 'DM Serif Display', Georgia, serif;
+      font-style: italic;
+      font-size: clamp(200px, 28vw, 380px);
+      line-height: 1;
+      color: rgba(255,255,255,0.04);
+      pointer-events: none;
+      user-select: none;
+      letter-spacing: -0.04em;
+    }
+    .hero-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 80px 32px 96px;
+      position: relative;
+      z-index: 1;
+    }
+    .module-label {
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: rgba(235,242,238,0.55);
+      margin-bottom: 28px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .hero-headline {
+      font-family: 'DM Serif Display', serif;
+      font-size: clamp(40px, 6vw, 64px);
+      line-height: 1.1;
+      letter-spacing: -0.02em;
+      color: var(--forest-pale);
+      max-width: 880px;
+      margin-bottom: 24px;
+    }
+    .hero-headline em {
+      font-style: italic;
+      color: #ffffff;
+    }
+    .hero-sub {
+      font-family: 'DM Serif Display', serif;
+      font-style: italic;
+      font-size: 22px;
+      color: rgba(235,242,238,0.65);
+      max-width: 560px;
+      line-height: 1.5;
+    }
+
+    /* ─── SECTION HEADERS ────────────────────────────────────────── */
+    .section-num {
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--ink-4);
+      margin-bottom: 16px;
+    }
+    .section-title {
+      font-family: 'DM Serif Display', serif;
+      font-size: clamp(28px, 4vw, 40px);
+      line-height: 1.15;
+      letter-spacing: -0.015em;
+      color: var(--ink);
+      margin-bottom: 24px;
+    }
+    .section-title em {
+      font-style: italic;
+      color: var(--forest);
+    }
+    .section-body {
+      color: var(--ink-2);
+      font-size: 17px;
+      line-height: 1.75;
+      max-width: 640px;
+    }
+    .section-body p + p { margin-top: 16px; }
+
+    /* ─── QUERY BLOCKS ───────────────────────────────────────────── */
+    .query-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-top: 40px;
+    }
+    .query-block {
+      background: var(--ink-2);
+      color: var(--forest-pale);
+      font-family: 'DM Mono', monospace;
+      font-size: 14px;
+      padding: 16px 20px;
+      border-radius: 4px;
+      border-left: 3px solid var(--forest);
+      line-height: 1.5;
+    }
+    .query-block .q-prompt {
+      color: var(--ink-4);
+      font-size: 11px;
+      letter-spacing: 0.06em;
+      margin-bottom: 6px;
+    }
+    .query-block .q-text {
+      color: var(--forest-pale);
+    }
+    .query-block .q-response {
+      margin-top: 8px;
+      color: var(--ink-5);
+      font-size: 14px;
+      font-style: italic;
+      padding-top: 8px;
+      border-top: 1px solid rgba(255,255,255,0.06);
+    }
+
+    /* ─── CONTENTS GRID ──────────────────────────────────────────── */
+    .contents-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2px;
+      margin-top: 40px;
+    }
+    @media (max-width: 640px) {
+      .contents-grid { grid-template-columns: 1fr; }
+    }
+    .contents-item {
+      background: var(--bone-mid);
+      padding: 24px 28px;
+      border: 1px solid var(--rule);
+    }
+    .contents-item-label {
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--forest);
+      margin-bottom: 8px;
+    }
+    .contents-item-desc {
+      font-size: 15px;
+      color: var(--ink-3);
+      line-height: 1.6;
+    }
+
+    /* ─── BRIEF CALLOUT ──────────────────────────────────────────── */
+    .brief-box {
+      background: var(--forest-bg);
+      border: 1px solid var(--forest-pale);
+      border-left: 3px solid var(--forest);
+      padding: 32px 36px;
+      margin-top: 40px;
+      border-radius: 2px;
+    }
+    .brief-box-label {
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--forest);
+      margin-bottom: 16px;
+    }
+    .brief-box-body {
+      font-size: 17px;
+      color: var(--ink-2);
+      line-height: 1.75;
+    }
+    .brief-box-body p + p { margin-top: 14px; }
+    .brief-sources {
+      margin-top: 20px;
+      padding-top: 20px;
+      border-top: 1px solid var(--forest-pale);
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .source-tag {
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      background: var(--forest-pale);
+      color: var(--forest);
+      padding: 4px 10px;
+      border-radius: 2px;
+      border: 1px solid rgba(26,71,49,0.15);
+    }
+
+    /* ─── PROJECT STATUS CARD ────────────────────────────────────── */
+    .project-card {
+      background: var(--forest-bg);
+      border: 1px solid var(--forest-pale);
+      padding: 32px 36px;
+      margin-top: 40px;
+      max-width: 640px;
+      border-radius: 2px;
+    }
+    .project-card-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 16px;
+      padding-bottom: 20px;
+      margin-bottom: 20px;
+      border-bottom: 1px solid var(--forest-pale);
+    }
+    .project-card-name {
+      font-family: 'DM Serif Display', serif;
+      font-size: 24px;
+      letter-spacing: -0.01em;
+      color: var(--ink);
+      line-height: 1.2;
+    }
+    .project-card-client {
+      font-family: 'DM Mono', monospace;
+      font-size: 12px;
+      color: var(--ink-3);
+      margin-top: 4px;
+      letter-spacing: 0.03em;
+    }
+    .status-badge {
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      padding: 6px 12px;
+      border-radius: 3px;
+      white-space: nowrap;
+    }
+    .status-active {
+      background: var(--forest);
+      color: var(--bone);
+    }
+    .health-row {
+      background: var(--ember-pale);
+      border: 1px solid rgba(166,51,37,0.15);
+      border-left: 3px solid var(--ember);
+      padding: 12px 16px;
+      margin-bottom: 20px;
+      border-radius: 2px;
+    }
+    .health-label {
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--ember);
+      margin-bottom: 4px;
+    }
+    .health-text {
+      font-size: 14px;
+      color: var(--ink-2);
+      line-height: 1.5;
+    }
+    .card-field-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+    }
+    .card-field {
+      display: grid;
+      grid-template-columns: 160px 1fr;
+      gap: 12px;
+      padding: 12px 0;
+      border-bottom: 1px solid var(--forest-pale);
+      align-items: baseline;
+    }
+    .card-field:last-child { border-bottom: none; }
+    .field-label {
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 0.07em;
+      text-transform: uppercase;
+      color: var(--ink-4);
+      padding-top: 1px;
+    }
+    .field-value {
+      font-size: 14px;
+      color: var(--ink-2);
+      line-height: 1.5;
+    }
+    .field-value.highlight {
+      color: var(--forest);
+      font-weight: 500;
+    }
+    .field-value.warning {
+      color: var(--ember);
+    }
+    .next-action-row {
+      margin-top: 20px;
+      padding: 16px;
+      background: var(--forest);
+      border-radius: 2px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .next-action-label {
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: rgba(235,242,238,0.6);
+      white-space: nowrap;
+    }
+    .next-action-text {
+      font-size: 14px;
+      color: var(--forest-pale);
+      line-height: 1.4;
+    }
+
+    /* ─── CTA SECTION ────────────────────────────────────────────── */
+    .cta-section {
+      padding: 80px 0;
+      text-align: center;
+    }
+    .cta-label {
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--ink-4);
+      margin-bottom: 20px;
+    }
+    .cta-headline {
+      font-family: 'DM Serif Display', serif;
+      font-size: clamp(28px, 4vw, 40px);
+      line-height: 1.2;
+      letter-spacing: -0.015em;
+      color: var(--ink);
+      margin-bottom: 32px;
+    }
+    .cta-headline em {
+      font-style: italic;
+      color: var(--forest);
+    }
+    .cta-buttons {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+    .btn-primary {
+      font-family: 'DM Mono', monospace;
+      font-size: 13px;
+      letter-spacing: 0.04em;
+      background: var(--forest);
+      color: var(--bone);
+      padding: 14px 28px;
+      border-radius: 3px;
+      transition: background 0.2s;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .btn-primary:hover { background: var(--forest-mid); }
+    .btn-ghost {
+      font-family: 'DM Mono', monospace;
+      font-size: 13px;
+      letter-spacing: 0.04em;
+      color: var(--ink-3);
+      padding: 14px 0;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      border-bottom: 1px solid var(--rule-mid);
+      transition: color 0.2s, border-color 0.2s;
+    }
+    .btn-ghost:hover { color: var(--forest); border-color: var(--forest); }
+
+    /* ─── FOOTER ─────────────────────────────────────────────────── */
+    footer {
+      border-top: 1px solid var(--rule);
+      padding: 24px 0;
+    }
+    .footer-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 32px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+    .footer-copy {
+      font-family: 'DM Mono', monospace;
+      font-size: 12px;
+      color: var(--ink-4);
+      letter-spacing: 0.02em;
+    }
+    .footer-link {
+      font-family: 'DM Mono', monospace;
+      font-size: 12px;
+      color: var(--forest);
+      letter-spacing: 0.02em;
+      transition: opacity 0.2s;
+    }
+    .footer-link:hover { opacity: 0.7; }
+
+    /* ─── REVEAL ANIMATIONS ──────────────────────────────────────── */
+    .reveal {
+      opacity: 1;
+      transform: none;
+      transition: opacity 0.5s ease, transform 0.5s ease;
+    }
+    .reveal-ready {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    .reveal-ready.in {
+      opacity: 1;
+      transform: none;
+    }
+
+    /* ─── RESPONSIVE ─────────────────────────────────────────────── */
+    @media (max-width: 768px) {
+      .nav-links { display: none; }
+      .page-wrap { padding: 0 20px; }
+      .breadcrumb-inner { padding: 0 20px; }
+      .nav-inner { padding: 0 20px; }
+      .footer-inner { padding: 0 20px; flex-direction: column; align-items: flex-start; }
+      .hero__ghost { font-size: 120px; }
+      .project-card { padding: 24px 20px; }
+      .project-card-header { flex-direction: column; }
+      .card-field { grid-template-columns: 1fr; gap: 4px; }
+      .next-action-row { flex-direction: column; align-items: flex-start; }
+    }
+  </style>
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-TQFFERGZW1"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-TQFFERGZW1');
+  </script>
+</head>
+<body>
+
+  <!-- NAV -->
+  <nav class="nav" role="navigation" aria-label="Main navigation">
+    <div class="nav__inner">
+      <a href="../" class="nav__logo">Software<span>Of</span>You</a>
+      <ul class="nav__links">
+        <li><a href="../features.html">Features</a></li>
+        <li class="nav__item--has-sub">
+          <a href="../features.html#modules">Modules</a>
+          <ul class="nav__sub">
+            <li><a href="crm.html"><span class="nav__sub__num">01</span>CRM</a></li>
+            <li><a href="projects.html"><span class="nav__sub__num">02</span>Projects</a></li>
+            <li><a href="gmail.html"><span class="nav__sub__num">03</span>Gmail</a></li>
+            <li><a href="calendar.html"><span class="nav__sub__num">04</span>Calendar</a></li>
+            <li><a href="conversations.html"><span class="nav__sub__num">05</span>Conversations</a></li>
+            <li><a href="decisions.html"><span class="nav__sub__num">06</span>Decisions</a></li>
+            <li><a href="journal.html"><span class="nav__sub__num">07</span>Journal</a></li>
+            <li><a href="notes.html"><span class="nav__sub__num">08</span>Notes</a></li>
+            <div class="nav__sub__divider"></div>
+            <li><a href="../features.html#modules"><span class="nav__sub__num">→</span>All modules</a></li>
+          </ul>
+        </li>
+        <li><a href="../why-claude.html">Why Claude</a></li>
+        <li><a href="../your-data.html">Your Data</a></li>
+        <li><a href="../pricing.html">Pricing</a></li>
+      </ul>
+      <div class="nav__right">
+        <a href="https://softwareof.you" class="nav__cta">Get SoY — $149</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero__ghost" aria-hidden="true">02</div>
+    <div class="hero-inner">
+      <a href="../features.html#modules" class="hero-breadcrumb">← All modules</a>
+      <div class="module-label">Module 02 — Projects</div>
+      <h1 class="hero-headline reveal">
+        Every project knows its people.<br>
+        <em>Every person knows their projects.</em>
+      </h1>
+      <p class="hero-sub reveal">
+        Milestones, tasks, and blockers — connected to the contacts driving them.
+        Project status and relationship context living in the same place, finally.
+      </p>
+    </div>
+  </section>
+
+  <!-- SECTION 1: The problem -->
+  <section class="section">
+    <div class="page-wrap">
+      <div class="narrow">
+        <p class="section-num reveal">01 — The problem it solves</p>
+        <h2 class="section-title reveal">In every other tool, a project is <em>isolated</em></h2>
+        <div class="section-body reveal">
+          <p>
+            Asana knows your tasks. Your CRM knows your contacts. Your email knows what
+            you said last week. None of them know about each other.
+          </p>
+          <p>
+            So when you open the Meridian project, you see milestones and tasks. What you
+            don't see: Rebecca is the client, and you last talked to her 4 days ago. There
+            are 2 open commitments from your last call. The proposal task is marked complete
+            but legal review is still blocking you. You were feeling good about this project
+            two weeks ago; you haven't logged anything since.
+          </p>
+          <p>
+            In SoY, all of that is one project. The brief and the relationship context
+            live together. The task board and the communication history are the same view.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SECTION 2: How you use it -->
+  <section class="section">
+    <div class="page-wrap">
+      <div class="narrow">
+        <p class="section-num reveal">02 — How you use it</p>
+        <h2 class="section-title reveal">Create and update in plain language</h2>
+        <div class="section-body reveal">
+          <p>
+            No project templates to fill out. No status dropdowns to click through.
+            You describe what's happening, Claude keeps the record.
+          </p>
+        </div>
+        <div class="query-list">
+          <div class="query-block reveal">
+            <div class="q-prompt">you → claude</div>
+            <div class="q-text">"Create a project for the Meridian rebrand, client is Rebecca Chen, target close Q2"</div>
+            <div class="q-response">Project created: Meridian Rebrand · Client: Rebecca Chen (linked from CRM) · Target: Q2 2026 · Status: Active</div>
+          </div>
+          <div class="query-block reveal">
+            <div class="q-prompt">you → claude</div>
+            <div class="q-text">"Mark the proposal task complete, add a blocker: waiting on legal review"</div>
+            <div class="q-response">Proposal task marked complete. Blocker added: legal review pending. Project health updated to At Risk.</div>
+          </div>
+          <div class="query-block reveal">
+            <div class="q-prompt">you → claude</div>
+            <div class="q-text">"What's the status on everything in flight right now?"</div>
+            <div class="q-response">4 active projects. 2 need attention: Meridian (blocker: legal, client contact 4 days ago) and Summit (no activity in 11 days).</div>
+          </div>
+          <div class="query-block reveal">
+            <div class="q-prompt">you → claude</div>
+            <div class="q-text">"What projects is Marcus involved in?"</div>
+            <div class="q-response">Marcus Webb is linked to 1 project: Meridian Rebrand (Active). He's listed as primary stakeholder. 2 open commitments to him.</div>
+          </div>
+          <div class="query-block reveal">
+            <div class="q-prompt">you → claude</div>
+            <div class="q-text">"Generate a full project brief for Meridian"</div>
+            <div class="q-response">Generating brief from all connected data: CRM history, emails, meeting notes, decision log, journal sentiment arc…</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SECTION 3: What a project contains -->
+  <section class="section">
+    <div class="page-wrap">
+      <p class="section-num reveal">03 — What a project contains</p>
+      <h2 class="section-title reveal">
+        Everything in one place.<br><em>Connected to the people in it.</em>
+      </h2>
+      <div class="contents-grid reveal">
+        <div class="contents-item">
+          <div class="contents-item-label">Status, milestones, tasks, blockers</div>
+          <div class="contents-item-desc">The operational layer. What's been done, what's stuck, what's next. Updated in natural language or structured commands.</div>
+        </div>
+        <div class="contents-item">
+          <div class="contents-item-label">Linked contacts</div>
+          <div class="contents-item-desc">Client, stakeholders, internal team — pulled from your CRM. Their relationship scores and open commitments are visible from the project view.</div>
+        </div>
+        <div class="contents-item">
+          <div class="contents-item-label">Related emails and meeting notes</div>
+          <div class="contents-item-desc">Gmail imports and meeting transcripts that mention this project auto-link. Communication history attached to the work.</div>
+        </div>
+        <div class="contents-item">
+          <div class="contents-item-label">Decision history</div>
+          <div class="contents-item-desc">Why you made the calls you made. Logged as you go or imported from transcripts. Irreplaceable context when a decision gets challenged months later.</div>
+        </div>
+        <div class="contents-item">
+          <div class="contents-item-label">Journal sentiment arc</div>
+          <div class="contents-item-desc">How you've been feeling about this project over time, derived from your journal entries. Patterns emerge before they become problems.</div>
+        </div>
+        <div class="contents-item">
+          <div class="contents-item-label">Days since last activity</div>
+          <div class="contents-item-desc">A number that surfaces projects going dark. When a client engagement hasn't been touched in two weeks, the system tells you before you wonder.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SECTION 4: The full project brief -->
+  <section class="section">
+    <div class="page-wrap">
+      <div class="narrow">
+        <p class="section-num reveal">04 — The full project brief</p>
+        <h2 class="section-title reveal">Not a summary. <em>A synthesis.</em></h2>
+        <div class="section-body reveal">
+          <p>
+            Ask Claude to generate a project brief and it doesn't summarize what you manually entered.
+            It synthesizes everything the system knows about the engagement.
+          </p>
+        </div>
+        <div class="brief-box reveal">
+          <div class="brief-box-label">What goes into a generated brief</div>
+          <div class="brief-box-body">
+            <p>
+              <strong>Client relationship history</strong> from CRM — how long you've known them,
+              how the relationship has trended, any open commitments.
+            </p>
+            <p>
+              <strong>Recent communications</strong> — the last email thread, the most recent
+              meeting notes, what was said and what was decided.
+            </p>
+            <p>
+              <strong>Current blockers</strong> — what's stuck, why it's stuck, how long it's
+              been stuck.
+            </p>
+            <p>
+              <strong>Decision log</strong> — every call you've recorded for this project,
+              with rationale.
+            </p>
+            <p>
+              <strong>Journal sentiment</strong> — a candid read on how you've been feeling
+              about the project, derived from private entries you logged at the time.
+            </p>
+          </div>
+          <div class="brief-sources">
+            <span class="source-tag">CRM history</span>
+            <span class="source-tag">Email imports</span>
+            <span class="source-tag">Meeting notes</span>
+            <span class="source-tag">Decision log</span>
+            <span class="source-tag">Journal entries</span>
+            <span class="source-tag">Open commitments</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SECTION 5: Example output -->
+  <section class="section">
+    <div class="page-wrap">
+      <div class="narrow">
+        <p class="section-num reveal">05 — Example output</p>
+        <h2 class="section-title reveal">What a project status panel looks like</h2>
+        <div class="section-body reveal">
+          <p>
+            Ask for any project and this is what surfaces — operational detail and
+            relationship context together.
+          </p>
+        </div>
+
+        <div class="project-card reveal">
+          <div class="project-card-header">
+            <div>
+              <div class="project-card-name">Meridian Rebrand</div>
+              <div class="project-card-client">Client: Rebecca Chen · Meridian Capital</div>
+            </div>
+            <div class="status-badge status-active">Active</div>
+          </div>
+
+          <div class="health-row">
+            <div class="health-label">Health — At risk</div>
+            <div class="health-text">No client contact in 4 days · 2 open commitments to Rebecca · Legal blocker unresolved 6 days</div>
+          </div>
+
+          <div class="card-field-list">
+            <div class="card-field">
+              <div class="field-label">Milestone</div>
+              <div class="field-value">Proposal submitted <span style="color: var(--ink-4); font-size: 13px;">· Feb 18</span></div>
+            </div>
+            <div class="card-field">
+              <div class="field-label">Current blocker</div>
+              <div class="field-value warning">Legal review pending — Rebecca waiting on internal sign-off</div>
+            </div>
+            <div class="card-field">
+              <div class="field-label">Open commitments</div>
+              <div class="field-value">Send revised pricing · Intro Rebecca to Jamie at Lightspeed</div>
+            </div>
+            <div class="card-field">
+              <div class="field-label">Last activity</div>
+              <div class="field-value">Feb 18 · Call with Marcus — confirmed scope, awaiting legal</div>
+            </div>
+            <div class="card-field">
+              <div class="field-label">Journal sentiment</div>
+              <div class="field-value">Positive through Feb 11, neutral since — no entries in 7 days</div>
+            </div>
+            <div class="card-field">
+              <div class="field-label">Target close</div>
+              <div class="field-value highlight">Q2 2026</div>
+            </div>
+          </div>
+
+          <div class="next-action-row">
+            <div class="next-action-label">Next action</div>
+            <div class="next-action-text">Follow up with Rebecca — 4 days since last contact, 2 open commitments outstanding</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="cta-section">
+    <div class="page-wrap">
+      <div class="cta-label reveal">Ready to start</div>
+      <h2 class="cta-headline reveal">
+        Your work, your relationships,<br><em>finally in the same place.</em>
+      </h2>
+      <div class="cta-buttons reveal">
+        <a href="https://softwareof.you" class="btn-primary">Get SoY — $149 →</a>
+        <a href="gmail.html" class="btn-ghost">Next: Gmail module →</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="footer-inner">
+      <span class="footer-copy">© 2026 Software of You · Built by Kerry Morrison</span>
+      <a href="https://softwareof.you" class="footer-link">softwareof.you</a>
+    
+    <a class="footer-email" data-u="kerry" data-d="softwareof.you" href="#" onclick="this.href='mailto:'+this.dataset.u+'@'+this.dataset.d;return false;" title="Email Kerry">kerry<span aria-hidden="true" style="display:none">&#8203;</span>&#64;softwareof.you</a>
+</div>
+  
+  </footer>
+
+  <script>
+    // Scroll reveals with IntersectionObserver
+    if ('IntersectionObserver' in window) {
+      const els = document.querySelectorAll('.reveal');
+      els.forEach(el => el.classList.add('reveal-ready'));
+
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('in');
+            observer.unobserve(entry.target);
+          }
+        });
+      }, {
+        threshold: 0.12,
+        rootMargin: '0px 0px -40px 0px'
+      });
+
+      els.forEach(el => observer.observe(el));
+    } else {
+      // Fallback: show all
+      document.querySelectorAll('.reveal').forEach(el => el.classList.add('in'));
+    }
+  </script>
+
+<script>
+(function() {
+  function closeAll() {
+    document.querySelectorAll('.nav__item--has-sub.open').forEach(function(el) {
+      el.classList.remove('open');
+    });
+  }
+  document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.nav__item--has-sub > a').forEach(function(trigger) {
+      trigger.addEventListener('click', function(e) {
+        e.preventDefault();
+        var item = trigger.parentElement;
+        var isOpen = item.classList.contains('open');
+        closeAll();
+        if (!isOpen) item.classList.add('open');
+      });
+    });
+    document.addEventListener('click', function(e) {
+      if (!e.target.closest('.nav__item--has-sub')) closeAll();
+    });
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') closeAll();
+    });
+  });
+})();
+</script>
+</body>
+</html>

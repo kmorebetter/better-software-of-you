@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zoe Hartley — Software of You</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'system-ui', 'sans-serif'] }
+                }
+            }
+        }
+    </script>
+    <style>
+        .nav-item { display: flex; align-items: center; gap: 0.375rem; padding: 0.375rem 0.75rem; border-radius: 0.5rem; font-size: 0.8125rem; color: #71717a; white-space: nowrap; transition: all 0.15s; text-decoration: none; }
+        .nav-item:hover { background: #f4f4f5; color: #18181b; }
+        .nav-item.active { background: #f4f4f5; color: #18181b; font-weight: 600; }
+        .nav-badge { font-size: 0.6875rem; background: #e4e4e7; color: #52525b; padding: 0.0625rem 0.375rem; border-radius: 9999px; font-weight: 500; }
+        .nav-item.active .nav-badge, .nav-dropdown-item.active .nav-badge { background: #3b82f6; color: white; }
+        .nav-group { position: relative; }
+        .nav-group-label { display: flex; align-items: center; gap: 0.25rem; padding: 0.375rem 0.75rem; border-radius: 0.5rem; font-size: 0.8125rem; color: #71717a; cursor: pointer; white-space: nowrap; transition: all 0.15s; user-select: none; }
+        .nav-group-label:hover, .nav-group.active > .nav-group-label { background: #f4f4f5; color: #18181b; }
+        .nav-group.active > .nav-group-label { font-weight: 600; }
+        .nav-chevron { transition: transform 0.15s; opacity: 0.5; }
+        .nav-group:hover .nav-chevron, .nav-group.open .nav-chevron { opacity: 1; }
+        .nav-group.open .nav-chevron { transform: rotate(180deg); }
+        .nav-dropdown { display: none; position: absolute; top: 100%; left: 0; margin-top: 0.25rem; min-width: 10rem; background: white; border: 1px solid #e4e4e7; border-radius: 0.75rem; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -2px rgba(0,0,0,0.1); padding: 0.375rem; z-index: 50; }
+        .nav-group:hover > .nav-dropdown { display: block; }
+        .nav-group.open > .nav-dropdown { display: block; }
+        .nav-dropdown-item { display: flex; align-items: center; gap: 0.375rem; padding: 0.375rem 0.625rem; border-radius: 0.375rem; font-size: 0.8125rem; color: #71717a; white-space: nowrap; transition: all 0.15s; text-decoration: none; }
+        .nav-dropdown-item:hover { background: #f4f4f5; color: #18181b; }
+        .nav-dropdown-item.active { background: #eff6ff; color: #1d4ed8; font-weight: 600; }
+    </style>
+</head>
+<body class="bg-zinc-50 text-zinc-900 font-sans antialiased">
+
+    <!-- Navigation -->
+    <nav class="bg-white border-b border-zinc-200 mb-6">
+        <div class="max-w-6xl mx-auto px-4">
+            <div class="flex items-center gap-1 py-3">
+                <a href="dashboard.html" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-semibold text-zinc-900 hover:bg-zinc-50 transition-colors shrink-0">
+                    <i data-lucide="hexagon" class="w-4 h-4"></i> SoY
+                </a>
+                <span class="w-px h-5 bg-zinc-200 mx-1"></span>
+                <a href="dashboard.html" class="nav-item"><i data-lucide="layout-dashboard" class="w-3.5 h-3.5"></i> Dashboard</a>
+                <div class="nav-group active" onclick="this.classList.toggle('open')">
+                    <div class="nav-group-label"><span>People</span><i data-lucide="chevron-down" class="w-3 h-3 nav-chevron"></i></div>
+                    <div class="nav-dropdown">
+                        <a href="contacts.html" class="nav-dropdown-item active"><i data-lucide="users" class="w-3.5 h-3.5"></i> Contacts <span class="nav-badge">7</span></a>
+                        <a href="network-map.html" class="nav-dropdown-item"><i data-lucide="share-2" class="w-3.5 h-3.5"></i> Network</a>
+                    </div>
+                </div>
+                <div class="nav-group" onclick="this.classList.toggle('open')">
+                    <div class="nav-group-label"><span>Comms</span><i data-lucide="chevron-down" class="w-3 h-3 nav-chevron"></i></div>
+                    <div class="nav-dropdown">
+                        <a href="email-hub.html" class="nav-dropdown-item"><i data-lucide="mail" class="w-3.5 h-3.5"></i> Email <span class="nav-badge">58</span></a>
+                        <a href="week-view.html" class="nav-dropdown-item"><i data-lucide="calendar" class="w-3.5 h-3.5"></i> Calendar <span class="nav-badge">29</span></a>
+                    </div>
+                </div>
+                <div class="nav-group" onclick="this.classList.toggle('open')">
+                    <div class="nav-group-label"><span>Intelligence</span><i data-lucide="chevron-down" class="w-3 h-3 nav-chevron"></i></div>
+                    <div class="nav-dropdown">
+                        <a href="conversations.html" class="nav-dropdown-item"><i data-lucide="message-square" class="w-3.5 h-3.5"></i> Conversations <span class="nav-badge">3</span></a>
+                        <a href="decision-journal.html" class="nav-dropdown-item"><i data-lucide="git-branch" class="w-3.5 h-3.5"></i> Decisions <span class="nav-badge">5</span></a>
+                        <a href="journal.html" class="nav-dropdown-item"><i data-lucide="book-open" class="w-3.5 h-3.5"></i> Journal <span class="nav-badge">1</span></a>
+                        <a href="notes.html" class="nav-dropdown-item"><i data-lucide="sticky-note" class="w-3.5 h-3.5"></i> Notes</a>
+                    </div>
+                </div>
+            </div>
+            <div class="flex items-center justify-between pb-3 -mt-1">
+                <div class="flex items-center gap-1.5 text-sm">
+                    <a href="dashboard.html" class="text-zinc-400 hover:text-zinc-600">Dashboard</a>
+                    <span class="text-zinc-300">&rsaquo;</span>
+                    <a href="contacts.html" class="text-zinc-400 hover:text-zinc-600">Contacts</a>
+                    <span class="text-zinc-300">&rsaquo;</span>
+                    <span class="text-zinc-700 font-medium">Zoe Hartley</span>
+                </div>
+                <div class="flex items-center gap-1.5">
+                    <a href="contact-daniel-byrne.html" class="px-2 py-0.5 rounded text-xs bg-zinc-100 text-zinc-500 hover:bg-zinc-200 hover:text-zinc-700 transition-colors">Marcus Webb</a>
+                    <a href="contact-benjis.html" class="px-2 py-0.5 rounded text-xs bg-zinc-100 text-zinc-500 hover:bg-zinc-200 hover:text-zinc-700 transition-colors">Verdant Co</a>
+                    <a href="contact-jp-moya.html" class="px-2 py-0.5 rounded text-xs bg-zinc-100 text-zinc-500 hover:bg-zinc-200 hover:text-zinc-700 transition-colors">Sofia Reyes</a>
+                    <a href="contact-emma-cuddy.html" class="px-2 py-0.5 rounded text-xs bg-zinc-100 text-zinc-500 hover:bg-zinc-200 hover:text-zinc-700 transition-colors">Priya Nair</a>
+                    <a href="contact-nawid-fatahi.html" class="px-2 py-0.5 rounded text-xs bg-zinc-100 text-zinc-500 hover:bg-zinc-200 hover:text-zinc-700 transition-colors">Tariq Hassan</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pb-8">
+
+        <!-- Contact Header -->
+        <div class="bg-white rounded-xl shadow-sm border border-zinc-200 p-6 mb-6">
+            <div class="flex items-start justify-between">
+                <div class="flex items-start gap-5">
+                    <div class="w-16 h-16 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
+                        <span class="text-2xl font-bold text-blue-700">GP</span>
+                    </div>
+                    <div>
+                        <h1 class="text-2xl font-bold">Zoe Hartley</h1>
+                        <p class="text-zinc-500 mt-0.5">Finance &amp; Admin at <a href="contact-benjis.html" class="font-medium text-blue-600 hover:text-blue-800 hover:underline">Verdant Co</a></p>
+                        <div class="flex items-center gap-4 mt-3">
+                            <div class="flex items-center gap-1.5 text-sm text-zinc-500">
+                                <i data-lucide="mail" class="w-4 h-4"></i>
+                                <span>zoe@verdantco.com</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="flex items-center gap-2">
+                    <span class="px-2.5 py-1 rounded-full text-xs font-medium bg-green-50 text-green-700">Active</span>
+                    <span class="px-2.5 py-1 rounded-full text-xs font-medium bg-zinc-100 text-zinc-600">Professional</span>
+                    <span class="px-2.5 py-1 rounded-full text-xs font-medium bg-red-50 text-red-700">Cooling</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Grid -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+            <!-- Left Column -->
+            <div class="lg:col-span-2 space-y-6">
+
+                <!-- Relationship Context -->
+                <div class="bg-white rounded-xl shadow-sm border border-zinc-200 p-6">
+                    <div class="flex items-center gap-2 mb-4">
+                        <i data-lucide="link" class="w-5 h-5 text-zinc-400"></i>
+                        <h2 class="text-lg font-semibold">Relationship Context</h2>
+                    </div>
+                    <div class="bg-red-50 border border-red-100 rounded-lg p-4 mb-4">
+                        <div class="flex items-start gap-2">
+                            <i data-lucide="alert-triangle" class="w-4 h-4 text-red-600 mt-0.5 flex-shrink-0"></i>
+                            <div>
+                                <p class="text-sm font-medium text-red-800">Transitioning out end of February</p>
+                                <p class="text-xs text-red-600 mt-0.5">~8 days remaining. Marissa is the intended replacement. Overlap period is critical for handoff.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="space-y-3 text-sm text-zinc-600 leading-relaxed">
+                        <p>Gigi handles payroll, invoicing, receipts, and bookkeeping at Verdant Co. She is <span class="font-medium text-zinc-800">transitioning out at the end of February 2026</span>, which creates urgency around the finance hire (Marissa) and knowledge transfer.</p>
+                        <p>The relationship is naturally winding down given her departure. Her participation in the weekly kickoff was minimal (7% talk ratio &mdash; the lowest on the team), but she remained responsive on deliverables. She was actively managing project tool tasks, approving access requests, and organizing Finance SOPs even in her final weeks.</p>
+                        <p>There are concerns about bookkeeping quality during her tenure &mdash; the company lost $3K last year, and the actual loss could be higher. The trust-but-verify decision for Marissa's handover includes bringing in an external financial consultant to review the books periodically once things stabilize.</p>
+                        <p>Despite the wind-down, Gigi still has 4 open commitments from the kickoff: canceling ChatGPT subscriptions, sending Emma the BMO account number, providing interview questions for Marissa, and filing Maya's record of employment. These are all time-sensitive given her departure.</p>
+                    </div>
+                </div>
+
+                <!-- Conversation Intelligence -->
+                <div class="bg-white rounded-xl shadow-sm border border-zinc-200 p-6">
+                    <div class="flex items-center gap-2 mb-4">
+                        <i data-lucide="message-square" class="w-5 h-5 text-zinc-400"></i>
+                        <h2 class="text-lg font-semibold">Conversation Intelligence</h2>
+                    </div>
+                    <div class="p-4 bg-zinc-50 rounded-lg mb-4">
+                        <div class="flex items-center gap-2 mb-2">
+                            <p class="text-sm font-medium text-zinc-800">Weekly Kickoff &mdash; Verdant Co</p>
+                            <span class="text-xs text-zinc-400">Feb 17 &middot; 64 min</span>
+                        </div>
+                        <p class="text-sm text-zinc-600">Gigi participated with limited scope &mdash; handled finance-specific items (ChatGPT subscriptions, BMO account, interview questions, Maya's ROE). Minimal verbal contribution but still responsive on action items.</p>
+                    </div>
+                    <div class="flex gap-3">
+                        <div class="w-6 h-6 rounded-full bg-amber-50 flex items-center justify-center flex-shrink-0 mt-0.5">
+                            <i data-lucide="alert-circle" class="w-3 h-3 text-amber-600"></i>
+                        </div>
+                        <div>
+                            <p class="text-xs font-medium text-zinc-500 uppercase tracking-wide mb-0.5">Relationship Pulse</p>
+                            <p class="text-sm text-zinc-600">GG is in wind-down mode &mdash; transitioning out end of February. Limited participation but still responsive. Urgency around finding her replacement is high. The relationship is naturally concluding with her departure.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column -->
+            <div class="space-y-6">
+
+                <!-- Relationship Score -->
+                <div class="bg-white rounded-xl shadow-sm border border-zinc-200 p-5">
+                    <div class="flex items-center gap-2 mb-4">
+                        <i data-lucide="activity" class="w-5 h-5 text-zinc-400"></i>
+                        <h3 class="text-sm font-semibold">Relationship Score</h3>
+                    </div>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div class="rounded-lg bg-zinc-50 p-3 text-center">
+                            <p class="text-lg font-bold text-zinc-800">1.0/wk</p>
+                            <p class="text-xs text-zinc-500">Meeting Freq</p>
+                        </div>
+                        <div class="rounded-lg bg-zinc-50 p-3 text-center">
+                            <p class="text-lg font-bold text-zinc-800">7%</p>
+                            <p class="text-xs text-zinc-500">Talk Ratio</p>
+                        </div>
+                        <div class="rounded-lg bg-zinc-50 p-3 text-center">
+                            <p class="text-lg font-bold text-zinc-800">90%</p>
+                            <p class="text-xs text-zinc-500">Follow-through</p>
+                        </div>
+                        <div class="rounded-lg bg-zinc-50 p-3 text-center">
+                            <p class="text-lg font-bold text-zinc-800">30%</p>
+                            <p class="text-xs text-zinc-500">Topic Diversity</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Open Commitments -->
+                <div class="bg-white rounded-xl shadow-sm border border-zinc-200 p-5">
+                    <div class="flex items-center gap-2 mb-4">
+                        <i data-lucide="check-square" class="w-5 h-5 text-zinc-400"></i>
+                        <h3 class="text-sm font-semibold">Gigi's Open Commitments</h3>
+                        <span class="text-xs text-red-500 ml-auto font-medium">Time-sensitive</span>
+                    </div>
+                    <div class="space-y-2">
+                        <div class="flex items-start gap-2 text-sm">
+                            <i data-lucide="square" class="w-4 h-4 text-red-400 mt-0.5 flex-shrink-0"></i>
+                            <span>Cancel all ChatGPT subscriptions &mdash; kill every receipt</span>
+                        </div>
+                        <div class="flex items-start gap-2 text-sm">
+                            <i data-lucide="square" class="w-4 h-4 text-red-400 mt-0.5 flex-shrink-0"></i>
+                            <span>Send Emma BMO account number for check deposits</span>
+                        </div>
+                        <div class="flex items-start gap-2 text-sm">
+                            <i data-lucide="square" class="w-4 h-4 text-red-400 mt-0.5 flex-shrink-0"></i>
+                            <span>Send interview questions to Emma for Marissa</span>
+                        </div>
+                        <div class="flex items-start gap-2 text-sm">
+                            <i data-lucide="square" class="w-4 h-4 text-red-400 mt-0.5 flex-shrink-0"></i>
+                            <span>File Maya's record of employment after last payroll</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- About -->
+                <div class="bg-white rounded-xl shadow-sm border border-zinc-200 p-5">
+                    <div class="flex items-center gap-2 mb-4">
+                        <i data-lucide="user" class="w-5 h-5 text-zinc-400"></i>
+                        <h3 class="text-sm font-semibold">About Gigi</h3>
+                    </div>
+                    <div class="space-y-2 text-sm text-zinc-600">
+                        <p>Finance &amp; Admin at Verdant Co. Handles payroll, invoicing, receipts, and bookkeeping.</p>
+                        <p>Transitioning out end of February 2026. Replacement (Marissa) is being hired urgently to ensure overlap. Gigi has been organizing Finance SOPs in project tool for knowledge transfer.</p>
+                        <p>Low verbal contribution in meetings but reliable on deliverables. Finance-focused scope &mdash; minimal involvement in operational or strategic discussions.</p>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <footer class="mt-8 pt-4 border-t border-zinc-100 text-center">
+            <p class="text-xs text-zinc-400">Generated by Software of You &middot; February 20, 2026 at 3:30 PM</p>
+        </footer>
+
+    </div>
+
+    <script>lucide.createIcons();</script>
+<!-- DEMO BANNER -->
+<div id="demo-banner" style="position:fixed;bottom:0;left:0;right:0;z-index:9999;background:#1A4731;color:white;font-family:'DM Mono',monospace;font-size:12px;letter-spacing:0.04em;display:flex;align-items:center;justify-content:center;gap:24px;padding:10px 24px;box-shadow:0 -2px 16px rgba(0,0,0,0.2);">
+  <span style="opacity:0.7;">✦ LIVE DEMO — anonymized data</span>
+  <span style="opacity:0.4;">|</span>
+  <span>This is what Software of You looks like with 3 months of real use.</span>
+  <span style="opacity:0.4;">|</span>
+  <a href="https://softwareof.you" style="color:#a8e6c0;text-decoration:none;font-weight:500;white-space:nowrap;" target="_top">Get it for yourself →</a>
+  <button onclick="document.getElementById('demo-banner').style.display='none'" style="margin-left:8px;background:none;border:none;color:rgba(255,255,255,0.4);cursor:pointer;font-size:16px;line-height:1;padding:0 4px;" title="Dismiss">×</button>
+</div>
+<div style="height:44px;"></div><!-- spacer so banner doesn't cover content -->
+</body>
+</html>

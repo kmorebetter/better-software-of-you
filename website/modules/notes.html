@@ -1,0 +1,1156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Notes Module — Software of You</title>
+  <meta name="description" content="Standalone notes with hashtag tagging and automatic cross-referencing. First-class content, not just attachments." />
+  <meta name="robots" content="index, follow">
+  <link rel="canonical" href="https://softwareof.you/modules/notes.html">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://softwareof.you/modules/notes.html">
+  <meta property="og:title" content="Notes Module — Software of You">
+  <meta property="og:description" content="Standalone notes with hashtag tagging and automatic cross-referencing to people and projects. First-class content, not just attachments. Module 08 of Software of You.">
+  <meta property="og:site_name" content="Software of You">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Notes Module — Software of You">
+  <meta name="twitter:description" content="Standalone notes with hashtag tagging and automatic cross-referencing. First-class content, not just attachments.">
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"WebPage","url":"https://softwareof.you/modules/notes.html","name":"Notes Module — Software of You","description":"Standalone notes with hashtag tagging and automatic cross-referencing to people and projects. First-class content, not just attachments. Module 08 of Software of You.","isPartOf":{"@type":"WebSite","url":"https://softwareof.you/","name":"Software of You"},"about":{"@type":"SoftwareApplication","name":"Software of You","offers":{"@type":"Offer","price":"149","priceCurrency":"USD"}}}</script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300;1,400;1,500&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300;1,9..40,400;1,9..40,500&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet" />
+  <style>
+    /* ─── TOKENS ─────────────────────────────────────────────────── */
+    :root {
+      --bone:       #FAF9F6;
+      --bone-mid:   #F2F0EB;
+      --bone-deep:  #E8E4DC;
+      --ink:        #0F0E0C;
+      --ink-2:      #2C2A26;
+      --ink-3:      #6B6860;
+      --ink-4:      #A8A49C;
+      --ink-5:      #D4D0C8;
+      --forest:     #1A4731;
+      --forest-mid: #245E41;
+      --forest-pale:#EBF2EE;
+      --forest-bg:  #F2F7F4;
+      --ember:      #A63325;
+      --ember-pale: #FBF2F0;
+      --rule:       rgba(15,14,12,0.08);
+      --rule-mid:   rgba(15,14,12,0.13);
+      --rule-heavy: rgba(15,14,12,0.22);
+    }
+
+    /* ─── RESET ─────────────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      background: var(--bone);
+      color: var(--ink);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 17px;
+      line-height: 1.65;
+      -webkit-font-smoothing: antialiased;
+    }
+    a { color: inherit; text-decoration: none; }
+    img { display: block; max-width: 100%; }
+    ul { list-style: none; }
+
+    /* ─── NAV ────────────────────────────────────────────────────── */
+    .nav { position:fixed; top:0; left:0; right:0; z-index:100; background:rgba(250,249,246,0.92); backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px); border-bottom:1px solid var(--rule); }
+    .nav__inner { max-width:1200px; margin:0 auto; padding:0 48px; height:64px; display:flex; align-items:center; justify-content:space-between; }
+    .nav__logo { font-family:'DM Serif Display',Georgia,serif; font-size:17px; color:var(--ink); text-decoration:none; letter-spacing:0.01em; }
+    .nav__logo span { font-style:italic; color:var(--forest); }
+    .nav__links { display:flex; align-items:center; gap:28px; list-style:none; }
+    .nav__links a { font-family:'DM Mono',monospace; font-size:11px; letter-spacing:0.08em; text-transform:uppercase; color:var(--ink-3); text-decoration:none; transition:color 0.18s; }
+    .nav__links a:hover, .nav__links a.active { color:var(--ink); }
+    .nav__item--has-sub { position:relative; }
+    .nav__item--has-sub > a { cursor: pointer; }
+    .nav__item--has-sub > a::after { content:''; display:inline-block; width:5px; height:5px; border-right:1.5px solid currentColor; border-bottom:1.5px solid currentColor; transform:rotate(45deg) translateY(-2px); margin-left:6px; opacity:0.5; transition:transform 0.18s; }
+    .nav__sub { position:absolute; top:calc(100% + 8px); left:50%; transform:translateX(-50%) translateY(-4px); background:white; border:1px solid var(--rule-heavy); min-width:220px; padding:8px 0; list-style:none; opacity:0; visibility:hidden; pointer-events:none; transition:opacity 0.16s,transform 0.16s; box-shadow:0 8px 24px rgba(0,0,0,0.08); }
+    .nav__item--has-sub.open > a::after { transform:rotate(225deg) translateY(-2px); }
+    .nav__item--has-sub.open .nav__sub { opacity:1; visibility:visible; pointer-events:auto; transform:translateX(-50%) translateY(0); }
+
+    .nav__sub li a { display:flex; align-items:center; gap:10px; padding:9px 20px; font-family:'DM Sans',sans-serif; font-size:13px; letter-spacing:0; text-transform:none; color:var(--ink-2); transition:background 0.12s; }
+    .nav__sub li a:hover { background:var(--bone); color:var(--ink); }
+    .nav__sub__num { font-family:'DM Mono',monospace; font-size:10px; color:var(--ink-5); min-width:16px; }
+    .nav__sub__divider { height:1px; background:var(--rule); margin:6px 20px; }
+    .nav__right { display:flex; align-items:center; gap:36px; }
+    .nav__cta { font-family:'DM Sans',sans-serif; font-size:13px; font-weight:500; letter-spacing:0.04em; color:var(--bone); background:var(--forest); padding:10px 24px; text-decoration:none; border-radius:2px; transition:background 0.18s,transform 0.14s; }
+    .nav__cta:hover { background:var(--forest-mid); transform:translateY(-1px); }
+
+    /* ─── BREADCRUMB ─────────────────────────────────────────────── */
+    .breadcrumb {
+      margin-top: 64px;
+      padding: 16px 0;
+      border-bottom: 1px solid var(--rule);
+    }
+    .breadcrumb-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 32px;
+    }
+    .breadcrumb a {
+      font-family: 'DM Mono', monospace;
+      font-size: 12px;
+      color: var(--ink-3);
+      letter-spacing: 0.04em;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: color 0.2s;
+    }
+    .breadcrumb a:hover { color: var(--forest); }
+    .breadcrumb-arrow { font-size: 14px; }
+
+    /* ─── LAYOUT ─────────────────────────────────────────────────── */
+    .page-wrap {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 32px;
+    }
+    .narrow {
+      max-width: 720px;
+    }
+    .section {
+      padding: 96px 0;
+      border-bottom: 1px solid var(--rule);
+    }
+    .section:last-of-type { border-bottom: none; }
+
+    /* ─── HERO ───────────────────────────────────────────────────── */
+    .hero {
+      padding-top: 64px;
+      min-height: 72vh;
+      background: var(--forest);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+      background-size: 40px 40px;
+      pointer-events: none;
+    }
+    .hero-ghost {
+      position: absolute;
+      right: -20px;
+      bottom: -60px;
+      font-family: 'DM Serif Display', serif;
+      font-style: italic;
+      font-size: clamp(200px, 28vw, 380px);
+      line-height: 1;
+      color: rgba(255,255,255,0.04);
+      pointer-events: none;
+      user-select: none;
+      letter-spacing: -0.04em;
+    }
+    .module-label {
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: rgba(235,242,238,0.55);
+      margin-bottom: 24px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .module-label::before {
+      content: '';
+      display: inline-block;
+      width: 24px;
+      height: 1px;
+      background: rgba(235,242,238,0.4);
+    }
+    .hero-headline {
+      font-family: 'DM Serif Display', serif;
+      font-size: clamp(40px, 6vw, 64px);
+      line-height: 1.1;
+      letter-spacing: -0.02em;
+      color: var(--forest-pale);
+      max-width: 800px;
+      margin-bottom: 24px;
+    }
+    .hero-headline em {
+      font-style: italic;
+      color: #ffffff;
+    }
+    .hero-sub {
+      font-family: 'DM Serif Display', serif;
+      font-style: italic;
+      font-size: 22px;
+      color: rgba(235,242,238,0.65);
+      max-width: 600px;
+      line-height: 1.5;
+    }
+    .hero .page-wrap {
+      padding-top: 80px;
+      padding-bottom: 96px;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* ─── SECTION HEADERS ────────────────────────────────────────── */
+    .section-num {
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--ink-4);
+      margin-bottom: 16px;
+    }
+    .section-title {
+      font-family: 'DM Serif Display', serif;
+      font-size: clamp(28px, 4vw, 40px);
+      line-height: 1.15;
+      letter-spacing: -0.015em;
+      color: var(--ink);
+      margin-bottom: 24px;
+    }
+    .section-title em {
+      font-style: italic;
+      color: var(--forest);
+    }
+    .section-body {
+      color: var(--ink-2);
+      font-size: 17px;
+      line-height: 1.75;
+      max-width: 640px;
+    }
+    .section-body p + p { margin-top: 16px; }
+
+    /* ─── QUERY BLOCKS ───────────────────────────────────────────── */
+    .query-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-top: 40px;
+    }
+    .query-block {
+      background: var(--ink-2);
+      color: var(--forest-pale);
+      font-family: 'DM Mono', monospace;
+      font-size: 14px;
+      padding: 16px 20px;
+      border-radius: 4px;
+      border-left: 3px solid var(--forest);
+      line-height: 1.5;
+    }
+    .query-block .q-prompt {
+      color: var(--ink-4);
+      font-size: 11px;
+      letter-spacing: 0.06em;
+      margin-bottom: 6px;
+    }
+    .query-block .q-text {
+      color: var(--forest-pale);
+    }
+    .query-block .q-response {
+      margin-top: 8px;
+      color: var(--ink-5);
+      font-size: 14px;
+      font-style: italic;
+      padding-top: 8px;
+      border-top: 1px solid rgba(255,255,255,0.06);
+    }
+
+    /* ─── NOTE CARD ──────────────────────────────────────────────── */
+    .note-card {
+      background: var(--forest-bg);
+      border: 1px solid var(--forest-pale);
+      border-top: 3px solid var(--forest);
+      padding: 32px 36px;
+      margin-top: 40px;
+      max-width: 640px;
+      border-radius: 2px;
+      position: relative;
+    }
+    .note-card-meta {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+    }
+    .note-card-date {
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 0.08em;
+      color: var(--ink-4);
+    }
+    .note-pinned {
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--forest);
+      background: var(--forest-pale);
+      padding: 3px 8px;
+      border-radius: 2px;
+      border: 1px solid rgba(26,71,49,0.2);
+    }
+    .note-card-body {
+      font-size: 16px;
+      color: var(--ink-2);
+      line-height: 1.7;
+      margin-bottom: 24px;
+    }
+    .note-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 24px;
+    }
+    .hash-pill {
+      font-family: 'DM Mono', monospace;
+      font-size: 14px;
+      background: var(--forest-pale);
+      color: var(--forest);
+      padding: 4px 10px;
+      border-radius: 2px;
+      border: 1px solid rgba(26,71,49,0.15);
+    }
+    .note-links {
+      padding-top: 20px;
+      border-top: 1px solid var(--forest-pale);
+    }
+    .note-links-row {
+      display: flex;
+      align-items: flex-start;
+      gap: 16px;
+      margin-bottom: 12px;
+    }
+    .note-links-row:last-child { margin-bottom: 0; }
+    .note-links-label {
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--ink-4);
+      white-space: nowrap;
+      padding-top: 4px;
+      min-width: 120px;
+    }
+    .note-linked-items {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+    .linked-contact {
+      font-family: 'DM Mono', monospace;
+      font-size: 14px;
+      color: var(--forest);
+      background: var(--bone);
+      border: 1px solid var(--forest-pale);
+      padding: 3px 10px;
+      border-radius: 2px;
+    }
+    .linked-project {
+      font-family: 'DM Mono', monospace;
+      font-size: 14px;
+      color: var(--ink-2);
+      background: var(--bone);
+      border: 1px solid var(--rule-mid);
+      padding: 3px 10px;
+      border-radius: 2px;
+    }
+
+    /* ─── COMPARISON GRID ─────────────────────────────────────────── */
+    .comparison-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 2px;
+      margin-top: 40px;
+    }
+    @media (max-width: 700px) {
+      .comparison-grid { grid-template-columns: 1fr; }
+    }
+    .comparison-item {
+      padding: 28px 24px;
+      border: 1px solid var(--rule);
+    }
+    .comparison-item.active {
+      background: var(--forest-bg);
+      border-color: var(--forest-pale);
+      border-top: 2px solid var(--forest);
+    }
+    .comparison-item.inactive {
+      background: var(--bone-mid);
+      opacity: 0.75;
+    }
+    .comparison-tool {
+      font-family: 'DM Mono', monospace;
+      font-size: 12px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--ink-4);
+      margin-bottom: 10px;
+    }
+    .comparison-item.active .comparison-tool {
+      color: var(--forest);
+    }
+    .comparison-verdict {
+      font-family: 'DM Serif Display', serif;
+      font-size: 17px;
+      color: var(--ink-2);
+      line-height: 1.4;
+      margin-bottom: 10px;
+    }
+    .comparison-item.active .comparison-verdict {
+      color: var(--ink);
+    }
+    .comparison-note {
+      font-size: 14px;
+      color: var(--ink-4);
+      line-height: 1.55;
+    }
+    .comparison-item.active .comparison-note {
+      color: var(--ink-3);
+    }
+
+    /* ─── TAG TAXONOMY ────────────────────────────────────────────── */
+    .tag-cloud {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 32px;
+      max-width: 600px;
+    }
+    .tag-cloud-pill {
+      font-family: 'DM Mono', monospace;
+      font-size: 14px;
+      background: var(--forest-pale);
+      color: var(--forest);
+      padding: 6px 14px;
+      border-radius: 3px;
+      border: 1px solid rgba(26,71,49,0.15);
+    }
+    .tag-cloud-pill.dim {
+      background: var(--bone-mid);
+      color: var(--ink-4);
+      border-color: var(--rule);
+    }
+
+    /* ─── PIN CALLOUT ─────────────────────────────────────────────── */
+    .pin-box {
+      background: var(--bone-mid);
+      border: 1px solid var(--rule-mid);
+      padding: 28px 32px;
+      margin-top: 40px;
+      max-width: 640px;
+      border-radius: 2px;
+    }
+    .pin-box-label {
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--ink-4);
+      margin-bottom: 14px;
+    }
+    .pin-scenario {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .pin-scenario-item {
+      display: flex;
+      gap: 16px;
+      align-items: flex-start;
+    }
+    .pin-icon {
+      font-family: 'DM Mono', monospace;
+      font-size: 12px;
+      color: var(--forest);
+      background: var(--forest-pale);
+      padding: 3px 8px;
+      border-radius: 2px;
+      white-space: nowrap;
+      margin-top: 2px;
+      border: 1px solid rgba(26,71,49,0.15);
+    }
+    .pin-text {
+      font-size: 15px;
+      color: var(--ink-2);
+      line-height: 1.6;
+    }
+    .pin-text strong {
+      color: var(--ink);
+      font-weight: 600;
+    }
+
+    /* ─── FEATURE GRID ────────────────────────────────────────────── */
+    .feature-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2px;
+      margin-top: 40px;
+    }
+    @media (max-width: 640px) {
+      .feature-grid { grid-template-columns: 1fr; }
+    }
+    .feature-item {
+      background: var(--bone-mid);
+      padding: 24px 28px;
+      border: 1px solid var(--rule);
+    }
+    .feature-item.forest-tint {
+      background: var(--forest-bg);
+      border-color: var(--forest-pale);
+    }
+    .feature-item-label {
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--forest);
+      margin-bottom: 8px;
+    }
+    .feature-item-desc {
+      font-size: 15px;
+      color: var(--ink-3);
+      line-height: 1.6;
+    }
+
+    /* ─── MODULE GRID ─────────────────────────────────────────────── */
+    .module-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 2px;
+      margin-top: 40px;
+    }
+    @media (max-width: 768px) {
+      .module-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+    @media (max-width: 480px) {
+      .module-grid { grid-template-columns: 1fr; }
+    }
+    .module-item {
+      background: var(--bone-mid);
+      padding: 20px 22px;
+      border: 1px solid var(--rule);
+    }
+    .module-item-num {
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--ink-4);
+      margin-bottom: 6px;
+    }
+    .module-item-name {
+      font-family: 'DM Serif Display', serif;
+      font-size: 17px;
+      color: var(--ink-2);
+      line-height: 1.3;
+    }
+    .module-item-name em {
+      font-style: italic;
+      color: var(--forest);
+    }
+
+    /* ─── CTA SECTION ────────────────────────────────────────────── */
+    .cta-section {
+      padding: 80px 0;
+      text-align: center;
+    }
+    .cta-label {
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--ink-4);
+      margin-bottom: 20px;
+    }
+    .cta-headline {
+      font-family: 'DM Serif Display', serif;
+      font-size: clamp(28px, 4vw, 40px);
+      line-height: 1.2;
+      letter-spacing: -0.015em;
+      color: var(--ink);
+      margin-bottom: 32px;
+    }
+    .cta-headline em {
+      font-style: italic;
+      color: var(--forest);
+    }
+    .cta-buttons {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+    .btn-primary {
+      font-family: 'DM Mono', monospace;
+      font-size: 13px;
+      letter-spacing: 0.04em;
+      background: var(--forest);
+      color: var(--bone);
+      padding: 14px 28px;
+      border-radius: 3px;
+      transition: background 0.2s;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .btn-primary:hover { background: var(--forest-mid); }
+    .btn-ghost {
+      font-family: 'DM Mono', monospace;
+      font-size: 13px;
+      letter-spacing: 0.04em;
+      color: var(--ink-3);
+      padding: 14px 0;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      border-bottom: 1px solid var(--rule-mid);
+      transition: color 0.2s, border-color 0.2s;
+    }
+    .btn-ghost:hover { color: var(--forest); border-color: var(--forest); }
+
+    /* ─── FOOTER ─────────────────────────────────────────────────── */
+    footer {
+      border-top: 1px solid var(--rule);
+      padding: 24px 0;
+    }
+    .footer-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 32px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+    .footer-copy {
+      font-family: 'DM Mono', monospace;
+      font-size: 12px;
+      color: var(--ink-4);
+      letter-spacing: 0.02em;
+    }
+    .footer-link {
+      font-family: 'DM Mono', monospace;
+      font-size: 12px;
+      color: var(--forest);
+      letter-spacing: 0.02em;
+      transition: opacity 0.2s;
+    }
+    .footer-link:hover { opacity: 0.7; }
+
+    /* ─── REVEAL ANIMATIONS ──────────────────────────────────────── */
+    .reveal {
+      opacity: 1;
+      transform: none;
+      transition: opacity 0.5s ease, transform 0.5s ease;
+    }
+    .reveal-ready {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    .reveal-ready.in {
+      opacity: 1;
+      transform: none;
+    }
+
+    /* ─── RESPONSIVE ─────────────────────────────────────────────── */
+    @media (max-width: 768px) {
+      .nav-links { display: none; }
+      .page-wrap { padding: 0 20px; }
+      .breadcrumb-inner { padding: 0 20px; }
+      .nav-inner { padding: 0 20px; }
+      .footer-inner { padding: 0 20px; flex-direction: column; align-items: flex-start; }
+      .hero-ghost { font-size: 120px; }
+      .note-card { padding: 24px 20px; }
+      .note-links-row { flex-direction: column; gap: 8px; }
+      .note-links-label { min-width: auto; }
+    }
+  </style>
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-TQFFERGZW1"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-TQFFERGZW1');
+  </script>
+</head>
+<body>
+
+  <!-- NAV -->
+  <nav class="nav" role="navigation" aria-label="Main navigation">
+    <div class="nav__inner">
+      <a href="../" class="nav__logo">Software<span>Of</span>You</a>
+      <ul class="nav__links">
+        <li><a href="../features.html">Features</a></li>
+        <li class="nav__item--has-sub">
+          <a href="../features.html#modules">Modules</a>
+          <ul class="nav__sub">
+            <li><a href="crm.html"><span class="nav__sub__num">01</span>CRM</a></li>
+            <li><a href="projects.html"><span class="nav__sub__num">02</span>Projects</a></li>
+            <li><a href="gmail.html"><span class="nav__sub__num">03</span>Gmail</a></li>
+            <li><a href="calendar.html"><span class="nav__sub__num">04</span>Calendar</a></li>
+            <li><a href="conversations.html"><span class="nav__sub__num">05</span>Conversations</a></li>
+            <li><a href="decisions.html"><span class="nav__sub__num">06</span>Decisions</a></li>
+            <li><a href="journal.html"><span class="nav__sub__num">07</span>Journal</a></li>
+            <li><a href="notes.html"><span class="nav__sub__num">08</span>Notes</a></li>
+            <div class="nav__sub__divider"></div>
+            <li><a href="../features.html#modules"><span class="nav__sub__num">→</span>All modules</a></li>
+          </ul>
+        </li>
+        <li><a href="../why-claude.html">Why Claude</a></li>
+        <li><a href="../your-data.html">Your Data</a></li>
+        <li><a href="../pricing.html">Pricing</a></li>
+      </ul>
+      <div class="nav__right">
+        <a href="https://softwareof.you" class="nav__cta">Get SoY — $149</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- BREADCRUMB -->
+  <div class="breadcrumb">
+    <div class="breadcrumb-inner">
+      <a href="../features.html#modules">
+        <span class="breadcrumb-arrow">←</span>
+        All modules
+      </a>
+    </div>
+  </div>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="page-wrap">
+      <div class="hero-ghost" aria-hidden="true">08</div>
+      <div class="module-label">Module 08 — Notes</div>
+      <h1 class="hero-headline reveal">
+        Fast capture.<br>
+        <em>Structured recall.</em>
+      </h1>
+      <p class="hero-sub reveal">
+        The friction between "I need to capture this" and "I need to find this later." Gone.
+      </p>
+    </div>
+  </section>
+
+  <!-- SECTION 1: The tool gap -->
+  <section class="section">
+    <div class="page-wrap">
+      <div class="narrow">
+        <p class="section-num reveal">01 — The tool gap</p>
+        <h2 class="section-title reveal">Every tool you're using<br>is the <em>wrong tool.</em></h2>
+        <div class="section-body reveal">
+          <p>
+            Notion is powerful but heavy — you don't open it to capture a fleeting thought.
+            The friction is real: finding the right page, the right database, the right template.
+            By the time you're set up, the thought is half-gone.
+          </p>
+          <p>
+            Slack is fast but lossy. That competitive insight from the analyst briefing
+            disappears in the scroll within hours. Apple Notes has no structure — you can find
+            it if you remember to look, and you won't remember to look.
+          </p>
+          <p>
+            SoY Notes is structured enough to be findable, light enough to use in the moment,
+            and connected to everything else you know. You write it once in Claude's chat.
+            The system handles the rest.
+          </p>
+        </div>
+
+        <div class="comparison-grid reveal">
+          <div class="comparison-item inactive">
+            <div class="comparison-tool">Notion</div>
+            <div class="comparison-verdict">Powerful, but you'll never open it for a quick capture.</div>
+            <div class="comparison-note">High friction. Assumes you're already organised. Doesn't connect to your context.</div>
+          </div>
+          <div class="comparison-item inactive">
+            <div class="comparison-tool">Slack / Apple Notes</div>
+            <div class="comparison-verdict">Fast capture, zero recall. Gone before you need it.</div>
+            <div class="comparison-note">Lossy by design. No structure, no connections, no way to surface at the right time.</div>
+          </div>
+          <div class="comparison-item active">
+            <div class="comparison-tool">SoY Notes</div>
+            <div class="comparison-verdict">Fast as Slack. Findable as Notion. Connected to everything.</div>
+            <div class="comparison-note">Write it once. Auto-tagged, auto-linked, surfaces in relevant context automatically.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SECTION 2: How you use it -->
+  <section class="section">
+    <div class="page-wrap">
+      <div class="narrow">
+        <p class="section-num reveal">02 — How you use it</p>
+        <h2 class="section-title reveal">One sentence to capture.<br><em>One query to retrieve.</em></h2>
+        <div class="section-body reveal">
+          <p>
+            You write notes the same way you write everything else in SoY — in Claude's chat.
+            Add hashtags if you want manual categories. Skip them if you don't. The system
+            finds the connections either way.
+          </p>
+        </div>
+        <div class="query-list">
+          <div class="query-block reveal">
+            <div class="q-prompt">you → claude</div>
+            <div class="q-text">"Note: the new EU AI compliance framework affects every enterprise deal. #legal #enterprise"</div>
+            <div class="q-response">Note saved. Tags: #legal #enterprise. Auto-linked: 3 contacts in enterprise accounts. Linked projects: Meridian Rebrand, DataVault proposal.</div>
+          </div>
+          <div class="query-block reveal">
+            <div class="q-prompt">you → claude</div>
+            <div class="q-text">"Show me everything tagged #enterprise"</div>
+            <div class="q-response">14 notes tagged #enterprise. 3 pinned. Most recent: EU AI compliance framework (today). Oldest: pricing research from Oct 2025.</div>
+          </div>
+          <div class="query-block reveal">
+            <div class="q-prompt">you → claude</div>
+            <div class="q-text">"Pin that note about the competitor pricing"</div>
+            <div class="q-response">Pinned: "Acme dropped enterprise pricing 18% in Q4 — now undercutting on seat count." Will surface in deal-related context automatically.</div>
+          </div>
+          <div class="query-block reveal">
+            <div class="q-prompt">you → claude</div>
+            <div class="q-text">"What notes do I have about compliance?"</div>
+            <div class="q-response">6 notes mention compliance. 2 tagged #legal. Earliest: GDPR note from August. Most cited: EU AI compliance framework — referenced in 3 project briefs.</div>
+          </div>
+          <div class="query-block reveal">
+            <div class="q-prompt">you → claude</div>
+            <div class="q-text">"Show me notes linked to Rebecca"</div>
+            <div class="q-response">4 notes auto-linked to Rebecca Chen: (1) Meridian timeline concerns (2) EU AI compliance — Meridian is in financial services (3) stakeholder communication style note (4) Q2 scope discussion.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SECTION 3: How cross-referencing works -->
+  <section class="section">
+    <div class="page-wrap">
+      <div class="narrow">
+        <p class="section-num reveal">03 — Cross-referencing</p>
+        <h2 class="section-title reveal">The connection forms<br>from <em>the text.</em></h2>
+        <div class="section-body reveal">
+          <p>
+            When you write a note mentioning a contact or project by name, SoY links it
+            automatically. You didn't tag them. The system made the connection from the text.
+          </p>
+          <p>
+            A note about a competitor's pricing surfaces in the entity page for every contact
+            you've discussed that competitor with. A note about an industry regulation appears
+            in the context brief for every client in that industry. The connections aren't
+            manual — they're derived.
+          </p>
+          <p>
+            This is the difference between a notes app and a knowledge layer. Notes live
+            inside SoY, not alongside it.
+          </p>
+        </div>
+        <div class="feature-grid reveal">
+          <div class="feature-item forest-tint">
+            <div class="feature-item-label">Mention detection</div>
+            <div class="feature-item-desc">Contact and project names are detected automatically. Write naturally — the linking is invisible.</div>
+          </div>
+          <div class="feature-item forest-tint">
+            <div class="feature-item-label">Entity pages</div>
+            <div class="feature-item-desc">Every contact and project page shows all notes that reference them — including ones you wrote before the connection existed.</div>
+          </div>
+          <div class="feature-item">
+            <div class="feature-item-label">Topic clustering</div>
+            <div class="feature-item-desc">Notes about similar topics cluster automatically. Your EU compliance note and your GDPR note are related — SoY surfaces them together.</div>
+          </div>
+          <div class="feature-item">
+            <div class="feature-item-label">Context surfacing</div>
+            <div class="feature-item-desc">Relevant notes appear when you pull a meeting brief, a project summary, or a contact view. You wrote it once. It shows up when it matters.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SECTION 4: Hashtag system -->
+  <section class="section">
+    <div class="page-wrap">
+      <div class="narrow">
+        <p class="section-num reveal">04 — Hashtag system</p>
+        <h2 class="section-title reveal">Your taxonomy.<br><em>Your call.</em></h2>
+        <div class="section-body reveal">
+          <p>
+            Add #tags to create manual categories. No predefined structure, no required fields,
+            no taxonomy you have to conform to. Whatever system makes sense to you is the right
+            system.
+          </p>
+          <p>
+            Search by tag at any time. Combine tags to narrow results. The system learns
+            which tags you use most and surfaces them when you start typing.
+          </p>
+        </div>
+
+        <div class="tag-cloud reveal">
+          <span class="tag-cloud-pill">#legal</span>
+          <span class="tag-cloud-pill">#enterprise</span>
+          <span class="tag-cloud-pill">#competitor</span>
+          <span class="tag-cloud-pill">#ai-compliance</span>
+          <span class="tag-cloud-pill">#pricing</span>
+          <span class="tag-cloud-pill">#idea</span>
+          <span class="tag-cloud-pill">#followup</span>
+          <span class="tag-cloud-pill">#research</span>
+          <span class="tag-cloud-pill dim">#financial-services</span>
+          <span class="tag-cloud-pill dim">#q2-planning</span>
+          <span class="tag-cloud-pill dim">#product</span>
+          <span class="tag-cloud-pill dim">#hiring</span>
+          <span class="tag-cloud-pill dim">#reference</span>
+        </div>
+
+        <div class="section-body reveal" style="margin-top: 28px;">
+          <p>
+            Some people use a tight taxonomy with 6 tags and use them consistently. Others
+            tag loosely and rely on search. Both work. SoY doesn't impose a structure — it
+            enhances whichever one you choose.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SECTION 5: Pin important notes -->
+  <section class="section">
+    <div class="page-wrap">
+      <div class="narrow">
+        <p class="section-num reveal">05 — Pinned notes</p>
+        <h2 class="section-title reveal">The notes that should always<br>be <em>in the room.</em></h2>
+        <div class="section-body reveal">
+          <p>
+            Pin a note to make it surface in relevant views. Pinned notes don't get buried —
+            they float to the top of any context they belong in.
+          </p>
+        </div>
+        <div class="pin-box reveal">
+          <div class="pin-box-label">How pinned notes work</div>
+          <div class="pin-scenario">
+            <div class="pin-scenario-item">
+              <span class="pin-icon">pinned</span>
+              <div class="pin-text">
+                <strong>Pricing strategy note</strong> — pinned, tagged #pricing. Surfaces automatically whenever Claude pulls context about any active deal or account.
+              </div>
+            </div>
+            <div class="pin-scenario-item">
+              <span class="pin-icon">pinned</span>
+              <div class="pin-text">
+                <strong>Onboarding checklist</strong> — pinned, linked to Projects module. Appears in every new-client project brief without you asking.
+              </div>
+            </div>
+            <div class="pin-scenario-item">
+              <span class="pin-icon">pinned</span>
+              <div class="pin-text">
+                <strong>Competitor pricing note</strong> — pinned, tagged #competitor. Shows up in any deal-related context where the competitor is mentioned.
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="section-body reveal" style="margin-top: 24px;">
+          <p>
+            Pinning is the difference between a note you wrote and a note you use.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SECTION 6: Notes as intelligence layer -->
+  <section class="section">
+    <div class="page-wrap">
+      <div class="narrow">
+        <p class="section-num reveal">06 — The intelligence layer</p>
+        <h2 class="section-title reveal">Notes aren't attachments.<br>They're <em>first-class content.</em></h2>
+        <div class="section-body reveal">
+          <p>
+            In most tools, a note is attached to something else. Attached to a contact. Attached
+            to a project. Attached to a meeting. It lives inside another object and shares its
+            context, nothing more.
+          </p>
+          <p>
+            In SoY, notes have their own connections. A note about an industry trend links to
+            every client who operates in that industry. A note about a competitor links to every
+            contact at a company competing with them. A note about a pricing insight links to
+            every active deal where pricing has come up.
+          </p>
+          <p>
+            The connections aren't manual. They're derived from what you wrote — and they
+            expand over time as you add more data to the system.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SECTION 7: Example note -->
+  <section class="section">
+    <div class="page-wrap">
+      <div class="narrow">
+        <p class="section-num reveal">07 — Example note</p>
+        <h2 class="section-title reveal">One note. Multiple<br><em>connections.</em></h2>
+        <div class="section-body reveal">
+          <p>
+            Written in thirty seconds. Connected to 3 contacts and 2 projects automatically.
+          </p>
+        </div>
+
+        <div class="note-card reveal">
+          <div class="note-card-meta">
+            <span class="note-card-date">Feb 22, 2026 · 9:14 AM</span>
+            <span class="note-pinned">Pinned</span>
+          </div>
+          <div class="note-card-body">
+            The new EU AI compliance framework requires enterprise customers to document all AI
+            decision points in regulated workflows. This affects every deal with a financial
+            services or healthcare buyer. Implementation deadline is Q3 2026 — most enterprise
+            customers don't know yet. This is both a risk flag and an opportunity to be the
+            advisor who surfaces it early.
+          </div>
+          <div class="note-tags">
+            <span class="hash-pill">#legal</span>
+            <span class="hash-pill">#enterprise</span>
+            <span class="hash-pill">#ai-compliance</span>
+          </div>
+          <div class="note-links">
+            <div class="note-links-row">
+              <span class="note-links-label">Auto-linked contacts</span>
+              <div class="note-linked-items">
+                <span class="linked-contact">Rebecca Chen</span>
+                <span class="linked-contact">Marcus Webb</span>
+                <span class="linked-contact">Daniel Reyes</span>
+              </div>
+            </div>
+            <div class="note-links-row">
+              <span class="note-links-label">Auto-linked projects</span>
+              <div class="note-linked-items">
+                <span class="linked-project">Meridian Rebrand</span>
+                <span class="linked-project">DataVault proposal</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="cta-section">
+    <div class="page-wrap">
+      <div class="cta-label reveal">You've seen all 8 modules</div>
+      <h2 class="cta-headline reveal">
+        Everything connected.<br>
+        <em>Nothing slipping through.</em>
+      </h2>
+      <div class="cta-buttons reveal">
+        <a href="https://softwareof.you" class="btn-primary">Get SoY — $149 →</a>
+        <a href="../features.html#modules" class="btn-ghost">All 8 modules →</a>
+      </div>
+
+      <div class="module-grid reveal" style="margin-top: 64px; max-width: 800px; margin-left: auto; margin-right: auto;">
+        <div class="module-item">
+          <div class="module-item-num">01</div>
+          <div class="module-item-name"><em>CRM</em></div>
+        </div>
+        <div class="module-item">
+          <div class="module-item-num">02</div>
+          <div class="module-item-name"><em>Projects</em></div>
+        </div>
+        <div class="module-item">
+          <div class="module-item-num">03</div>
+          <div class="module-item-name"><em>Gmail</em></div>
+        </div>
+        <div class="module-item">
+          <div class="module-item-num">04</div>
+          <div class="module-item-name"><em>Calendar</em></div>
+        </div>
+        <div class="module-item">
+          <div class="module-item-num">05</div>
+          <div class="module-item-name"><em>Conversations</em></div>
+        </div>
+        <div class="module-item">
+          <div class="module-item-num">06</div>
+          <div class="module-item-name"><em>Decisions</em></div>
+        </div>
+        <div class="module-item">
+          <div class="module-item-num">07</div>
+          <div class="module-item-name"><em>Journal</em></div>
+        </div>
+        <div class="module-item" style="background: var(--forest-bg); border-color: var(--forest-pale); border-top: 2px solid var(--forest);">
+          <div class="module-item-num" style="color: var(--forest);">08</div>
+          <div class="module-item-name"><em>Notes</em></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="footer-inner">
+      <span class="footer-copy">© 2026 Software of You · Built by Kerry Morrison</span>
+      <a href="https://softwareof.you" class="footer-link">softwareof.you</a>
+    
+    <a class="footer-email" data-u="kerry" data-d="softwareof.you" href="#" onclick="this.href='mailto:'+this.dataset.u+'@'+this.dataset.d;return false;" title="Email Kerry">kerry<span aria-hidden="true" style="display:none">&#8203;</span>&#64;softwareof.you</a>
+</div>
+  
+  </footer>
+
+  <script>
+    // Scroll reveals with IntersectionObserver
+    if ('IntersectionObserver' in window) {
+      const els = document.querySelectorAll('.reveal');
+      els.forEach(el => el.classList.add('reveal-ready'));
+
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('in');
+            observer.unobserve(entry.target);
+          }
+        });
+      }, {
+        threshold: 0.12,
+        rootMargin: '0px 0px -40px 0px'
+      });
+
+      els.forEach(el => observer.observe(el));
+    } else {
+      // Fallback: show all
+      document.querySelectorAll('.reveal').forEach(el => el.classList.add('in'));
+    }
+  </script>
+
+<script>
+(function() {
+  function closeAll() {
+    document.querySelectorAll('.nav__item--has-sub.open').forEach(function(el) {
+      el.classList.remove('open');
+    });
+  }
+  document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.nav__item--has-sub > a').forEach(function(trigger) {
+      trigger.addEventListener('click', function(e) {
+        e.preventDefault();
+        var item = trigger.parentElement;
+        var isOpen = item.classList.contains('open');
+        closeAll();
+        if (!isOpen) item.classList.add('open');
+      });
+    });
+    document.addEventListener('click', function(e) {
+      if (!e.target.closest('.nav__item--has-sub')) closeAll();
+    });
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') closeAll();
+    });
+  });
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,922 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Software of You — Your Entire Professional Life, In One Place</title>
+
+    <!-- Open Graph / Social -->
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="Software of You — Your Entire Professional Life, In One Place">
+    <meta property="og:description" content="A Claude Code plugin that turns your AI into a personal CRM, project tracker, and intelligence platform. 8 modules, local SQLite, $149 one-time.">
+    <meta property="og:image" content="screenshots/dashboard.png">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Software of You — Personal Data Platform for Claude Code">
+    <meta name="twitter:description" content="CRM, Projects, Email, Calendar, Conversation Intelligence, Decision Journal, and more. Local data. AI-powered. $149 once.">
+    <meta name="twitter:image" content="screenshots/dashboard.png">
+    <meta name="description" content="Software of You turns Claude Code into a personal CRM, project tracker, and intelligence platform. 8 modules, local SQLite database, one-time $149 purchase.">
+
+    <!-- Favicon -->
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><polygon points='50,5 93,27.5 93,72.5 50,95 7,72.5 7,27.5' fill='%230d9488'/></svg>">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;0,6..72,700;0,6..72,800;1,6..72,400;1,6..72,500;1,6..72,600&family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        display: ['Newsreader', 'Georgia', 'serif'],
+                        body: ['Outfit', 'system-ui', 'sans-serif'],
+                        mono: ['"JetBrains Mono"', 'monospace'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { font-family: 'Outfit', system-ui, sans-serif; }
+        .gradient-text {
+            background: linear-gradient(135deg, #0d9488, #0891b2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .screenshot-frame {
+            background: linear-gradient(135deg, #99f6e4, #a5f3fc, #c4b5fd);
+            padding: 2px;
+            border-radius: 16px;
+            box-shadow: 0 25px 60px -12px rgba(0, 0, 0, 0.12), 0 0 0 1px rgba(0, 0, 0, 0.02);
+        }
+        .screenshot-frame img {
+            border-radius: 14px;
+            display: block;
+            width: 100%;
+        }
+        .showcase-tab {
+            padding: 10px 20px;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 500;
+            color: #78716c;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: 1px solid transparent;
+            background: transparent;
+            font-family: 'Outfit', system-ui, sans-serif;
+        }
+        .showcase-tab:hover { color: #44403c; background: #f5f5f4; }
+        .showcase-tab.active {
+            color: #0f766e;
+            background: #f0fdfa;
+            border-color: #99f6e4;
+            font-weight: 600;
+        }
+        .showcase-display {
+            transition: opacity 0.35s ease, transform 0.35s ease;
+        }
+        .showcase-display.transitioning {
+            opacity: 0;
+            transform: translateY(10px);
+        }
+        .faq-answer {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.4s ease;
+        }
+        .faq-answer.open { max-height: 400px; }
+        .faq-chevron { transition: transform 0.3s ease; }
+        .faq-chevron.open { transform: rotate(180deg); }
+        .reveal {
+            opacity: 0;
+            transform: translateY(24px);
+            transition: opacity 0.7s ease, transform 0.7s ease;
+        }
+        .reveal.revealed { opacity: 1; transform: translateY(0); }
+        .reveal-d1 { transition-delay: 0.1s; }
+        .reveal-d2 { transition-delay: 0.2s; }
+        .reveal-d3 { transition-delay: 0.3s; }
+        .reveal-d4 { transition-delay: 0.4s; }
+        .terminal-cursor { animation: blink 1s step-end infinite; }
+        @keyframes blink { 50% { opacity: 0; } }
+        .gradient-divider {
+            height: 1px;
+            background: linear-gradient(90deg, transparent, #99f6e4, #a5f3fc, transparent);
+            max-width: 300px;
+            margin: 0 auto;
+        }
+        .price-glow {
+            box-shadow: 0 0 80px rgba(13, 148, 136, 0.12), 0 25px 50px -12px rgba(0, 0, 0, 0.06);
+        }
+        .cost-strike { position: relative; }
+        .cost-strike::after {
+            content: '';
+            position: absolute;
+            left: -4px;
+            top: 50%;
+            width: 0;
+            height: 2px;
+            background: #e11d48;
+            transition: width 0.8s ease;
+        }
+        .cost-strike.struck::after { width: calc(100% + 8px); }
+        /* Terminal demo */
+        .term-prompt { color: #5eead4; }
+        .term-muted { color: #78716c; }
+        .term-output { color: #d6d3d1; }
+        .term-success { color: #4ade80; }
+        .term-accent { color: #2dd4bf; }
+        .term-dim { color: #57534e; }
+        /* Mobile menu */
+        .mobile-menu {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+        }
+        .mobile-menu.open {
+            max-height: 300px;
+        }
+    </style>
+</head>
+<body class="bg-white text-stone-900 antialiased">
+
+    <!-- Header -->
+    <header class="fixed top-0 left-0 right-0 bg-white/80 backdrop-blur-xl border-b border-stone-100 z-50">
+        <div class="max-w-5xl mx-auto px-6 py-3 flex items-center justify-between">
+            <a href="#" class="font-display text-xl font-bold"><span class="gradient-text">SoY</span></a>
+            <!-- Desktop nav -->
+            <nav class="hidden md:flex items-center gap-8">
+                <a href="#features" class="text-sm text-stone-500 hover:text-stone-900 transition-colors">Features</a>
+                <a href="#how-it-works" class="text-sm text-stone-500 hover:text-stone-900 transition-colors">How It Works</a>
+                <a href="#pricing" class="text-sm text-stone-500 hover:text-stone-900 transition-colors">Pricing</a>
+                <a href="#faq" class="text-sm text-stone-500 hover:text-stone-900 transition-colors">FAQ</a>
+                <a href="#pricing" class="px-5 py-2 bg-teal-700 hover:bg-teal-800 text-white text-sm font-medium rounded-lg transition-colors">Get Started</a>
+            </nav>
+            <!-- Mobile hamburger -->
+            <button class="md:hidden p-2 text-stone-500 hover:text-stone-900" onclick="toggleMobileMenu()">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+            </button>
+        </div>
+        <!-- Mobile menu -->
+        <div id="mobile-menu" class="mobile-menu md:hidden border-t border-stone-100 bg-white">
+            <div class="max-w-5xl mx-auto px-6 py-4 flex flex-col gap-3">
+                <a href="#features" class="text-sm text-stone-600 py-2" onclick="closeMobileMenu()">Features</a>
+                <a href="#how-it-works" class="text-sm text-stone-600 py-2" onclick="closeMobileMenu()">How It Works</a>
+                <a href="#pricing" class="text-sm text-stone-600 py-2" onclick="closeMobileMenu()">Pricing</a>
+                <a href="#faq" class="text-sm text-stone-600 py-2" onclick="closeMobileMenu()">FAQ</a>
+                <a href="#pricing" class="px-5 py-2.5 bg-teal-700 text-white text-sm font-medium rounded-lg text-center mt-1" onclick="closeMobileMenu()">Get Started</a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Hero -->
+    <section class="relative overflow-hidden">
+        <div class="absolute inset-0 bg-gradient-to-b from-teal-50/40 via-transparent to-transparent"></div>
+        <div class="relative max-w-5xl mx-auto px-6 pt-28 md:pt-32 pb-8 text-center">
+            <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-teal-50 border border-teal-100 mb-8">
+                <span class="w-1.5 h-1.5 rounded-full bg-teal-500"></span>
+                <span class="text-sm font-medium text-teal-700">A Claude Code Plugin</span>
+            </div>
+            <h1 class="font-display text-5xl md:text-7xl font-bold tracking-tight leading-[1.08] mb-6">
+                Your entire<br>professional life,<br><span class="gradient-text">in one place</span>
+            </h1>
+            <p class="text-base md:text-lg text-stone-500 max-w-2xl mx-auto mb-10 leading-relaxed">
+                Software of You turns Claude Code into a personal CRM, project tracker, and intelligence platform. Your data stays local. Your AI stays personal. One purchase, no subscriptions.
+            </p>
+            <div class="flex flex-col sm:flex-row items-center justify-center gap-4 mb-16">
+                <a href="#pricing" class="w-full sm:w-auto px-8 py-3.5 bg-teal-700 hover:bg-teal-800 text-white font-semibold rounded-xl transition-colors text-sm shadow-lg shadow-teal-700/20 text-center">Get Started — $149</a>
+                <a href="#how-it-works" class="w-full sm:w-auto px-8 py-3.5 border border-stone-200 hover:border-stone-300 hover:bg-stone-50 text-stone-700 font-semibold rounded-xl transition-all text-sm text-center">See How It Works</a>
+            </div>
+        </div>
+        <div class="max-w-5xl mx-auto px-6 pb-20">
+            <div class="screenshot-frame">
+                <img src="screenshots/dashboard.png" alt="Software of You Dashboard" />
+            </div>
+        </div>
+    </section>
+
+    <!-- Stats Strip -->
+    <section class="border-y border-stone-100 bg-stone-50/50">
+        <div class="max-w-5xl mx-auto px-6 py-5">
+            <div class="flex flex-wrap items-center justify-between gap-4">
+                <div class="flex items-center gap-3">
+                    <span class="text-2xl font-display font-bold text-stone-900">8</span>
+                    <span class="text-sm text-stone-500 leading-tight">integrated<br>modules</span>
+                </div>
+                <div class="hidden sm:block w-px h-8 bg-stone-200"></div>
+                <div class="flex items-center gap-3">
+                    <span class="text-2xl font-display font-bold text-stone-900">SQLite</span>
+                    <span class="text-sm text-stone-500 leading-tight">local<br>database</span>
+                </div>
+                <div class="hidden sm:block w-px h-8 bg-stone-200"></div>
+                <div class="flex items-center gap-3">
+                    <span class="text-2xl font-display font-bold gradient-text">$149</span>
+                    <span class="text-sm text-stone-500 leading-tight">one-time<br>purchase</span>
+                </div>
+                <div class="hidden sm:block w-px h-8 bg-stone-200"></div>
+                <div class="flex items-center gap-3">
+                    <span class="text-2xl font-display font-bold text-stone-900">100%</span>
+                    <span class="text-sm text-stone-500 leading-tight">local &amp;<br>private</span>
+                </div>
+            </div>
+            <div class="flex items-center justify-center gap-4 mt-3 pt-3 border-t border-stone-100">
+                <span class="text-xs text-stone-400">Powered by</span>
+                <span class="inline-flex items-center gap-1.5 text-xs font-semibold text-stone-500 px-2.5 py-1 bg-stone-100 rounded">
+                    <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor"><path d="M4.709 15.955l4.72-2.756.08-.046 2.91-1.707c.14-.083.14-.288 0-.37L9.51 9.368l-.08-.046-4.72-2.756c-.14-.082-.14-.288 0-.37l2.07-1.209a.73.73 0 0 1 .73 0l7.39 4.307.08.047 2.06 1.209c.14.082.14.288 0 .37l-2.06 1.208-.08.047-7.39 4.307a.73.73 0 0 1-.73 0l-2.07-1.209c-.14-.082-.14-.287 0-.37z"/></svg>
+                    Claude
+                </span>
+                <span class="text-xs text-stone-300">+</span>
+                <span class="text-xs font-semibold text-stone-500 px-2.5 py-1 bg-stone-100 rounded">SQLite</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- Problem: The Tool Tax -->
+    <section class="py-20 md:py-24">
+        <div class="max-w-5xl mx-auto px-6">
+            <div class="text-center mb-16 reveal">
+                <h2 class="font-display text-3xl md:text-5xl font-bold tracking-tight mb-5">Stop paying the <span class="gradient-text">tool tax</span></h2>
+                <p class="text-base md:text-lg text-stone-500 max-w-2xl mx-auto leading-relaxed">The average professional spends over $100/month on fragmented SaaS tools that don't talk to each other. Your contacts live in one app, your emails in another, your notes in a third. The context you need is always somewhere else.</p>
+            </div>
+            <div class="grid md:grid-cols-2 gap-6 md:gap-8 max-w-4xl mx-auto">
+                <div class="reveal reveal-d1">
+                    <div class="rounded-2xl border border-stone-200 p-6 md:p-8 bg-white">
+                        <p class="text-sm font-semibold text-stone-400 uppercase tracking-wider mb-6">The typical stack</p>
+                        <div class="space-y-4">
+                            <div class="flex items-center justify-between pb-3 border-b border-stone-100">
+                                <span class="text-stone-600">CRM (HubSpot)</span>
+                                <span class="font-mono font-medium text-stone-800">$50/mo</span>
+                            </div>
+                            <div class="flex items-center justify-between pb-3 border-b border-stone-100">
+                                <span class="text-stone-600">Email (Superhuman)</span>
+                                <span class="font-mono font-medium text-stone-800">$30/mo</span>
+                            </div>
+                            <div class="flex items-center justify-between pb-3 border-b border-stone-100">
+                                <span class="text-stone-600">Notes (Notion)</span>
+                                <span class="font-mono font-medium text-stone-800">$10/mo</span>
+                            </div>
+                            <div class="flex items-center justify-between pb-3 border-b border-stone-100">
+                                <span class="text-stone-600">Transcripts (Otter.ai)</span>
+                                <span class="font-mono font-medium text-stone-800">$17/mo</span>
+                            </div>
+                            <div class="flex items-center justify-between pb-3 border-b border-stone-100">
+                                <span class="text-stone-600">Projects (Linear)</span>
+                                <span class="font-mono font-medium text-stone-800">$8/mo</span>
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between pt-4 mt-2 border-t-2 border-rose-200">
+                            <span class="font-semibold text-rose-600">Annual cost</span>
+                            <span class="font-mono font-bold text-rose-600 text-xl cost-strike">$1,380/yr</span>
+                        </div>
+                        <p class="text-xs text-stone-400 mt-3">And none of these tools share data with each other.</p>
+                    </div>
+                </div>
+                <div class="reveal reveal-d2">
+                    <div class="rounded-2xl border-2 border-teal-200 p-6 md:p-8 bg-gradient-to-br from-teal-50/50 to-white flex flex-col items-center justify-center text-center h-full">
+                        <p class="text-sm font-semibold text-teal-600 uppercase tracking-wider mb-6">Software of You</p>
+                        <span class="font-display text-6xl md:text-7xl font-bold gradient-text">$149</span>
+                        <p class="text-stone-500 mt-3 text-lg">One time. All modules. Forever.</p>
+                        <div class="mt-8 flex flex-wrap gap-2 justify-center">
+                            <span class="px-3 py-1 rounded-full bg-teal-100 text-teal-700 text-xs font-medium">CRM</span>
+                            <span class="px-3 py-1 rounded-full bg-teal-100 text-teal-700 text-xs font-medium">Email</span>
+                            <span class="px-3 py-1 rounded-full bg-teal-100 text-teal-700 text-xs font-medium">Calendar</span>
+                            <span class="px-3 py-1 rounded-full bg-teal-100 text-teal-700 text-xs font-medium">Projects</span>
+                            <span class="px-3 py-1 rounded-full bg-teal-100 text-teal-700 text-xs font-medium">Conversations</span>
+                            <span class="px-3 py-1 rounded-full bg-teal-100 text-teal-700 text-xs font-medium">Decisions</span>
+                            <span class="px-3 py-1 rounded-full bg-teal-100 text-teal-700 text-xs font-medium">Journal</span>
+                            <span class="px-3 py-1 rounded-full bg-teal-100 text-teal-700 text-xs font-medium">Notes</span>
+                        </div>
+                        <p class="text-xs text-teal-600 mt-6">Everything connected. Everything local.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Feature Showcase: Tabbed Screenshots -->
+    <section class="py-20 md:py-24 bg-stone-50/50" id="features">
+        <div class="max-w-6xl mx-auto px-6">
+            <div class="text-center mb-12 reveal">
+                <h2 class="font-display text-3xl md:text-5xl font-bold tracking-tight mb-5">See everything. <span class="font-display italic font-medium">Miss nothing.</span></h2>
+                <p class="text-base md:text-lg text-stone-500 max-w-2xl mx-auto">Four views that give you complete context on your professional world. Click through to explore each one.</p>
+            </div>
+            <div class="flex items-center justify-center gap-2 mb-10 reveal flex-wrap">
+                <button class="showcase-tab active" data-tab="dashboard" onclick="switchTab('dashboard')">
+                    <span class="flex items-center gap-2">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+                        Dashboard
+                    </span>
+                </button>
+                <button class="showcase-tab" data-tab="crm" onclick="switchTab('crm')">
+                    <span class="flex items-center gap-2">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                        Contact Pages
+                    </span>
+                </button>
+                <button class="showcase-tab" data-tab="conversations" onclick="switchTab('conversations')">
+                    <span class="flex items-center gap-2">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                        Conversations
+                    </span>
+                </button>
+                <button class="showcase-tab" data-tab="decisions" onclick="switchTab('decisions')">
+                    <span class="flex items-center gap-2">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="6" y1="3" x2="6" y2="15"/><circle cx="18" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M18 9a9 9 0 0 1-9 9"/></svg>
+                        Decisions
+                    </span>
+                </button>
+            </div>
+            <div id="showcase-display" class="showcase-display">
+                <div class="max-w-3xl mx-auto text-center mb-8">
+                    <h3 id="showcase-title" class="font-display text-xl md:text-2xl font-bold mb-3">Your Command Center</h3>
+                    <p id="showcase-desc" class="text-stone-500 leading-relaxed text-sm md:text-base md:text-base">Start every morning with a complete picture — not a scramble across six different apps. Your dashboard surfaces today's meetings, overdue follow-ups, recent emails, and activity across every module. It's the briefing you wish you had before every workday.</p>
+                    <div id="showcase-features" class="flex items-center justify-center gap-2 mt-5 flex-wrap">
+                        <span class="px-3 py-1.5 rounded-lg bg-white border border-stone-200 text-xs font-medium text-stone-600">Real-time activity feed</span>
+                        <span class="px-3 py-1.5 rounded-lg bg-white border border-stone-200 text-xs font-medium text-stone-600">Email preview</span>
+                        <span class="px-3 py-1.5 rounded-lg bg-white border border-stone-200 text-xs font-medium text-stone-600">Today's calendar</span>
+                        <span class="px-3 py-1.5 rounded-lg bg-white border border-stone-200 text-xs font-medium text-stone-600">Follow-up tracking</span>
+                    </div>
+                </div>
+                <div class="screenshot-frame max-w-5xl mx-auto">
+                    <img id="showcase-img" src="screenshots/dashboard.png" alt="Dashboard view" />
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Who Is This For -->
+    <section class="py-20 md:py-24">
+        <div class="max-w-5xl mx-auto px-6">
+            <div class="text-center mb-16 reveal">
+                <h2 class="font-display text-3xl md:text-5xl font-bold tracking-tight mb-5">Built for people who <span class="gradient-text">manage relationships</span></h2>
+                <p class="text-base md:text-lg text-stone-500 max-w-2xl mx-auto">If your work revolves around people — clients, partners, collaborators — and you're tired of context-switching between fragmented tools, this is for you.</p>
+            </div>
+            <div class="grid md:grid-cols-3 gap-6">
+                <div class="reveal reveal-d1 rounded-2xl border border-stone-200 p-6 hover:border-teal-200 transition-colors">
+                    <div class="w-10 h-10 rounded-xl bg-teal-100 flex items-center justify-center mb-4">
+                        <svg class="w-5 h-5 text-teal-700" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>
+                    </div>
+                    <h3 class="font-display text-lg font-bold mb-2">Freelancers &amp; Consultants</h3>
+                    <p class="text-sm md:text-base text-stone-500 leading-relaxed">You juggle 10+ client relationships, each with their own email threads, meeting cadences, and project timelines. You need one place to see the full picture of every relationship.</p>
+                </div>
+                <div class="reveal reveal-d2 rounded-2xl border border-stone-200 p-6 hover:border-teal-200 transition-colors">
+                    <div class="w-10 h-10 rounded-xl bg-blue-100 flex items-center justify-center mb-4">
+                        <svg class="w-5 h-5 text-blue-700" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+                    </div>
+                    <h3 class="font-display text-lg font-bold mb-2">Founders &amp; Agency Owners</h3>
+                    <p class="text-sm md:text-base text-stone-500 leading-relaxed">You manage partnerships, investors, team dynamics, and strategic decisions. You need to remember every commitment and track every relationship as you scale.</p>
+                </div>
+                <div class="reveal reveal-d3 rounded-2xl border border-stone-200 p-6 hover:border-teal-200 transition-colors">
+                    <div class="w-10 h-10 rounded-xl bg-violet-100 flex items-center justify-center mb-4">
+                        <svg class="w-5 h-5 text-violet-700" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg>
+                    </div>
+                    <h3 class="font-display text-lg font-bold mb-2">Technical Professionals</h3>
+                    <p class="text-sm md:text-base text-stone-500 leading-relaxed">You already work in Claude Code. You want your relationship and project data where you work — not in another SaaS app you'll forget to update.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Modules Grid -->
+    <section class="py-20 md:py-24 bg-stone-50/50">
+        <div class="max-w-5xl mx-auto px-6">
+            <div class="text-center mb-16 reveal">
+                <h2 class="font-display text-3xl md:text-5xl font-bold tracking-tight mb-5">Eight modules. <span class="font-display italic font-medium">One unified system.</span></h2>
+                <p class="text-base md:text-lg text-stone-500 max-w-2xl mx-auto">Each module works on its own. Together, they cross-reference everything — contacts with projects, emails with meetings, decisions with the people who shaped them.</p>
+            </div>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div class="reveal reveal-d1 group rounded-2xl border border-stone-200 bg-white p-5 md:p-6 hover:border-teal-200 hover:bg-teal-50/30 transition-all">
+                    <div class="w-10 h-10 rounded-xl bg-teal-100 flex items-center justify-center mb-4">
+                        <svg class="w-5 h-5 text-teal-700" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                    </div>
+                    <h3 class="font-display text-base md:text-lg font-bold mb-1.5">CRM</h3>
+                    <p class="text-sm md:text-base text-stone-500 leading-relaxed">Contacts, relationships, interactions, follow-ups.</p>
+                </div>
+                <div class="reveal reveal-d2 group rounded-2xl border border-stone-200 bg-white p-5 md:p-6 hover:border-blue-200 hover:bg-blue-50/30 transition-all">
+                    <div class="w-10 h-10 rounded-xl bg-blue-100 flex items-center justify-center mb-4">
+                        <svg class="w-5 h-5 text-blue-700" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 3v18"/><path d="M3 9h18"/></svg>
+                    </div>
+                    <h3 class="font-display text-base md:text-lg font-bold mb-1.5">Project Tracker</h3>
+                    <p class="text-sm md:text-base text-stone-500 leading-relaxed">Projects, tasks, milestones linked to people.</p>
+                </div>
+                <div class="reveal reveal-d3 group rounded-2xl border border-stone-200 bg-white p-5 md:p-6 hover:border-red-200 hover:bg-red-50/30 transition-all">
+                    <div class="w-10 h-10 rounded-xl bg-red-100 flex items-center justify-center mb-4">
+                        <svg class="w-5 h-5 text-red-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
+                    </div>
+                    <h3 class="font-display text-base md:text-lg font-bold mb-1.5">Gmail</h3>
+                    <p class="text-sm md:text-base text-stone-500 leading-relaxed">Email sync, compose, threads with contact context.</p>
+                </div>
+                <div class="reveal reveal-d4 group rounded-2xl border border-stone-200 bg-white p-5 md:p-6 hover:border-green-200 hover:bg-green-50/30 transition-all">
+                    <div class="w-10 h-10 rounded-xl bg-green-100 flex items-center justify-center mb-4">
+                        <svg class="w-5 h-5 text-green-700" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4"/><path d="M8 2v4"/><path d="M3 10h18"/></svg>
+                    </div>
+                    <h3 class="font-display text-base md:text-lg font-bold mb-1.5">Calendar</h3>
+                    <p class="text-sm md:text-base text-stone-500 leading-relaxed">Event sync, scheduling, meeting context.</p>
+                </div>
+                <div class="reveal reveal-d1 group rounded-2xl border border-stone-200 bg-white p-5 md:p-6 hover:border-violet-200 hover:bg-violet-50/30 transition-all relative">
+                    <span class="absolute top-3 right-3 md:top-4 md:right-4 px-2 py-0.5 rounded-full bg-rose-100 text-rose-600 text-[10px] font-bold uppercase tracking-wider">New</span>
+                    <div class="w-10 h-10 rounded-xl bg-violet-100 flex items-center justify-center mb-4">
+                        <svg class="w-5 h-5 text-violet-700" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                    </div>
+                    <h3 class="font-display text-base md:text-lg font-bold mb-1.5">Conversations</h3>
+                    <p class="text-sm md:text-base text-stone-500 leading-relaxed">Transcript analysis, commitments, relationship scoring.</p>
+                </div>
+                <div class="reveal reveal-d2 group rounded-2xl border border-stone-200 bg-white p-5 md:p-6 hover:border-amber-200 hover:bg-amber-50/30 transition-all relative">
+                    <span class="absolute top-3 right-3 md:top-4 md:right-4 px-2 py-0.5 rounded-full bg-rose-100 text-rose-600 text-[10px] font-bold uppercase tracking-wider">New</span>
+                    <div class="w-10 h-10 rounded-xl bg-amber-100 flex items-center justify-center mb-4">
+                        <svg class="w-5 h-5 text-amber-700" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="6" y1="3" x2="6" y2="15"/><circle cx="18" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M18 9a9 9 0 0 1-9 9"/></svg>
+                    </div>
+                    <h3 class="font-display text-base md:text-lg font-bold mb-1.5">Decisions</h3>
+                    <p class="text-sm md:text-base text-stone-500 leading-relaxed">Structured logging with rationale and outcomes.</p>
+                </div>
+                <div class="reveal reveal-d3 group rounded-2xl border border-stone-200 bg-white p-5 md:p-6 hover:border-pink-200 hover:bg-pink-50/30 transition-all relative">
+                    <span class="absolute top-3 right-3 md:top-4 md:right-4 px-2 py-0.5 rounded-full bg-rose-100 text-rose-600 text-[10px] font-bold uppercase tracking-wider">New</span>
+                    <div class="w-10 h-10 rounded-xl bg-pink-100 flex items-center justify-center mb-4">
+                        <svg class="w-5 h-5 text-pink-700" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/></svg>
+                    </div>
+                    <h3 class="font-display text-base md:text-lg font-bold mb-1.5">Journal</h3>
+                    <p class="text-sm md:text-base text-stone-500 leading-relaxed">Daily entries with mood tracking, cross-referenced.</p>
+                </div>
+                <div class="reveal reveal-d4 group rounded-2xl border border-stone-200 bg-white p-5 md:p-6 hover:border-cyan-200 hover:bg-cyan-50/30 transition-all relative">
+                    <span class="absolute top-3 right-3 md:top-4 md:right-4 px-2 py-0.5 rounded-full bg-rose-100 text-rose-600 text-[10px] font-bold uppercase tracking-wider">New</span>
+                    <div class="w-10 h-10 rounded-xl bg-cyan-100 flex items-center justify-center mb-4">
+                        <svg class="w-5 h-5 text-cyan-700" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+                    </div>
+                    <h3 class="font-display text-base md:text-lg font-bold mb-1.5">Notes</h3>
+                    <p class="text-sm md:text-base text-stone-500 leading-relaxed">Quick capture, auto-linked to contacts and projects.</p>
+                </div>
+            </div>
+            <!-- Pipeline Coming Soon -->
+            <div class="mt-6 reveal">
+                <div class="rounded-2xl border border-dashed border-stone-300 bg-white/60 p-5 md:p-6 flex items-center justify-between">
+                    <div class="flex items-center gap-4">
+                        <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-stone-100 to-stone-200 flex items-center justify-center">
+                            <svg class="w-5 h-5 text-stone-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+                        </div>
+                        <div>
+                            <h3 class="font-display text-base md:text-lg font-bold text-stone-700">Pipeline</h3>
+                            <p class="text-sm text-stone-400">Deals, opportunities, and revenue stages — coming soon.</p>
+                        </div>
+                    </div>
+                    <span class="hidden sm:inline-block px-3 py-1.5 rounded-full bg-stone-100 text-stone-500 text-xs font-semibold uppercase tracking-wider">Coming soon</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Key Insight: Compound Intelligence -->
+    <section class="py-20 md:py-28 relative overflow-hidden">
+        <div class="absolute inset-0 bg-gradient-to-br from-teal-50 via-cyan-50/60 to-violet-50/40"></div>
+        <div class="absolute inset-0 opacity-[0.035]" style="background-image: radial-gradient(circle, #0d9488 1px, transparent 1px); background-size: 32px 32px;"></div>
+        <div class="relative max-w-5xl mx-auto px-6 reveal">
+            <div class="text-center mb-14">
+                <p class="text-sm font-semibold text-teal-600 uppercase tracking-wider mb-4">The core difference</p>
+                <h2 class="font-display text-4xl md:text-6xl font-bold tracking-tight mb-6"><em>The magic is in<br>the connections.</em></h2>
+                <p class="text-base md:text-lg text-stone-600 leading-relaxed max-w-2xl mx-auto">
+                    Most tools store data. Software of You connects it. Every contact, email, meeting, project, decision, and journal entry cross-references every other — building a living model of your professional world.
+                </p>
+            </div>
+            <div class="grid md:grid-cols-3 gap-5 mb-14">
+                <div class="text-center p-7 md:p-8 rounded-2xl bg-white/80 backdrop-blur-sm border border-white shadow-lg shadow-teal-900/[0.04]">
+                    <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-teal-500 to-cyan-500 flex items-center justify-center mx-auto mb-5 shadow-lg shadow-teal-500/20">
+                        <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M13.828 10.172a4 4 0 0 0-5.656 0l-4 4a4 4 0 1 0 5.656 5.656l1.102-1.101"/><path d="M10.172 13.828a4 4 0 0 0 5.656 0l4-4a4 4 0 0 0-5.656-5.656l-1.1 1.1"/></svg>
+                    </div>
+                    <h3 class="font-display text-lg font-bold mb-3">Everything connects</h3>
+                    <p class="text-sm md:text-base text-stone-500 leading-relaxed">View a contact and see their emails, meetings, projects, and conversation notes. Check a project and see the full client relationship. Review a decision and see who shaped it.</p>
+                </div>
+                <div class="text-center p-7 md:p-8 rounded-2xl bg-white/80 backdrop-blur-sm border border-white shadow-lg shadow-teal-900/[0.04]">
+                    <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-cyan-500 to-blue-500 flex items-center justify-center mx-auto mb-5 shadow-lg shadow-cyan-500/20">
+                        <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M2 20h.01"/><path d="M7 20v-4"/><path d="M12 20v-8"/><path d="M17 20V8"/><path d="M22 4v16"/></svg>
+                    </div>
+                    <h3 class="font-display text-lg font-bold mb-3">Compounds over time</h3>
+                    <p class="text-sm md:text-base text-stone-500 leading-relaxed">The more you use it, the smarter it gets. Each new email, transcript, or journal entry enriches every existing record. Your data works harder the longer it lives in the system.</p>
+                </div>
+                <div class="text-center p-7 md:p-8 rounded-2xl bg-white/80 backdrop-blur-sm border border-white shadow-lg shadow-teal-900/[0.04]">
+                    <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-violet-500 to-purple-500 flex items-center justify-center mx-auto mb-5 shadow-lg shadow-violet-500/20">
+                        <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 1 1 7.072 0l-.548.547A3.374 3.374 0 0 0 12 18.469c-.874 0-1.688.335-2.292.84l-.244.2"/></svg>
+                    </div>
+                    <h3 class="font-display text-lg font-bold mb-3">Free intelligence upgrades</h3>
+                    <p class="text-sm md:text-base text-stone-500 leading-relaxed">Every time Anthropic releases a new Claude model, your entire system gets an intelligence upgrade — better insights, sharper connections. No cost, zero effort.</p>
+                </div>
+            </div>
+            <div class="text-center">
+                <p class="font-display text-lg md:text-xl italic text-teal-700/60 max-w-xl mx-auto">Your data stays yours. The AI understanding it keeps getting better.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- How It Works -->
+    <section class="py-20 md:py-24 bg-stone-50/50" id="how-it-works">
+        <div class="max-w-5xl mx-auto px-6">
+            <div class="text-center mb-16 reveal">
+                <h2 class="font-display text-3xl md:text-5xl font-bold tracking-tight mb-5">Up and running in <span class="gradient-text">three minutes</span></h2>
+                <p class="text-base md:text-lg text-stone-500 max-w-2xl mx-auto">No accounts to create. No apps to download. No onboarding wizards. Just one command.</p>
+            </div>
+            <div class="grid md:grid-cols-3 gap-8 mb-16">
+                <div class="reveal reveal-d1 text-center">
+                    <div class="w-12 h-12 rounded-2xl bg-teal-100 flex items-center justify-center mx-auto mb-4">
+                        <span class="font-display text-xl font-bold text-teal-700">1</span>
+                    </div>
+                    <h3 class="font-display text-lg font-bold mb-2">Install the plugin</h3>
+                    <p class="text-sm md:text-base text-stone-500 leading-relaxed">One command in Claude Code. Takes under 10 seconds. The database is created automatically.</p>
+                </div>
+                <div class="reveal reveal-d2 text-center">
+                    <div class="w-12 h-12 rounded-2xl bg-teal-100 flex items-center justify-center mx-auto mb-4">
+                        <span class="font-display text-xl font-bold text-teal-700">2</span>
+                    </div>
+                    <h3 class="font-display text-lg font-bold mb-2">Talk naturally</h3>
+                    <p class="text-sm md:text-base text-stone-500 leading-relaxed">No forms, no fields. Just describe what you need in plain English and the AI handles the rest.</p>
+                </div>
+                <div class="reveal reveal-d3 text-center">
+                    <div class="w-12 h-12 rounded-2xl bg-teal-100 flex items-center justify-center mx-auto mb-4">
+                        <span class="font-display text-xl font-bold text-teal-700">3</span>
+                    </div>
+                    <h3 class="font-display text-lg font-bold mb-2">Watch it grow</h3>
+                    <p class="text-sm md:text-base text-stone-500 leading-relaxed">Connect Gmail, import transcripts, log decisions. The more you add, the more connections emerge.</p>
+                </div>
+            </div>
+
+            <!-- Conversation Demo — Terminal Style -->
+            <div class="reveal max-w-3xl mx-auto mb-10">
+                <p class="text-xs font-semibold text-stone-400 uppercase tracking-wider text-center mb-4">What it looks like in practice</p>
+                <div class="bg-stone-900 rounded-2xl overflow-hidden shadow-xl">
+                    <div class="flex items-center gap-2 px-4 py-3 bg-stone-800/80">
+                        <span class="w-2.5 h-2.5 rounded-full bg-rose-400/80"></span>
+                        <span class="w-2.5 h-2.5 rounded-full bg-amber-400/80"></span>
+                        <span class="w-2.5 h-2.5 rounded-full bg-green-400/80"></span>
+                        <span class="ml-3 text-xs text-stone-500 font-mono">Claude Code</span>
+                    </div>
+                    <div class="p-5 md:p-6 font-mono text-xs md:text-sm leading-relaxed space-y-4">
+                        <div>
+                            <p class="term-dim">~/projects</p>
+                            <p><span class="term-prompt">$</span> <span class="term-output">Add a contact: Sarah Chen, VP of Eng at Meridian Labs. Met at API conference last week.</span></p>
+                        </div>
+                        <div class="pl-2 border-l-2 border-teal-800/40 space-y-1.5">
+                            <p class="term-success">&#10003; Contact created: Sarah Chen</p>
+                            <p class="term-muted">  VP of Engineering &middot; Meridian Labs</p>
+                            <p class="term-muted">  Note: Met at API conference</p>
+                            <p class="term-accent mt-2">  Want to set a follow-up reminder?</p>
+                        </div>
+                        <div>
+                            <p><span class="term-prompt">$</span> <span class="term-output">Yes, follow up next Tuesday about sending the proposal</span></p>
+                        </div>
+                        <div class="pl-2 border-l-2 border-teal-800/40 space-y-1.5">
+                            <p class="term-success">&#10003; Follow-up set: Send proposal to Sarah Chen</p>
+                            <p class="term-muted">  Due: Tuesday, Feb 25</p>
+                            <p class="term-output mt-2">  Sarah has <span class="term-accent">2 emails</span> and <span class="term-accent">1 upcoming meeting</span> in your system.</p>
+                            <p class="term-accent">  View her full profile?</p>
+                        </div>
+                        <div>
+                            <p><span class="term-prompt">$</span> <span class="terminal-cursor text-teal-300">&#9612;</span></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Terminal -->
+            <div class="reveal max-w-2xl mx-auto">
+                <div class="bg-stone-900 rounded-2xl overflow-hidden shadow-xl">
+                    <div class="flex items-center gap-2 px-4 py-3 bg-stone-800/80">
+                        <span class="w-2.5 h-2.5 rounded-full bg-rose-400/80"></span>
+                        <span class="w-2.5 h-2.5 rounded-full bg-amber-400/80"></span>
+                        <span class="w-2.5 h-2.5 rounded-full bg-green-400/80"></span>
+                        <span class="ml-3 text-xs text-stone-500 font-mono">Terminal</span>
+                    </div>
+                    <div class="p-5 font-mono text-xs md:text-sm leading-loose">
+                        <p class="text-stone-400"><span class="text-teal-400">$</span> claude plugin add software-of-you</p>
+                        <p class="text-stone-500 mt-1">Installing Software of You v2.0...</p>
+                        <p class="text-stone-500">Running migrations... 7/7 complete</p>
+                        <p class="text-green-400 mt-1">&#10003; Ready. 8 modules active.</p>
+                        <p class="text-stone-400 mt-2"><span class="text-teal-400">$</span> <span class="terminal-cursor text-teal-300">&#9612;</span></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Auto-Upgrade -->
+    <section class="py-16 border-y border-stone-100">
+        <div class="max-w-5xl mx-auto px-6">
+            <div class="grid md:grid-cols-2 gap-8 reveal">
+                <div class="flex items-start gap-5">
+                    <div class="flex-shrink-0 w-12 h-12 rounded-2xl bg-gradient-to-br from-teal-100 to-cyan-100 flex items-center justify-center">
+                        <svg class="w-6 h-6 text-teal-700" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                    </div>
+                    <div>
+                        <h3 class="font-display text-lg font-bold mb-2">New modules, automatically</h3>
+                        <p class="text-sm md:text-base text-stone-500 leading-relaxed">When we release new modules — Health Tracking, Financial Planner, Reading Log — they arrive with your next plugin update. No re-purchase, no migration headaches.</p>
+                    </div>
+                </div>
+                <div class="flex items-start gap-5">
+                    <div class="flex-shrink-0 w-12 h-12 rounded-2xl bg-gradient-to-br from-violet-100 to-blue-100 flex items-center justify-center">
+                        <svg class="w-6 h-6 text-violet-700" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 1 1 7.072 0l-.548.547A3.374 3.374 0 0 0 12 18.469c-.874 0-1.688.335-2.292.84l-.244.2"/></svg>
+                    </div>
+                    <div>
+                        <h3 class="font-display text-lg font-bold mb-2">Smarter AI, automatically</h3>
+                        <p class="text-sm md:text-base text-stone-500 leading-relaxed">Every new Claude model release makes your entire system more intelligent — better insights, sharper connections, more nuanced understanding of your relationships. You don't lift a finger.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Social Proof: Why I Built This -->
+    <section class="py-20 md:py-24">
+        <div class="max-w-3xl mx-auto px-6 text-center reveal">
+            <svg class="w-8 h-8 text-stone-200 mx-auto mb-6" fill="currentColor" viewBox="0 0 24 24"><path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10h-9.983zm-14.017 0v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151c-2.433.917-3.996 3.638-3.996 5.849h3.983v10h-9.983z"/></svg>
+            <blockquote class="font-display text-xl md:text-2xl font-medium text-stone-700 leading-relaxed mb-6">
+                I was spending $120/month on tools that all held fragments of the same relationships. My CRM knew names. My email knew conversations. My notes knew context. But none of them talked to each other.
+            </blockquote>
+            <p class="text-stone-500 leading-relaxed max-w-xl mx-auto">
+                So I built the tool I wanted — one that treats professional relationships as the complex, multi-dimensional things they actually are. Where every email, meeting, decision, and conversation enriches every contact.
+            </p>
+            <div class="mt-8 flex items-center justify-center gap-3">
+                <div class="w-10 h-10 rounded-full bg-teal-100 flex items-center justify-center">
+                    <span class="text-sm font-bold text-teal-700">KM</span>
+                </div>
+                <div class="text-left">
+                    <p class="text-sm font-semibold text-stone-800">Kerry</p>
+                    <p class="text-xs text-stone-500">Creator, Software of You</p>
+                </div>
+            </div>
+            <div class="mt-10 pt-8 border-t border-stone-100 flex items-center justify-center gap-2">
+                <span class="text-xs text-stone-400">Built on</span>
+                <svg class="w-5 h-5 text-stone-400" viewBox="0 0 24 24" fill="currentColor"><path d="M4.709 15.955l4.72-2.756.08-.046 2.91-1.707c.14-.083.14-.288 0-.37L9.51 9.368l-.08-.046-4.72-2.756c-.14-.082-.14-.288 0-.37l2.07-1.209a.73.73 0 0 1 .73 0l7.39 4.307.08.047 2.06 1.209c.14.082.14.288 0 .37l-2.06 1.208-.08.047-7.39 4.307a.73.73 0 0 1-.73 0l-2.07-1.209c-.14-.082-.14-.287 0-.37z"/></svg>
+                <span class="text-xs font-semibold text-stone-500">Claude by Anthropic</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- Privacy -->
+    <section class="py-20 md:py-24 bg-stone-50/50">
+        <div class="max-w-5xl mx-auto px-6">
+            <div class="max-w-3xl reveal">
+                <h2 class="font-display text-3xl md:text-5xl font-bold tracking-tight mb-6">Your data never leaves <span class="gradient-text">your machine</span></h2>
+                <p class="text-base md:text-lg text-stone-500 leading-relaxed mb-5">
+                    Software of You stores everything in a local SQLite database on your computer. There's no cloud sync, no analytics, no telemetry. When you connect Gmail or Calendar, the sync runs directly between your machine and Google's API — we never see your data.
+                </p>
+                <p class="text-base md:text-lg text-stone-500 leading-relaxed">
+                    You can inspect, backup, or export the database anytime. It's a standard SQLite file — no vendor lock-in, no proprietary formats. Your data belongs to you.
+                </p>
+                <div class="flex flex-wrap gap-6 mt-8">
+                    <div class="flex items-center gap-2">
+                        <svg class="w-5 h-5 text-teal-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                        <span class="text-sm font-medium text-stone-700">Local-only storage</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <svg class="w-5 h-5 text-teal-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>
+                        <span class="text-sm font-medium text-stone-700">Zero telemetry</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <svg class="w-5 h-5 text-teal-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"/><path d="M14 2v6h6"/></svg>
+                        <span class="text-sm font-medium text-stone-700">Standard SQLite format</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Pricing -->
+    <section class="py-20 md:py-24" id="pricing">
+        <div class="max-w-5xl mx-auto px-6">
+            <div class="text-center mb-16 reveal">
+                <h2 class="font-display text-3xl md:text-5xl font-bold tracking-tight mb-5">One price. <span class="font-display italic font-medium">Everything included.</span></h2>
+                <p class="text-base md:text-lg text-stone-500 max-w-2xl mx-auto">No tiers. No per-seat pricing. No feature gates. One purchase gets you the complete platform — today and every future update.</p>
+            </div>
+            <div class="max-w-md mx-auto reveal">
+                <div class="rounded-3xl border-2 border-teal-200 bg-white p-8 md:p-10 text-center price-glow">
+                    <p class="text-sm font-semibold text-teal-600 uppercase tracking-wider mb-6">Complete Platform</p>
+                    <div class="mb-8">
+                        <span class="font-display text-6xl md:text-7xl font-bold gradient-text">$149</span>
+                        <p class="text-stone-400 mt-2">One-time purchase</p>
+                    </div>
+                    <ul class="text-left space-y-3 mb-8">
+                        <li class="flex items-start gap-3 text-sm md:text-base text-stone-600">
+                            <svg class="w-5 h-5 text-teal-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>
+                            All 8 modules — CRM, Projects, Email, Calendar, Conversations, Decisions, Journal, Notes
+                        </li>
+                        <li class="flex items-start gap-3 text-sm md:text-base text-stone-600">
+                            <svg class="w-5 h-5 text-teal-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>
+                            All future modules at no additional cost
+                        </li>
+                        <li class="flex items-start gap-3 text-sm md:text-base text-stone-600">
+                            <svg class="w-5 h-5 text-teal-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>
+                            Local SQLite database — your data, your machine
+                        </li>
+                        <li class="flex items-start gap-3 text-sm md:text-base text-stone-600">
+                            <svg class="w-5 h-5 text-teal-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>
+                            Gmail &amp; Calendar auto-sync
+                        </li>
+                        <li class="flex items-start gap-3 text-sm md:text-base text-stone-600">
+                            <svg class="w-5 h-5 text-teal-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>
+                            AI-powered natural language interface
+                        </li>
+                        <li class="flex items-start gap-3 text-sm md:text-base text-stone-600">
+                            <svg class="w-5 h-5 text-teal-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>
+                            Lifetime updates
+                        </li>
+                    </ul>
+                    <a href="#" class="block w-full py-4 bg-teal-700 hover:bg-teal-800 text-white font-semibold rounded-xl transition-colors text-sm shadow-lg shadow-teal-700/20">Get Software of You</a>
+                    <p class="text-xs text-stone-400 mt-4">30-day money-back guarantee. No questions asked.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- FAQ -->
+    <section class="py-20 md:py-24 bg-stone-50/50" id="faq">
+        <div class="max-w-3xl mx-auto px-6">
+            <div class="text-center mb-16 reveal">
+                <h2 class="font-display text-3xl md:text-4xl font-bold tracking-tight">Frequently asked questions</h2>
+            </div>
+            <div class="space-y-3">
+                <div class="reveal rounded-xl border border-stone-200 bg-white overflow-hidden">
+                    <button class="w-full flex items-center justify-between p-5 text-left" onclick="toggleFaq(this)">
+                        <span class="font-display text-sm md:text-base font-semibold pr-4">What exactly is Software of You?</span>
+                        <svg class="faq-chevron w-5 h-5 text-stone-400 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg>
+                    </button>
+                    <div class="faq-answer"><div class="px-5 pb-5"><p class="text-stone-500 leading-relaxed text-sm md:text-base">It's a Claude Code plugin that turns your AI assistant into a full personal data platform. It adds a local SQLite database and 8 integrated modules — CRM, Project Tracker, Gmail, Calendar, Conversation Intelligence, Decision Journal, Journal, and Notes. You interact with everything through natural language. No new app to learn.</p></div></div>
+                </div>
+                <div class="reveal reveal-d1 rounded-xl border border-stone-200 bg-white overflow-hidden">
+                    <button class="w-full flex items-center justify-between p-5 text-left" onclick="toggleFaq(this)">
+                        <span class="font-display text-sm md:text-base font-semibold pr-4">How is this different from a regular CRM?</span>
+                        <svg class="faq-chevron w-5 h-5 text-stone-400 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg>
+                    </button>
+                    <div class="faq-answer"><div class="px-5 pb-5"><p class="text-stone-500 leading-relaxed text-sm md:text-base">Traditional CRMs are isolated silos. Software of You cross-references everything: your contacts know about your projects, your emails link to your meetings, your conversation transcripts feed into your follow-ups. It's not just a CRM — it's a relationship operating system that connects every dimension of your professional life.</p></div></div>
+                </div>
+                <div class="reveal reveal-d2 rounded-xl border border-stone-200 bg-white overflow-hidden">
+                    <button class="w-full flex items-center justify-between p-5 text-left" onclick="toggleFaq(this)">
+                        <span class="font-display text-sm md:text-base font-semibold pr-4">Where does my data live?</span>
+                        <svg class="faq-chevron w-5 h-5 text-stone-400 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg>
+                    </button>
+                    <div class="faq-answer"><div class="px-5 pb-5"><p class="text-stone-500 leading-relaxed text-sm md:text-base">On your machine, period. Everything is stored in a local SQLite database. Nothing is sent to external servers. When you connect Gmail or Calendar, the sync runs directly between your machine and Google's API with your own OAuth token. You can backup, export, or inspect the database anytime.</p></div></div>
+                </div>
+                <div class="reveal reveal-d3 rounded-xl border border-stone-200 bg-white overflow-hidden">
+                    <button class="w-full flex items-center justify-between p-5 text-left" onclick="toggleFaq(this)">
+                        <span class="font-display text-sm md:text-base font-semibold pr-4">Do I need to pay monthly?</span>
+                        <svg class="faq-chevron w-5 h-5 text-stone-400 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg>
+                    </button>
+                    <div class="faq-answer"><div class="px-5 pb-5"><p class="text-stone-500 leading-relaxed text-sm md:text-base">No. $149 is a one-time purchase. You get all current modules and all future modules. No subscriptions, no per-seat pricing, no enterprise tiers. Pay once, use forever.</p></div></div>
+                </div>
+                <div class="reveal rounded-xl border border-stone-200 bg-white overflow-hidden">
+                    <button class="w-full flex items-center justify-between p-5 text-left" onclick="toggleFaq(this)">
+                        <span class="font-display text-sm md:text-base font-semibold pr-4">What about Gmail and Calendar integration?</span>
+                        <svg class="faq-chevron w-5 h-5 text-stone-400 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg>
+                    </button>
+                    <div class="faq-answer"><div class="px-5 pb-5"><p class="text-stone-500 leading-relaxed text-sm md:text-base">Software of You connects to your Google account via OAuth. It syncs your recent emails and upcoming calendar events into the local database, then cross-references them with your contacts and projects. The sync happens automatically — you never have to think about it.</p></div></div>
+                </div>
+                <div class="reveal reveal-d1 rounded-xl border border-stone-200 bg-white overflow-hidden">
+                    <button class="w-full flex items-center justify-between p-5 text-left" onclick="toggleFaq(this)">
+                        <span class="font-display text-sm md:text-base font-semibold pr-4">Can I use this for a team?</span>
+                        <svg class="faq-chevron w-5 h-5 text-stone-400 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg>
+                    </button>
+                    <div class="faq-answer"><div class="px-5 pb-5"><p class="text-stone-500 leading-relaxed text-sm md:text-base">Software of You is designed for individual professionals. It's your personal operating system — your contacts, your projects, your decisions. Each person would have their own installation with their own local database.</p></div></div>
+                </div>
+                <div class="reveal reveal-d2 rounded-xl border border-stone-200 bg-white overflow-hidden">
+                    <button class="w-full flex items-center justify-between p-5 text-left" onclick="toggleFaq(this)">
+                        <span class="font-display text-sm md:text-base font-semibold pr-4">What happens when you release new modules?</span>
+                        <svg class="faq-chevron w-5 h-5 text-stone-400 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg>
+                    </button>
+                    <div class="faq-answer"><div class="px-5 pb-5"><p class="text-stone-500 leading-relaxed text-sm md:text-base">They're included automatically. When you update the plugin, new modules are detected and installed in your next session. Your existing data is never affected — migrations are additive and idempotent. No extra charge, ever.</p></div></div>
+                </div>
+                <div class="reveal reveal-d3 rounded-xl border border-stone-200 bg-white overflow-hidden">
+                    <button class="w-full flex items-center justify-between p-5 text-left" onclick="toggleFaq(this)">
+                        <span class="font-display text-sm md:text-base font-semibold pr-4">What if I want to stop using it?</span>
+                        <svg class="faq-chevron w-5 h-5 text-stone-400 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg>
+                    </button>
+                    <div class="faq-answer"><div class="px-5 pb-5"><p class="text-stone-500 leading-relaxed text-sm md:text-base">Your data is yours. The SQLite database is a standard file you can open with any SQLite client. Nothing is locked in. You can export everything, query it directly, or just keep the database file. Zero vendor lock-in.</p></div></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Final CTA -->
+    <section class="py-20 md:py-24 bg-gradient-to-br from-teal-800 via-teal-900 to-teal-950 text-white relative overflow-hidden">
+        <div class="absolute inset-0 opacity-[0.03]" style="background-image: radial-gradient(circle, white 0.5px, transparent 0.5px); background-size: 24px 24px;"></div>
+        <div class="relative max-w-3xl mx-auto px-6 text-center">
+            <h2 class="font-display text-3xl md:text-5xl font-bold tracking-tight mb-6">Ready to bring it<br>all together?</h2>
+            <p class="text-teal-200 text-base md:text-lg max-w-xl mx-auto mb-10 leading-relaxed">Stop scattering your professional life across a dozen different tools. Software of You puts everything in one place — on your machine, under your control.</p>
+            <a href="#pricing" class="inline-block px-10 py-4 bg-white text-teal-900 font-semibold rounded-xl hover:bg-teal-50 transition-colors text-sm shadow-lg">Get Started — $149</a>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="py-8 bg-stone-900">
+        <div class="max-w-5xl mx-auto px-6 flex items-center justify-between">
+            <p class="text-stone-500 text-sm font-display font-semibold"><span class="gradient-text">SoY</span> <span class="text-stone-600">&middot;</span> Software of You &copy; 2026</p>
+            <p class="text-stone-600 text-xs">A Claude Code Plugin</p>
+        </div>
+    </footer>
+
+    <script>
+        /* Tab switching */
+        var tabContent = {
+            dashboard: {
+                img: 'screenshots/dashboard.png',
+                title: 'Your Command Center',
+                desc: "Start every morning with a complete picture \u2014 not a scramble across six different apps. Your dashboard surfaces today\u2019s meetings, overdue follow-ups, recent emails, and activity across every module. It\u2019s the briefing you wish you had before every workday.",
+                features: ['Real-time activity feed', 'Email preview with context', "Today\u2019s calendar at a glance", 'Follow-up urgency tracking']
+            },
+            crm: {
+                img: 'screenshots/entity-page.png',
+                title: 'Relationships in Full Context',
+                desc: "Every contact becomes a living dossier. When someone reaches out, you don\u2019t just see their latest email \u2014 you see every touchpoint: past meetings, project history, conversation notes, outstanding commitments, and how the relationship has evolved over time.",
+                features: ['Cross-module timeline', 'Email & calendar integration', 'Project connections', 'Relationship health']
+            },
+            conversations: {
+                img: 'screenshots/conversations.png',
+                title: 'Never Forget What Was Said',
+                desc: "Import any meeting transcript and let AI extract the signal: who committed to what, by when, and what the emotional temperature was. Track open commitments across all your conversations. Catch cooling relationships before they go cold.",
+                features: ['AI-extracted commitments', 'Sentiment scoring', 'Deadline tracking', 'Relationship health scores']
+            },
+            decisions: {
+                img: 'screenshots/decisions.png',
+                title: 'Build Your Decision Memory',
+                desc: "Most decisions disappear into the ether. Software of You gives them a permanent home \u2014 with the context you had, the options you weighed, the rationale you chose, and what actually happened. Over time, you build institutional memory that makes you sharper.",
+                features: ['Structured decision logging', 'Options & rationale', 'Outcome tracking', 'Pattern recognition']
+            }
+        };
+        var currentTab = 'dashboard';
+        function switchTab(tabId) {
+            if (currentTab === tabId) return;
+            currentTab = tabId;
+            document.querySelectorAll('.showcase-tab').forEach(function(t) {
+                if (t.dataset.tab === tabId) { t.classList.add('active'); }
+                else { t.classList.remove('active'); }
+            });
+            var display = document.getElementById('showcase-display');
+            display.classList.add('transitioning');
+            setTimeout(function() {
+                var data = tabContent[tabId];
+                document.getElementById('showcase-img').src = data.img;
+                document.getElementById('showcase-title').textContent = data.title;
+                document.getElementById('showcase-desc').textContent = data.desc;
+                var featuresEl = document.getElementById('showcase-features');
+                while (featuresEl.firstChild) { featuresEl.removeChild(featuresEl.firstChild); }
+                data.features.forEach(function(f) {
+                    var span = document.createElement('span');
+                    span.className = 'px-3 py-1.5 rounded-lg bg-white border border-stone-200 text-xs font-medium text-stone-600';
+                    span.textContent = f;
+                    featuresEl.appendChild(span);
+                });
+                display.classList.remove('transitioning');
+            }, 350);
+        }
+
+        /* FAQ accordion */
+        function toggleFaq(button) {
+            var answer = button.nextElementSibling;
+            var chevron = button.querySelector('.faq-chevron');
+            var isOpen = answer.classList.contains('open');
+            document.querySelectorAll('.faq-answer').forEach(function(a) { a.classList.remove('open'); });
+            document.querySelectorAll('.faq-chevron').forEach(function(c) { c.classList.remove('open'); });
+            if (!isOpen) {
+                answer.classList.add('open');
+                chevron.classList.add('open');
+            }
+        }
+
+        /* Mobile menu */
+        function toggleMobileMenu() {
+            document.getElementById('mobile-menu').classList.toggle('open');
+        }
+        function closeMobileMenu() {
+            document.getElementById('mobile-menu').classList.remove('open');
+        }
+
+        /* Scroll reveal */
+        var observer = new IntersectionObserver(function(entries) {
+            entries.forEach(function(entry) {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('revealed');
+                    observer.unobserve(entry.target);
+                }
+            });
+        }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+        document.querySelectorAll('.reveal').forEach(function(el) { observer.observe(el); });
+
+        /* Cost strikethrough animation */
+        var strikeObserver = new IntersectionObserver(function(entries) {
+            entries.forEach(function(entry) {
+                if (entry.isIntersecting) {
+                    setTimeout(function() { entry.target.classList.add('struck'); }, 600);
+                    strikeObserver.unobserve(entry.target);
+                }
+            });
+        }, { threshold: 0.5 });
+        document.querySelectorAll('.cost-strike').forEach(function(el) { strikeObserver.observe(el); });
+    </script>
+<!-- DEMO BANNER -->
+<div id="demo-banner" style="position:fixed;bottom:0;left:0;right:0;z-index:9999;background:#1A4731;color:white;font-family:'DM Mono',monospace;font-size:12px;letter-spacing:0.04em;display:flex;align-items:center;justify-content:center;gap:24px;padding:10px 24px;box-shadow:0 -2px 16px rgba(0,0,0,0.2);">
+  <span style="opacity:0.7;">✦ LIVE DEMO — anonymized data</span>
+  <span style="opacity:0.4;">|</span>
+  <span>This is what Software of You looks like with 3 months of real use.</span>
+  <span style="opacity:0.4;">|</span>
+  <a href="https://softwareof.you" style="color:#a8e6c0;text-decoration:none;font-weight:500;white-space:nowrap;" target="_top">Get it for yourself →</a>
+  <button onclick="document.getElementById('demo-banner').style.display='none'" style="margin-left:8px;background:none;border:none;color:rgba(255,255,255,0.4);cursor:pointer;font-size:16px;line-height:1;padding:0 4px;" title="Dismiss">×</button>
+</div>
+<div style="height:44px;"></div><!-- spacer so banner doesn't cover content -->
+</body>
+</html>

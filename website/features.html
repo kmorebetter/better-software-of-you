@@ -1,0 +1,1038 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Features — Software of You</title>
+  <meta name="description" content="Eight modules. One context layer. Everything connected. Software of You is a Claude Code plugin that builds a personal context system from your work." />
+  <meta name="robots" content="index, follow">
+  <link rel="canonical" href="https://softwareof.you/features.html">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://softwareof.you/features.html">
+  <meta property="og:title" content="Features — Software of You">
+  <meta property="og:description" content="Eight modules. One context layer. CRM, Projects, Gmail, Calendar, Conversations, Decisions, Journal, Notes — all queryable through Claude. $149, once.">
+  <meta property="og:site_name" content="Software of You">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Features — Software of You">
+  <meta name="twitter:description" content="Eight modules. One context layer. Everything connected. Software of You is a Claude Code plugin that builds a personal context system from your work.">
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"WebPage","url":"https://softwareof.you/features.html","name":"Features — Software of You","description":"Eight modules. One context layer. CRM, Projects, Gmail, Calendar, Conversations, Decisions, Journal, Notes — all queryable through Claude. $149, once.","isPartOf":{"@type":"WebSite","url":"https://softwareof.you/","name":"Software of You"},"about":{"@type":"SoftwareApplication","name":"Software of You","offers":{"@type":"Offer","price":"149","priceCurrency":"USD"}}}</script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300;1,400;1,500&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300;1,9..40,400&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet" />
+
+  <style>
+    /* ─── TOKENS ─────────────────────────────────────────────────────────── */
+    :root {
+      --bone:        #FAF9F6;
+      --bone-mid:    #F2F0EB;
+      --bone-deep:   #E8E4DC;
+      --ink:         #0F0E0C;
+      --ink-2:       #2C2A26;
+      --ink-3:       #6B6860;
+      --ink-4:       #A8A49C;
+      --ink-5:       #D4D0C8;
+      --forest:      #1A4731;
+      --forest-mid:  #245E41;
+      --forest-pale: #EBF2EE;
+      --forest-bg:   #F2F7F4;
+      --ember:       #A63325;
+      --ember-pale:  #FBF2F0;
+      --rule:        rgba(15,14,12,0.08);
+      --rule-mid:    rgba(15,14,12,0.13);
+      --rule-heavy:  rgba(15,14,12,0.22);
+    }
+
+    /* ─── RESET ──────────────────────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { font-size: 16px; scroll-behavior: smooth; -webkit-font-smoothing: antialiased; }
+    body {
+      background: var(--bone);
+      color: var(--ink-2);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 1rem;
+      line-height: 1.65;
+      overflow-x: hidden;
+    }
+    a { color: inherit; text-decoration: none; }
+    img { display: block; max-width: 100%; }
+
+    /* ─── UTILITIES ──────────────────────────────────────────────────────── */
+    .container { max-width: 1200px; margin: 0 auto; padding: 0 32px; }
+    .mono { font-family: 'DM Mono', monospace; }
+    .serif { font-family: 'DM Serif Display', serif; }
+
+    /* ─── SCROLL REVEAL ──────────────────────────────────────────────────── */
+    .reveal {
+      opacity: 0;
+      transform: translateY(28px);
+      transition: opacity 0.65s ease, transform 0.65s ease;
+    }
+    .reveal.in {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    .reveal.delay-1 { transition-delay: 0.1s; }
+    .reveal.delay-2 { transition-delay: 0.2s; }
+    .reveal.delay-3 { transition-delay: 0.3s; }
+    .reveal.delay-4 { transition-delay: 0.4s; }
+    .reveal.delay-5 { transition-delay: 0.5s; }
+    .reveal.delay-6 { transition-delay: 0.6s; }
+    .reveal.delay-7 { transition-delay: 0.7s; }
+    .reveal.delay-8 { transition-delay: 0.8s; }
+
+    /* ─── NAV ────────────────────────────────────────────────────────────── */
+    .nav { position:fixed; top:0; left:0; right:0; z-index:100; background:rgba(250,249,246,0.92); backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px); border-bottom:1px solid var(--rule); }
+    .nav__inner { max-width:1200px; margin:0 auto; padding:0 48px; height:64px; display:flex; align-items:center; justify-content:space-between; }
+    .nav__logo { font-family:'DM Serif Display',Georgia,serif; font-size:17px; color:var(--ink); text-decoration:none; letter-spacing:0.01em; }
+    .nav__logo span { font-style:italic; color:var(--forest); }
+    .nav__links { display:flex; align-items:center; gap:28px; list-style:none; }
+    .nav__links a { font-family:'DM Mono',monospace; font-size:11px; letter-spacing:0.08em; text-transform:uppercase; color:var(--ink-3); text-decoration:none; transition:color 0.18s; }
+    .nav__links a:hover, .nav__links a.active { color:var(--ink); }
+    .nav__item--has-sub { position:relative; }
+    .nav__item--has-sub > a { cursor: pointer; }
+    .nav__item--has-sub > a::after { content:''; display:inline-block; width:5px; height:5px; border-right:1.5px solid currentColor; border-bottom:1.5px solid currentColor; transform:rotate(45deg) translateY(-2px); margin-left:6px; opacity:0.5; transition:transform 0.18s; }
+    .nav__sub { position:absolute; top:calc(100% + 8px); left:50%; transform:translateX(-50%) translateY(-4px); background:white; border:1px solid var(--rule-heavy); min-width:220px; padding:8px 0; list-style:none; opacity:0; visibility:hidden; pointer-events:none; transition:opacity 0.16s,transform 0.16s; box-shadow:0 8px 24px rgba(0,0,0,0.08); }
+    .nav__item--has-sub.open > a::after { transform:rotate(225deg) translateY(-2px); }
+    .nav__item--has-sub.open .nav__sub { opacity:1; visibility:visible; pointer-events:auto; transform:translateX(-50%) translateY(0); }
+
+    .nav__sub li a { display:flex; align-items:center; gap:10px; padding:9px 20px; font-family:'DM Sans',sans-serif; font-size:13px; letter-spacing:0; text-transform:none; color:var(--ink-2); transition:background 0.12s; }
+    .nav__sub li a:hover { background:var(--bone); color:var(--ink); }
+    .nav__sub__num { font-family:'DM Mono',monospace; font-size:10px; color:var(--ink-5); min-width:16px; }
+    .nav__sub__divider { height:1px; background:var(--rule); margin:6px 20px; }
+    .nav__right { display:flex; align-items:center; gap:36px; }
+    .nav__cta { font-family:'DM Sans',sans-serif; font-size:13px; font-weight:500; letter-spacing:0.04em; color:var(--bone); background:var(--forest); padding:10px 24px; text-decoration:none; border-radius:2px; transition:background 0.18s,transform 0.14s; }
+    .nav__cta:hover { background:var(--forest-mid); transform:translateY(-1px); }
+
+    /* ─── HERO ───────────────────────────────────────────────────────────── */
+    .hero {
+      padding-top: 64px;
+      min-height: 72vh;
+      background: var(--forest);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+      background-size: 40px 40px;
+      pointer-events: none;
+    }
+    .hero__ghost {
+      position: absolute;
+      right: -20px;
+      bottom: -60px;
+      font-family: 'DM Serif Display', Georgia, serif;
+      font-style: italic;
+      font-size: clamp(200px, 28vw, 380px);
+      line-height: 1;
+      color: rgba(255,255,255,0.04);
+      pointer-events: none;
+      user-select: none;
+      letter-spacing: -0.04em;
+    }
+    .hero-label {
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: rgba(235,242,238,0.55);
+      margin-bottom: 24px;
+      display: block;
+    }
+    .hero-headline {
+      font-family: 'DM Serif Display', serif;
+      font-size: clamp(2.5rem, 5.5vw, 4.25rem);
+      line-height: 1.08;
+      letter-spacing: -0.02em;
+      color: var(--forest-pale);
+      max-width: 780px;
+      margin-bottom: 28px;
+    }
+    .hero-headline em {
+      color: #ffffff;
+    }
+    .hero-sub {
+      font-family: 'DM Serif Display', serif;
+      font-style: italic;
+      font-size: clamp(1.125rem, 2.2vw, 1.5rem);
+      color: rgba(235,242,238,0.65);
+      max-width: 560px;
+      line-height: 1.4;
+    }
+
+    /* ─── SECTIONS SHARED ────────────────────────────────────────────────── */
+    .section { padding: 104px 0; }
+    .section-label {
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--forest);
+      margin-bottom: 16px;
+      display: block;
+    }
+    .section-title {
+      font-family: 'DM Serif Display', serif;
+      font-size: clamp(2rem, 3.8vw, 3rem);
+      line-height: 1.1;
+      letter-spacing: -0.02em;
+      color: var(--ink);
+      margin-bottom: 24px;
+    }
+
+    /* section header with ghost number */
+    .section-header {
+      position: relative;
+      margin-bottom: 64px;
+    }
+    .section-ghost {
+      position: absolute;
+      top: -40px;
+      left: -12px;
+      font-family: 'DM Serif Display', serif;
+      font-style: italic;
+      font-size: 160px;
+      line-height: 1;
+      color: rgba(15,14,12,0.035);
+      pointer-events: none;
+      user-select: none;
+      z-index: 0;
+    }
+    .section-header > * { position: relative; z-index: 1; }
+
+    /* ─── COMPOUND PROMISE ───────────────────────────────────────────────── */
+    .compound {
+      background: var(--bone);
+      border-top: 1px solid var(--rule);
+    }
+    .compound-body {
+      max-width: 760px;
+    }
+    .compound-body p {
+      font-size: 1.125rem;
+      line-height: 1.75;
+      color: var(--ink-2);
+      margin-bottom: 20px;
+    }
+    .compound-body p:last-child { margin-bottom: 0; }
+    .compound-body strong { color: var(--ink); font-weight: 600; }
+
+    /* ─── MODULE GRID ────────────────────────────────────────────────────── */
+    .modules-section {
+      background: var(--bone-mid);
+      border-top: 1px solid var(--rule);
+    }
+    .modules-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1px;
+      background: var(--rule-mid);
+      border: 1px solid var(--rule-mid);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    a.module-card {
+      background: var(--bone);
+      padding: 36px 32px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      border-left: 3px solid transparent;
+      transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s, background 0.2s;
+      cursor: pointer;
+      position: relative;
+      text-decoration: none;
+      color: inherit;
+    }
+    a.module-card:hover {
+      border-left-color: var(--forest);
+      box-shadow: 0 8px 32px rgba(15,14,12,0.08), 0 2px 8px rgba(15,14,12,0.05);
+      transform: translateY(-2px);
+      background: #fff;
+      z-index: 2;
+    }
+    .module-num {
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 0.1em;
+      color: var(--ink-4);
+    }
+    .module-name {
+      font-family: 'DM Serif Display', serif;
+      font-size: 1.5rem;
+      line-height: 1.15;
+      color: var(--ink);
+      letter-spacing: -0.01em;
+    }
+    .module-desc {
+      font-size: 0.875rem;
+      line-height: 1.55;
+      color: var(--ink-3);
+      flex: 1;
+    }
+    .module-query {
+      font-family: 'DM Mono', monospace;
+      font-style: italic;
+      font-size: 0.875rem;
+      line-height: 1.45;
+      color: var(--bone);
+      background: var(--ink-2);
+      padding: 8px 12px;
+      border-radius: 4px;
+      display: block;
+    }
+    .module-link {
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 0.06em;
+      color: var(--forest);
+      margin-top: 4px;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      transition: gap 0.2s;
+    }
+    a.module-card:hover .module-link { gap: 8px; }
+
+    /* ─── CROSS-MODULE SECTION ───────────────────────────────────────────── */
+    .cross-module {
+      background: var(--forest);
+      padding: 104px 0;
+      position: relative;
+      overflow: hidden;
+    }
+    .cross-module::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse 70% 80% at 80% 50%, rgba(255,255,255,0.03) 0%, transparent 60%);
+      pointer-events: none;
+    }
+    .cross-module .section-label { color: rgba(235,242,238,0.55); }
+    .cross-module .section-title { color: #fff; }
+    .cross-module .section-ghost { color: rgba(255,255,255,0.04); }
+
+    .cross-queries {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2px;
+      margin-top: 64px;
+      background: rgba(255,255,255,0.06);
+      border-radius: 8px;
+      overflow: hidden;
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+    .cross-query-item {
+      padding: 48px 44px;
+      background: rgba(26,71,49,0.6);
+      transition: background 0.25s;
+    }
+    .cross-query-item:hover { background: rgba(36,94,65,0.7); }
+    .cross-query-q {
+      font-family: 'DM Serif Display', serif;
+      font-style: italic;
+      font-size: clamp(1.25rem, 2.2vw, 1.625rem);
+      line-height: 1.25;
+      color: #fff;
+      margin-bottom: 16px;
+    }
+    .cross-query-q::before {
+      content: '"';
+      color: rgba(235,242,238,0.4);
+    }
+    .cross-query-q::after {
+      content: '"';
+      color: rgba(235,242,238,0.4);
+    }
+    .cross-query-feeds {
+      font-size: 0.875rem;
+      color: rgba(235,242,238,0.65);
+      line-height: 1.6;
+    }
+    .cross-query-feeds strong {
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: rgba(235,242,238,0.4);
+      display: block;
+      margin-bottom: 6px;
+    }
+    .feed-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 8px;
+    }
+    .feed-tag {
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 0.05em;
+      color: rgba(235,242,238,0.75);
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.1);
+      padding: 3px 9px;
+      border-radius: 3px;
+    }
+
+    /* ─── ARCHITECTURE NOTE ──────────────────────────────────────────────── */
+    .arch-section {
+      background: var(--bone);
+      border-top: 1px solid var(--rule);
+    }
+    .arch-inner {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 96px;
+      align-items: start;
+    }
+    .arch-left .section-title {
+      margin-bottom: 20px;
+    }
+    .arch-left p {
+      font-size: 1rem;
+      line-height: 1.75;
+      color: var(--ink-3);
+    }
+    .arch-right {
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+      margin-top: 16px;
+    }
+    .arch-fact {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      padding: 24px 28px;
+      background: var(--bone-mid);
+      border: 1px solid var(--rule-mid);
+      border-radius: 6px;
+    }
+    .arch-fact-label {
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--ink-4);
+    }
+    .arch-fact-value {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.875rem;
+      color: var(--ink);
+      line-height: 1.5;
+    }
+    .arch-fact-value code {
+      background: var(--bone-deep);
+      padding: 2px 6px;
+      border-radius: 3px;
+      font-size: 0.875rem;
+    }
+    .arch-fact-note {
+      font-size: 0.875rem;
+      color: var(--ink-4);
+      line-height: 1.5;
+    }
+
+    /* ─── CTA STRIP ──────────────────────────────────────────────────────── */
+    .cta-strip {
+      background: var(--forest);
+      padding: 80px 0;
+      text-align: center;
+    }
+    .cta-strip-label {
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: rgba(235,242,238,0.5);
+      margin-bottom: 20px;
+      display: block;
+    }
+    .cta-strip h2 {
+      font-family: 'DM Serif Display', serif;
+      font-size: clamp(1.75rem, 3.5vw, 2.75rem);
+      color: #fff;
+      letter-spacing: -0.02em;
+      margin-bottom: 12px;
+      line-height: 1.15;
+    }
+    .cta-strip p {
+      font-size: 1rem;
+      color: rgba(235,242,238,0.65);
+      margin-bottom: 40px;
+      max-width: 480px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    .cta-strip-actions {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+    .btn-primary {
+      font-family: 'DM Mono', monospace;
+      font-size: 12px;
+      letter-spacing: 0.05em;
+      background: #fff;
+      color: var(--forest);
+      padding: 14px 28px;
+      border-radius: 5px;
+      font-weight: 500;
+      transition: background 0.2s, transform 0.15s;
+      display: inline-block;
+    }
+    .btn-primary:hover {
+      background: var(--forest-pale);
+      transform: translateY(-2px);
+    }
+    .btn-ghost {
+      font-family: 'DM Mono', monospace;
+      font-size: 12px;
+      letter-spacing: 0.05em;
+      color: rgba(235,242,238,0.75);
+      border: 1px solid rgba(255,255,255,0.2);
+      padding: 14px 28px;
+      border-radius: 5px;
+      transition: border-color 0.2s, color 0.2s;
+      display: inline-block;
+    }
+    .btn-ghost:hover {
+      border-color: rgba(255,255,255,0.5);
+      color: #fff;
+    }
+
+    /* ─── FOOTER ─────────────────────────────────────────────────────────── */
+    .footer {
+      border-top: 1px solid var(--rule);
+      padding: 28px 0;
+    }
+    .footer-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+    .footer-copy {
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      color: var(--ink-4);
+      letter-spacing: 0.03em;
+    }
+    .footer-link {
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      color: var(--forest);
+      letter-spacing: 0.03em;
+      transition: color 0.2s;
+    }
+    .footer-link:hover { color: var(--forest-mid); }
+
+    /* ─── RESPONSIVE ─────────────────────────────────────────────────────── */
+    @media (max-width: 1024px) {
+      .modules-grid { grid-template-columns: repeat(2, 1fr); }
+      .cross-queries { grid-template-columns: 1fr; }
+      .arch-inner { grid-template-columns: 1fr; gap: 48px; }
+    }
+    @media (max-width: 768px) {
+      .container { padding: 0 20px; }
+      .nav-inner { padding: 0 20px; }
+      .hero { min-height: 60vh; }
+      .section { padding: 72px 0; }
+      .modules-grid { grid-template-columns: 1fr; }
+      .cross-module { padding: 72px 0; }
+      .nav-links { gap: 18px; }
+      .nav-links li:not(:last-child) { display: none; }
+      .section-ghost { font-size: 100px; }
+      .cross-query-item { padding: 36px 28px; }
+    }
+    @media (max-width: 480px) {
+      .hero-headline { font-size: 2.25rem; }
+      .cta-strip { padding: 64px 0; }
+    }
+  </style>
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-TQFFERGZW1"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-TQFFERGZW1');
+  </script>
+</head>
+
+<body>
+
+  <!-- ─── NAV ─────────────────────────────────────────────────────────────── -->
+  <nav class="nav" role="navigation" aria-label="Main navigation">
+    <div class="nav__inner">
+      <a href="https://softwareof.you" class="nav__logo">Software<span>Of</span>You</a>
+      <ul class="nav__links">
+        <li><a href="features.html" class="active">Features</a></li>
+        <li class="nav__item--has-sub">
+          <a href="features.html#modules">Modules</a>
+          <ul class="nav__sub">
+            <li><a href="modules/crm.html"><span class="nav__sub__num">01</span>CRM</a></li>
+            <li><a href="modules/projects.html"><span class="nav__sub__num">02</span>Projects</a></li>
+            <li><a href="modules/gmail.html"><span class="nav__sub__num">03</span>Gmail</a></li>
+            <li><a href="modules/calendar.html"><span class="nav__sub__num">04</span>Calendar</a></li>
+            <li><a href="modules/conversations.html"><span class="nav__sub__num">05</span>Conversations</a></li>
+            <li><a href="modules/decisions.html"><span class="nav__sub__num">06</span>Decisions</a></li>
+            <li><a href="modules/journal.html"><span class="nav__sub__num">07</span>Journal</a></li>
+            <li><a href="modules/notes.html"><span class="nav__sub__num">08</span>Notes</a></li>
+            <div class="nav__sub__divider"></div>
+            <li><a href="features.html#modules"><span class="nav__sub__num">→</span>All modules</a></li>
+          </ul>
+        </li>
+        <li><a href="why-claude.html">Why Claude</a></li>
+        <li><a href="your-data.html">Your Data</a></li>
+        <li><a href="pricing.html">Pricing</a></li>
+      </ul>
+      <div class="nav__right">
+        <a href="https://softwareof.you" class="nav__cta">Get SoY — $149</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- ─── HERO ─────────────────────────────────────────────────────────────── -->
+  <section class="hero" aria-labelledby="hero-headline">
+    <div class="hero__ghost" aria-hidden="true">8</div>
+    <div class="container">
+      <span class="hero-label reveal">Software of You — Full Feature Set</span>
+      <h1 class="hero-headline reveal delay-1" id="hero-headline">
+        Eight modules.<br>One context layer.<br>Everything connected.
+      </h1>
+      <p class="hero-sub reveal delay-2">Each module works alone. Together, they compound.</p>
+    </div>
+  </section>
+
+  <!-- ─── SECTION 1: COMPOUND PROMISE ──────────────────────────────────────── -->
+  <section class="section compound" aria-labelledby="compound-title">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-ghost" aria-hidden="true">01</span>
+        <span class="section-label reveal">The Intelligence Architecture</span>
+        <h2 class="section-title reveal delay-1" id="compound-title">Not a feature list. A system.</h2>
+      </div>
+      <div class="compound-body reveal delay-2">
+        <p>
+          Most productivity tools give you buckets — a place to put contacts, a place to put tasks, a place to put notes. They don't talk to each other. You're the integration layer, manually copying context from one app to another, briefing yourself before every meeting.
+        </p>
+        <p>
+          Software of You works differently. Every module writes to the same database. Every link is a real relationship. A <strong>journal entry about a client</strong> links to their CRM record. A <strong>decision links to the project</strong> and the people involved. A <strong>calendar event generates a prep brief</strong> from emails, past meetings, open commitments, and project status — automatically, because it's all already connected.
+        </p>
+        <p>
+          The result is a context layer that knows your work the way you do — but never forgets, never loses the thread, and surfaces the right thing at the right moment. This is what Claude becomes when you give it full access to your professional life.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── SECTION 2: MODULE GRID ────────────────────────────────────────────── -->
+  <section class="section modules-section" id="modules" aria-labelledby="modules-title">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-ghost" aria-hidden="true">02</span>
+        <span class="section-label reveal">Eight Modules</span>
+        <h2 class="section-title reveal delay-1" id="modules-title">Pick what you need. Get everything.</h2>
+      </div>
+
+      <div class="modules-grid">
+
+        <!-- CRM -->
+        <a href="modules/crm.html" class="module-card reveal" aria-labelledby="mod-crm">
+          <span class="module-num">MODULE 01</span>
+          <h3 class="module-name" id="mod-crm">CRM</h3>
+          <p class="module-desc">Every person you work with. History, health scores, follow-up nudges. Know your relationships the way a sharp account manager would — except it never sleeps.</p>
+          <span class="module-query">"Who haven't I talked to in 30 days?"</span>
+          <span class="module-link">Deep dive →</span>
+        </a>
+
+        <!-- Projects -->
+        <a href="modules/projects.html" class="module-card reveal delay-1" aria-labelledby="mod-projects">
+          <span class="module-num">MODULE 02</span>
+          <h3 class="module-name" id="mod-projects">Projects</h3>
+          <p class="module-desc">Tasks and milestones linked to the people driving them. Status, blockers, and next actions — all queryable in plain language.</p>
+          <span class="module-query">"What's in flight right now?"</span>
+          <span class="module-link">Deep dive →</span>
+        </a>
+
+        <!-- Gmail -->
+        <a href="modules/gmail.html" class="module-card reveal delay-2" aria-labelledby="mod-gmail">
+          <span class="module-num">MODULE 03</span>
+          <h3 class="module-name" id="mod-gmail">Gmail</h3>
+          <p class="module-desc">Your inbox, linked to contacts and projects. Draft replies with full thread context already loaded. Search across everything you've ever sent.</p>
+          <span class="module-query">"Draft a reply to Rebecca about the proposal"</span>
+          <span class="module-link">Deep dive →</span>
+        </a>
+
+        <!-- Calendar -->
+        <a href="modules/calendar.html" class="module-card reveal delay-3" aria-labelledby="mod-calendar">
+          <span class="module-num">MODULE 04</span>
+          <h3 class="module-name" id="mod-calendar">Calendar</h3>
+          <p class="module-desc">Synced events with attendees linked to CRM. Pre-meeting briefs generated on demand from every touchpoint you've had with that person or project.</p>
+          <span class="module-query">"Who am I meeting tomorrow and what should I know?"</span>
+          <span class="module-link">Deep dive →</span>
+        </a>
+
+        <!-- Conversations -->
+        <a href="modules/conversations.html" class="module-card reveal" aria-labelledby="mod-conversations">
+          <span class="module-num">MODULE 05</span>
+          <h3 class="module-name" id="mod-conversations">Conversations</h3>
+          <p class="module-desc">Import call and meeting transcripts. Extract commitments. Track communication patterns across relationships over time.</p>
+          <span class="module-query">"What did I commit to in my last call with Marcus?"</span>
+          <span class="module-link">Deep dive →</span>
+        </a>
+
+        <!-- Decisions -->
+        <a href="modules/decisions.html" class="module-card reveal delay-1" aria-labelledby="mod-decisions">
+          <span class="module-num">MODULE 06</span>
+          <h3 class="module-name" id="mod-decisions">Decisions</h3>
+          <p class="module-desc">Structured decision records with options, rationale, outcome, and revisit dates. Stop making the same decision twice.</p>
+          <span class="module-query">"What decisions have I made about pricing?"</span>
+          <span class="module-link">Deep dive →</span>
+        </a>
+
+        <!-- Journal -->
+        <a href="modules/journal.html" class="module-card reveal delay-2" aria-labelledby="mod-journal">
+          <span class="module-num">MODULE 07</span>
+          <h3 class="module-name" id="mod-journal">Journal</h3>
+          <p class="module-desc">Daily entries with mood markers and energy tracking, cross-referenced to every contact and project you mention. Your work-life, made legible over time.</p>
+          <span class="module-query">"How have I felt about the Meridian project over time?"</span>
+          <span class="module-link">Deep dive →</span>
+        </a>
+
+        <!-- Notes -->
+        <a href="modules/notes.html" class="module-card reveal delay-3" aria-labelledby="mod-notes">
+          <span class="module-num">MODULE 08</span>
+          <h3 class="module-name" id="mod-notes">Notes</h3>
+          <p class="module-desc">Tagged notes linked to anything you mention — people, projects, decisions. Fast capture with structured recall. Nothing gets lost.</p>
+          <span class="module-query">"Show me everything tagged #enterprise"</span>
+          <span class="module-link">Deep dive →</span>
+        </a>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── SECTION 3: CROSS-MODULE INTELLIGENCE ──────────────────────────────── -->
+  <section class="cross-module" aria-labelledby="cross-title">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-ghost" aria-hidden="true">03</span>
+        <span class="section-label reveal">Cross-Module Intelligence</span>
+        <h2 class="section-title reveal delay-1" id="cross-title">The whole is greater.</h2>
+      </div>
+      <p class="reveal delay-2" style="color: rgba(235,242,238,0.65); font-size: 1.0625rem; max-width: 600px; line-height: 1.7; margin-bottom: 0;">
+        These queries only work because modules share a database. No single module could answer them. Together, they give you compound intelligence — the kind of context a chief of staff would have, delivered in seconds.
+      </p>
+
+      <div class="cross-queries">
+
+        <div class="cross-query-item reveal">
+          <p class="cross-query-q">Prepare me for my week</p>
+          <div class="cross-query-feeds">
+            <strong>Draws from</strong>
+            <div class="feed-tags">
+              <span class="feed-tag">Calendar</span>
+              <span class="feed-tag">CRM</span>
+              <span class="feed-tag">Gmail</span>
+              <span class="feed-tag">Conversations</span>
+              <span class="feed-tag">Projects</span>
+            </div>
+            <p style="margin-top: 12px;">Every meeting attendee's relationship history, open email threads, commitments made on past calls, and project status — assembled into a single weekly brief before Monday hits.</p>
+          </div>
+        </div>
+
+        <div class="cross-query-item reveal delay-1">
+          <p class="cross-query-q">What should I be worried about right now?</p>
+          <div class="cross-query-feeds">
+            <strong>Draws from</strong>
+            <div class="feed-tags">
+              <span class="feed-tag">Conversations</span>
+              <span class="feed-tag">CRM</span>
+              <span class="feed-tag">Projects</span>
+              <span class="feed-tag">Decisions</span>
+            </div>
+            <p style="margin-top: 12px;">Surfaces overdue commitments, relationships that have gone cold, stalled project milestones, and decisions past their revisit date — in one honest read.</p>
+          </div>
+        </div>
+
+        <div class="cross-query-item reveal">
+          <p class="cross-query-q">Draft a proposal for Rebecca</p>
+          <div class="cross-query-feeds">
+            <strong>Draws from</strong>
+            <div class="feed-tags">
+              <span class="feed-tag">CRM</span>
+              <span class="feed-tag">Gmail</span>
+              <span class="feed-tag">Projects</span>
+              <span class="feed-tag">Decisions</span>
+            </div>
+            <p style="margin-top: 12px;">Pulls Rebecca's CRM profile, your full email thread, the relevant project brief, and every pricing or scope decision you've logged — before Claude writes a single word.</p>
+          </div>
+        </div>
+
+        <div class="cross-query-item reveal delay-1">
+          <p class="cross-query-q">Weekly review</p>
+          <div class="cross-query-feeds">
+            <strong>Draws from</strong>
+            <div class="feed-tags">
+              <span class="feed-tag">Journal</span>
+              <span class="feed-tag">CRM</span>
+              <span class="feed-tag">Projects</span>
+              <span class="feed-tag">Conversations</span>
+              <span class="feed-tag">Decisions</span>
+              <span class="feed-tag">Notes</span>
+            </div>
+            <p style="margin-top: 12px;">Everyone you talked to, what moved and what didn't, decisions made, commitments logged, and what needs attention next week — generated in thirty seconds.</p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════ EXPLAINER ══════════ -->
+  <section class="section" style="background: var(--bone-mid, #f0ede8); border-top: 1px solid var(--rule-mid, #dedad3);">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-ghost" aria-hidden="true">✦</span>
+        <span class="section-label reveal">A real example</span>
+        <h2 class="section-title reveal delay-1" style="max-width:600px;">Two things you said.<br><em>Everything else, it knew.</em></h2>
+        <p class="section-intro reveal delay-2" style="max-width:540px;">A real follow-up email drafted by Claude with SoY installed. Annotated to show exactly where each piece of context came from.</p>
+      </div>
+      <div class="explainer-wrap reveal">
+        <style>
+          .explainer-wrap { max-width: 100%; }
+          .exp-legend { display: flex; gap: 24px; margin-bottom: 28px; flex-wrap: wrap; }
+          .exp-legend-item { display: flex; align-items: center; gap: 8px; font-family: 'DM Mono', monospace; font-size: 12px; color: var(--text-2, #5c5b55); letter-spacing: 0.04em; }
+          .exp-legend-dot { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; }
+          .exp-dot-sys { background: var(--forest, #1a4731); }
+          .exp-dot-you { background: #7c5c2a; }
+          .exp-layout { display: grid; grid-template-columns: 1fr 320px; gap: 20px; align-items: start; }
+          @media (max-width: 860px) { .exp-layout { grid-template-columns: 1fr; } }
+          .exp-email { background: white; border: 1px solid var(--rule, #dedad3); border-radius: 6px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.06); }
+          .exp-chrome { background: #f8f7f4; border-bottom: 1px solid var(--rule, #dedad3); padding: 12px 18px; display: flex; gap: 7px; align-items: center; }
+          .exp-chrome-dot { width: 10px; height: 10px; border-radius: 50%; }
+          .exp-chrome-dot:nth-child(1){background:#ff5f57;} .exp-chrome-dot:nth-child(2){background:#ffbd2e;} .exp-chrome-dot:nth-child(3){background:#28c840;}
+          .exp-meta { padding: 18px 22px 14px; border-bottom: 1px solid #f0ede8; }
+          .exp-subject { font-size: 15px; font-weight: 600; color: var(--text, #0f0e0c); margin-bottom: 6px; }
+          .exp-to { font-family: 'DM Mono', monospace; font-size: 12px; color: #8a8880; }
+          .exp-body { padding: 22px; font-size: 15px; line-height: 1.85; color: var(--text-2, #3c3b37); }
+          .exp-body p + p { margin-top: 16px; }
+          .exp-tag { border-radius: 3px; padding: 1px 3px; }
+          .exp-tag-sys { background: rgba(26,71,49,0.1); border-bottom: 2px solid var(--forest, #1a4731); color: #0f2e1e; }
+          .exp-tag-you { background: rgba(124,92,42,0.1); border-bottom: 2px solid #a07030; color: #3a2a10; }
+          .exp-sidebar { display: flex; flex-direction: column; gap: 14px; }
+          .exp-card { border-radius: 6px; overflow: hidden; border: 1px solid var(--rule, #dedad3); }
+          .exp-card-head { padding: 9px 14px; display: flex; align-items: center; gap: 8px; font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; font-weight: 600; }
+          .exp-card-head.sys { background: var(--forest, #1a4731); color: rgba(235,242,238,0.9); }
+          .exp-card-head.you { background: #7c5c2a; color: rgba(250,245,235,0.9); }
+          .exp-card-head-dot { width: 7px; height: 7px; border-radius: 50%; background: rgba(255,255,255,0.4); flex-shrink: 0; }
+          .exp-card-body { background: white; padding: 12px; }
+          .exp-row { display: flex; gap: 10px; padding: 8px 0; border-bottom: 1px solid #f0ede8; align-items: flex-start; }
+          .exp-row:last-child { border-bottom: none; }
+          .exp-src { font-family: 'DM Mono', monospace; font-size: 9px; letter-spacing: 0.08em; text-transform: uppercase; color: #a8a49c; padding-top: 2px; min-width: 64px; line-height: 1.4; }
+          .exp-txt { font-size: 13px; color: var(--text-2, #3c3b37); line-height: 1.55; }
+          .exp-txt strong { color: var(--text, #0f0e0c); font-weight: 600; }
+          .exp-footer { margin-top: 20px; padding: 18px 22px; background: var(--forest, #1a4731); border-radius: 6px; display: flex; gap: 16px; align-items: center; }
+          .exp-footer-label { font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: rgba(235,242,238,0.5); white-space: nowrap; }
+          .exp-footer-text { font-size: 14px; color: #ebf2ee; line-height: 1.6; }
+          .exp-footer-text em { font-style: italic; color: rgba(235,242,238,0.7); }
+        </style>
+        <div class="exp-legend">
+          <div class="exp-legend-item"><div class="exp-legend-dot exp-dot-sys"></div>Pulled from SoY — you said nothing</div>
+          <div class="exp-legend-item"><div class="exp-legend-dot exp-dot-you"></div>You provided in the prompt</div>
+        </div>
+        <div class="exp-layout">
+          <div class="exp-email">
+            <div class="exp-chrome"><div class="exp-chrome-dot"></div><div class="exp-chrome-dot"></div><div class="exp-chrome-dot"></div></div>
+            <div class="exp-meta">
+              <div class="exp-subject">Following up — materials for the AI proof of concept</div>
+              <div class="exp-to">To: Alex Brennan &lt;alex@northgatecapital.ca&gt;</div>
+            </div>
+            <div class="exp-body">
+              <p>Hi <span class="exp-tag exp-tag-sys" title="Name from CRM contact record">Alex</span>,</p>
+              <p>Wanted to follow up on <span class="exp-tag exp-tag-sys" title="Date derived from transcript timestamp">our conversation from last week</span>. You mentioned you'd <span class="exp-tag exp-tag-sys" title="Open commitment extracted from transcript">send over a couple of presentations and a non-proprietary document</span> so we could <span class="exp-tag exp-tag-sys" title="Kerry's commitment from the same call">build out a proof of concept for you</span>.</p>
+              <p>Also — <span class="exp-tag exp-tag-you" title="You mentioned this in your prompt">I've been thinking about the video production piece</span> for the <span class="exp-tag exp-tag-sys" title="Project name from follow-up call transcript">Build Canada Homes pitch</span>. <span class="exp-tag exp-tag-you" title="You provided this detail">I have a few people in mind and will put something together for you once I track down the right fit.</span></p>
+              <p><span class="exp-tag exp-tag-you" title="Tone direction you provided">No rush on the materials if things got busy</span> — just didn't want it to <span class="exp-tag exp-tag-sys" title="Surfaced by SoY: open commitment, 4 days since contact">slip through the cracks on either end</span>.</p>
+              <p>Kerry</p>
+            </div>
+          </div>
+          <div class="exp-sidebar">
+            <div class="exp-card">
+              <div class="exp-card-head sys"><div class="exp-card-head-dot"></div>What SoY already knew</div>
+              <div class="exp-card-body">
+                <div class="exp-row"><div class="exp-src">CRM</div><div class="exp-txt"><strong>Alex Brennan</strong>, President at Northgate Capital — 2 calls logged</div></div>
+                <div class="exp-row"><div class="exp-src">Transcript</div><div class="exp-txt">Call occurred <strong>last week</strong> — timestamp from transcript</div></div>
+                <div class="exp-row"><div class="exp-src">Commitments</div><div class="exp-txt">Open: <strong>Alex to send presentations + doc</strong> — extracted, still open</div></div>
+                <div class="exp-row"><div class="exp-src">Commitments</div><div class="exp-txt">Open: <strong>Kerry to build proof of concept</strong> — offered on the call</div></div>
+                <div class="exp-row"><div class="exp-src">Transcript</div><div class="exp-txt"><strong>Build Canada Homes</strong> — project from follow-up call summary</div></div>
+                <div class="exp-row"><div class="exp-src">Nudge</div><div class="exp-txt">No contact in <strong>4 days</strong>, open commitments on both sides</div></div>
+              </div>
+            </div>
+            <div class="exp-card">
+              <div class="exp-card-head you"><div class="exp-card-head-dot"></div>What you provided</div>
+              <div class="exp-card-body">
+                <div class="exp-row"><div class="exp-src">Prompt</div><div class="exp-txt">The video production piece — that you're thinking about it</div></div>
+                <div class="exp-row"><div class="exp-src">Prompt</div><div class="exp-txt">Tone: <strong>no pressure, easy</strong></div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="exp-footer">
+          <div class="exp-footer-label">The point</div>
+          <div class="exp-footer-text">You said two things. The system supplied everything else — <em>who, when, what was agreed, what's still open, what project it's tied to.</em> That's context engineering.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── SECTION 4: ARCHITECTURE NOTE ──────────────────────────────────────── -->
+  <section class="section arch-section" aria-labelledby="arch-title">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-ghost" aria-hidden="true">04</span>
+        <span class="section-label reveal">Architecture</span>
+        <h2 class="section-title reveal delay-1" id="arch-title" style="max-width: 600px;">One database.<br>Eight lenses.</h2>
+      </div>
+      <div class="arch-inner">
+        <div class="arch-left reveal">
+          <p>
+            Every module reads from and writes to the same SQLite database. This isn't a metaphor. When CRM records a contact, Projects can query that contact as a team member. When Conversations extracts a commitment, it's linked to the person in CRM and the project in Projects. When Journal mentions a client by name, that entry is indexed against their full relationship history.
+          </p>
+          <br />
+          <p>
+            This is why cross-module queries work — and why they feel like talking to someone who actually knows your work. The links are real foreign key relationships, not tag matches or fuzzy search. The intelligence is structural, not statistical.
+          </p>
+          <br />
+          <p>
+            Your data never leaves your machine. The Claude Code plugin connects to a local database at a path you control. No cloud sync. No third-party access. Your context layer is yours.
+          </p>
+        </div>
+        <div class="arch-right reveal delay-2">
+          <div class="arch-fact">
+            <span class="arch-fact-label">Database</span>
+            <span class="arch-fact-value">SQLite via MCP Server</span>
+            <span class="arch-fact-note">A local, portable, zero-server database. Runs entirely on your machine.</span>
+          </div>
+          <div class="arch-fact">
+            <span class="arch-fact-label">Default path</span>
+            <span class="arch-fact-value"><code>~/.local/share/software-of-you/soy.db</code></span>
+            <span class="arch-fact-note">Configurable. You own the file. Back it up with any file backup tool.</span>
+          </div>
+          <div class="arch-fact">
+            <span class="arch-fact-label">Data model</span>
+            <span class="arch-fact-value">Relational — foreign keys, not tags</span>
+            <span class="arch-fact-note">Every link between a journal entry and a CRM record is a real database relationship. It doesn't break when names change.</span>
+          </div>
+          <div class="arch-fact">
+            <span class="arch-fact-label">Privacy</span>
+            <span class="arch-fact-value">Local-only. No cloud required.</span>
+            <span class="arch-fact-note">Claude Code connects to the MCP server running on localhost. Nothing is transmitted externally by SoY itself.</span>
+          </div>
+          <div class="arch-fact">
+            <span class="arch-fact-label">Claude integration</span>
+            <span class="arch-fact-value">MCP (Model Context Protocol)</span>
+            <span class="arch-fact-note">The same standard Anthropic built for connecting Claude to external data. Production-grade, versioned, and built to last.</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── CTA STRIP ─────────────────────────────────────────────────────────── -->
+  <section class="cta-strip" aria-labelledby="cta-headline">
+    <div class="container">
+      <span class="cta-strip-label reveal">Get started today</span>
+      <h2 class="reveal delay-1" id="cta-headline">Ready to build your context layer?</h2>
+      <p class="reveal delay-2">One-time purchase. Yours to own, modify, and extend.</p>
+      <div class="cta-strip-actions reveal delay-3">
+        <a href="https://softwareof.you" class="btn-primary">Get SoY — $149 →</a>
+        <a href="pricing.html" class="btn-ghost">See what's included</a>
+      </div>
+      <p style="margin-top:16px; text-align:center;"><a href="/demo/" style="font-family:'DM Mono',monospace; font-size:12px; letter-spacing:0.06em; color:var(--forest); text-decoration:none; border-bottom:1px solid rgba(26,71,49,0.3); padding-bottom:1px;">Not sure yet? Explore a live demo →</a></p>
+    </div>
+  </section>
+
+  <!-- ─── FOOTER ─────────────────────────────────────────────────────────────── -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-inner">
+        <span class="footer-copy">© 2026 Software of You · Built by Kerry Morrison</span>
+        <a href="https://softwareof.you" class="footer-link">softwareof.you</a>
+      </div>
+    
+    <a class="footer-email" data-u="kerry" data-d="softwareof.you" href="#" onclick="this.href='mailto:'+this.dataset.u+'@'+this.dataset.d;return false;" title="Email Kerry">kerry<span aria-hidden="true" style="display:none">&#8203;</span>&#64;softwareof.you</a>
+</div>
+  
+  </footer>
+
+  <!-- ─── SCROLL REVEAL SCRIPT ───────────────────────────────────────────────── -->
+  <script>
+    (function () {
+      var elements = document.querySelectorAll('.reveal');
+
+      if ('IntersectionObserver' in window) {
+        var observer = new IntersectionObserver(function (entries) {
+          entries.forEach(function (entry) {
+            if (entry.isIntersecting) {
+              entry.target.classList.add('in');
+              observer.unobserve(entry.target);
+            }
+          });
+        }, {
+          threshold: 0.12,
+          rootMargin: '0px 0px -48px 0px'
+        });
+
+        elements.forEach(function (el) {
+          observer.observe(el);
+        });
+      } else {
+        // Fallback: immediately reveal all elements
+        elements.forEach(function (el) {
+          el.classList.add('in');
+        });
+      }
+    })();
+  </script>
+
+<script>
+(function() {
+  function closeAll() {
+    document.querySelectorAll('.nav__item--has-sub.open').forEach(function(el) {
+      el.classList.remove('open');
+    });
+  }
+  document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.nav__item--has-sub > a').forEach(function(trigger) {
+      trigger.addEventListener('click', function(e) {
+        e.preventDefault();
+        var item = trigger.parentElement;
+        var isOpen = item.classList.contains('open');
+        closeAll();
+        if (!isOpen) item.classList.add('open');
+      });
+    });
+    document.addEventListener('click', function(e) {
+      if (!e.target.closest('.nav__item--has-sub')) closeAll();
+    });
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') closeAll();
+    });
+  });
+})();
+</script>
+</body>
+</html>

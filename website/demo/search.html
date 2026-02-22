@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Search — Software of You</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'system-ui', 'sans-serif'] }
+                }
+            }
+        }
+    </script>
+    <style>
+        .nav-item {
+            display: flex; align-items: center; gap: 0.375rem; padding: 0.375rem 0.75rem;
+            border-radius: 0.5rem; font-size: 0.8125rem; color: #71717a; white-space: nowrap;
+            transition: all 0.15s; text-decoration: none;
+        }
+        .nav-item:hover { background: #f4f4f5; color: #18181b; }
+        .nav-item.active { background: #f4f4f5; color: #18181b; font-weight: 600; }
+        .nav-badge {
+            font-size: 0.6875rem; background: #e4e4e7; color: #52525b;
+            padding: 0.0625rem 0.375rem; border-radius: 9999px; font-weight: 500;
+        }
+        .nav-item.active .nav-badge, .nav-dropdown-item.active .nav-badge { background: #3b82f6; color: white; }
+        .nav-group { position: relative; }
+        .nav-group-label {
+            display: flex; align-items: center; gap: 0.25rem; padding: 0.375rem 0.75rem;
+            border-radius: 0.5rem; font-size: 0.8125rem; color: #71717a; cursor: pointer;
+            white-space: nowrap; transition: all 0.15s; user-select: none;
+        }
+        .nav-group-label:hover, .nav-group.active > .nav-group-label { background: #f4f4f5; color: #18181b; }
+        .nav-group.active > .nav-group-label { font-weight: 600; }
+        .nav-chevron { transition: transform 0.15s; opacity: 0.5; }
+        .nav-group:hover .nav-chevron, .nav-group.open .nav-chevron { opacity: 1; }
+        .nav-group.open .nav-chevron { transform: rotate(180deg); }
+        .nav-dropdown {
+            display: none; position: absolute; top: 100%; left: 0; margin-top: 0.25rem;
+            min-width: 10rem; background: white; border: 1px solid #e4e4e7; border-radius: 0.75rem;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -2px rgba(0,0,0,0.1);
+            padding: 0.375rem; z-index: 50;
+        }
+        .nav-group:hover > .nav-dropdown { display: block; }
+        .nav-group.open > .nav-dropdown { display: block; }
+        .nav-dropdown-item {
+            display: flex; align-items: center; gap: 0.375rem; padding: 0.375rem 0.625rem;
+            border-radius: 0.375rem; font-size: 0.8125rem; color: #71717a; white-space: nowrap;
+            transition: all 0.15s; text-decoration: none;
+        }
+        .nav-dropdown-item:hover { background: #f4f4f5; color: #18181b; }
+        .nav-dropdown-item.active { background: #eff6ff; color: #1d4ed8; font-weight: 600; }
+
+        .search-filter {
+            padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.8125rem;
+            color: #71717a; background: transparent; border: 1px solid #e4e4e7;
+            cursor: pointer; transition: all 0.15s;
+        }
+        .search-filter:hover { background: #f4f4f5; color: #18181b; }
+        .search-filter.active { background: #18181b; color: white; border-color: #18181b; }
+    </style>
+</head>
+<body class="bg-zinc-50 text-zinc-900 font-sans antialiased">
+
+    <!-- Nav Bar -->
+    <nav class="bg-white border-b border-zinc-200 mb-6">
+        <div class="max-w-6xl mx-auto px-4">
+            <div class="flex items-center gap-1 py-3">
+                <a href="dashboard.html" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-semibold text-zinc-900 hover:bg-zinc-50 transition-colors shrink-0">
+                    <i data-lucide="hexagon" class="w-4 h-4"></i>
+                    SoY
+                </a>
+                <span class="w-px h-5 bg-zinc-200 mx-1"></span>
+                <a href="dashboard.html" class="nav-item active">
+                    <i data-lucide="layout-dashboard" class="w-3.5 h-3.5"></i>
+                    Dashboard
+                </a>
+                <div class="nav-group" onclick="this.classList.toggle('open')">
+                    <div class="nav-group-label">
+                        <span>People</span>
+                        <i data-lucide="chevron-down" class="w-3 h-3 nav-chevron"></i>
+                    </div>
+                    <div class="nav-dropdown">
+                        <a href="contacts.html" class="nav-dropdown-item">
+                            <i data-lucide="users" class="w-3.5 h-3.5"></i>
+                            Contacts <span class="nav-badge">7</span>
+                        </a>
+                        <a href="network-map.html" class="nav-dropdown-item">
+                            <i data-lucide="share-2" class="w-3.5 h-3.5"></i>
+                            Network
+                        </a>
+                    </div>
+                </div>
+                <div class="nav-group" onclick="this.classList.toggle('open')">
+                    <div class="nav-group-label">
+                        <span>Comms</span>
+                        <i data-lucide="chevron-down" class="w-3 h-3 nav-chevron"></i>
+                    </div>
+                    <div class="nav-dropdown">
+                        <a href="email-hub.html" class="nav-dropdown-item">
+                            <i data-lucide="mail" class="w-3.5 h-3.5"></i>
+                            Email <span class="nav-badge">58</span>
+                        </a>
+                        <a href="week-view.html" class="nav-dropdown-item">
+                            <i data-lucide="calendar" class="w-3.5 h-3.5"></i>
+                            Calendar <span class="nav-badge">28</span>
+                        </a>
+                    </div>
+                </div>
+                <div class="nav-group" onclick="this.classList.toggle('open')">
+                    <div class="nav-group-label">
+                        <span>Intelligence</span>
+                        <i data-lucide="chevron-down" class="w-3 h-3 nav-chevron"></i>
+                    </div>
+                    <div class="nav-dropdown">
+                        <a href="conversations.html" class="nav-dropdown-item">
+                            <i data-lucide="message-square" class="w-3.5 h-3.5"></i>
+                            Conversations <span class="nav-badge">3</span>
+                        </a>
+                        <a href="decision-journal.html" class="nav-dropdown-item">
+                            <i data-lucide="git-branch" class="w-3.5 h-3.5"></i>
+                            Decisions <span class="nav-badge">5</span>
+                        </a>
+                        <a href="journal.html" class="nav-dropdown-item">
+                            <i data-lucide="book-open" class="w-3.5 h-3.5"></i>
+                            Journal <span class="nav-badge">1</span>
+                        </a>
+                        <a href="notes.html" class="nav-dropdown-item">
+                            <i data-lucide="sticky-note" class="w-3.5 h-3.5"></i>
+                            Notes
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="flex items-center justify-between pb-3 -mt-1">
+                <div class="flex items-center gap-1.5 text-sm">
+                    <a href="dashboard.html" class="text-zinc-400 hover:text-zinc-600">Dashboard</a>
+                    <span class="text-zinc-300">&rsaquo;</span>
+                    <span class="text-zinc-700 font-medium">Search</span>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="max-w-6xl mx-auto px-4 pb-8">
+
+        <!-- Search Input -->
+        <div class="bg-white rounded-xl shadow-sm border border-zinc-200 p-6 mb-6">
+            <div class="relative">
+                <i data-lucide="search" class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-400 pointer-events-none search-icon-static"></i>
+                <input type="text" id="search-input" placeholder="Search across everything..."
+                    class="w-full pl-12 pr-4 py-3 rounded-xl border border-zinc-200 bg-zinc-50 text-zinc-900 text-base
+                    focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent focus:bg-white
+                    transition-all placeholder:text-zinc-400" autocomplete="off" autofocus>
+            </div>
+            <div class="flex items-center gap-1 mt-3 flex-wrap" id="category-filters">
+                <button class="search-filter active" data-category="all">All</button>
+                <button class="search-filter" data-category="contacts">Contacts</button>
+                <button class="search-filter" data-category="emails">Email</button>
+                <button class="search-filter" data-category="decisions">Decisions</button>
+                <button class="search-filter" data-category="journal">Journal</button>
+                <button class="search-filter" data-category="commitments">Commitments</button>
+                <button class="search-filter" data-category="transcripts">Calls</button>
+            </div>
+        </div>
+
+        <!-- Results -->
+        <div id="results"></div>
+
+    </div>
+
+    <footer class="max-w-6xl mx-auto px-4 mt-8 pt-4 border-t border-zinc-100 text-center pb-8">
+        <p class="text-xs text-zinc-400">Generated by Software of You &middot; February 20, 2026 at 3:45 PM</p>
+    </footer>
+
+    <script>
+    const SOY_DATA = {
+        contacts: [
+            { id: 3, type: "contact", name: "Verdant Co", company: "Verdant Co", role: "", email: "", phone: "", status: "active", link: "contact-benjis.html" },
+            { id: 2, type: "contact", name: "James Okafor", company: "Apex Group", role: "Head of Retail & Luxury", email: "james.okafor@apexgroup.com", phone: "", status: "active", link: "contact-charles-bernard.html" },
+            { id: 1, type: "contact", name: "Marcus Webb", company: "Northgate Development", role: "Vice President", email: "marcus@northgatedev.com", phone: "(555) 014-2038", status: "active", link: "contact-daniel-byrne.html" },
+            { id: 5, type: "contact", name: "Priya Nair", company: "Verdant Co", role: "Operations Lead", email: "", phone: "", status: "active", link: "contact-emma-cuddy.html" },
+            { id: 6, type: "contact", name: "Zoe Hartley", company: "Verdant Co", role: "Finance & Admin", email: "", phone: "", status: "active", link: "contact-gigi-presentey.html" },
+            { id: 4, type: "contact", name: "Sofia Reyes", company: "Verdant Co", role: "Owner", email: "", phone: "", status: "active", link: "contact-jp-moya.html" },
+            { id: 7, type: "contact", name: "Tariq Hassan", company: "Verdant Co", role: "Operations", email: "", phone: "", status: "active", link: "contact-nawid-fatahi.html" }
+        ],
+        emails: [
+            { id: 101, type: "email", subject: "Accepted: Kerry\u0027s Calendar (Marcus W)", from: "Marcus Webb", snippet: "", date: "2026-02-20", direction: "inbound", link: null },
+            { id: 102, type: "email", subject: "Notes: Kerry\u0027s Calendar (Marcus W) Feb 20, 2026", from: "Gemini", snippet: "Notes from Kerry\u0027s Calendar meeting", date: "2026-02-20", direction: "inbound", link: null },
+            { id: 104, type: "email", subject: "Appointment canceled: Kerry\u0027s Calendar (James OKAFOR)", from: "James OKAFOR", snippet: "Rescheduled to Mon Feb 23, 7am CST", date: "2026-02-20", direction: "inbound", link: null },
+            { id: 105, type: "email", subject: "Appointment booked: Kerry\u0027s Calendar (James OKAFOR) @ Mon Feb 23", from: "Kerry", snippet: "Booked by James OKAFOR", date: "2026-02-20", direction: "outbound", link: null },
+            { id: 107, type: "email", subject: "Perspective (6/10)", from: "Ashutosh Priyadarshy", snippet: "Good morning Kerry, It\u0027s time to plan your work for today", date: "2026-02-20", direction: "inbound", link: null },
+            { id: 108, type: "email", subject: "You\u0027ve got new messages from Byrdie Learn", from: "Fiverr", snippet: "1 new messages for you", date: "2026-02-20", direction: "inbound", link: null },
+            { id: 68, type: "email", subject: "Re: AI for Northgate Development", from: "Marcus Webb", snippet: "What a relief! Having some calendar issues on my end. See you tomorrow", date: "2026-02-19", direction: "inbound", link: null },
+            { id: 70, type: "email", subject: "Re: AI for Northgate Development", from: "Marcus Webb", snippet: "Morning Kerry, somewhat fittingly I had a tech glitch here", date: "2026-02-19", direction: "inbound", link: null },
+            { id: 69, type: "email", subject: "Re: AI for Northgate Development", from: "Kerry", snippet: "Hey bud. I have us in the books for tomorrow", date: "2026-02-19", direction: "outbound", link: null },
+            { id: 62, type: "email", subject: "Appointment booked: Kerry\u0027s Calendar (James OKAFOR) @ Fri Feb 20", from: "Kerry", snippet: "Booked by James OKAFOR", date: "2026-02-19", direction: "outbound", link: null },
+            { id: 60, type: "email", subject: "Appointment canceled: Kerry\u0027s Calendar (James OKAFOR) @ Thu Feb 19", from: "Kerry", snippet: "Canceled and rescheduled to Feb 20", date: "2026-02-19", direction: "outbound", link: null },
+            { id: 67, type: "email", subject: "Fwd: Verdant Co, you received 8 conversions last week", from: "Kerry", snippet: "Forwarded Google Ads conversion report", date: "2026-02-19", direction: "outbound", link: null },
+            { id: 61, type: "email", subject: "James OKAFOR wants to record your upcoming meeting", from: "meeting recorder", snippet: "Charles is using meeting recorder to record Google Meet meetings", date: "2026-02-19", direction: "inbound", link: null },
+            { id: 53, type: "email", subject: "Prompt engineering is so 2023. It\u0027s all about skill-engineering now!", from: "The Boring Marketer", snippet: "From prompt to skill: how skills work under the hood", date: "2026-02-19", direction: "inbound", link: null },
+            { id: 54, type: "email", subject: "The highest-paying job in tech will soon be marketing.", from: "Tom\u0027s Marketing Ideas", snippet: "", date: "2026-02-19", direction: "inbound", link: null },
+            { id: 79, type: "email", subject: "Appointment booked: Kerry\u0027s Calendar (James OKAFOR) @ Thu Feb 19", from: "Kerry", snippet: "Booked by James OKAFOR", date: "2026-02-18", direction: "outbound", link: null },
+            { id: 97, type: "email", subject: "Re: Updated invitation: Weekly Kickoff - Verdant Co", from: "Ana Torres", snippet: "Done", date: "2026-02-18", direction: "inbound", link: null },
+            { id: 96, type: "email", subject: "Zoe Hartley approved your request for access", from: "project tool", snippet: "Finance SOPs & Daily Resources", date: "2026-02-18", direction: "inbound", link: null },
+            { id: 98, type: "email", subject: "Five Questions to Ask Before Your Next High-Stakes Initiative", from: "David Akermanis", snippet: "The 1% who care most can derail your best laid plans", date: "2026-02-18", direction: "inbound", link: null },
+            { id: 99, type: "email", subject: "Attention (4/10)", from: "Ashutosh Priyadarshy", snippet: "Good morning Kerry, It\u0027s time to plan your work for today", date: "2026-02-18", direction: "inbound", link: null },
+            { id: 71, type: "email", subject: "Burnout (5/10)", from: "Ashutosh Priyadarshy", snippet: "Good morning Kerry, Working 12 hour days? Reflect on Parkinson\u0027s law", date: "2026-02-19", direction: "inbound", link: null }
+        ],
+        decisions: [
+            { id: 5, type: "decision", title: "Start with free proof of concept for Northgate Development", context: "Discovery call with Marcus Webb \u2014 Northgate Development has no AI strategy, considering hiring a Chief AI Officer", status: "decided", date: "2026-02-20", link: null },
+            { id: 4, type: "decision", title: "Trust-but-verify approach for Marissa\u0027s bookkeeping", context: "Gigi\u0027s bookkeeping may be incomplete. Company lost $3K last year", status: "decided", date: "2026-02-19", link: null },
+            { id: 3, type: "decision", title: "Policy sign-off process: leadership first, then technicians", context: "Code of Conduct and Harassment policies need to be distributed", status: "decided", date: "2026-02-19", link: null },
+            { id: 2, type: "decision", title: "Hire Carol as next technician if Spring is let go", context: "Extra capacity exists (Breijit, Conrad, Susanna want more hours)", status: "decided", date: "2026-02-19", link: null },
+            { id: 1, type: "decision", title: "Company does not need ChatGPT licenses", context: "JP has GPT Pro on personal account billed to Verdant Co. Considering downgrading.", status: "decided", date: "2026-02-19", link: null }
+        ],
+        journal: [
+            { id: 1, type: "journal", date: "2026-02-19", mood: "A-plus", content: "Feel like I had a massive breakthrough today with the Software of You project", link: null }
+        ],
+        commitments: [
+            { id: 1, type: "commitment", description: "Skim the Code of Conduct and Workplace Harassment documents before JP sends them", owner: "You", deadline: "", status: "open", link: null },
+            { id: 3, type: "commitment", description: "Ask JP\u0027s mother if Spring is genuinely adding value to CPP work", owner: "You", deadline: "", status: "open", link: null },
+            { id: 4, type: "commitment", description: "Try to use more Slack reactions/emojis as acknowledgment markers", owner: "You", deadline: "", status: "open", link: null },
+            { id: 5, type: "commitment", description: "Add Code of Conduct and Harassment policies to next leadership meeting agenda for sign-off", owner: "Sofia Reyes", deadline: "", status: "open", link: null },
+            { id: 6, type: "commitment", description: "Get Claude to act as CFO to critically review Orion financial numbers, then book 30-min meeting with Kerry", owner: "Sofia Reyes", deadline: "", status: "open", link: null },
+            { id: 7, type: "commitment", description: "Continue taking regular interviews \u2014 1-2 per day across departments", owner: "Sofia Reyes", deadline: "", status: "open", link: null },
+            { id: 8, type: "commitment", description: "Ask Emma if Code of Conduct docs can live in project tool for technician access", owner: "Sofia Reyes", deadline: "", status: "open", link: null },
+            { id: 9, type: "commitment", description: "Update the lawyer on incomplete legal documents", owner: "Sofia Reyes", deadline: "", status: "open", link: null },
+            { id: 10, type: "commitment", description: "Clean up P&L structure and get to actual profitability measure", owner: "Sofia Reyes", deadline: "", status: "open", link: null },
+            { id: 11, type: "commitment", description: "Ask Ned (not Emma) for the capacity model", owner: "Sofia Reyes", deadline: "", status: "open", link: null },
+            { id: 12, type: "commitment", description: "Reach out to CEO of Laser one more time re: Marissa", owner: "Sofia Reyes", deadline: "", status: "open", link: null },
+            { id: 16, type: "commitment", description: "Pull together marketing pamphlet and send to Emma and Tariq for hospital follow-up", owner: "You", deadline: "", status: "open", link: null },
+            { id: 20, type: "commitment", description: "Send bike specs to Tariq/Simon for insurance inquiry", owner: "You", deadline: "", status: "open", link: null },
+            { id: 44, type: "commitment", description: "Build a design skill/proof of concept from Marcus\u0027s brand materials and send it back", owner: "You", deadline: "", status: "open", link: null },
+            { id: 46, type: "commitment", description: "Send Kerry presentations and a non-proprietary document for the design skill proof of concept", owner: "Marcus Webb", deadline: "", status: "open", link: null },
+            { id: 47, type: "commitment", description: "Evaluate Kerry vs. the industry-specific AI subscription service and decide which direction to go", owner: "Marcus Webb", deadline: "", status: "open", link: null },
+            { id: 48, type: "commitment", description: "Potentially connect Kerry with people in his network who could benefit from AI services", owner: "Marcus Webb", deadline: "", status: "open", link: null },
+            { id: 13, type: "commitment", description: "Do Google Takeout export, then kill Marcus\u0027s and Kyle\u0027s Google accounts and set up forwards", owner: "You", deadline: "2026-02-17", status: "open", link: null },
+            { id: 18, type: "commitment", description: "Generate transcript from Pharaoh interview recording once JP sends it", owner: "You", deadline: "2026-02-17", status: "open", link: null },
+            { id: 23, type: "commitment", description: "Interview Marissa (finance candidate) at 11:15 today", owner: "Priya Nair", deadline: "2026-02-17", status: "open", link: null },
+            { id: 28, type: "commitment", description: "Cancel all ChatGPT subscriptions \u2014 kill every receipt", owner: "Zoe Hartley", deadline: "2026-02-17", status: "open", link: null },
+            { id: 29, type: "commitment", description: "Send Emma the BMO account number for check deposits", owner: "Zoe Hartley", deadline: "2026-02-17", status: "open", link: null },
+            { id: 30, type: "commitment", description: "Send interview questions to Emma within 15 minutes for Marissa interview", owner: "Zoe Hartley", deadline: "2026-02-17", status: "open", link: null },
+            { id: 32, type: "commitment", description: "Cancel his personal ChatGPT subscription on the company card", owner: "Sofia Reyes", deadline: "2026-02-17", status: "open", link: null },
+            { id: 35, type: "commitment", description: "Send Pharaoh interview recording to Kerry via Drive/Slack", owner: "Sofia Reyes", deadline: "2026-02-17", status: "open", link: null },
+            { id: 36, type: "commitment", description: "Send transcript from Pharaoh interview to GG", owner: "Sofia Reyes", deadline: "2026-02-17", status: "open", link: null },
+            { id: 40, type: "commitment", description: "Send Maya\u0027s complete hours CSV to JP, CC everyone", owner: "Tariq Hassan", deadline: "2026-02-17", status: "open", link: null },
+            { id: 41, type: "commitment", description: "Send quoting tool to Emma (the one used for Publicist)", owner: "Tariq Hassan", deadline: "2026-02-17", status: "open", link: null },
+            { id: 42, type: "commitment", description: "Give GG login to new timesheet dashboard", owner: "Tariq Hassan", deadline: "2026-02-17", status: "open", link: null },
+            { id: 19, type: "commitment", description: "Go through GG\u0027s SOPs with JP today, bring questions to GG tomorrow", owner: "You", deadline: "2026-02-18", status: "open", link: null },
+            { id: 21, type: "commitment", description: "Do once-over on call lists, send ASA task when done", owner: "Priya Nair", deadline: "2026-02-18", status: "open", link: null },
+            { id: 22, type: "commitment", description: "Calculate Spring\u0027s hourly cost for maintaining her sites", owner: "Priya Nair", deadline: "2026-02-18", status: "open", link: null },
+            { id: 37, type: "commitment", description: "Set up RFP/RFQ site accounts and begin searching for opportunities", owner: "Sofia Reyes", deadline: "2026-02-18", status: "open", link: null },
+            { id: 39, type: "commitment", description: "Go through GG\u0027s SOPs with Kerry \u2014 meeting at 9am Kerry time", owner: "Sofia Reyes", deadline: "2026-02-18", status: "open", link: null },
+            { id: 27, type: "commitment", description: "Send out quotes for UFT and second site visit by Thursday and Friday", owner: "Priya Nair", deadline: "2026-02-20", status: "open", link: null },
+            { id: 45, type: "commitment", description: "Follow-up call with Marcus at 1:30 PM Eastern (12:30 PM CST) today", owner: "You", deadline: "2026-02-20", status: "open", link: null },
+            { id: 14, type: "commitment", description: "Send Kyle a note about new responsibilities", owner: "You", deadline: "2026-02-21", status: "open", link: null },
+            { id: 17, type: "commitment", description: "Have conversation with General Assembly guy \u2014 offer 6 weeks at $600", owner: "You", deadline: "2026-02-21", status: "open", link: null },
+            { id: 24, type: "commitment", description: "Build WeWork audit spreadsheet (based on TikTok audit format)", owner: "Priya Nair", deadline: "2026-02-21", status: "open", link: null },
+            { id: 25, type: "commitment", description: "Build standard of care document for Ricky at WeWork", owner: "Priya Nair", deadline: "2026-02-21", status: "open", link: null },
+            { id: 26, type: "commitment", description: "Cash checks at BMO (photo each check, send to GG, keep for a month)", owner: "Priya Nair", deadline: "2026-02-21", status: "open", link: null },
+            { id: 31, type: "commitment", description: "File Maya\u0027s record of employment after last payroll this week", owner: "Zoe Hartley", deadline: "2026-02-21", status: "open", link: null },
+            { id: 33, type: "commitment", description: "Get Maya\u0027s key card back \u2014 have her Uber courier it to WeWork", owner: "Sofia Reyes", deadline: "2026-02-21", status: "open", link: null },
+            { id: 34, type: "commitment", description: "Schedule tech candidate interviews with Emma", owner: "Sofia Reyes", deadline: "2026-02-21", status: "open", link: null },
+            { id: 38, type: "commitment", description: "Screen more finance candidates this week \u2014 aim for decision by end of week", owner: "Sofia Reyes", deadline: "2026-02-21", status: "open", link: null },
+            { id: 43, type: "commitment", description: "Enter timesheets manually for payroll this week", owner: "Tariq Hassan", deadline: "2026-02-21", status: "open", link: null },
+            { id: 15, type: "commitment", description: "Follow up with Conrad on cargo bike pilot \u2014 deferred until snow melts", owner: "You", deadline: "2026-03-06", status: "open", link: null }
+        ],
+        transcripts: [
+            { id: 3, type: "transcript", title: "Kerry / Marcus Webb \u2014 Discovery Call", participants: "Marcus Webb", date: "2026-02-20", duration: 37, link: null },
+            { id: 1, type: "transcript", title: "Kerry / Sofia Reyes \u2014 Verdant Co Weekly", participants: "", date: "2026-02-19", duration: null, link: null },
+            { id: 2, type: "transcript", title: "Weekly Kickoff - Verdant Co", participants: "Priya Nair, Zoe Hartley, Sofia Reyes, Tariq Hassan", date: "2026-02-17", duration: 64, link: null }
+        ]
+    };
+    </script>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        lucide.createIcons();
+
+        var input = document.getElementById('search-input');
+        var resultsContainer = document.getElementById('results');
+        var filterBtns = document.querySelectorAll('.search-filter');
+        var activeCategory = 'all';
+        var debounceTimer;
+
+        var CONFIG = {
+            contacts:    { icon: 'users',          color: 'blue',   label: 'Contacts' },
+            emails:      { icon: 'mail',           color: 'indigo', label: 'Email' },
+            decisions:   { icon: 'git-branch',     color: 'amber',  label: 'Decisions' },
+            journal:     { icon: 'book-open',      color: 'rose',   label: 'Journal' },
+            commitments: { icon: 'target',         color: 'teal',   label: 'Commitments' },
+            transcripts: { icon: 'message-square', color: 'cyan',   label: 'Calls' }
+        };
+
+        filterBtns.forEach(function(btn) {
+            btn.addEventListener('click', function() {
+                filterBtns.forEach(function(b) { b.classList.remove('active'); });
+                this.classList.add('active');
+                activeCategory = this.dataset.category;
+                doSearch(input.value);
+            });
+        });
+
+        input.addEventListener('input', function() {
+            clearTimeout(debounceTimer);
+            var val = this.value;
+            debounceTimer = setTimeout(function() { doSearch(val); }, 150);
+        });
+
+        function doSearch(query) {
+            query = query.toLowerCase().trim();
+            while (resultsContainer.firstChild) resultsContainer.removeChild(resultsContainer.firstChild);
+
+            if (!query) {
+                showEmptyState('Type to search across all your data', 'Search contacts, emails, decisions, journal entries, commitments, and calls');
+                return;
+            }
+
+            var totalMatches = 0;
+            Object.keys(SOY_DATA).forEach(function(cat) {
+                if (activeCategory !== 'all' && activeCategory !== cat) return;
+                var matches = SOY_DATA[cat].filter(function(item) {
+                    return Object.values(item).some(function(val) {
+                        return val && typeof val === 'string' && val.toLowerCase().indexOf(query) !== -1;
+                    });
+                });
+                if (matches.length > 0) {
+                    totalMatches += matches.length;
+                    resultsContainer.appendChild(buildGroup(cat, matches));
+                }
+            });
+
+            if (totalMatches === 0) {
+                showEmptyState('No matches found', 'Try a different search term or category');
+            }
+            lucide.createIcons();
+        }
+
+        function showEmptyState(title, subtitle) {
+            var div = document.createElement('div');
+            div.className = 'text-center py-12';
+            var p1 = document.createElement('p');
+            p1.className = 'text-sm text-zinc-500';
+            p1.textContent = title;
+            div.appendChild(p1);
+            if (subtitle) {
+                var p2 = document.createElement('p');
+                p2.className = 'text-xs text-zinc-400 mt-1';
+                p2.textContent = subtitle;
+                div.appendChild(p2);
+            }
+            resultsContainer.appendChild(div);
+        }
+
+        function buildGroup(category, items) {
+            var c = CONFIG[category];
+            var group = document.createElement('div');
+            group.className = 'result-group mb-6';
+
+            var header = document.createElement('div');
+            header.className = 'flex items-center gap-2 mb-3';
+            var icon = document.createElement('i');
+            icon.setAttribute('data-lucide', c.icon);
+            icon.className = 'w-4 h-4 text-' + c.color + '-500';
+            header.appendChild(icon);
+            var label = document.createElement('h3');
+            label.className = 'text-xs font-semibold text-zinc-500 uppercase tracking-wider';
+            label.textContent = c.label;
+            header.appendChild(label);
+            var count = document.createElement('span');
+            count.className = 'text-xs text-zinc-400';
+            count.textContent = '(' + items.length + (items.length === 1 ? ' match' : ' matches') + ')';
+            header.appendChild(count);
+            group.appendChild(header);
+
+            items.forEach(function(item) { group.appendChild(buildCard(category, item)); });
+            return group;
+        }
+
+        function buildCard(category, item) {
+            var card = document.createElement('div');
+            card.className = 'bg-white rounded-lg border border-zinc-200 p-3 mb-1.5 hover:shadow-sm transition-all';
+            var row = document.createElement('div');
+            row.className = 'flex items-start gap-3';
+
+            var iconWrap = document.createElement('div');
+            if (category === 'contacts') {
+                iconWrap.className = 'w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-700 text-xs font-semibold shrink-0';
+                iconWrap.textContent = item.name ? item.name.split(' ').map(function(n) { return n[0]; }).join('').substring(0, 2) : '?';
+            } else {
+                var c = CONFIG[category];
+                iconWrap.className = 'w-7 h-7 rounded-lg bg-' + c.color + '-50 flex items-center justify-center shrink-0';
+                var i = document.createElement('i');
+                i.setAttribute('data-lucide', c.icon);
+                i.className = 'w-3.5 h-3.5 text-' + c.color + '-500';
+                iconWrap.appendChild(i);
+            }
+            row.appendChild(iconWrap);
+
+            var content = document.createElement('div');
+            content.className = 'flex-1 min-w-0';
+
+            var title = document.createElement(item.link ? 'a' : 'span');
+            title.className = item.link ? 'text-sm font-medium text-blue-600 hover:text-blue-800' : 'text-sm font-medium text-zinc-900';
+            if (item.link) title.href = item.link;
+
+            switch(category) {
+                case 'contacts':
+                    title.textContent = item.name || '';
+                    content.appendChild(title);
+                    addSubline(content, [item.role, item.company].filter(Boolean).join(' \u00b7 '));
+                    if (item.email) addSubline(content, item.email, 'mt-0.5');
+                    break;
+                case 'emails':
+                    title.textContent = item.subject || '(no subject)';
+                    title.className = 'text-sm font-medium text-zinc-900 truncate block';
+                    content.appendChild(title);
+                    addSubline(content, (item.direction === 'inbound' ? 'From' : 'To') + ' ' + (item.from || '') + ' \u00b7 ' + (item.date || ''));
+                    if (item.snippet) addSubline(content, item.snippet, 'mt-0.5 truncate');
+                    break;
+                case 'decisions':
+                    title.textContent = item.title || '';
+                    title.className = 'text-sm font-medium text-zinc-900';
+                    content.appendChild(title);
+                    addSubline(content, (item.status || '') + ' \u00b7 ' + (item.date || ''));
+                    if (item.context) addSubline(content, item.context, 'mt-0.5 truncate');
+                    break;
+                case 'journal':
+                    title.textContent = (item.date || '') + (item.mood ? ' \u00b7 ' + item.mood : '');
+                    title.className = 'text-sm font-medium text-zinc-900';
+                    content.appendChild(title);
+                    if (item.content) addSubline(content, item.content, 'mt-0.5 truncate');
+                    break;
+                case 'commitments':
+                    title.textContent = item.description || '';
+                    title.className = 'text-sm font-medium text-zinc-900 truncate block';
+                    content.appendChild(title);
+                    addSubline(content, (item.owner || '') + (item.deadline ? ' \u00b7 Due ' + item.deadline : ''));
+                    break;
+                case 'transcripts':
+                    title.textContent = item.title || '';
+                    title.className = 'text-sm font-medium text-zinc-900';
+                    content.appendChild(title);
+                    addSubline(content, (item.date || '') + (item.duration ? ' \u00b7 ' + item.duration + ' min' : ''));
+                    if (item.participants) addSubline(content, item.participants);
+                    break;
+            }
+
+            row.appendChild(content);
+            card.appendChild(row);
+            return card;
+        }
+
+        function addSubline(parent, text, extraClass) {
+            if (!text) return;
+            var p = document.createElement('p');
+            p.className = 'text-xs text-zinc-500' + (extraClass ? ' ' + extraClass : '');
+            p.textContent = text;
+            parent.appendChild(p);
+        }
+
+        doSearch('');
+    });
+    </script>
+<!-- DEMO BANNER -->
+<div id="demo-banner" style="position:fixed;bottom:0;left:0;right:0;z-index:9999;background:#1A4731;color:white;font-family:'DM Mono',monospace;font-size:12px;letter-spacing:0.04em;display:flex;align-items:center;justify-content:center;gap:24px;padding:10px 24px;box-shadow:0 -2px 16px rgba(0,0,0,0.2);">
+  <span style="opacity:0.7;">✦ LIVE DEMO — anonymized data</span>
+  <span style="opacity:0.4;">|</span>
+  <span>This is what Software of You looks like with 3 months of real use.</span>
+  <span style="opacity:0.4;">|</span>
+  <a href="https://softwareof.you" style="color:#a8e6c0;text-decoration:none;font-weight:500;white-space:nowrap;" target="_top">Get it for yourself →</a>
+  <button onclick="document.getElementById('demo-banner').style.display='none'" style="margin-left:8px;background:none;border:none;color:rgba(255,255,255,0.4);cursor:pointer;font-size:16px;line-height:1;padding:0 4px;" title="Dismiss">×</button>
+</div>
+<div style="height:44px;"></div><!-- spacer so banner doesn't cover content -->
+</body>
+</html>

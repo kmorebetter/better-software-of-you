@@ -1,0 +1,1258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Calendar Module — Software of You</title>
+  <meta name="description" content="Walk into every meeting informed. Not just the name and the time. Everything. SoY Calendar syncs your schedule and assembles pre-meeting intelligence when you ask for it.">
+  <meta name="robots" content="index, follow">
+  <link rel="canonical" href="https://softwareof.you/modules/calendar.html">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://softwareof.you/modules/calendar.html">
+  <meta property="og:title" content="Calendar Module — Software of You">
+  <meta property="og:description" content="Walk into every meeting informed. SoY Calendar syncs your schedule and assembles pre-meeting intelligence when you ask for it. Module 04 of Software of You.">
+  <meta property="og:site_name" content="Software of You">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Calendar Module — Software of You">
+  <meta name="twitter:description" content="Walk into every meeting informed. SoY Calendar syncs your schedule and assembles pre-meeting intelligence when you ask for it.">
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"WebPage","url":"https://softwareof.you/modules/calendar.html","name":"Calendar Module — Software of You","description":"Walk into every meeting informed. SoY Calendar syncs your schedule and assembles pre-meeting intelligence when you ask for it. Module 04 of Software of You.","isPartOf":{"@type":"WebSite","url":"https://softwareof.you/","name":"Software of You"},"about":{"@type":"SoftwareApplication","name":"Software of You","offers":{"@type":"Offer","price":"149","priceCurrency":"USD"}}}</script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300;1,400&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300;1,9..40,400&display=swap" rel="stylesheet">
+
+  <style>
+    /* ─────────────────────────────────────────
+       TOKENS
+    ───────────────────────────────────────── */
+    :root {
+      --bone:       #FAF9F6;
+      --bone-mid:   #F2F0EB;
+      --bone-deep:  #E8E4DC;
+      --ink:        #0F0E0C;
+      --ink-2:      #2C2A26;
+      --ink-3:      #6B6860;
+      --ink-4:      #A8A49C;
+      --ink-5:      #D4D0C8;
+      --forest:     #1A4731;
+      --forest-mid: #245E41;
+      --forest-pale:#EBF2EE;
+      --forest-bg:  #F2F7F4;
+      --ember:      #A63325;
+      --ember-pale: #FBF2F0;
+      --rule:       rgba(15,14,12,0.08);
+      --rule-mid:   rgba(15,14,12,0.13);
+      --rule-heavy: rgba(15,14,12,0.22);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; font-size: 16px; }
+
+    body {
+      background: var(--bone);
+      color: var(--ink);
+      font-family: 'DM Sans', system-ui, sans-serif;
+      line-height: 1.6;
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ─────────────────────────────────────────
+       ANIMATIONS
+    ───────────────────────────────────────── */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to   { opacity: 1; }
+    }
+
+    .reveal {
+      opacity: 0;
+      transform: translateY(24px);
+      transition: opacity 0.6s ease, transform 0.6s ease;
+    }
+    .reveal.in { opacity: 1; transform: none; }
+    .reveal-delay-1 { transition-delay: 0.1s; }
+    .reveal-delay-2 { transition-delay: 0.2s; }
+    .reveal-delay-3 { transition-delay: 0.3s; }
+    .reveal-delay-4 { transition-delay: 0.4s; }
+
+    /* ─────────────────────────────────────────
+       NAVIGATION
+    ───────────────────────────────────────── */
+    .nav { position:fixed; top:0; left:0; right:0; z-index:100; background:rgba(250,249,246,0.92); backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px); border-bottom:1px solid var(--rule); }
+    .nav__inner { max-width:1200px; margin:0 auto; padding:0 48px; height:64px; display:flex; align-items:center; justify-content:space-between; }
+    .nav__logo { font-family:'DM Serif Display',Georgia,serif; font-size:17px; color:var(--ink); text-decoration:none; letter-spacing:0.01em; }
+    .nav__logo span { font-style:italic; color:var(--forest); }
+    .nav__links { display:flex; align-items:center; gap:28px; list-style:none; }
+    .nav__links a { font-family:'DM Mono',monospace; font-size:11px; letter-spacing:0.08em; text-transform:uppercase; color:var(--ink-3); text-decoration:none; transition:color 0.18s; }
+    .nav__links a:hover, .nav__links a.active { color:var(--ink); }
+    .nav__item--has-sub { position:relative; }
+    .nav__item--has-sub > a { cursor: pointer; }
+    .nav__item--has-sub > a::after { content:''; display:inline-block; width:5px; height:5px; border-right:1.5px solid currentColor; border-bottom:1.5px solid currentColor; transform:rotate(45deg) translateY(-2px); margin-left:6px; opacity:0.5; transition:transform 0.18s; }
+    .nav__sub { position:absolute; top:calc(100% + 8px); left:50%; transform:translateX(-50%) translateY(-4px); background:white; border:1px solid var(--rule-heavy); min-width:220px; padding:8px 0; list-style:none; opacity:0; visibility:hidden; pointer-events:none; transition:opacity 0.16s,transform 0.16s; box-shadow:0 8px 24px rgba(0,0,0,0.08); }
+    .nav__item--has-sub.open > a::after { transform:rotate(225deg) translateY(-2px); }
+    .nav__item--has-sub.open .nav__sub { opacity:1; visibility:visible; pointer-events:auto; transform:translateX(-50%) translateY(0); }
+
+    .nav__sub li a { display:flex; align-items:center; gap:10px; padding:9px 20px; font-family:'DM Sans',sans-serif; font-size:13px; letter-spacing:0; text-transform:none; color:var(--ink-2); transition:background 0.12s; }
+    .nav__sub li a:hover { background:var(--bone); color:var(--ink); }
+    .nav__sub__num { font-family:'DM Mono',monospace; font-size:10px; color:var(--ink-5); min-width:16px; }
+    .nav__sub__divider { height:1px; background:var(--rule); margin:6px 20px; }
+    .nav__right { display:flex; align-items:center; gap:36px; }
+    .nav__cta { font-family:'DM Sans',sans-serif; font-size:13px; font-weight:500; letter-spacing:0.04em; color:var(--bone); background:var(--forest); padding:10px 24px; text-decoration:none; border-radius:2px; transition:background 0.18s,transform 0.14s; }
+    .nav__cta:hover { background:var(--forest-mid); transform:translateY(-1px); }
+
+    /* ─────────────────────────────────────────
+       BREADCRUMB
+    ───────────────────────────────────────── */
+    .breadcrumb {
+      padding-top: 96px;
+      background: var(--forest);
+    }
+
+    .breadcrumb__inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 48px;
+    }
+
+    .breadcrumb__link {
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: rgba(235,242,238,0.5);
+      text-decoration: none;
+      transition: color 0.15s;
+    }
+    .breadcrumb__link:hover { color: var(--forest-pale); }
+
+    /* ─────────────────────────────────────────
+       HERO
+    ───────────────────────────────────────── */
+    .hero {
+      padding-top: 64px;
+      min-height: 72vh;
+      background: var(--forest);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Grid texture */
+    .hero::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+      background-size: 40px 40px;
+      pointer-events: none;
+    }
+
+    /* Ghost module number */
+    .hero__ghost {
+      position: absolute;
+      right: -20px;
+      bottom: -60px;
+      font-family: 'DM Serif Display', Georgia, serif;
+      font-style: italic;
+      font-size: clamp(200px, 28vw, 380px);
+      line-height: 1;
+      color: rgba(255,255,255,0.04);
+      pointer-events: none;
+      user-select: none;
+      letter-spacing: -0.04em;
+    }
+
+    .hero__inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 80px 48px 96px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .hero__module-label {
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: rgba(235,242,238,0.55);
+      margin-bottom: 28px;
+      animation: fadeUp 0.6s ease both;
+      animation-delay: 0.1s;
+    }
+
+    .hero__headline {
+      font-family: 'DM Serif Display', Georgia, serif;
+      font-size: clamp(38px, 5vw, 60px);
+      line-height: 1.1;
+      color: var(--forest-pale);
+      letter-spacing: -0.02em;
+      max-width: 700px;
+      margin-bottom: 20px;
+      animation: fadeUp 0.6s ease both;
+      animation-delay: 0.2s;
+    }
+    .hero__headline em { font-style: italic; color: #ffffff; }
+
+    .hero__subhead {
+      font-family: 'DM Serif Display', Georgia, serif;
+      font-style: italic;
+      font-size: clamp(20px, 2.5vw, 26px);
+      color: rgba(235,242,238,0.65);
+      max-width: 560px;
+      line-height: 1.4;
+      animation: fadeUp 0.6s ease both;
+      animation-delay: 0.35s;
+    }
+
+    .hero__rule {
+      width: 48px;
+      height: 2px;
+      background: rgba(235,242,238,0.3);
+      margin: 36px 0;
+      animation: fadeIn 0.6s ease both;
+      animation-delay: 0.45s;
+    }
+
+    /* ─────────────────────────────────────────
+       SECTION BASE
+    ───────────────────────────────────────── */
+    .section {
+      padding: 80px 0;
+    }
+
+    .section--alt {
+      background: var(--bone-mid);
+      border-top: 1px solid var(--rule);
+      border-bottom: 1px solid var(--rule);
+    }
+
+    .section--forest {
+      background: var(--forest-bg);
+      border-top: 1px solid var(--forest-pale);
+      border-bottom: 1px solid var(--forest-pale);
+    }
+
+    .section--dark {
+      background: var(--ink-2);
+    }
+
+    .section__inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 48px;
+    }
+
+    .section__label {
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--forest);
+      margin-bottom: 16px;
+    }
+
+    .section--dark .section__label {
+      color: var(--forest-pale);
+      opacity: 0.7;
+    }
+
+    .section__title {
+      font-family: 'DM Serif Display', Georgia, serif;
+      font-size: clamp(28px, 3.5vw, 40px);
+      line-height: 1.15;
+      color: var(--ink);
+      letter-spacing: -0.015em;
+      margin-bottom: 20px;
+    }
+
+    .section--dark .section__title {
+      color: var(--bone);
+    }
+
+    .section__body {
+      font-size: 17px;
+      line-height: 1.7;
+      color: var(--ink-3);
+      max-width: 640px;
+    }
+
+    .section--dark .section__body {
+      color: var(--ink-5);
+    }
+
+    /* ─────────────────────────────────────────
+       LAYOUTS
+    ───────────────────────────────────────── */
+    .two-col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 64px;
+      align-items: start;
+    }
+
+    .two-col--wide {
+      grid-template-columns: 5fr 4fr;
+    }
+
+    /* ─────────────────────────────────────────
+       QUERY BLOCKS
+    ───────────────────────────────────────── */
+    .query-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-top: 36px;
+    }
+
+    .query {
+      background: var(--ink-2);
+      color: var(--forest-pale);
+      font-family: 'DM Mono', monospace;
+      font-size: 14px;
+      line-height: 1.5;
+      padding: 16px 20px;
+      border-left: 3px solid var(--forest);
+    }
+
+    .query::before {
+      content: '> ';
+      color: var(--forest);
+      opacity: 0.7;
+    }
+
+    /* ─────────────────────────────────────────
+       THE PROBLEM — TRIAGE BLOCK
+    ───────────────────────────────────────── */
+    .triage-scene {
+      margin-top: 40px;
+      padding: 36px 40px;
+      background: var(--ember-pale);
+      border: 1px solid rgba(166,51,37,0.15);
+      position: relative;
+    }
+
+    .triage-scene__label {
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--ember);
+      margin-bottom: 20px;
+    }
+
+    .triage-scene__time {
+      font-family: 'DM Mono', monospace;
+      font-size: 13px;
+      color: var(--ember);
+      margin-bottom: 16px;
+    }
+
+    .triage-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .triage-list li {
+      font-size: 15px;
+      color: var(--ink-2);
+      padding-left: 20px;
+      position: relative;
+      line-height: 1.5;
+    }
+
+    .triage-list li::before {
+      content: '—';
+      position: absolute;
+      left: 0;
+      color: var(--ember);
+      font-family: 'DM Mono', monospace;
+      font-size: 12px;
+    }
+
+    .triage-scene__conclusion {
+      margin-top: 20px;
+      padding-top: 20px;
+      border-top: 1px solid rgba(166,51,37,0.15);
+      font-size: 14px;
+      font-style: italic;
+      color: var(--ink-3);
+    }
+
+    /* ─────────────────────────────────────────
+       PRE-MEETING BRIEF (example output panel)
+    ───────────────────────────────────────── */
+    .brief-panel {
+      background: var(--forest-bg);
+      border: 1px solid var(--forest-pale);
+      padding: 32px 36px;
+      margin-top: 40px;
+    }
+
+    .brief-panel__header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      margin-bottom: 28px;
+      padding-bottom: 20px;
+      border-bottom: 1px solid var(--forest-pale);
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+
+    .brief-panel__title-block {}
+
+    .brief-panel__generated {
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--forest);
+      margin-bottom: 8px;
+    }
+
+    .brief-panel__meeting {
+      font-family: 'DM Serif Display', Georgia, serif;
+      font-size: 20px;
+      color: var(--ink);
+      letter-spacing: -0.01em;
+    }
+
+    .brief-panel__meta {
+      font-size: 14px;
+      color: var(--ink-3);
+      margin-top: 4px;
+    }
+
+    .brief-panel__health {
+      text-align: right;
+    }
+
+    .brief-panel__health-label {
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--ink-4);
+      margin-bottom: 6px;
+    }
+
+    .health-score {
+      display: flex;
+      gap: 4px;
+      justify-content: flex-end;
+    }
+
+    .health-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--forest-pale);
+    }
+
+    .health-dot.filled {
+      background: var(--forest);
+    }
+
+    .brief-section {
+      margin-bottom: 24px;
+      padding-bottom: 24px;
+      border-bottom: 1px solid var(--forest-pale);
+    }
+
+    .brief-section:last-child {
+      margin-bottom: 0;
+      padding-bottom: 0;
+      border-bottom: none;
+    }
+
+    .brief-section__label {
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--forest);
+      margin-bottom: 10px;
+    }
+
+    .brief-section__content {
+      font-size: 14px;
+      color: var(--ink-2);
+      line-height: 1.6;
+    }
+
+    .brief-section__content ul {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .brief-section__content li {
+      padding-left: 16px;
+      position: relative;
+    }
+
+    .brief-section__content li::before {
+      content: '·';
+      position: absolute;
+      left: 0;
+      color: var(--forest);
+      font-size: 16px;
+      line-height: 1.4;
+    }
+
+    .commit-tag {
+      display: inline-block;
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      padding: 2px 8px;
+      margin-left: 6px;
+      vertical-align: middle;
+    }
+
+    .commit-tag--yours {
+      background: var(--forest-pale);
+      color: var(--forest);
+    }
+
+    .commit-tag--theirs {
+      background: var(--bone-mid);
+      color: var(--ink-3);
+    }
+
+    .suggested-q {
+      font-size: 14px;
+      color: var(--ink-2);
+      font-style: italic;
+      padding: 8px 14px;
+      border-left: 2px solid var(--forest);
+      margin-bottom: 8px;
+    }
+
+    /* ─────────────────────────────────────────
+       SYNC WINDOW
+    ───────────────────────────────────────── */
+    .sync-window {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0;
+      margin-top: 40px;
+      border: 1px solid var(--rule-mid);
+    }
+
+    .sync-window__panel {
+      padding: 28px 32px;
+    }
+
+    .sync-window__panel:first-child {
+      border-right: 1px solid var(--rule-mid);
+    }
+
+    .sync-window__label {
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      margin-bottom: 16px;
+    }
+
+    .sync-window__panel:first-child .sync-window__label { color: var(--ink-4); }
+    .sync-window__panel:last-child  .sync-window__label { color: var(--forest); }
+
+    .sync-window__range {
+      font-family: 'DM Serif Display', Georgia, serif;
+      font-size: 28px;
+      color: var(--ink);
+      letter-spacing: -0.01em;
+      margin-bottom: 8px;
+    }
+
+    .sync-window__desc {
+      font-size: 14px;
+      color: var(--ink-3);
+      line-height: 1.6;
+    }
+
+    .sync-mechanism {
+      margin-top: 32px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .sync-mechanism__item {
+      display: flex;
+      gap: 16px;
+      align-items: flex-start;
+      padding: 16px 20px;
+      background: var(--bone-mid);
+      border: 1px solid var(--rule);
+    }
+
+    .sync-mechanism__icon {
+      font-family: 'DM Mono', monospace;
+      font-size: 12px;
+      color: var(--forest);
+      flex-shrink: 0;
+      padding-top: 2px;
+    }
+
+    .sync-mechanism__text {
+      font-size: 14px;
+      color: var(--ink-3);
+      line-height: 1.6;
+    }
+
+    .sync-mechanism__text strong {
+      color: var(--ink-2);
+      font-weight: 500;
+    }
+
+    /* ─────────────────────────────────────────
+       AFTER THE MEETING — TIMELINE
+    ───────────────────────────────────────── */
+    .meeting-timeline {
+      margin-top: 40px;
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+      position: relative;
+    }
+
+    .meeting-timeline::before {
+      content: '';
+      position: absolute;
+      left: 21px;
+      top: 44px;
+      bottom: 44px;
+      width: 1px;
+      background: var(--rule-heavy);
+    }
+
+    .timeline-event {
+      display: flex;
+      gap: 24px;
+      align-items: flex-start;
+      padding: 0 0 36px;
+    }
+
+    .timeline-event:last-child { padding-bottom: 0; }
+
+    .timeline-event__dot {
+      width: 44px;
+      height: 44px;
+      background: var(--bone);
+      border: 1px solid var(--rule-heavy);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      z-index: 1;
+    }
+
+    .timeline-event__dot--active {
+      background: var(--forest);
+      border-color: var(--forest);
+    }
+
+    .timeline-event__dot-inner {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--ink-4);
+    }
+
+    .timeline-event__dot--active .timeline-event__dot-inner {
+      background: var(--bone);
+    }
+
+    .timeline-event__content {
+      padding-top: 10px;
+    }
+
+    .timeline-event__time {
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 0.08em;
+      color: var(--ink-4);
+      margin-bottom: 6px;
+    }
+
+    .timeline-event__title {
+      font-size: 15px;
+      font-weight: 500;
+      color: var(--ink-2);
+      margin-bottom: 6px;
+    }
+
+    .timeline-event__desc {
+      font-size: 14px;
+      color: var(--ink-3);
+      line-height: 1.6;
+      max-width: 480px;
+    }
+
+    /* ─────────────────────────────────────────
+       CTA SECTION
+    ───────────────────────────────────────── */
+    .cta-section {
+      padding: 100px 0;
+      background: var(--ink);
+      text-align: center;
+    }
+
+    .cta-section__label {
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--forest-pale);
+      opacity: 0.7;
+      margin-bottom: 24px;
+    }
+
+    .cta-section__headline {
+      font-family: 'DM Serif Display', Georgia, serif;
+      font-size: clamp(32px, 4vw, 52px);
+      color: var(--bone);
+      letter-spacing: -0.02em;
+      line-height: 1.15;
+      margin-bottom: 16px;
+    }
+
+    .cta-section__sub {
+      font-family: 'DM Serif Display', Georgia, serif;
+      font-style: italic;
+      font-size: 20px;
+      color: var(--ink-4);
+      margin-bottom: 48px;
+    }
+
+    .cta-buttons {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+
+    .cta-primary {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 15px;
+      font-weight: 500;
+      letter-spacing: 0.03em;
+      color: var(--bone);
+      background: var(--forest);
+      padding: 16px 36px;
+      text-decoration: none;
+      border-radius: 2px;
+      transition: background 0.18s, transform 0.14s;
+    }
+    .cta-primary:hover { background: var(--forest-mid); transform: translateY(-2px); }
+
+    .cta-next-module {
+      font-family: 'DM Mono', monospace;
+      font-size: 12px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--ink-4);
+      text-decoration: none;
+      transition: color 0.15s;
+    }
+    .cta-next-module:hover { color: var(--forest-pale); }
+
+    /* ─────────────────────────────────────────
+       FOOTER
+    ───────────────────────────────────────── */
+    .footer {
+      padding: 28px 48px;
+      background: var(--ink-2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .footer__text {
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      color: var(--ink-4);
+      letter-spacing: 0.04em;
+    }
+
+    .footer__link {
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      color: var(--ink-3);
+      letter-spacing: 0.04em;
+      text-decoration: none;
+    }
+    .footer__link:hover { color: var(--forest-pale); }
+
+    /* ─────────────────────────────────────────
+       RESPONSIVE
+    ───────────────────────────────────────── */
+    @media (max-width: 900px) {
+      .nav__inner { padding: 0 24px; }
+      .nav__links { display: none; }
+      .section__inner { padding: 0 24px; }
+      .hero__inner { padding: 60px 24px 72px; }
+      .breadcrumb__inner { padding: 0 24px; }
+      .two-col { grid-template-columns: 1fr; gap: 36px; }
+      .two-col--wide { grid-template-columns: 1fr; }
+      .sync-window { grid-template-columns: 1fr; }
+      .sync-window__panel:first-child { border-right: none; border-bottom: 1px solid var(--rule-mid); }
+      .brief-panel__header { flex-direction: column; }
+      .brief-panel__health { text-align: left; }
+      .health-score { justify-content: flex-start; }
+      .hero__ghost { font-size: clamp(140px, 22vw, 200px); }
+      .footer { padding: 24px; }
+    }
+
+    @media (max-width: 600px) {
+      .hero__ghost { display: none; }
+      .meeting-timeline::before { display: none; }
+    }
+  </style>
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-TQFFERGZW1"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-TQFFERGZW1');
+  </script>
+</head>
+<body>
+
+  <!-- ─── NAV ─── -->
+  <nav class="nav" role="navigation" aria-label="Main navigation">
+    <div class="nav__inner">
+      <a href="../" class="nav__logo">Software<span>Of</span>You</a>
+      <ul class="nav__links">
+        <li><a href="../features.html">Features</a></li>
+        <li class="nav__item--has-sub">
+          <a href="../features.html#modules">Modules</a>
+          <ul class="nav__sub">
+            <li><a href="crm.html"><span class="nav__sub__num">01</span>CRM</a></li>
+            <li><a href="projects.html"><span class="nav__sub__num">02</span>Projects</a></li>
+            <li><a href="gmail.html"><span class="nav__sub__num">03</span>Gmail</a></li>
+            <li><a href="calendar.html"><span class="nav__sub__num">04</span>Calendar</a></li>
+            <li><a href="conversations.html"><span class="nav__sub__num">05</span>Conversations</a></li>
+            <li><a href="decisions.html"><span class="nav__sub__num">06</span>Decisions</a></li>
+            <li><a href="journal.html"><span class="nav__sub__num">07</span>Journal</a></li>
+            <li><a href="notes.html"><span class="nav__sub__num">08</span>Notes</a></li>
+            <div class="nav__sub__divider"></div>
+            <li><a href="../features.html#modules"><span class="nav__sub__num">→</span>All modules</a></li>
+          </ul>
+        </li>
+        <li><a href="../why-claude.html">Why Claude</a></li>
+        <li><a href="../your-data.html">Your Data</a></li>
+        <li><a href="../pricing.html">Pricing</a></li>
+      </ul>
+      <div class="nav__right">
+        <a href="https://softwareof.you" class="nav__cta">Get SoY — $149</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- ─── BREADCRUMB ─── -->
+  <div class="breadcrumb">
+    <div class="breadcrumb__inner">
+      <a href="../features.html#modules" class="breadcrumb__link">← All modules</a>
+    </div>
+  </div>
+
+  <!-- ─── HERO ─── -->
+  <section class="hero">
+    <div class="hero__ghost" aria-hidden="true">04</div>
+    <div class="hero__inner">
+      <div class="hero__module-label">Module 04 — Calendar</div>
+      <h1 class="hero__headline">Walk into every meeting informed.</h1>
+      <p class="hero__subhead">Not just the name and the time. Everything.</p>
+      <div class="hero__rule"></div>
+    </div>
+  </section>
+
+  <!-- ─── SECTION 1: THE PROBLEM ─── -->
+  <section class="section">
+    <div class="section__inner">
+      <div class="two-col two-col--wide">
+        <div>
+          <p class="section__label reveal">The problem</p>
+          <h2 class="section__title reveal reveal-delay-1">Five minutes before the call. Frantic.</h2>
+          <p class="section__body reveal reveal-delay-2">You know who you're meeting. You know when. But there's a gap between knowing the calendar entry and being prepared for the conversation inside it.</p>
+          <p class="section__body reveal reveal-delay-2" style="margin-top:16px;">The scramble is real — re-reading old emails, trying to remember what was discussed last time, wondering what they wanted to follow up on. That's not preparation. That's triage. Ask Claude who you're meeting and what you should know — SoY surfaces everything relevant from every module, without you having to look it up.</p>
+        </div>
+        <div>
+          <div class="triage-scene reveal reveal-delay-1">
+            <div class="triage-scene__label">T-minus 5 minutes</div>
+            <div class="triage-scene__time">1:55 PM — Marcus Webb, Meridian CEO</div>
+            <ul class="triage-list">
+              <li>Frantically opening Gmail to find the last thread</li>
+              <li>Trying to remember what you committed to last time</li>
+              <li>Scrolling back through old notes to find what he wanted to discuss</li>
+              <li>Checking the project status so you don't look out of the loop</li>
+              <li>Wondering if there was something you were supposed to send him</li>
+            </ul>
+            <div class="triage-scene__conclusion">This is what preparation looks like without SoY. Triage dressed as readiness.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── SECTION 2: HOW YOU USE IT ─── -->
+  <section class="section section--alt">
+    <div class="section__inner">
+      <p class="section__label reveal">How you use it</p>
+      <h2 class="section__title reveal reveal-delay-1">Ask before you walk in.</h2>
+      <p class="section__body reveal reveal-delay-2">Claude knows your calendar. It knows who you're meeting, when, and everything SoY has on them. These are the queries you'll actually run.</p>
+
+      <div class="query-list">
+        <div class="query reveal reveal-delay-1">What's on my calendar this week?</div>
+        <div class="query reveal reveal-delay-2">Who am I meeting tomorrow and what should I know going in?</div>
+        <div class="query reveal reveal-delay-3">Generate prep notes for my 2pm with Marcus</div>
+        <div class="query reveal reveal-delay-2">What meetings do I have with Rebecca this month?</div>
+        <div class="query reveal reveal-delay-3">Anything I should prepare for Friday?</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── SECTION 3: PRE-MEETING BRIEF ─── -->
+  <section class="section">
+    <div class="section__inner">
+      <p class="section__label reveal">What a pre-meeting brief contains</p>
+      <h2 class="section__title reveal reveal-delay-1">Every layer of context, in one ask.</h2>
+      <p class="section__body reveal reveal-delay-2">Ask Claude to prep you for a meeting. It draws from all connected modules — emails, contacts, projects, previous conversations, open commitments — and assembles the brief. This is what you get.</p>
+
+      <div class="brief-panel reveal reveal-delay-2">
+        <div class="brief-panel__header">
+          <div class="brief-panel__title-block">
+            <div class="brief-panel__generated">Pre-meeting brief · Generated by SoY</div>
+            <div class="brief-panel__meeting">2pm — Marcus Webb</div>
+            <div class="brief-panel__meta">Meridian CEO · 60 min · Video call</div>
+          </div>
+          <div class="brief-panel__health">
+            <div class="brief-panel__health-label">Relationship health</div>
+            <div class="health-score">
+              <div class="health-dot filled"></div>
+              <div class="health-dot filled"></div>
+              <div class="health-dot filled"></div>
+              <div class="health-dot filled"></div>
+              <div class="health-dot"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="brief-section">
+          <div class="brief-section__label">Last 3 emails from Marcus</div>
+          <div class="brief-section__content">
+            <ul>
+              <li>Feb 18 — "Looked at the proposal, a few questions on the data pipeline section"</li>
+              <li>Feb 12 — "Happy to do a call next week, send me a few times"</li>
+              <li>Feb 6 — "Good to meet at the summit — let's follow up properly"</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="brief-section">
+          <div class="brief-section__label">Open commitments</div>
+          <div class="brief-section__content">
+            <ul>
+              <li>You said you'd send the revised data pipeline spec by Feb 21 <span class="commit-tag commit-tag--yours">Yours</span></li>
+              <li>Marcus said he'd loop in his CTO before this call <span class="commit-tag commit-tag--theirs">Theirs</span></li>
+              <li>You offered to send two case studies from similar deployments <span class="commit-tag commit-tag--yours">Yours</span></li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="brief-section">
+          <div class="brief-section__label">Project status — Meridian Integration</div>
+          <div class="brief-section__content">
+            <ul>
+              <li>Proposal sent Feb 15. Last updated Feb 18 (v2 with revised timeline)</li>
+              <li>Outstanding: data pipeline section questions from Marcus</li>
+              <li>Next step: alignment call → revised proposal → legal review</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="brief-section">
+          <div class="brief-section__label">Previous meeting notes</div>
+          <div class="brief-section__content">
+            <ul>
+              <li>Summit intro (Feb 5): Marcus mentioned frustration with current vendor, wants dedicated support</li>
+              <li>Intro call (Feb 13): Discussed timeline, he has a board update in Q2 — wants this live by then</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="brief-section">
+          <div class="brief-section__label">Suggested questions based on current context</div>
+          <div class="brief-section__content">
+            <div class="suggested-q">Has the CTO had a chance to look at the data pipeline spec?</div>
+            <div class="suggested-q">Is the Q2 board update timeline still the main forcing function?</div>
+            <div class="suggested-q">What would make this an easy yes at the decision stage?</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── SECTION 4: HOW SYNC WORKS ─── -->
+  <section class="section section--forest">
+    <div class="section__inner">
+      <p class="section__label reveal">How sync works</p>
+      <h2 class="section__title reveal reveal-delay-1">Past 7 days. Next 14 days. Always current.</h2>
+      <p class="section__body reveal reveal-delay-2">The sync window is intentional — enough history to understand recent meeting patterns, enough future to prepare in advance. When you ask about your calendar, SoY pulls the latest and matches attendees to your CRM contacts.</p>
+
+      <div class="sync-window reveal reveal-delay-2">
+        <div class="sync-window__panel">
+          <div class="sync-window__label">Past window</div>
+          <div class="sync-window__range">7 days back</div>
+          <div class="sync-window__desc">Recent meetings are already in context. Commitments from last week's calls are tracked. You can ask what was covered.</div>
+        </div>
+        <div class="sync-window__panel">
+          <div class="sync-window__label">Future window</div>
+          <div class="sync-window__range">14 days ahead</div>
+          <div class="sync-window__desc">Two weeks of upcoming meetings loaded. Ask for prep briefs for anything on the calendar. Get ahead before the day starts.</div>
+        </div>
+      </div>
+
+      <div class="sync-mechanism reveal">
+        <div class="sync-mechanism__item">
+          <div class="sync-mechanism__icon">→</div>
+          <div class="sync-mechanism__text"><strong>Attendees link to CRM contacts — no manual tagging.</strong> Anyone in your SoY contacts database who appears as a meeting attendee gets their event attached to their record on sync.</div>
+        </div>
+        <div class="sync-mechanism__item">
+          <div class="sync-mechanism__icon">↗</div>
+          <div class="sync-mechanism__text"><strong>Calendar events trigger cross-module synthesis.</strong> The meeting is the moment — SoY assembles email history, project context, commitments, and relationship data around it. The event is the trigger; the intelligence comes from everywhere else.</div>
+        </div>
+        <div class="sync-mechanism__item">
+          <div class="sync-mechanism__icon">⟳</div>
+          <div class="sync-mechanism__text"><strong>Sync runs on open.</strong> When you view your calendar in SoY, the sync updates. Nothing to initiate, nothing to schedule.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── SECTION 5: AFTER THE MEETING ─── -->
+  <section class="section">
+    <div class="section__inner">
+      <div class="two-col">
+        <div>
+          <p class="section__label reveal">After the meeting</p>
+          <h2 class="section__title reveal reveal-delay-1">The calendar entry becomes a full record.</h2>
+          <p class="section__body reveal reveal-delay-2">Calendar and Conversations work together. After a meeting, run <code style="font-family: 'DM Mono', monospace; font-size: 0.85em; background: rgba(0,0,0,0.06); padding: 1px 5px; border-radius: 3px;">/import-call</code> and paste the transcript. Commitments are extracted and linked. The calendar event stays connected — so when you look back, you see the prep brief, the transcript, and everything that came out of it.</p>
+          <p class="section__body reveal reveal-delay-2" style="margin-top:16px;">Not just a calendar entry. A complete meeting record with a before, a during, and an after.</p>
+        </div>
+        <div>
+          <div class="meeting-timeline reveal reveal-delay-1">
+            <div class="timeline-event">
+              <div class="timeline-event__dot">
+                <div class="timeline-event__dot-inner"></div>
+              </div>
+              <div class="timeline-event__content">
+                <div class="timeline-event__time">Before</div>
+                <div class="timeline-event__title">Pre-meeting brief generated</div>
+                <div class="timeline-event__desc">Claude assembles email history, open commitments, project status, and suggested questions from all connected modules.</div>
+              </div>
+            </div>
+            <div class="timeline-event">
+              <div class="timeline-event__dot timeline-event__dot--active">
+                <div class="timeline-event__dot-inner"></div>
+              </div>
+              <div class="timeline-event__content">
+                <div class="timeline-event__time">During</div>
+                <div class="timeline-event__title">The meeting happens</div>
+                <div class="timeline-event__desc">You're informed going in. No scrambling. You can actually be present.</div>
+              </div>
+            </div>
+            <div class="timeline-event">
+              <div class="timeline-event__dot">
+                <div class="timeline-event__dot-inner"></div>
+              </div>
+              <div class="timeline-event__content">
+                <div class="timeline-event__time">After</div>
+                <div class="timeline-event__title">Import the transcript</div>
+                <div class="timeline-event__desc">Paste the transcript via /import-call. Commitments extract and link. Topics tag. The transcript connects to the calendar event. Relationship context updates.</div>
+              </div>
+            </div>
+            <div class="timeline-event">
+              <div class="timeline-event__dot">
+                <div class="timeline-event__dot-inner"></div>
+              </div>
+              <div class="timeline-event__content">
+                <div class="timeline-event__time">Future</div>
+                <div class="timeline-event__title">Full record, always accessible</div>
+                <div class="timeline-event__desc">Next time you meet Marcus, the brief includes what happened last time. The loop closes.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════ EXPLAINER ══════════ -->
+  <section style="background: #f0ede8; border-top: 1px solid #dedad3; padding: 80px 0;">
+    <div class="section__inner">
+      <p class="section__label reveal" style="color: #7c7c6e;">✦ · A real example</p>
+      <h2 class="section__title reveal" style="max-width: 580px; margin-bottom: 12px;">You asked who you're meeting.<br><em>It gave you the full picture.</em></h2>
+      <p style="font-size: 16px; color: #5c5b55; max-width: 520px; line-height: 1.7; margin-bottom: 40px;">One prompt, five minutes before a call. The brief assembled itself from everything SoY already had.</p>
+      <div class="explainer-wrap reveal">
+        <style>
+          .cal-exp-layout { display: grid; grid-template-columns: 260px 1fr; gap: 24px; align-items: start; }
+          @media (max-width: 760px) { .cal-exp-layout { grid-template-columns: 1fr; } }
+          .cal-prompt-block { background: white; border: 1px solid #dedad3; border-radius: 6px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+          .cal-prompt-bar { background: #f8f7f4; border-bottom: 1px solid #e8e5e0; padding: 10px 16px; font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: #a8a49c; }
+          .cal-prompt-q { padding: 16px 18px; font-size: 14px; color: #0f0e0c; line-height: 1.6; font-weight: 500; border-bottom: 1px solid #f0ede8; }
+          .cal-prompt-meta { padding: 12px 18px; font-family: 'DM Mono', monospace; font-size: 11px; color: #8a8880; line-height: 1.6; }
+          .cal-brief { background: white; border: 1px solid #dedad3; border-radius: 6px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+          .cal-brief-head { background: #1a4731; padding: 12px 18px; display: flex; align-items: center; gap: 8px; font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: rgba(235,242,238,0.9); font-weight: 600; }
+          .cal-brief-dot { width: 7px; height: 7px; border-radius: 50%; background: rgba(255,255,255,0.35); flex-shrink: 0; }
+          .cal-brief-body { padding: 0; }
+          .cal-section { padding: 14px 18px; border-bottom: 1px solid #f0ede8; }
+          .cal-section:last-child { border-bottom: none; }
+          .cal-section-label { font-family: 'DM Mono', monospace; font-size: 9px; letter-spacing: 0.1em; text-transform: uppercase; color: #a8a49c; margin-bottom: 6px; }
+          .cal-section-content { font-size: 13px; color: #3c3b37; line-height: 1.6; }
+          .cal-section-content strong { color: #0f0e0c; font-weight: 600; }
+          .cal-tag { display: inline-block; font-family: 'DM Mono', monospace; font-size: 9px; letter-spacing: 0.06em; padding: 2px 7px; border-radius: 3px; margin-right: 4px; margin-bottom: 4px; }
+          .cal-tag-sys { background: rgba(26,71,49,0.1); color: #1a4731; }
+          .cal-open { color: #8b1a1a; font-size: 12px; }
+          .cal-exp-footer { margin-top: 20px; padding: 18px 22px; background: #1a4731; border-radius: 6px; display: flex; gap: 16px; align-items: center; }
+          .cal-exp-footer-label { font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: rgba(235,242,238,0.5); white-space: nowrap; }
+          .cal-exp-footer-text { font-size: 14px; color: #ebf2ee; line-height: 1.6; }
+          .cal-exp-footer-text em { font-style: italic; color: rgba(235,242,238,0.7); }
+        </style>
+        <div class="cal-exp-layout">
+          <div>
+            <div class="cal-prompt-block">
+              <div class="cal-prompt-bar">Your prompt</div>
+              <div class="cal-prompt-q">"Who am I meeting at 2pm and what should I know going in?"</div>
+              <div class="cal-prompt-meta">Event: Q2 planning call<br>Attendee: Rebecca Chen<br>Duration: 45 min</div>
+            </div>
+          </div>
+          <div class="cal-brief">
+            <div class="cal-brief-head"><div class="cal-brief-dot"></div>Pre-meeting brief — assembled from SoY</div>
+            <div class="cal-brief-body">
+              <div class="cal-section">
+                <div class="cal-section-label">Who she is</div>
+                <div class="cal-section-content"><strong>Rebecca Chen</strong>, VP Product at Meridian. 8 meetings logged, relationship score 84/100. Last contact: 6 days ago (email, re: timeline).</div>
+              </div>
+              <div class="cal-section">
+                <div class="cal-section-label">Open commitments (2)</div>
+                <div class="cal-section-content">
+                  <div><span class="cal-tag cal-tag-sys">You owe</span> Send revised roadmap deck by end of this week</div>
+                  <div style="margin-top: 6px;"><span class="cal-tag cal-tag-sys">You owe</span> Intro to the analytics team contact you mentioned on Jan 14</div>
+                </div>
+              </div>
+              <div class="cal-section">
+                <div class="cal-section-label">Last 3 emails</div>
+                <div class="cal-section-content">
+                  Feb 14 — she flagged the handoff timing. "Concerned about March 1."<br>
+                  Feb 10 — you sent the scope doc. No reply yet on section 3.<br>
+                  Feb 6 — scheduling thread.
+                </div>
+              </div>
+              <div class="cal-section">
+                <div class="cal-section-label">Decision log</div>
+                <div class="cal-section-content">3 decisions involve Rebecca: pricing model (Jan 12), timeline (Jan 28), team structure (Feb 3). Revisit on pricing is overdue by 11 days.</div>
+              </div>
+              <div class="cal-section">
+                <div class="cal-section-label">Suggested topics</div>
+                <div class="cal-section-content">March 1 concern she raised. Whether you can deliver the roadmap deck before the call. The overdue pricing revisit.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="cal-exp-footer">
+          <div class="cal-exp-footer-label">The point</div>
+          <div class="cal-exp-footer-text">You asked one question five minutes before a call. The system returned <em>relationship history, open commitments you owe her, relevant emails, and the decision log items she's tied to.</em> You walked in prepared.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── CTA ─── -->
+  <section class="cta-section">
+    <div class="section__inner">
+      <div class="cta-section__label reveal">Get started</div>
+      <h2 class="cta-section__headline reveal reveal-delay-1">Walk in informed. Every time.</h2>
+      <p class="cta-section__sub reveal reveal-delay-2">One-time. $149. Works with Claude today.</p>
+      <div class="cta-buttons reveal reveal-delay-3">
+        <a href="https://softwareof.you" class="cta-primary">Get SoY — $149 →</a>
+        <a href="conversations.html" class="cta-next-module">Next module: Conversations →</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── FOOTER ─── -->
+  <footer class="footer">
+    <span class="footer__text">© 2026 Software of You · Built by Kerry Morrison ·</span>
+    <a href="https://softwareof.you" class="footer__link">softwareof.you</a>
+  
+    <a class="footer-email" data-u="kerry" data-d="softwareof.you" href="#" onclick="this.href='mailto:'+this.dataset.u+'@'+this.dataset.d;return false;" title="Email Kerry">kerry<span aria-hidden="true" style="display:none">&#8203;</span>&#64;softwareof.you</a>
+  </footer>
+
+  <!-- ─── SCROLL REVEAL ─── -->
+  <script>
+    if ('IntersectionObserver' in window) {
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('in');
+            observer.unobserve(entry.target);
+          }
+        });
+      }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+
+      document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+    } else {
+      document.querySelectorAll('.reveal').forEach(el => el.classList.add('in'));
+    }
+  </script>
+
+<script>
+(function() {
+  function closeAll() {
+    document.querySelectorAll('.nav__item--has-sub.open').forEach(function(el) {
+      el.classList.remove('open');
+    });
+  }
+  document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.nav__item--has-sub > a').forEach(function(trigger) {
+      trigger.addEventListener('click', function(e) {
+        e.preventDefault();
+        var item = trigger.parentElement;
+        var isOpen = item.classList.contains('open');
+        closeAll();
+        if (!isOpen) item.classList.add('open');
+      });
+    });
+    document.addEventListener('click', function(e) {
+      if (!e.target.closest('.nav__item--has-sub')) closeAll();
+    });
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') closeAll();
+    });
+  });
+})();
+</script>
+</body>
+</html>

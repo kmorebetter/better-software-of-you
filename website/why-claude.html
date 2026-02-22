@@ -1,0 +1,1984 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Why Claude — Software of You</title>
+  <meta name="description" content="Claude already knows everything. It doesn't know you. Until now. SoY is the context layer that turns Claude into a brilliant colleague who's read everything you've ever written.">
+  <meta name="robots" content="index, follow">
+  <link rel="canonical" href="https://softwareof.you/why-claude.html">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://softwareof.you/why-claude.html">
+  <meta property="og:title" content="Why Claude — Software of You">
+  <meta property="og:description" content="Claude already knows everything. It doesn't know you. Until now. SoY is the context layer that turns Claude into a brilliant colleague who's read everything you've ever written.">
+  <meta property="og:site_name" content="Software of You">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Why Claude — Software of You">
+  <meta name="twitter:description" content="Claude already knows everything. It doesn't know you. Until now. SoY turns Claude into a brilliant colleague who's read everything you've ever written.">
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"WebPage","url":"https://softwareof.you/why-claude.html","name":"Why Claude — Software of You","description":"Claude already knows everything. It doesn't know you. Until now. SoY is the context layer that turns Claude into a brilliant colleague who's read everything you've ever written.","isPartOf":{"@type":"WebSite","url":"https://softwareof.you/","name":"Software of You"},"about":{"@type":"SoftwareApplication","name":"Software of You","offers":{"@type":"Offer","price":"149","priceCurrency":"USD"}}}</script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300;1,400&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300;1,9..40,400&display=swap" rel="stylesheet">
+
+  <style>
+    /* ─────────────────────────────────────────
+       TOKENS
+    ───────────────────────────────────────── */
+    :root {
+      --bone:       #FAF9F6;
+      --bone-mid:   #F2F0EB;
+      --bone-deep:  #E8E4DC;
+      --ink:        #0F0E0C;
+      --ink-2:      #2C2A26;
+      --ink-3:      #6B6860;
+      --ink-4:      #A8A49C;
+      --ink-5:      #D4D0C8;
+      --forest:     #1A4731;
+      --forest-mid: #245E41;
+      --forest-pale:#EBF2EE;
+      --forest-bg:  #F2F7F4;
+      --ember:      #A63325;
+      --ember-pale: #FBF2F0;
+      --rule:       rgba(15,14,12,0.08);
+      --rule-mid:   rgba(15,14,12,0.13);
+      --rule-heavy: rgba(15,14,12,0.22);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; font-size: 16px; }
+
+    body {
+      background: var(--bone);
+      color: var(--ink);
+      font-family: 'DM Sans', system-ui, sans-serif;
+      line-height: 1.6;
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ─────────────────────────────────────────
+       ANIMATIONS
+    ───────────────────────────────────────── */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to   { opacity: 1; }
+    }
+    @keyframes pulse-slow {
+      0%, 100% { opacity: 0.04; }
+      50%       { opacity: 0.08; }
+    }
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50%       { opacity: 0; }
+    }
+
+    /* ─────────────────────────────────────────
+       SCROLL REVEALS
+    ───────────────────────────────────────── */
+    .reveal {
+      opacity: 0;
+      transform: translateY(24px);
+      transition: opacity 0.65s ease, transform 0.65s ease;
+    }
+    .reveal.in { opacity: 1; transform: none; }
+    .reveal-delay-1 { transition-delay: 0.10s; }
+    .reveal-delay-2 { transition-delay: 0.20s; }
+    .reveal-delay-3 { transition-delay: 0.30s; }
+    .reveal-delay-4 { transition-delay: 0.40s; }
+    .reveal-delay-5 { transition-delay: 0.50s; }
+
+    /* ─────────────────────────────────────────
+       NAV
+    ───────────────────────────────────────── */
+    .nav { position:fixed; top:0; left:0; right:0; z-index:100; background:rgba(250,249,246,0.92); backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px); border-bottom:1px solid var(--rule); }
+    .nav__inner { max-width:1200px; margin:0 auto; padding:0 48px; height:64px; display:flex; align-items:center; justify-content:space-between; }
+    .nav__logo { font-family:'DM Serif Display',Georgia,serif; font-size:17px; color:var(--ink); text-decoration:none; letter-spacing:0.01em; }
+    .nav__logo span { font-style:italic; color:var(--forest); }
+    .nav__links { display:flex; align-items:center; gap:28px; list-style:none; }
+    .nav__links a { font-family:'DM Mono',monospace; font-size:11px; letter-spacing:0.08em; text-transform:uppercase; color:var(--ink-3); text-decoration:none; transition:color 0.18s; }
+    .nav__links a:hover, .nav__links a.active { color:var(--ink); }
+    .nav__item--has-sub { position:relative; }
+    .nav__item--has-sub > a { cursor: pointer; }
+    .nav__item--has-sub > a::after { content:''; display:inline-block; width:5px; height:5px; border-right:1.5px solid currentColor; border-bottom:1.5px solid currentColor; transform:rotate(45deg) translateY(-2px); margin-left:6px; opacity:0.5; transition:transform 0.18s; }
+    .nav__sub { position:absolute; top:calc(100% + 8px); left:50%; transform:translateX(-50%) translateY(-4px); background:white; border:1px solid var(--rule-heavy); min-width:220px; padding:8px 0; list-style:none; opacity:0; visibility:hidden; pointer-events:none; transition:opacity 0.16s,transform 0.16s; box-shadow:0 8px 24px rgba(0,0,0,0.08); }
+    .nav__item--has-sub.open > a::after { transform:rotate(225deg) translateY(-2px); }
+    .nav__item--has-sub.open .nav__sub { opacity:1; visibility:visible; pointer-events:auto; transform:translateX(-50%) translateY(0); }
+
+    .nav__sub li a { display:flex; align-items:center; gap:10px; padding:9px 20px; font-family:'DM Sans',sans-serif; font-size:13px; letter-spacing:0; text-transform:none; color:var(--ink-2); transition:background 0.12s; }
+    .nav__sub li a:hover { background:var(--bone); color:var(--ink); }
+    .nav__sub__num { font-family:'DM Mono',monospace; font-size:10px; color:var(--ink-5); min-width:16px; }
+    .nav__sub__divider { height:1px; background:var(--rule); margin:6px 20px; }
+    .nav__right { display:flex; align-items:center; gap:36px; }
+    .nav__cta { font-family:'DM Sans',sans-serif; font-size:13px; font-weight:500; letter-spacing:0.04em; color:var(--bone); background:var(--forest); padding:10px 24px; text-decoration:none; border-radius:2px; transition:background 0.18s,transform 0.14s; }
+    .nav__cta:hover { background:var(--forest-mid); transform:translateY(-1px); }
+
+    /* ─────────────────────────────────────────
+       LAYOUT UTILITIES
+    ───────────────────────────────────────── */
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 32px;
+    }
+    .container-narrow {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 0 32px;
+    }
+    section { position: relative; }
+    hr.section-rule {
+      border: none;
+      border-top: 1px solid var(--rule-mid);
+      margin: 0;
+    }
+
+    /* ─────────────────────────────────────────
+       HERO — dark ink background
+    ───────────────────────────────────────── */
+    .hero {
+      background: var(--ink);
+      padding: 160px 32px 120px;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero-ghost {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-family: 'DM Serif Display', serif;
+      font-size: clamp(120px, 20vw, 240px);
+      font-weight: 400;
+      color: #fff;
+      opacity: 0.03;
+      white-space: nowrap;
+      pointer-events: none;
+      user-select: none;
+      animation: pulse-slow 8s ease-in-out infinite;
+      letter-spacing: -0.04em;
+    }
+    .hero-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      position: relative;
+      z-index: 1;
+    }
+    .hero-eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      font-weight: 400;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--forest-pale);
+      opacity: 0.7;
+      margin-bottom: 28px;
+      animation: fadeUp 0.7s ease 0.2s both;
+    }
+    .hero-eyebrow::before {
+      content: '';
+      display: block;
+      width: 28px;
+      height: 1px;
+      background: var(--forest-pale);
+      opacity: 0.5;
+    }
+    .hero-headline {
+      font-family: 'DM Serif Display', serif;
+      font-size: clamp(42px, 6vw, 80px);
+      font-weight: 400;
+      line-height: 1.08;
+      letter-spacing: -0.03em;
+      color: var(--bone);
+      max-width: 820px;
+      margin-bottom: 24px;
+      animation: fadeUp 0.7s ease 0.35s both;
+    }
+    .hero-headline em {
+      font-style: italic;
+      color: var(--forest-pale);
+    }
+    .hero-subhead {
+      font-family: 'DM Sans', sans-serif;
+      font-size: clamp(18px, 2.2vw, 22px);
+      font-weight: 300;
+      color: var(--ink-5);
+      max-width: 580px;
+      line-height: 1.55;
+      margin-bottom: 52px;
+      animation: fadeUp 0.7s ease 0.5s both;
+    }
+    .hero-cta-row {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      flex-wrap: wrap;
+      animation: fadeUp 0.7s ease 0.65s both;
+    }
+    .btn-primary {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 14px 28px;
+      background: var(--forest);
+      color: #fff;
+      border-radius: 8px;
+      font-family: 'DM Mono', monospace;
+      font-size: 14px;
+      font-weight: 500;
+      letter-spacing: 0.03em;
+      text-decoration: none;
+      transition: background 0.2s, transform 0.15s;
+    }
+    .btn-primary:hover { background: var(--forest-mid); transform: translateY(-1px); }
+    .btn-ghost-light {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 14px 24px;
+      border: 1px solid rgba(250,249,246,0.2);
+      color: var(--ink-5);
+      border-radius: 8px;
+      font-family: 'DM Mono', monospace;
+      font-size: 13px;
+      font-weight: 400;
+      letter-spacing: 0.03em;
+      text-decoration: none;
+      transition: border-color 0.2s, color 0.2s;
+    }
+    .btn-ghost-light:hover { border-color: rgba(250,249,246,0.45); color: var(--bone); }
+
+    /* split comparison row */
+    .hero-split {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2px;
+      margin-top: 80px;
+      border-radius: 10px;
+      overflow: hidden;
+      animation: fadeUp 0.7s ease 0.8s both;
+    }
+    .hero-split-panel {
+      padding: 32px 36px;
+      position: relative;
+    }
+    .hero-split-panel.before {
+      background: #1a1917;
+      border: 1px solid rgba(255,255,255,0.06);
+    }
+    .hero-split-panel.after {
+      background: #0e1f16;
+      border: 1px solid rgba(26,71,49,0.4);
+    }
+    .split-label {
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      font-weight: 500;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      margin-bottom: 16px;
+    }
+    .before .split-label { color: var(--ink-4); }
+    .after  .split-label { color: var(--forest-pale); opacity: 0.8; }
+    .split-title {
+      font-family: 'DM Serif Display', serif;
+      font-size: 22px;
+      font-weight: 400;
+      margin-bottom: 12px;
+    }
+    .before .split-title { color: var(--ink-5); }
+    .after  .split-title { color: var(--bone); }
+    .split-bullets {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .split-bullets li {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 14px;
+      line-height: 1.5;
+      padding-left: 20px;
+      position: relative;
+    }
+    .before .split-bullets li { color: var(--ink-4); }
+    .after  .split-bullets li { color: var(--ink-5); }
+    .before .split-bullets li::before {
+      content: '—';
+      position: absolute;
+      left: 0;
+      color: var(--ink-4);
+      opacity: 0.5;
+    }
+    .after .split-bullets li::before {
+      content: '✓';
+      position: absolute;
+      left: 0;
+      color: var(--forest-pale);
+    }
+
+    /* ─────────────────────────────────────────
+       SECTION: WHAT CLAUDE ALREADY IS
+    ───────────────────────────────────────── */
+    .section-what {
+      background: var(--bone);
+      padding: 120px 32px;
+    }
+    .section-label {
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      font-weight: 400;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--ink-4);
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .section-label::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--rule-mid);
+      max-width: 48px;
+    }
+    .section-headline {
+      font-family: 'DM Serif Display', serif;
+      font-size: clamp(34px, 4.5vw, 58px);
+      font-weight: 400;
+      line-height: 1.1;
+      letter-spacing: -0.02em;
+      color: var(--ink);
+      margin-bottom: 24px;
+    }
+    .section-headline em { font-style: italic; color: var(--forest); }
+    .section-body {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 18px;
+      font-weight: 300;
+      color: var(--ink-3);
+      line-height: 1.65;
+      max-width: 620px;
+      margin-bottom: 56px;
+    }
+
+    .capability-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 2px;
+      margin-top: 56px;
+    }
+    .capability-card {
+      background: var(--bone-mid);
+      padding: 32px;
+      border: 1px solid var(--rule);
+      transition: background 0.2s;
+    }
+    .capability-card:hover { background: var(--bone-deep); }
+    .cap-domain {
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      font-weight: 500;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--forest);
+      margin-bottom: 12px;
+    }
+    .cap-title {
+      font-family: 'DM Serif Display', serif;
+      font-size: 22px;
+      font-weight: 400;
+      color: var(--ink);
+      margin-bottom: 10px;
+      letter-spacing: -0.01em;
+    }
+    .cap-body {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 14px;
+      color: var(--ink-3);
+      line-height: 1.6;
+    }
+
+    /* but box */
+    .but-box {
+      background: var(--ink);
+      color: var(--bone);
+      border-radius: 10px;
+      padding: 48px 52px;
+      margin-top: 64px;
+      position: relative;
+      overflow: hidden;
+    }
+    .but-box-ghost {
+      position: absolute;
+      bottom: -20px;
+      right: -10px;
+      font-family: 'DM Serif Display', serif;
+      font-size: 160px;
+      color: #fff;
+      opacity: 0.03;
+      pointer-events: none;
+      line-height: 1;
+      letter-spacing: -0.04em;
+    }
+    .but-box-label {
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--ink-4);
+      margin-bottom: 20px;
+    }
+    .but-box-headline {
+      font-family: 'DM Serif Display', serif;
+      font-size: clamp(26px, 3vw, 36px);
+      font-weight: 400;
+      line-height: 1.2;
+      color: var(--bone);
+      max-width: 680px;
+      margin-bottom: 0;
+    }
+    .but-box-headline em { font-style: italic; color: var(--forest-pale); }
+
+    /* ─────────────────────────────────────────
+       SECTION: THE CONTEXT GAP
+    ───────────────────────────────────────── */
+    .section-gap {
+      background: var(--ink-2);
+      padding: 120px 32px;
+      position: relative;
+      overflow: hidden;
+    }
+    .section-gap-ghost {
+      position: absolute;
+      top: 50%;
+      right: -40px;
+      transform: translateY(-50%);
+      font-family: 'DM Serif Display', serif;
+      font-size: clamp(100px, 18vw, 200px);
+      color: #fff;
+      opacity: 0.025;
+      pointer-events: none;
+      white-space: nowrap;
+      letter-spacing: -0.04em;
+      animation: pulse-slow 10s ease-in-out infinite;
+    }
+    .section-gap .section-label { color: rgba(250,249,246,0.3); }
+    .section-gap .section-label::after { background: rgba(250,249,246,0.12); }
+    .section-gap .section-headline { color: var(--bone); }
+    .section-gap .section-headline em { color: var(--forest-pale); }
+
+    .gap-quote-block {
+      max-width: 760px;
+      margin: 0 auto;
+      text-align: center;
+      padding: 64px 0;
+    }
+    .gap-quote-mark {
+      font-family: 'DM Serif Display', serif;
+      font-size: 80px;
+      color: var(--forest);
+      opacity: 0.4;
+      line-height: 0.5;
+      margin-bottom: 24px;
+    }
+    .gap-quote-text {
+      font-family: 'DM Serif Display', serif;
+      font-size: clamp(24px, 3.5vw, 38px);
+      font-style: italic;
+      font-weight: 400;
+      line-height: 1.35;
+      color: var(--bone);
+      letter-spacing: -0.01em;
+    }
+    .gap-quote-attr {
+      margin-top: 28px;
+      font-family: 'DM Mono', monospace;
+      font-size: 12px;
+      color: var(--ink-4);
+      letter-spacing: 0.06em;
+    }
+
+    .gap-steps {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1px;
+      background: rgba(255,255,255,0.06);
+      border-radius: 8px;
+      overflow: hidden;
+      margin-top: 56px;
+    }
+    .gap-step {
+      background: rgba(255,255,255,0.03);
+      padding: 28px 28px 32px;
+      border: 1px solid transparent;
+      transition: background 0.2s;
+    }
+    .gap-step:hover { background: rgba(255,255,255,0.06); }
+    .gap-step-num {
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      color: var(--ink-4);
+      letter-spacing: 0.08em;
+      margin-bottom: 12px;
+    }
+    .gap-step-title {
+      font-family: 'DM Serif Display', serif;
+      font-size: 18px;
+      color: var(--ink-5);
+      margin-bottom: 8px;
+      font-style: italic;
+    }
+    .gap-step-body {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 14px;
+      color: var(--ink-4);
+      line-height: 1.55;
+    }
+
+    /* ─────────────────────────────────────────
+       SECTION: BEFORE / AFTER EXAMPLES
+    ───────────────────────────────────────── */
+    .section-examples {
+      background: var(--bone);
+      padding: 120px 32px;
+      position: relative;
+    }
+    .section-examples-ghost {
+      position: absolute;
+      top: 40px;
+      left: -20px;
+      font-family: 'DM Serif Display', serif;
+      font-size: clamp(100px, 15vw, 180px);
+      color: var(--ink);
+      opacity: 0.025;
+      pointer-events: none;
+      white-space: nowrap;
+      letter-spacing: -0.04em;
+    }
+
+    .example-pair {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2px;
+      margin-bottom: 2px;
+    }
+    .example-pair:last-child { margin-bottom: 0; }
+    .example-pair-wrapper {
+      border-radius: 10px;
+      overflow: hidden;
+      margin-top: 56px;
+      border: 1px solid var(--rule-mid);
+    }
+
+    .example-panel {
+      padding: 32px 36px;
+    }
+    .example-panel.before-panel {
+      background: #1a1917;
+    }
+    .example-panel.after-panel {
+      background: #0c1c12;
+    }
+    .example-tag {
+      display: inline-block;
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      font-weight: 500;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      padding: 3px 10px;
+      border-radius: 3px;
+      margin-bottom: 20px;
+    }
+    .before-panel .example-tag {
+      background: rgba(166,51,37,0.15);
+      color: #e06b5a;
+    }
+    .after-panel .example-tag {
+      background: rgba(26,71,49,0.3);
+      color: var(--forest-pale);
+    }
+    .example-query {
+      font-family: 'DM Mono', monospace;
+      font-size: 14px;
+      color: var(--bone);
+      background: rgba(255,255,255,0.06);
+      padding: 12px 16px;
+      border-radius: 6px;
+      margin-bottom: 16px;
+      border-left: 2px solid rgba(255,255,255,0.15);
+    }
+    .example-response {
+      font-family: 'DM Mono', monospace;
+      font-size: 14px;
+      line-height: 1.65;
+      padding: 16px;
+      border-radius: 6px;
+    }
+    .before-panel .example-response {
+      background: rgba(166,51,37,0.08);
+      color: #e06b5a;
+      border: 1px solid rgba(166,51,37,0.2);
+    }
+    .after-panel .example-response {
+      background: rgba(26,71,49,0.2);
+      color: var(--forest-pale);
+      border: 1px solid rgba(26,71,49,0.3);
+    }
+    .example-label-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+    .example-who {
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+    .before-panel .example-who { color: var(--ink-4); }
+    .after-panel  .example-who { color: rgba(235,242,238,0.5); }
+
+    /* ─────────────────────────────────────────
+       SECTION: INTELLIGENCE MULTIPLIER
+    ───────────────────────────────────────── */
+    .section-multiplier {
+      background: var(--forest);
+      padding: 120px 32px;
+      position: relative;
+      overflow: hidden;
+    }
+    .section-multiplier-ghost {
+      position: absolute;
+      bottom: -30px;
+      left: -20px;
+      font-family: 'DM Serif Display', serif;
+      font-size: clamp(120px, 20vw, 240px);
+      color: #fff;
+      opacity: 0.04;
+      pointer-events: none;
+      letter-spacing: -0.04em;
+    }
+    .section-multiplier .section-label { color: rgba(235,242,238,0.5); }
+    .section-multiplier .section-label::after { background: rgba(235,242,238,0.2); }
+
+    .multiplier-pull {
+      max-width: 880px;
+      margin: 0 auto;
+      text-align: center;
+      padding: 16px 0 64px;
+    }
+    .multiplier-pull-quote {
+      font-family: 'DM Serif Display', serif;
+      font-size: clamp(30px, 4.5vw, 56px);
+      font-style: italic;
+      font-weight: 400;
+      line-height: 1.2;
+      color: var(--bone);
+      letter-spacing: -0.02em;
+    }
+    .multiplier-pull-quote em { color: var(--forest-pale); font-style: italic; }
+
+    .multiplier-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 2px;
+      margin-top: 0;
+    }
+    .multiplier-card {
+      background: rgba(255,255,255,0.06);
+      padding: 36px 32px;
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 4px;
+    }
+    .multiplier-num {
+      font-family: 'DM Serif Display', serif;
+      font-size: 52px;
+      font-style: italic;
+      color: var(--forest-pale);
+      opacity: 0.5;
+      line-height: 1;
+      margin-bottom: 16px;
+    }
+    .multiplier-card-title {
+      font-family: 'DM Serif Display', serif;
+      font-size: 20px;
+      color: var(--bone);
+      margin-bottom: 10px;
+    }
+    .multiplier-card-body {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 14px;
+      color: rgba(250,249,246,0.55);
+      line-height: 1.6;
+    }
+
+    /* ─────────────────────────────────────────
+       SECTION: WHY CLAUDE CODE
+    ───────────────────────────────────────── */
+    .section-why-code {
+      background: var(--ink);
+      padding: 120px 32px;
+      position: relative;
+      overflow: hidden;
+    }
+    .section-why-code-ghost {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-family: 'DM Serif Display', serif;
+      font-size: clamp(80px, 14vw, 180px);
+      color: #fff;
+      opacity: 0.02;
+      pointer-events: none;
+      white-space: nowrap;
+      letter-spacing: -0.04em;
+    }
+    .section-why-code .section-label { color: rgba(250,249,246,0.25); }
+    .section-why-code .section-label::after { background: rgba(250,249,246,0.1); }
+    .section-why-code .section-headline { color: var(--bone); }
+    .section-why-code .section-headline em { color: var(--forest-pale); }
+    .section-why-code .section-body { color: var(--ink-4); }
+
+    .why-code-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2px;
+      margin-top: 56px;
+    }
+    .why-code-card {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.07);
+      padding: 36px;
+      transition: background 0.2s;
+    }
+    .why-code-card:hover { background: rgba(255,255,255,0.07); }
+    .why-code-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 8px;
+      background: var(--forest);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 20px;
+      font-family: 'DM Mono', monospace;
+      font-size: 16px;
+      color: var(--forest-pale);
+    }
+    .why-code-title {
+      font-family: 'DM Serif Display', serif;
+      font-size: 22px;
+      color: var(--bone);
+      margin-bottom: 10px;
+      font-weight: 400;
+    }
+    .why-code-body {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 14px;
+      color: var(--ink-4);
+      line-height: 1.65;
+    }
+
+    /* plugin anatomy block */
+    .plugin-anatomy {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 8px;
+      padding: 36px 40px;
+      margin-top: 56px;
+      font-family: 'DM Mono', monospace;
+    }
+    .anatomy-row {
+      display: flex;
+      align-items: flex-start;
+      gap: 20px;
+      padding: 14px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+    }
+    .anatomy-row:last-child { border-bottom: none; }
+    .anatomy-key {
+      font-size: 14px;
+      color: var(--forest-pale);
+      opacity: 0.7;
+      min-width: 180px;
+      flex-shrink: 0;
+    }
+    .anatomy-value {
+      font-size: 14px;
+      color: var(--ink-4);
+      line-height: 1.55;
+    }
+    .anatomy-value strong {
+      color: var(--bone);
+      font-weight: 400;
+    }
+
+    /* ─────────────────────────────────────────
+       SECTION: INFINITE CONTEXT
+    ───────────────────────────────────────── */
+    .section-modules {
+      background: var(--forest-bg);
+      padding: 120px 32px;
+    }
+    .modules-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 2px;
+      margin-top: 56px;
+    }
+    .module-card {
+      background: #fff;
+      border: 1px solid var(--rule);
+      padding: 28px 28px 32px;
+      transition: transform 0.15s, box-shadow 0.15s;
+    }
+    .module-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 32px rgba(15,14,12,0.08);
+    }
+    .module-tag {
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      font-weight: 500;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--forest);
+      margin-bottom: 10px;
+    }
+    .module-name {
+      font-family: 'DM Serif Display', serif;
+      font-size: 20px;
+      color: var(--ink);
+      margin-bottom: 8px;
+      letter-spacing: -0.01em;
+    }
+    .module-desc {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 14px;
+      color: var(--ink-3);
+      line-height: 1.6;
+      margin-bottom: 14px;
+    }
+    .module-context-label {
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      color: var(--forest);
+      opacity: 0.7;
+    }
+
+    .modules-total-row {
+      background: var(--forest);
+      border-radius: 8px;
+      padding: 36px 40px;
+      margin-top: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 24px;
+      flex-wrap: wrap;
+    }
+    .modules-total-left {
+      font-family: 'DM Serif Display', serif;
+      font-size: clamp(20px, 2.5vw, 28px);
+      font-style: italic;
+      color: var(--bone);
+      max-width: 560px;
+      line-height: 1.3;
+    }
+    .modules-total-right {
+      font-family: 'DM Mono', monospace;
+      font-size: 13px;
+      color: var(--forest-pale);
+      opacity: 0.7;
+      white-space: nowrap;
+    }
+
+    /* ─────────────────────────────────────────
+       SECTION: A CONCRETE WEEK
+    ───────────────────────────────────────── */
+    .section-week {
+      background: var(--bone);
+      padding: 120px 32px;
+      position: relative;
+    }
+    .week-days {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      margin-top: 56px;
+    }
+    .week-day {
+      display: grid;
+      grid-template-columns: 120px 1fr 1fr;
+      gap: 2px;
+      background: var(--rule);
+    }
+    .week-day-label {
+      background: var(--ink);
+      padding: 28px 24px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+    .day-name {
+      font-family: 'DM Serif Display', serif;
+      font-size: 18px;
+      color: var(--bone);
+      font-style: italic;
+      margin-bottom: 4px;
+    }
+    .day-context {
+      font-family: 'DM Mono', monospace;
+      font-size: 9px;
+      color: var(--ink-4);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+    .week-without {
+      background: #1a1917;
+      padding: 24px 28px;
+    }
+    .week-with {
+      background: #0c1c12;
+      padding: 24px 28px;
+    }
+    .week-col-label {
+      font-family: 'DM Mono', monospace;
+      font-size: 9px;
+      font-weight: 500;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      margin-bottom: 14px;
+    }
+    .week-without .week-col-label { color: var(--ink-4); }
+    .week-with    .week-col-label { color: var(--forest-pale); opacity: 0.7; }
+
+    /* terminal block */
+    .terminal {
+      background: #0d0d0b;
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 6px;
+      overflow: hidden;
+      font-family: 'DM Mono', monospace;
+      font-size: 14px;
+      line-height: 1.6;
+    }
+    .terminal-bar {
+      background: rgba(255,255,255,0.05);
+      padding: 8px 14px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+    }
+    .terminal-dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+    }
+    .td-red    { background: #ff5f56; }
+    .td-yellow { background: #ffbd2e; }
+    .td-green  { background: #27c93f; }
+    .terminal-body { padding: 16px 16px 20px; }
+    .t-prompt { color: var(--forest-pale); }
+    .t-cmd    { color: var(--bone); }
+    .t-out    { color: var(--ink-4); }
+    .t-success{ color: #4ade80; }
+    .t-line   { display: block; margin-bottom: 4px; }
+    .t-cursor {
+      display: inline-block;
+      width: 7px; height: 13px;
+      background: var(--forest-pale);
+      vertical-align: middle;
+      margin-left: 2px;
+      animation: blink 1.2s step-end infinite;
+    }
+
+    .week-without-text {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 14px;
+      color: var(--ink-4);
+      line-height: 1.6;
+      font-style: italic;
+    }
+
+    /* ─────────────────────────────────────────
+       SECTION: CLOSING CTA
+    ───────────────────────────────────────── */
+    .section-close {
+      background: var(--ink);
+      padding: 140px 32px 120px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .section-close-ghost {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-family: 'DM Serif Display', serif;
+      font-size: clamp(80px, 15vw, 180px);
+      color: #fff;
+      opacity: 0.025;
+      pointer-events: none;
+      white-space: nowrap;
+      letter-spacing: -0.04em;
+    }
+    .close-eyebrow {
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--ink-4);
+      margin-bottom: 24px;
+    }
+    .close-headline {
+      font-family: 'DM Serif Display', serif;
+      font-size: clamp(36px, 5.5vw, 68px);
+      font-weight: 400;
+      line-height: 1.1;
+      letter-spacing: -0.03em;
+      color: var(--bone);
+      max-width: 760px;
+      margin: 0 auto 20px;
+    }
+    .close-headline em { font-style: italic; color: var(--forest-pale); }
+    .close-subhead {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 18px;
+      font-weight: 300;
+      color: var(--ink-4);
+      max-width: 520px;
+      margin: 0 auto 52px;
+      line-height: 1.6;
+    }
+    .close-cta-group {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+    .close-price {
+      font-family: 'DM Mono', monospace;
+      font-size: 13px;
+      color: var(--ink-4);
+      margin-top: 24px;
+    }
+    .close-price strong { color: var(--bone); }
+
+    /* ─────────────────────────────────────────
+       FOOTER
+    ───────────────────────────────────────── */
+    footer {
+      background: var(--ink);
+      border-top: 1px solid rgba(255,255,255,0.08);
+      padding: 24px 32px;
+    }
+    .footer-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+    .footer-copy {
+      font-family: 'DM Mono', monospace;
+      font-size: 12px;
+      color: var(--ink-4);
+    }
+    .footer-link {
+      font-family: 'DM Mono', monospace;
+      font-size: 12px;
+      color: var(--forest-pale);
+      text-decoration: none;
+      opacity: 0.6;
+      transition: opacity 0.2s;
+    }
+    .footer-link:hover { opacity: 1; }
+
+    /* ─────────────────────────────────────────
+       RESPONSIVE
+    ───────────────────────────────────────── */
+    @media (max-width: 900px) {
+      .hero-split { grid-template-columns: 1fr; }
+      .example-pair { grid-template-columns: 1fr; }
+      .why-code-grid { grid-template-columns: 1fr; }
+      .multiplier-grid { grid-template-columns: 1fr; }
+      .week-day { grid-template-columns: 1fr; }
+      .week-day-label { flex-direction: row; align-items: center; gap: 12px; }
+    }
+    @media (max-width: 700px) {
+      .nav-links { display: none; }
+      .container, .container-narrow { padding: 0 20px; }
+      .hero { padding: 120px 20px 80px; }
+      .section-what, .section-gap, .section-examples,
+      .section-multiplier, .section-why-code,
+      .section-modules, .section-week, .section-close { padding: 80px 20px; }
+      .modules-total-row { flex-direction: column; text-align: center; }
+    }
+  </style>
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-TQFFERGZW1"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-TQFFERGZW1');
+  </script>
+</head>
+<body>
+
+<!-- ─────────────────────────────────────────
+     NAV
+───────────────────────────────────────── -->
+<nav class="nav" role="navigation" aria-label="Main navigation">
+  <div class="nav__inner">
+    <a href="https://softwareof.you" class="nav__logo">Software<span>Of</span>You</a>
+    <ul class="nav__links">
+      <li><a href="features.html">Features</a></li>
+      <li class="nav__item--has-sub">
+        <a href="features.html#modules">Modules</a>
+        <ul class="nav__sub">
+          <li><a href="modules/crm.html"><span class="nav__sub__num">01</span>CRM</a></li>
+          <li><a href="modules/projects.html"><span class="nav__sub__num">02</span>Projects</a></li>
+          <li><a href="modules/gmail.html"><span class="nav__sub__num">03</span>Gmail</a></li>
+          <li><a href="modules/calendar.html"><span class="nav__sub__num">04</span>Calendar</a></li>
+          <li><a href="modules/conversations.html"><span class="nav__sub__num">05</span>Conversations</a></li>
+          <li><a href="modules/decisions.html"><span class="nav__sub__num">06</span>Decisions</a></li>
+          <li><a href="modules/journal.html"><span class="nav__sub__num">07</span>Journal</a></li>
+          <li><a href="modules/notes.html"><span class="nav__sub__num">08</span>Notes</a></li>
+          <div class="nav__sub__divider"></div>
+          <li><a href="features.html#modules"><span class="nav__sub__num">→</span>All modules</a></li>
+        </ul>
+      </li>
+      <li><a href="why-claude.html" class="active">Why Claude</a></li>
+      <li><a href="your-data.html">Your Data</a></li>
+      <li><a href="pricing.html">Pricing</a></li>
+    </ul>
+    <div class="nav__right">
+      <a href="https://softwareof.you" class="nav__cta">Get SoY — $149</a>
+    </div>
+  </div>
+</nav>
+
+
+<!-- ─────────────────────────────────────────
+     HERO
+───────────────────────────────────────── -->
+<section class="hero">
+  <div class="hero-ghost">CONTEXT</div>
+  <div class="hero-inner">
+    <div class="hero-eyebrow">Why Claude</div>
+    <h1 class="hero-headline">
+      PhD-level intelligence.<br>Applied to <em>your</em> work.
+    </h1>
+    <p class="hero-subhead">
+      Claude already knows everything. It doesn't know you. Until now.
+    </p>
+    <div class="hero-cta-row">
+      <a href="https://softwareof.you" class="btn-primary">Get SoY — $149 →</a>
+      <a href="features.html" class="btn-ghost-light">See how it works</a>
+    </div>
+    <p style="margin-top:16px; text-align:center;"><a href="/demo/" style="font-family:'DM Mono',monospace; font-size:12px; letter-spacing:0.06em; color:rgba(235,242,238,0.7); text-decoration:none; border-bottom:1px solid rgba(235,242,238,0.25); padding-bottom:1px;">Not sure yet? Explore a live demo →</a></p>
+
+    <div class="hero-split reveal reveal-delay-3">
+      <div class="hero-split-panel before">
+        <div class="split-label">Claude · Without context</div>
+        <div class="split-title">Brilliant stranger</div>
+        <ul class="split-bullets">
+          <li>Doesn't know your name or company</li>
+          <li>Doesn't know your clients or projects</li>
+          <li>Doesn't know your decisions or history</li>
+          <li>Asks you to re-explain everything, every time</li>
+          <li>Intelligence applied to a blank canvas</li>
+        </ul>
+      </div>
+      <div class="hero-split-panel after">
+        <div class="split-label">Claude · With SoY</div>
+        <div class="split-title">Brilliant colleague</div>
+        <ul class="split-bullets">
+          <li>Knows your relationships, roles, history</li>
+          <li>Has read every project brief you've written</li>
+          <li>Remembers your decisions and why you made them</li>
+          <li>Reads your email history before you prep a call</li>
+          <li>Intelligence applied to everything you've ever done</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="section-rule">
+
+
+<!-- ─────────────────────────────────────────
+     SECTION 1: WHAT CLAUDE ALREADY IS
+───────────────────────────────────────── -->
+<section class="section-what">
+  <div class="container">
+    <div class="section-label reveal">01 · The baseline</div>
+    <h2 class="section-headline reveal reveal-delay-1">
+      What Claude already<br>knows — without <em>any</em> setup.
+    </h2>
+    <p class="section-body reveal reveal-delay-2">
+      Before you add a single piece of context, before SoY exists, before any plugin —
+      Claude carries more expertise than most people will accumulate in a career.
+      Not a summary of expertise. The expertise itself.
+    </p>
+
+    <div class="capability-grid">
+      <div class="capability-card reveal reveal-delay-1">
+        <div class="cap-domain">Legal</div>
+        <div class="cap-title">BigLaw-level training</div>
+        <p class="cap-body">Contract analysis, risk assessment, regulatory frameworks, deal structuring. The depth of a senior associate at a top-tier firm.</p>
+      </div>
+      <div class="capability-card reveal reveal-delay-2">
+        <div class="cap-domain">Medicine</div>
+        <div class="cap-title">Specialist-level knowledge</div>
+        <p class="cap-body">Differential diagnosis, treatment protocols, drug interactions, clinical literature. The depth of a physician with specialist training.</p>
+      </div>
+      <div class="capability-card reveal reveal-delay-3">
+        <div class="cap-domain">Engineering</div>
+        <div class="cap-title">Every stack, every pattern</div>
+        <p class="cap-body">System architecture, debugging, optimization, security, infrastructure. Deep familiarity with every meaningful technology built in the last 40 years.</p>
+      </div>
+      <div class="capability-card reveal reveal-delay-4">
+        <div class="cap-domain">Business</div>
+        <div class="cap-title">Sharper than any consultant</div>
+        <p class="cap-body">Strategy, marketing, finance, operations, negotiation, pricing. The synthesized playbooks of thousands of companies — distilled into one model.</p>
+      </div>
+    </div>
+
+    <div class="but-box reveal">
+      <div class="but-box-ghost">BUT</div>
+      <div class="but-box-label">The problem</div>
+      <p class="but-box-headline">
+        Open a new Claude session right now. It doesn't know your name.<br>
+        It doesn't know your company. It doesn't know <em>anything you've done.</em>
+        All that intelligence — applied to a stranger's blank page.
+      </p>
+    </div>
+  </div>
+</section>
+
+<hr class="section-rule">
+
+
+<!-- ─────────────────────────────────────────
+     SECTION 2: THE CONTEXT GAP
+───────────────────────────────────────── -->
+<section class="section-gap">
+  <div class="section-gap-ghost">GAP</div>
+  <div class="container">
+    <div class="section-label reveal">02 · The problem</div>
+    <h2 class="section-headline reveal reveal-delay-1">
+      The context gap.<br><em>Every single session.</em>
+    </h2>
+
+    <div class="gap-quote-block reveal reveal-delay-2">
+      <div class="gap-quote-mark">"</div>
+      <p class="gap-quote-text">
+        Imagine hiring the world's best consultant.
+        Every session, they've never met you.
+        You have to re-introduce yourself.
+        Re-explain your business. Re-describe the project.
+        Re-paste the thread. Every time.
+      </p>
+      <p class="gap-quote-attr">— This is Claude today. Not because Claude is limited.<br>Because your context lives nowhere.</p>
+    </div>
+
+    <div class="gap-steps reveal reveal-delay-3">
+      <div class="gap-step">
+        <div class="gap-step-num">01</div>
+        <div class="gap-step-title">You open a new session</div>
+        <p class="gap-step-body">Fresh slate. Claude has no memory of you, your work, or anything you've discussed before.</p>
+      </div>
+      <div class="gap-step">
+        <div class="gap-step-num">02</div>
+        <div class="gap-step-title">You re-explain everything</div>
+        <p class="gap-step-body">Your role, your company, the client, the project history, the constraints, the preferences. Again.</p>
+      </div>
+      <div class="gap-step">
+        <div class="gap-step-num">03</div>
+        <div class="gap-step-title">Claude works from scaffolding</div>
+        <p class="gap-step-body">Good output. But generic. Built on the context you managed to paste, not the full picture you carry.</p>
+      </div>
+      <div class="gap-step">
+        <div class="gap-step-num">04</div>
+        <div class="gap-step-title">You close the session</div>
+        <p class="gap-step-body">Context evaporates. Next time you start over. The intelligence doesn't compound. It resets.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="section-rule">
+
+
+<!-- ─────────────────────────────────────────
+     SECTION 3: BEFORE / AFTER EXAMPLES
+───────────────────────────────────────── -->
+<section class="section-examples">
+  <div class="section-examples-ghost">BEFORE</div>
+  <div class="container">
+    <div class="section-label reveal">03 · What changes</div>
+    <h2 class="section-headline reveal reveal-delay-1">
+      The same prompt.<br><em>Completely different output.</em>
+    </h2>
+    <p class="section-body reveal reveal-delay-2">
+      SoY doesn't change Claude's intelligence. It changes what Claude's intelligence
+      can be applied to. Here's what that looks like in practice.
+    </p>
+
+    <div class="example-pair-wrapper reveal reveal-delay-3">
+
+      <!-- Example 1: Proposal -->
+      <div class="example-pair">
+        <div class="example-panel before-panel">
+          <span class="example-tag">Without SoY</span>
+          <div class="example-label-row"><span class="example-who">You →</span></div>
+          <div class="example-query">Draft a proposal for Rebecca.</div>
+          <div class="example-label-row"><span class="example-who">Claude →</span></div>
+          <div class="example-response">I'd be happy to help draft a proposal! Could you tell me: Who is Rebecca? What is your relationship with her? What does the proposal cover? What have you discussed previously? What outcome are you looking for? And what's your pricing structure?</div>
+        </div>
+        <div class="example-panel after-panel">
+          <span class="example-tag">With SoY</span>
+          <div class="example-label-row"><span class="example-who">You →</span></div>
+          <div class="example-query">Draft a proposal for Rebecca.</div>
+          <div class="example-label-row"><span class="example-who">Claude →</span></div>
+          <div class="example-response">Drafting now. I have Rebecca Chen's CRM profile (Meridian Capital, VP Ops), your last 3 months of email history, the Meridian project brief, 2 open commitments from your Oct 14 call, your previous proposal, and the pricing decision you made on Nov 2nd. Writing from full context...</div>
+        </div>
+      </div>
+
+      <!-- Example 2: Meeting prep -->
+      <div class="example-pair">
+        <div class="example-panel before-panel">
+          <span class="example-tag">Without SoY</span>
+          <div class="example-label-row"><span class="example-who">You →</span></div>
+          <div class="example-query">Prep me for my 2pm with Marcus.</div>
+          <div class="example-response">To prepare you for your meeting with Marcus, I'll need some context. Who is Marcus? What's the purpose of the meeting? What's your history with him? What are you hoping to achieve? Do you have an agenda?</div>
+        </div>
+        <div class="example-panel after-panel">
+          <span class="example-tag">With SoY</span>
+          <div class="example-label-row"><span class="example-who">You →</span></div>
+          <div class="example-query">Prep me for my 2pm with Marcus.</div>
+          <div class="example-response">Marcus Thornton, your largest enterprise account ($84K ARR). Last call: Sep 22 — he raised concerns about the onboarding timeline, you promised a revised schedule by end of October (not yet sent). He mentioned a Q4 budget review. 3 unread emails from him since. I'd open by addressing the overdue timeline doc.</div>
+        </div>
+      </div>
+
+      <!-- Example 3: Weekly review -->
+      <div class="example-pair">
+        <div class="example-panel before-panel">
+          <span class="example-tag">Without SoY</span>
+          <div class="example-label-row"><span class="example-who">You →</span></div>
+          <div class="example-query">Run my weekly review.</div>
+          <div class="example-response">A weekly review is a great productivity habit! To help you, I'll need to know: What areas do you want to review? What projects are you working on? What were your goals for this week? What does your typical week look like?</div>
+        </div>
+        <div class="example-panel after-panel">
+          <span class="example-tag">With SoY</span>
+          <div class="example-label-row"><span class="example-who">You →</span></div>
+          <div class="example-query">Run my weekly review.</div>
+          <div class="example-response">Week of Feb 17–21. Completed: 3 of 5 planned deliverables. Slipped: Marcus timeline doc, Q1 forecast. 4 new decisions logged. Journal tone: scattered mid-week, strong close. Open commitments aging >7 days: 6. Biggest risk: Marcus follow-up. Starting your review...</div>
+        </div>
+      </div>
+
+      <!-- Example 4: Relationship nudge -->
+      <div class="example-pair">
+        <div class="example-panel before-panel">
+          <span class="example-tag">Without SoY</span>
+          <div class="example-label-row"><span class="example-who">You →</span></div>
+          <div class="example-query">Who should I reach out to this week?</div>
+          <div class="example-response">Great question! Maintaining relationships is important. To give you specific suggestions, I'd need to know who's in your network, your recent interactions, your goals, and what types of relationships you're prioritizing.</div>
+        </div>
+        <div class="example-panel after-panel">
+          <span class="example-tag">With SoY</span>
+          <div class="example-label-row"><span class="example-who">You →</span></div>
+          <div class="example-query">Who should I reach out to this week?</div>
+          <div class="example-response">3 relationships going cold: James (no contact 47 days, last interaction was warm), Sarah at Vertex (you said you'd reconnect in January — it's February), David Chen (referred you a client in August, never thanked). Also: your Q4 check-in with the Meridian team is 2 weeks overdue.</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ══════════ EXPLAINER ══════════ -->
+<section style="background: #f0ede8; border-top: 1px solid #dedad3; padding: 80px 0;">
+  <div class="container">
+    <div class="section-label reveal">✦ · A real example</div>
+    <h2 class="section-headline reveal reveal-delay-1" style="max-width:600px; margin-bottom: 12px;">Two things you said.<br><em>Everything else, it knew.</em></h2>
+    <p style="font-size: 16px; color: #5c5b55; max-width:540px; line-height:1.7; margin-bottom:40px;">A real follow-up email drafted by Claude with SoY installed. Annotated to show exactly where each piece came from.</p>
+    <div class="explainer-wrap reveal">
+      <style>
+        .explainer-wrap { max-width: 100%; }
+        .exp-legend { display: flex; gap: 24px; margin-bottom: 28px; flex-wrap: wrap; }
+        .exp-legend-item { display: flex; align-items: center; gap: 8px; font-family: 'DM Mono', monospace; font-size: 12px; color: #5c5b55; letter-spacing: 0.04em; }
+        .exp-legend-dot { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; }
+        .exp-dot-sys { background: #1a4731; }
+        .exp-dot-you { background: #7c5c2a; }
+        .exp-layout { display: grid; grid-template-columns: 1fr 320px; gap: 20px; align-items: start; }
+        @media (max-width: 860px) { .exp-layout { grid-template-columns: 1fr; } }
+        .exp-email { background: white; border: 1px solid #dedad3; border-radius: 6px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.06); }
+        .exp-chrome { background: #f8f7f4; border-bottom: 1px solid #dedad3; padding: 12px 18px; display: flex; gap: 7px; align-items: center; }
+        .exp-chrome-dot { width: 10px; height: 10px; border-radius: 50%; }
+        .exp-chrome-dot:nth-child(1){background:#ff5f57;} .exp-chrome-dot:nth-child(2){background:#ffbd2e;} .exp-chrome-dot:nth-child(3){background:#28c840;}
+        .exp-meta { padding: 18px 22px 14px; border-bottom: 1px solid #f0ede8; }
+        .exp-subject { font-size: 15px; font-weight: 600; color: #0f0e0c; margin-bottom: 6px; }
+        .exp-to { font-family: 'DM Mono', monospace; font-size: 12px; color: #8a8880; }
+        .exp-body { padding: 22px; font-size: 15px; line-height: 1.85; color: #3c3b37; }
+        .exp-body p + p { margin-top: 16px; }
+        .exp-tag { border-radius: 3px; padding: 1px 3px; }
+        .exp-tag-sys { background: rgba(26,71,49,0.1); border-bottom: 2px solid #1a4731; color: #0f2e1e; }
+        .exp-tag-you { background: rgba(124,92,42,0.1); border-bottom: 2px solid #a07030; color: #3a2a10; }
+        .exp-sidebar { display: flex; flex-direction: column; gap: 14px; }
+        .exp-card { border-radius: 6px; overflow: hidden; border: 1px solid #dedad3; }
+        .exp-card-head { padding: 9px 14px; display: flex; align-items: center; gap: 8px; font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; font-weight: 600; }
+        .exp-card-head.sys { background: #1a4731; color: rgba(235,242,238,0.9); }
+        .exp-card-head.you { background: #7c5c2a; color: rgba(250,245,235,0.9); }
+        .exp-card-head-dot { width: 7px; height: 7px; border-radius: 50%; background: rgba(255,255,255,0.4); flex-shrink: 0; }
+        .exp-card-body { background: white; padding: 12px; }
+        .exp-row { display: flex; gap: 10px; padding: 8px 0; border-bottom: 1px solid #f0ede8; align-items: flex-start; }
+        .exp-row:last-child { border-bottom: none; }
+        .exp-src { font-family: 'DM Mono', monospace; font-size: 9px; letter-spacing: 0.08em; text-transform: uppercase; color: #a8a49c; padding-top: 2px; min-width: 64px; line-height: 1.4; }
+        .exp-txt { font-size: 13px; color: #3c3b37; line-height: 1.55; }
+        .exp-txt strong { color: #0f0e0c; font-weight: 600; }
+        .exp-footer { margin-top: 20px; padding: 18px 22px; background: #1a4731; border-radius: 6px; display: flex; gap: 16px; align-items: center; }
+        .exp-footer-label { font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: rgba(235,242,238,0.5); white-space: nowrap; }
+        .exp-footer-text { font-size: 14px; color: #ebf2ee; line-height: 1.6; }
+        .exp-footer-text em { font-style: italic; color: rgba(235,242,238,0.7); }
+      </style>
+      <div class="exp-legend">
+        <div class="exp-legend-item"><div class="exp-legend-dot exp-dot-sys"></div>Pulled from SoY — you said nothing</div>
+        <div class="exp-legend-item"><div class="exp-legend-dot exp-dot-you"></div>You provided in the prompt</div>
+      </div>
+      <div class="exp-layout">
+        <div class="exp-email">
+          <div class="exp-chrome"><div class="exp-chrome-dot"></div><div class="exp-chrome-dot"></div><div class="exp-chrome-dot"></div></div>
+          <div class="exp-meta">
+            <div class="exp-subject">Following up — materials for the AI proof of concept</div>
+            <div class="exp-to">To: Alex Brennan &lt;alex@northgatecapital.ca&gt;</div>
+          </div>
+          <div class="exp-body">
+            <p>Hi <span class="exp-tag exp-tag-sys" title="Name from CRM contact record">Alex</span>,</p>
+            <p>Wanted to follow up on <span class="exp-tag exp-tag-sys" title="Date derived from transcript timestamp">our conversation from last week</span>. You mentioned you'd <span class="exp-tag exp-tag-sys" title="Open commitment extracted from transcript">send over a couple of presentations and a non-proprietary document</span> so we could <span class="exp-tag exp-tag-sys" title="Kerry's commitment from the same call">build out a proof of concept for you</span>.</p>
+            <p>Also — <span class="exp-tag exp-tag-you" title="You mentioned this in your prompt">I've been thinking about the video production piece</span> for the <span class="exp-tag exp-tag-sys" title="Project name from follow-up call transcript">Build Canada Homes pitch</span>. <span class="exp-tag exp-tag-you" title="You provided this detail">I have a few people in mind and will put something together for you once I track down the right fit.</span></p>
+            <p><span class="exp-tag exp-tag-you" title="Tone direction you provided">No rush on the materials if things got busy</span> — just didn't want it to <span class="exp-tag exp-tag-sys" title="Surfaced by SoY: open commitment, 4 days since contact">slip through the cracks on either end</span>.</p>
+            <p>Kerry</p>
+          </div>
+        </div>
+        <div class="exp-sidebar">
+          <div class="exp-card">
+            <div class="exp-card-head sys"><div class="exp-card-head-dot"></div>What SoY already knew</div>
+            <div class="exp-card-body">
+              <div class="exp-row"><div class="exp-src">CRM</div><div class="exp-txt"><strong>Alex Brennan</strong>, President at Northgate Capital — 2 calls logged</div></div>
+              <div class="exp-row"><div class="exp-src">Transcript</div><div class="exp-txt">Call occurred <strong>last week</strong> — timestamp from transcript</div></div>
+              <div class="exp-row"><div class="exp-src">Commitments</div><div class="exp-txt">Open: <strong>Alex to send presentations + doc</strong> — extracted, still open</div></div>
+              <div class="exp-row"><div class="exp-src">Commitments</div><div class="exp-txt">Open: <strong>Kerry to build proof of concept</strong> — offered on the call</div></div>
+              <div class="exp-row"><div class="exp-src">Transcript</div><div class="exp-txt"><strong>Build Canada Homes</strong> — project from follow-up call summary</div></div>
+              <div class="exp-row"><div class="exp-src">Nudge</div><div class="exp-txt">No contact in <strong>4 days</strong>, open commitments on both sides</div></div>
+            </div>
+          </div>
+          <div class="exp-card">
+            <div class="exp-card-head you"><div class="exp-card-head-dot"></div>What you provided</div>
+            <div class="exp-card-body">
+              <div class="exp-row"><div class="exp-src">Prompt</div><div class="exp-txt">The video production piece — that you're thinking about it</div></div>
+              <div class="exp-row"><div class="exp-src">Prompt</div><div class="exp-txt">Tone: <strong>no pressure, easy</strong></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="exp-footer">
+        <div class="exp-footer-label">The point</div>
+        <div class="exp-footer-text">You said two things. The system supplied everything else — <em>who, when, what was agreed, what's still open, what project it's tied to.</em> That's context engineering.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="section-rule">
+
+
+<!-- ─────────────────────────────────────────
+     SECTION 4: INTELLIGENCE MULTIPLIER
+───────────────────────────────────────── -->
+<section class="section-multiplier">
+  <div class="section-multiplier-ghost">×</div>
+  <div class="container">
+    <div class="section-label reveal">04 · The principle</div>
+
+    <div class="multiplier-pull reveal reveal-delay-1">
+      <p class="multiplier-pull-quote">
+        "Claude's intelligence doesn't change with SoY.<br>
+        What changes is what it can apply that<br>
+        intelligence <em>to.</em> Context is the multiplier."
+      </p>
+    </div>
+
+    <div class="multiplier-grid reveal reveal-delay-2">
+      <div class="multiplier-card">
+        <div class="multiplier-num">I</div>
+        <div class="multiplier-card-title">Intelligence is fixed</div>
+        <p class="multiplier-card-body">Claude's reasoning, knowledge, and judgment are what they are. Extraordinary. But they don't get better because you have SoY.</p>
+      </div>
+      <div class="multiplier-card">
+        <div class="multiplier-num">×</div>
+        <div class="multiplier-card-title">Context is the variable</div>
+        <p class="multiplier-card-body">A brilliant analyst reading a 10-page brief writes a better memo than a brilliant analyst reading nothing. SoY is the brief. For everything.</p>
+      </div>
+      <div class="multiplier-card">
+        <div class="multiplier-num">∑</div>
+        <div class="multiplier-card-title">Output compounds</div>
+        <p class="multiplier-card-body">Every project logged, decision recorded, relationship noted, email thread indexed — each one expands what Claude can do for you today.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="section-rule">
+
+
+<!-- ─────────────────────────────────────────
+     SECTION 5: WHY CLAUDE CODE
+───────────────────────────────────────── -->
+<section class="section-why-code">
+  <div class="section-why-code-ghost">CLAUDE CODE</div>
+  <div class="container">
+    <div class="section-label reveal">05 · The platform</div>
+    <h2 class="section-headline reveal reveal-delay-1">
+      Why it has to be<br><em>Claude Code</em> specifically.
+    </h2>
+    <p class="section-body reveal reveal-delay-2">
+      SoY is a Claude Code plugin — not a browser extension, not a separate app,
+      not a Chrome sidebar. That choice is deliberate.
+    </p>
+
+    <div class="why-code-grid reveal reveal-delay-3">
+      <div class="why-code-card">
+        <div class="why-code-icon">{ }</div>
+        <div class="why-code-title">Structured data, not pasted text</div>
+        <p class="why-code-body">Your context isn't dumped into a chat window as raw text. SoY exposes it as structured, typed data — the way Claude reads files. Relationships have schemas. Projects have fields. Decisions have metadata. Claude reads context the same way it reads code.</p>
+      </div>
+      <div class="why-code-card">
+        <div class="why-code-icon">⌘</div>
+        <div class="why-code-title">Where your most important work happens</div>
+        <p class="why-code-body">Claude Code is not a chat interface — it's a development environment with context-aware tooling. When you use Claude Code for writing, analysis, planning, and execution, SoY is already there. No context-switching. No copy-paste ritual.</p>
+      </div>
+      <div class="why-code-card">
+        <div class="why-code-icon">↗</div>
+        <div class="why-code-title">Native tool use, not prompt stuffing</div>
+        <p class="why-code-body">SoY registers as native Claude Code tools. Claude calls them when relevant — without you asking. It doesn't wait for you to type "here's some context." It reads what it needs, when it needs it, as a first-class participant in the session.</p>
+      </div>
+      <div class="why-code-card">
+        <div class="why-code-icon">∞</div>
+        <div class="why-code-title">Persistent across every session</div>
+        <p class="why-code-body">Claude Code's plugin system persists configuration across sessions. SoY is loaded every time you open Claude Code. Not because you remembered to paste it — because it's part of the environment. Like a colleague who's always in the room.</p>
+      </div>
+    </div>
+
+    <div class="plugin-anatomy reveal reveal-delay-4">
+      <div class="anatomy-row">
+        <div class="anatomy-key">plugin_type</div>
+        <div class="anatomy-value"><strong>Claude Code MCP (Model Context Protocol)</strong></div>
+      </div>
+      <div class="anatomy-row">
+        <div class="anatomy-key">context_access</div>
+        <div class="anatomy-value"><strong>Structured tool calls</strong> — Claude requests context like reading a file, not scanning a paste</div>
+      </div>
+      <div class="anatomy-row">
+        <div class="anatomy-key">persistence</div>
+        <div class="anatomy-value"><strong>Session-permanent</strong> — loaded on every Claude Code launch, no setup required</div>
+      </div>
+      <div class="anatomy-row">
+        <div class="anatomy-key">data_storage</div>
+        <div class="anatomy-value"><strong>Local SQLite database</strong> — your context never leaves your machine unless you choose</div>
+      </div>
+      <div class="anatomy-row">
+        <div class="anatomy-key">activation</div>
+        <div class="anatomy-value"><strong>One install command</strong> — then SoY is live in every session automatically</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="section-rule">
+
+
+<!-- ─────────────────────────────────────────
+     SECTION 6: INFINITE CONTEXT — MODULES
+───────────────────────────────────────── -->
+<section class="section-modules">
+  <div class="container">
+    <div class="section-label reveal">06 · The architecture</div>
+    <h2 class="section-headline reveal reveal-delay-1">
+      Eight dimensions.<br>One <em>connected picture.</em>
+    </h2>
+    <p class="section-body reveal reveal-delay-2">
+      Every module adds a new layer of context. Together, they give Claude
+      a complete picture of your work — not as a log of inputs, but as a living,
+      queryable model of who you are and what you do.
+    </p>
+
+    <div class="modules-grid">
+      <div class="module-card reveal reveal-delay-1">
+        <div class="module-tag">Who</div>
+        <div class="module-name">CRM</div>
+        <p class="module-desc">Every relationship — clients, colleagues, partners, prospects — with history, context, and open threads.</p>
+        <div class="module-context-label">→ Claude knows your people</div>
+      </div>
+      <div class="module-card reveal reveal-delay-2">
+        <div class="module-tag">What</div>
+        <div class="module-name">Projects</div>
+        <p class="module-desc">Every project you're running — brief, status, decisions, deliverables, blockers, and ownership.</p>
+        <div class="module-context-label">→ Claude knows your work</div>
+      </div>
+      <div class="module-card reveal reveal-delay-3">
+        <div class="module-tag">How</div>
+        <div class="module-name">Gmail</div>
+        <p class="module-desc">Indexed email threads. Not the full inbox — the relevant history, surfaced automatically before calls and tasks.</p>
+        <div class="module-context-label">→ Claude knows what was said</div>
+      </div>
+      <div class="module-card reveal reveal-delay-4">
+        <div class="module-tag">When</div>
+        <div class="module-name">Calendar</div>
+        <p class="module-desc">Your schedule, upcoming meetings, recurring commitments, and the people attached to each event.</p>
+        <div class="module-context-label">→ Claude knows your time</div>
+      </div>
+      <div class="module-card reveal reveal-delay-1">
+        <div class="module-tag">What Was Said</div>
+        <div class="module-name">Conversations</div>
+        <p class="module-desc">Key exchanges logged and indexed. Commitments made. Topics raised. Context that would otherwise evaporate.</p>
+        <div class="module-context-label">→ Claude knows the history</div>
+      </div>
+      <div class="module-card reveal reveal-delay-2">
+        <div class="module-tag">Why</div>
+        <div class="module-name">Decisions</div>
+        <p class="module-desc">Decisions you've made, logged with rationale and date. So future-you — and Claude — understands why, not just what.</p>
+        <div class="module-context-label">→ Claude knows your reasoning</div>
+      </div>
+      <div class="module-card reveal reveal-delay-3">
+        <div class="module-tag">How It Felt</div>
+        <div class="module-name">Journal</div>
+        <p class="module-desc">Private entries, energy, reflections. Gives Claude tonal context — the difference between a focused week and a scattered one.</p>
+        <div class="module-context-label">→ Claude knows your state</div>
+      </div>
+      <div class="module-card reveal reveal-delay-4">
+        <div class="module-tag">What You Captured</div>
+        <div class="module-name">Notes</div>
+        <p class="module-desc">Ideas, research, frameworks, and references. Everything you've written that isn't a project or a decision.</p>
+        <div class="module-context-label">→ Claude knows your thinking</div>
+      </div>
+    </div>
+
+    <div class="modules-total-row reveal reveal-delay-2">
+      <p class="modules-total-left">
+        Claude with all 8 modules knows your work the way you know it — not as a log of inputs, but as a connected, navigable picture.
+      </p>
+      <div class="modules-total-right">8 modules · All included · $149 once</div>
+    </div>
+  </div>
+</section>
+
+<hr class="section-rule">
+
+
+<!-- ─────────────────────────────────────────
+     SECTION 7: A CONCRETE WEEK
+───────────────────────────────────────── -->
+<section class="section-week">
+  <div class="container">
+    <div class="section-label reveal">07 · In practice</div>
+    <h2 class="section-headline reveal reveal-delay-1">
+      What a week looks like<br>with SoY <em>active.</em>
+    </h2>
+    <p class="section-body reveal reveal-delay-2">
+      Monday morning to Friday close. The same prompts.
+      Completely different outputs.
+    </p>
+
+    <div class="week-days reveal reveal-delay-3">
+
+      <!-- Monday -->
+      <div class="week-day">
+        <div class="week-day-label">
+          <div class="day-name">Monday</div>
+          <div class="day-context">Morning brief</div>
+        </div>
+        <div class="week-without">
+          <div class="week-col-label">Without SoY</div>
+          <p class="week-without-text">
+            "I'd need you to share your schedule, active projects, open items, and any context about
+            your week to give you a useful morning brief."
+          </p>
+        </div>
+        <div class="week-with">
+          <div class="week-col-label">With SoY</div>
+          <div class="terminal">
+            <div class="terminal-bar">
+              <span class="terminal-dot td-red"></span>
+              <span class="terminal-dot td-yellow"></span>
+              <span class="terminal-dot td-green"></span>
+            </div>
+            <div class="terminal-body">
+              <span class="t-line"><span class="t-prompt">$</span> <span class="t-cmd">soy brief --day monday</span></span>
+              <span class="t-line t-out">▸ 4 meetings today · first at 9:30 with Raj</span>
+              <span class="t-line t-out">▸ 3 commitments due this week (2 aging)</span>
+              <span class="t-line t-out">▸ Raj context loaded: 11 emails, last call Oct 29</span>
+              <span class="t-line t-success">▸ Brief ready. Starting with Raj prep...</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tuesday -->
+      <div class="week-day">
+        <div class="week-day-label">
+          <div class="day-name">Tuesday</div>
+          <div class="day-context">Meeting prep</div>
+        </div>
+        <div class="week-without">
+          <div class="week-col-label">Without SoY</div>
+          <p class="week-without-text">
+            "To help you prep for this call, I'll need to know who you're meeting, what you've
+            discussed before, and what you're trying to achieve."
+          </p>
+        </div>
+        <div class="week-with">
+          <div class="week-col-label">With SoY</div>
+          <div class="terminal">
+            <div class="terminal-bar">
+              <span class="terminal-dot td-red"></span>
+              <span class="terminal-dot td-yellow"></span>
+              <span class="terminal-dot td-green"></span>
+            </div>
+            <div class="terminal-body">
+              <span class="t-line"><span class="t-prompt">$</span> <span class="t-cmd">soy prep "Sarah @ Vertex 2pm"</span></span>
+              <span class="t-line t-out">▸ Sarah Kim, Director of Ops, Vertex Systems</span>
+              <span class="t-line t-out">▸ Last contact: Jan 8 (warm) · 47 days ago</span>
+              <span class="t-line t-out">▸ Open: you owe her the revised SLA doc</span>
+              <span class="t-line t-out">▸ Her priority: Q1 headcount sign-off</span>
+              <span class="t-line t-success">▸ Suggested opener loaded<span class="t-cursor"></span></span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Wednesday -->
+      <div class="week-day">
+        <div class="week-day-label">
+          <div class="day-name">Wednesday</div>
+          <div class="day-context">Pipeline review</div>
+        </div>
+        <div class="week-without">
+          <div class="week-col-label">Without SoY</div>
+          <p class="week-without-text">
+            "A pipeline review would require you to share your current deals, stages, activity history,
+            and forecasting criteria so I can give you meaningful analysis."
+          </p>
+        </div>
+        <div class="week-with">
+          <div class="week-col-label">With SoY</div>
+          <div class="terminal">
+            <div class="terminal-bar">
+              <span class="terminal-dot td-red"></span>
+              <span class="terminal-dot td-yellow"></span>
+              <span class="terminal-dot td-green"></span>
+            </div>
+            <div class="terminal-body">
+              <span class="t-line"><span class="t-prompt">$</span> <span class="t-cmd">soy pipeline review</span></span>
+              <span class="t-line t-out">▸ 9 active prospects · $287K pipeline</span>
+              <span class="t-line t-out">▸ 3 going cold (no contact >21 days)</span>
+              <span class="t-line t-out">▸ Highest risk: Meridian (competitor mention)</span>
+              <span class="t-line t-out">▸ Highest leverage: re-engage James this week</span>
+              <span class="t-line t-success">▸ Recommended actions: 4</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Thursday -->
+      <div class="week-day">
+        <div class="week-day-label">
+          <div class="day-name">Thursday</div>
+          <div class="day-context">Decision log</div>
+        </div>
+        <div class="week-without">
+          <div class="week-col-label">Without SoY</div>
+          <p class="week-without-text">
+            "I don't have visibility into your previous decisions. To help you review or build on them,
+            you'd need to share the relevant history."
+          </p>
+        </div>
+        <div class="week-with">
+          <div class="week-col-label">With SoY</div>
+          <div class="terminal">
+            <div class="terminal-bar">
+              <span class="terminal-dot td-red"></span>
+              <span class="terminal-dot td-yellow"></span>
+              <span class="terminal-dot td-green"></span>
+            </div>
+            <div class="terminal-body">
+              <span class="t-line"><span class="t-prompt">$</span> <span class="t-cmd">soy log decision "drop Starter tier"</span></span>
+              <span class="t-line t-out">▸ Context: 3 related past decisions found</span>
+              <span class="t-line t-out">▸ Linked: pricing review (Nov 2), churn data (Oct 15)</span>
+              <span class="t-line t-out">▸ Decision logged with full rationale chain</span>
+              <span class="t-line t-success">▸ Future-you will thank you</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Friday -->
+      <div class="week-day">
+        <div class="week-day-label">
+          <div class="day-name">Friday</div>
+          <div class="day-context">Weekly review</div>
+        </div>
+        <div class="week-without">
+          <div class="week-col-label">Without SoY</div>
+          <p class="week-without-text">
+            "Weekly reviews are valuable! To run one with you, I'll need you to share what you planned
+            to accomplish, what actually happened, and your focus areas for next week."
+          </p>
+        </div>
+        <div class="week-with">
+          <div class="week-col-label">With SoY</div>
+          <div class="terminal">
+            <div class="terminal-bar">
+              <span class="terminal-dot td-red"></span>
+              <span class="terminal-dot td-yellow"></span>
+              <span class="terminal-dot td-green"></span>
+            </div>
+            <div class="terminal-body">
+              <span class="t-line"><span class="t-prompt">$</span> <span class="t-cmd">soy review week</span></span>
+              <span class="t-line t-out">▸ Completed: 8 tasks · Slipped: 3</span>
+              <span class="t-line t-out">▸ Decisions logged: 2 · Commitments kept: 7/9</span>
+              <span class="t-line t-out">▸ Journal: strong start, drift mid-week</span>
+              <span class="t-line t-out">▸ Biggest win: closed Vertex next step</span>
+              <span class="t-line t-success">▸ Week summary + next-week focus ready<span class="t-cursor"></span></span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<hr class="section-rule">
+
+
+<!-- ─────────────────────────────────────────
+     SECTION 8: CLOSING CTA
+───────────────────────────────────────── -->
+<section class="section-close">
+  <div class="section-close-ghost">YOURS</div>
+  <div class="container-narrow" style="position: relative; z-index: 1;">
+    <p class="close-eyebrow reveal">The bottom line</p>
+    <h2 class="close-headline reveal reveal-delay-1">
+      This is not AI assistance.<br>
+      This is AI that knows<br><em>your work.</em>
+    </h2>
+    <p class="close-subhead reveal reveal-delay-2">
+      Claude is already PhD-level intelligence on any subject.
+      SoY makes that intelligence personal. One install.
+      Every session. For the rest of your career.
+    </p>
+    <div class="close-cta-group reveal reveal-delay-3">
+      <a href="https://softwareof.you" class="btn-primary">Get SoY — $149 →</a>
+      <a href="features.html" class="btn-ghost-light">See all modules</a>
+    </div>
+    <p class="close-price reveal reveal-delay-4">
+      <strong>$149</strong> · One-time purchase · All 8 modules · Lifetime updates
+    </p>
+  </div>
+</section>
+
+
+<!-- ─────────────────────────────────────────
+     FOOTER
+───────────────────────────────────────── -->
+<footer>
+  <div class="footer-inner">
+    <span class="footer-copy">© 2026 Software of You · Built by Kerry Morrison</span>
+    <a href="https://softwareof.you" class="footer-link">softwareof.you</a>
+  
+    <a class="footer-email" data-u="kerry" data-d="softwareof.you" href="#" onclick="this.href='mailto:'+this.dataset.u+'@'+this.dataset.d;return false;" title="Email Kerry">kerry<span aria-hidden="true" style="display:none">&#8203;</span>&#64;softwareof.you</a>
+</div>
+
+  </footer>
+
+
+<!-- ─────────────────────────────────────────
+     SCROLL REVEAL SCRIPT
+───────────────────────────────────────── -->
+<script>
+  (function() {
+    var revealEls = document.querySelectorAll('.reveal');
+
+    if ('IntersectionObserver' in window) {
+      var observer = new IntersectionObserver(function(entries) {
+        entries.forEach(function(entry) {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('in');
+            observer.unobserve(entry.target);
+          }
+        });
+      }, {
+        threshold: 0.12,
+        rootMargin: '0px 0px -48px 0px'
+      });
+
+      revealEls.forEach(function(el) {
+        observer.observe(el);
+      });
+    } else {
+      // Fallback: show all immediately
+      revealEls.forEach(function(el) {
+        el.classList.add('in');
+      });
+    }
+  })();
+</script>
+
+<script>
+(function() {
+  function closeAll() {
+    document.querySelectorAll('.nav__item--has-sub.open').forEach(function(el) {
+      el.classList.remove('open');
+    });
+  }
+  document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.nav__item--has-sub > a').forEach(function(trigger) {
+      trigger.addEventListener('click', function(e) {
+        e.preventDefault();
+        var item = trigger.parentElement;
+        var isOpen = item.classList.contains('open');
+        closeAll();
+        if (!isOpen) item.classList.add('open');
+      });
+    });
+    document.addEventListener('click', function(e) {
+      if (!e.target.closest('.nav__item--has-sub')) closeAll();
+    });
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') closeAll();
+    });
+  });
+})();
+</script>
+</body>
+</html>
