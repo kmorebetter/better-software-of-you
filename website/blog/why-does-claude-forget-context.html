@@ -1,0 +1,1136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Why Does Claude Forget Context? The Stateless AI Problem Explained | Software of You</title>
+  <meta name="description" content="Claude forgets everything between sessions because of a core architectural fact: LLMs are stateless. Here's what that means, what you're losing, and how to fix it.">
+  <meta property="og:title" content="Why Does Claude Forget Context? The Stateless AI Problem Explained">
+  <meta property="og:description" content="Claude forgets everything between sessions because of a core architectural fact: LLMs are stateless. Here's what that means, what you're losing, and how to fix it.">
+  <meta property="og:type" content="article">
+  <meta property="og:url" content="https://softwareof.you/blog/why-does-claude-forget-context">
+  <link rel="canonical" href="https://softwareof.you/blog/why-does-claude-forget-context">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@300;400;500&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300;1,9..40,400&display=swap" rel="stylesheet">
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    "headline": "Why Does Claude Forget Context? The Stateless AI Problem Explained",
+    "description": "Claude forgets everything between sessions because of a core architectural fact: LLMs are stateless. Here's what that means, what you're losing, and how to fix it.",
+    "author": {"@type": "Organization", "name": "Software of You"},
+    "datePublished": "2026-02-01",
+    "dateModified": "2026-02-01",
+    "publisher": {"@type": "Organization", "name": "Software of You"},
+    "mainEntityOfPage": {"@type": "WebPage", "@id": "https://softwareof.you/blog/why-does-claude-forget-context"}
+  }
+  </script>
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "Why does Claude forget everything between conversations?",
+        "acceptedAnswer": {"@type": "Answer", "text": "Claude forgets because it is stateless by design. Large language models process each conversation as an independent event. When a session ends, no information is preserved — not your name, your clients, your projects, or your history. The model has no mechanism to store information between sessions unless you build one."}
+      },
+      {
+        "@type": "Question",
+        "name": "Does Claude have any built-in memory?",
+        "acceptedAnswer": {"@type": "Answer", "text": "Claude has a context window — the information currently loaded into a single session. Within that window, Claude remembers everything. But when the session ends, the window closes and everything in it disappears. Claude.ai has a limited memory feature for conversational preferences, but it does not store structured professional context."}
+      },
+      {
+        "@type": "Question",
+        "name": "What is the context window and how does it relate to memory?",
+        "acceptedAnswer": {"@type": "Answer", "text": "The context window is the amount of text Claude can process in a single session — currently up to 200,000 tokens. Within the window, Claude remembers everything you have said. But context windows are not databases. They are temporary working memory that disappears when the session ends."}
+      }
+    ]
+  }
+  </script>
+
+  <style>
+    :root {
+      --bone: #FAF9F6;
+      --bone-mid: #F2F0EB;
+      --bone-deep: #E8E4DC;
+      --ink: #0F0E0C;
+      --ink-2: #2C2A26;
+      --ink-3: #6B6860;
+      --ink-4: #A8A49C;
+      --ink-5: #D4D0C8;
+      --forest: #1A4731;
+      --forest-mid: #245E41;
+      --forest-pale: #EBF2EE;
+      --forest-bg: #F2F7F4;
+      --ember: #A63325;
+      --ember-pale: #FBF2F0;
+      --rule: rgba(15,14,12,0.08);
+      --rule-mid: rgba(15,14,12,0.13);
+      --rule-heavy: rgba(15,14,12,0.22);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html { font-size: 16px; scroll-behavior: smooth; }
+
+    body {
+      font-family: 'DM Sans', system-ui, sans-serif;
+      background: var(--bone);
+      color: var(--ink-2);
+      line-height: 1.7;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* NAV */
+    .nav {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 100;
+      background: rgba(250,249,246,0.95);
+      backdrop-filter: blur(8px);
+      border-bottom: 1px solid var(--rule);
+      height: 60px;
+    }
+
+    .nav__inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 24px;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      gap: 32px;
+    }
+
+    .nav__logo {
+      font-family: 'DM Serif Display', serif;
+      font-size: 17px;
+      color: var(--ink);
+      text-decoration: none;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    .nav__logo span { color: var(--forest); }
+
+    .nav__links {
+      display: flex;
+      list-style: none;
+      gap: 0;
+      align-items: center;
+      flex: 1;
+    }
+
+    .nav__links > li { position: relative; }
+
+    .nav__links > li > a {
+      display: block;
+      padding: 6px 14px;
+      font-size: 14px;
+      font-weight: 400;
+      color: var(--ink-3);
+      text-decoration: none;
+      transition: color 0.15s;
+      white-space: nowrap;
+    }
+
+    .nav__links > li > a:hover,
+    .nav__links > li > a[aria-current="page"] { color: var(--ink); }
+
+    .nav__links > li > a[aria-current="page"] { font-weight: 500; }
+
+    .nav__item--has-sub { position: relative; }
+
+    .nav__sub {
+      display: none;
+      position: absolute;
+      top: calc(100% + 8px);
+      left: 0;
+      background: var(--bone);
+      border: 1px solid var(--rule-mid);
+      border-radius: 8px;
+      padding: 8px;
+      list-style: none;
+      min-width: 200px;
+      box-shadow: 0 8px 32px rgba(15,14,12,0.10);
+      z-index: 200;
+    }
+
+    .nav__item--has-sub:hover .nav__sub { display: block; }
+
+    .nav__sub li a {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 12px;
+      font-size: 13px;
+      color: var(--ink-3);
+      text-decoration: none;
+      border-radius: 6px;
+      transition: background 0.1s, color 0.1s;
+    }
+
+    .nav__sub li a:hover { background: var(--bone-mid); color: var(--ink); }
+
+    .nav__sub__num {
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      color: var(--ink-5);
+    }
+
+    .nav__right {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-shrink: 0;
+      margin-left: auto;
+    }
+
+    .nav__meta {
+      font-family: 'DM Mono', monospace;
+      font-size: 12px;
+      color: var(--ink-4);
+      white-space: nowrap;
+    }
+
+    .nav__cta {
+      display: inline-block;
+      padding: 8px 18px;
+      background: var(--forest);
+      color: #fff;
+      font-size: 13px;
+      font-weight: 500;
+      text-decoration: none;
+      border-radius: 6px;
+      white-space: nowrap;
+      transition: background 0.15s;
+    }
+
+    .nav__cta:hover { background: var(--forest-mid); }
+
+    /* PROGRESS BAR */
+    .progress-bar-wrap {
+      position: fixed;
+      top: 60px;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: var(--rule);
+      z-index: 99;
+    }
+
+    #progressBar {
+      height: 100%;
+      width: 0%;
+      background: var(--forest);
+      transition: width 0.1s linear;
+    }
+
+    /* PAGE LAYOUT */
+    .page-wrap { padding-top: 62px; }
+
+    /* HERO */
+    .post-hero {
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 60px 24px 48px;
+    }
+
+    .breadcrumb {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      color: var(--ink-4);
+      margin-bottom: 20px;
+    }
+
+    .breadcrumb a {
+      color: var(--ink-4);
+      text-decoration: none;
+      transition: color 0.15s;
+    }
+
+    .breadcrumb a:hover { color: var(--ink-3); }
+
+    .breadcrumb__sep { color: var(--ink-5); }
+
+    .pillar-tag {
+      display: inline-block;
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--forest);
+      background: var(--forest-pale);
+      padding: 4px 10px;
+      border-radius: 4px;
+      margin-bottom: 20px;
+    }
+
+    .post-hero h1 {
+      font-family: 'DM Serif Display', serif;
+      font-size: clamp(32px, 5vw, 52px);
+      line-height: 1.15;
+      color: var(--ink);
+      margin-bottom: 20px;
+      letter-spacing: -0.02em;
+    }
+
+    .post-hero__subtitle {
+      font-size: 19px;
+      line-height: 1.6;
+      color: var(--ink-3);
+      max-width: 640px;
+      margin-bottom: 28px;
+      font-weight: 300;
+    }
+
+    .post-meta {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      font-family: 'DM Mono', monospace;
+      font-size: 12px;
+      color: var(--ink-4);
+    }
+
+    .post-meta__sep { color: var(--ink-5); }
+
+    .hero-rule {
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 0 24px;
+      border: none;
+      border-top: 1px solid var(--rule-mid);
+    }
+
+    /* 2-COLUMN LAYOUT */
+    .post-layout {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 48px 24px 80px;
+      display: grid;
+      grid-template-columns: 1fr 240px;
+      gap: 60px;
+      align-items: start;
+    }
+
+    /* PROSE */
+    .post-body { min-width: 0; }
+
+    .post-body p {
+      font-size: 17px;
+      line-height: 1.75;
+      color: var(--ink-2);
+      margin-bottom: 24px;
+    }
+
+    .post-body h2 {
+      font-family: 'DM Serif Display', serif;
+      font-size: 28px;
+      line-height: 1.25;
+      color: var(--ink);
+      margin-top: 56px;
+      margin-bottom: 20px;
+      letter-spacing: -0.01em;
+      scroll-margin-top: 80px;
+    }
+
+    .post-body h3 {
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--ink);
+      margin-top: 36px;
+      margin-bottom: 14px;
+      scroll-margin-top: 80px;
+    }
+
+    .post-body blockquote {
+      border-left: 3px solid var(--forest);
+      padding: 4px 0 4px 24px;
+      margin: 32px 0;
+      font-size: 18px;
+      font-style: italic;
+      color: var(--ink-3);
+      line-height: 1.65;
+    }
+
+    .post-body ul,
+    .post-body ol {
+      padding-left: 24px;
+      margin-bottom: 24px;
+    }
+
+    .post-body li {
+      font-size: 17px;
+      line-height: 1.7;
+      color: var(--ink-2);
+      margin-bottom: 8px;
+    }
+
+    .post-body strong { color: var(--ink); font-weight: 600; }
+
+    .post-body a {
+      color: var(--forest);
+      text-decoration: underline;
+      text-underline-offset: 3px;
+    }
+
+    .post-body a:hover { color: var(--forest-mid); }
+
+    .post-body code {
+      font-family: 'DM Mono', monospace;
+      font-size: 14px;
+      background: var(--bone-mid);
+      color: var(--ember);
+      padding: 2px 6px;
+      border-radius: 4px;
+      border: 1px solid var(--rule-mid);
+    }
+
+    .post-body pre {
+      background: #1A1915;
+      border-radius: 10px;
+      padding: 24px;
+      overflow-x: auto;
+      margin: 28px 0;
+      border: 1px solid rgba(255,255,255,0.05);
+    }
+
+    .post-body pre code {
+      font-family: 'DM Mono', monospace;
+      font-size: 13px;
+      line-height: 1.65;
+      background: none;
+      color: #D4D0C8;
+      padding: 0;
+      border: none;
+    }
+
+    .post-body table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 28px 0;
+      font-size: 15px;
+    }
+
+    .post-body th {
+      text-align: left;
+      padding: 10px 16px;
+      background: var(--bone-mid);
+      color: var(--ink);
+      font-weight: 600;
+      border-bottom: 2px solid var(--rule-mid);
+      font-size: 13px;
+    }
+
+    .post-body td {
+      padding: 10px 16px;
+      border-bottom: 1px solid var(--rule);
+      color: var(--ink-2);
+      vertical-align: top;
+    }
+
+    .post-body tr:last-child td { border-bottom: none; }
+
+    .post-body hr {
+      border: none;
+      border-top: 1px solid var(--rule-mid);
+      margin: 40px 0;
+    }
+
+    /* Level badge */
+    .level-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--forest);
+      background: var(--forest-pale);
+      padding: 3px 10px;
+      border-radius: 4px;
+      margin-bottom: 8px;
+    }
+
+    /* Architecture overview table */
+    .arch-table {
+      background: var(--bone-mid);
+      border: 1px solid var(--rule-mid);
+      border-radius: 10px;
+      overflow: hidden;
+      margin: 28px 0;
+    }
+
+    .arch-table table { margin: 0; }
+
+    .arch-table th {
+      background: var(--bone-deep);
+      font-size: 12px;
+    }
+
+    /* INLINE CTA BAND */
+    .inline-cta {
+      background: var(--forest);
+      color: #fff;
+      border-radius: 12px;
+      padding: 32px 36px;
+      margin: 48px 0;
+    }
+
+    .inline-cta__label {
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.55);
+      margin-bottom: 8px;
+    }
+
+    .inline-cta__title {
+      font-family: 'DM Serif Display', serif;
+      font-size: 22px;
+      color: #fff;
+      margin-bottom: 8px;
+      line-height: 1.3;
+    }
+
+    .inline-cta__sub {
+      font-size: 15px;
+      color: rgba(255,255,255,0.72);
+      margin-bottom: 20px;
+      line-height: 1.6;
+    }
+
+    .inline-cta__btn {
+      display: inline-block;
+      padding: 10px 22px;
+      background: #fff;
+      color: var(--forest);
+      font-size: 14px;
+      font-weight: 600;
+      text-decoration: none;
+      border-radius: 6px;
+      transition: opacity 0.15s;
+    }
+
+    .inline-cta__btn:hover { opacity: 0.9; }
+
+    .inline-cta__price {
+      font-family: 'DM Mono', monospace;
+      font-size: 12px;
+      color: rgba(255,255,255,0.5);
+      margin-top: 10px;
+    }
+
+    /* FAQ ACCORDION */
+    .faq-section { margin-top: 56px; }
+
+    .faq-section h2 {
+      font-family: 'DM Serif Display', serif;
+      font-size: 28px;
+      color: var(--ink);
+      margin-bottom: 24px;
+      scroll-margin-top: 80px;
+    }
+
+    .faq-item { border-top: 1px solid var(--rule-mid); }
+    .faq-item:last-child { border-bottom: 1px solid var(--rule-mid); }
+
+    .faq-item summary {
+      list-style: none;
+      padding: 20px 0;
+      font-size: 16px;
+      font-weight: 500;
+      color: var(--ink);
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .faq-item summary::-webkit-details-marker { display: none; }
+
+    .faq-item summary::after {
+      content: '+';
+      font-size: 20px;
+      font-weight: 300;
+      color: var(--ink-4);
+      flex-shrink: 0;
+      transition: transform 0.2s;
+    }
+
+    .faq-item[open] summary::after { transform: rotate(45deg); }
+
+    .faq-item .faq-answer {
+      padding-bottom: 20px;
+      font-size: 16px;
+      line-height: 1.7;
+      color: var(--ink-3);
+    }
+
+    /* BOTTOM CTA BOX */
+    .bottom-cta {
+      background: var(--forest-bg);
+      border: 1px solid rgba(26,71,49,0.15);
+      border-radius: 14px;
+      padding: 40px;
+      margin-top: 56px;
+      text-align: center;
+    }
+
+    .bottom-cta__label {
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--forest-mid);
+      margin-bottom: 12px;
+    }
+
+    .bottom-cta__title {
+      font-family: 'DM Serif Display', serif;
+      font-size: 28px;
+      color: var(--ink);
+      margin-bottom: 10px;
+    }
+
+    .bottom-cta__sub {
+      font-size: 16px;
+      color: var(--ink-3);
+      margin-bottom: 24px;
+      line-height: 1.6;
+    }
+
+    .bottom-cta__btn {
+      display: inline-block;
+      padding: 14px 32px;
+      background: var(--forest);
+      color: #fff;
+      font-size: 15px;
+      font-weight: 500;
+      text-decoration: none;
+      border-radius: 8px;
+      transition: background 0.15s;
+    }
+
+    .bottom-cta__btn:hover { background: var(--forest-mid); }
+
+    .bottom-cta__price {
+      font-family: 'DM Mono', monospace;
+      font-size: 12px;
+      color: var(--ink-4);
+      margin-top: 12px;
+    }
+
+    /* SIGNATURE */
+    .post-signature {
+      margin-top: 48px;
+      padding-top: 32px;
+      border-top: 1px solid var(--rule-mid);
+      font-style: italic;
+      font-size: 16px;
+      color: var(--ink-4);
+      text-align: center;
+    }
+
+    /* RELATED ARTICLES */
+    .related-section {
+      max-width: 860px;
+      margin: 64px auto 0;
+      padding: 0 24px 80px;
+    }
+
+    .related-section h2 {
+      font-family: 'DM Serif Display', serif;
+      font-size: 22px;
+      color: var(--ink);
+      margin-bottom: 28px;
+    }
+
+    .related-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+    }
+
+    .related-card {
+      background: var(--bone-mid);
+      border: 1px solid var(--rule-mid);
+      border-radius: 10px;
+      padding: 24px;
+      text-decoration: none;
+      display: block;
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+
+    .related-card:hover {
+      border-color: var(--rule-heavy);
+      box-shadow: 0 4px 16px rgba(15,14,12,0.07);
+    }
+
+    .related-card__tag {
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--forest);
+      margin-bottom: 10px;
+    }
+
+    .related-card__title {
+      font-size: 15px;
+      font-weight: 500;
+      color: var(--ink);
+      line-height: 1.4;
+      margin-bottom: 8px;
+    }
+
+    .related-card__meta {
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      color: var(--ink-4);
+    }
+
+    /* TOC SIDEBAR */
+    .post-toc {
+      position: sticky;
+      top: 80px;
+    }
+
+    .post-toc__label {
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--ink-4);
+      margin-bottom: 14px;
+    }
+
+    .post-toc__list { list-style: none; }
+
+    .post-toc__item { margin-bottom: 2px; }
+
+    .post-toc__item a {
+      display: block;
+      font-size: 13px;
+      color: var(--ink-4);
+      text-decoration: none;
+      padding: 5px 10px 5px 12px;
+      border-left: 2px solid transparent;
+      line-height: 1.4;
+      transition: color 0.15s, border-color 0.15s;
+    }
+
+    .post-toc__item a:hover { color: var(--ink-3); }
+
+    .post-toc__item.active a {
+      color: var(--forest);
+      border-left-color: var(--forest);
+      font-weight: 500;
+    }
+
+    /* FOOTER */
+    .footer {
+      background: var(--ink);
+      color: var(--ink-4);
+      padding: 40px 24px;
+    }
+
+    .footer__inner {
+      max-width: 1100px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+
+    .footer__logo {
+      font-family: 'DM Serif Display', serif;
+      font-size: 16px;
+      color: #fff;
+      text-decoration: none;
+    }
+
+    .footer__logo span { color: rgba(255,255,255,0.5); }
+
+    .footer__copy { font-size: 13px; color: var(--ink-4); }
+
+    .footer-email {
+      font-size: 13px;
+      color: var(--ink-4);
+      text-decoration: none;
+      transition: color 0.15s;
+    }
+
+    .footer-email:hover { color: var(--ink-5); }
+
+    /* REVEAL */
+    .reveal {
+      opacity: 0;
+      transform: translateY(16px);
+      transition: opacity 0.5s ease, transform 0.5s ease;
+    }
+
+    .reveal.in {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* RESPONSIVE */
+    @media (max-width: 800px) {
+      .post-layout { grid-template-columns: 1fr; }
+      .post-toc { display: none; }
+      .related-grid { grid-template-columns: 1fr; }
+      .post-hero h1 { font-size: 30px; }
+      .nav__links { display: none; }
+    }
+  </style>
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-TQFFERGZW1"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-TQFFERGZW1');
+  </script>
+</head>
+<body>
+
+  <!-- NAV -->
+  <nav class="nav" role="navigation" aria-label="Main navigation">
+    <div class="nav__inner">
+      <a href="https://softwareof.you" class="nav__logo">Software <span>of You</span></a>
+      <ul class="nav__links">
+        <li><a href="../features.html">Features</a></li>
+        <li class="nav__item--has-sub"><a href="../features.html#modules">Modules</a>
+          <ul class="nav__sub">
+            <li><a href="../modules/crm.html"><span class="nav__sub__num">01</span>CRM</a></li>
+            <li><a href="../modules/projects.html"><span class="nav__sub__num">02</span>Projects</a></li>
+            <li><a href="../modules/gmail.html"><span class="nav__sub__num">03</span>Gmail</a></li>
+            <li><a href="../modules/calendar.html"><span class="nav__sub__num">04</span>Calendar</a></li>
+            <li><a href="../modules/conversations.html"><span class="nav__sub__num">05</span>Conversations</a></li>
+            <li><a href="../modules/decisions.html"><span class="nav__sub__num">06</span>Decisions</a></li>
+            <li><a href="../modules/journal.html"><span class="nav__sub__num">07</span>Journal</a></li>
+            <li><a href="../modules/notes.html"><span class="nav__sub__num">08</span>Notes</a></li>
+          </ul>
+        </li>
+        <li><a href="../why-claude.html">Why Claude</a></li>
+        <li><a href="../your-data.html">Your Data</a></li>
+        <li><a href="../pricing.html">Pricing</a></li>
+        <li><a href="index.html" aria-current="page">Blog</a></li>
+      </ul>
+      <div class="nav__right">
+        <span class="nav__meta">$149 · once</span>
+        <a href="https://softwareof.you#get-started" class="nav__cta" target="_blank" rel="noopener">Get Started</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- PROGRESS BAR -->
+  <div class="progress-bar-wrap">
+    <div id="progressBar"></div>
+  </div>
+
+  <div class="page-wrap">
+
+    <!-- HERO -->
+    <header class="post-hero">
+      <nav class="breadcrumb" aria-label="Breadcrumb">
+        <a href="https://softwareof.you">Home</a>
+        <span class="breadcrumb__sep">›</span>
+        <a href="index.html">Blog</a>
+        <span class="breadcrumb__sep">›</span>
+        <span>Why Does Claude Forget Context?</span>
+      </nav>
+      <div class="pillar-tag">Claude Code Memory</div>
+      <h1>Why Does Claude Forget Context? The Stateless AI Problem Explained</h1>
+      <p class="post-hero__subtitle">Claude forgets everything between sessions because of a core architectural fact: LLMs are stateless. Here's what that means, what you're losing, and how to fix it.</p>
+      <div class="post-meta">
+        <span>February 2026</span>
+        <span class="post-meta__sep">·</span>
+        <span>10 min read</span>
+      </div>
+    </header>
+
+    <hr class="hero-rule">
+
+    <!-- 2-COLUMN LAYOUT -->
+    <div class="post-layout">
+
+      <!-- MAIN PROSE -->
+      <article class="post-body">
+
+        <p>Every time you open a new Claude session, you start from zero.</p>
+
+        <p>It does not matter what you covered yesterday. It does not matter that you spent an hour last week giving Claude detailed background on your biggest client, your preferred approach, your active projects. None of it carries over.</p>
+
+        <p>You paste it in again. You re-explain. You rebuild the context that was there before.</p>
+
+        <p>This is not a bug. It is not something Anthropic will fix in the next model release. It is a fundamental architectural property of how large language models work — and understanding it changes how you use AI.</p>
+
+        <h2 id="the-stateless-problem">The Stateless AI Problem</h2>
+
+        <p>Here is the precise definition.</p>
+
+        <p>A stateless system has no memory of previous interactions. Each request is processed in isolation — the system treats every input as if it has never seen you before. Your banking app is stateful: it knows your account history, your balance, your transactions. Claude Code is stateless: it knows nothing about you when you open a session.</p>
+
+        <p>This is not an accident. It is a design property of large language models at the current state of the technology. Models are trained on data. They are not trained to maintain a persistent state about individual users across sessions. The architecture does not include a mechanism for that.</p>
+
+        <p>When people discover this, they assume it will be fixed. It will not — at least not by model improvement alone. Building persistent memory requires infrastructure beyond the model: a database, a retrieval system, a way to decide what is relevant in a given session. The model itself cannot provide that.</p>
+
+        <p>This is not a complaint about Claude. It is a structural constraint — and structural constraints have structural solutions.</p>
+
+        <h2 id="why-every-session-starts-from-zero">Why Every Session Starts From Zero</h2>
+
+        <h3>The Mechanism</h3>
+
+        <p>Here is what happens when you open Claude.</p>
+
+        <p>A session begins. Claude loads its base weights — the billions of parameters that encode everything the model learned during training. These weights include general knowledge, reasoning patterns, language understanding.</p>
+
+        <p>What the weights do not include: anything about you.</p>
+
+        <p>Your name. Your clients. Your history. Your preferences. Your projects. Your relationships. Your decisions. None of that is in the weights, because none of it was in the training data.</p>
+
+        <p>You start typing. Claude processes each token as you write it. Everything you type in this session — your messages, Claude's responses — becomes part of the context window, a live document the model can reference while the session is active.</p>
+
+        <p>The session ends. The context window closes. Everything that was in it — every piece of context you built, every piece of background you provided — is gone.</p>
+
+        <p>No session ID. No user profile. No long-term store. The next session starts with the weights and nothing else.</p>
+
+        <h3>What the Context Window Actually Is</h3>
+
+        <p>Claude's context window is currently 200,000 tokens — roughly 150,000 words. That sounds large.</p>
+
+        <p>It is not a database.</p>
+
+        <p>A database persists. It stores. It is queryable across time. A context window is temporary working memory — the equivalent of what is currently loaded onto your desk. When you close the session, you clear the desk. Everything goes back to zero.</p>
+
+        <p>Expanding the context window does not solve the stateless problem. It means you can provide more context during a single session. But when that session ends, the longer context window disappears just as cleanly as the shorter one.</p>
+
+        <p>A larger window is a larger desk. The desk still gets cleared.</p>
+
+        <h2 id="what-youre-losing">What You're Actually Losing</h2>
+
+        <p>The stateless problem is not abstract. It shows up in three specific ways.</p>
+
+        <h3>The Relationship Problem</h3>
+
+        <p>You ask Claude to draft a follow-up email to a client. Claude writes a generic follow-up — because it knows nothing about this client, your relationship history, the last conversation you had, the commitment you made, or what would actually move the relationship forward.</p>
+
+        <p>You paste in context. Claude does better. Next session, you paste it in again.</p>
+
+        <p>The relationship knowledge exists only in your head and whatever you remember to paste. That is not a system. That is manual labor disguised as AI use.</p>
+
+        <h3>The Decision Problem</h3>
+
+        <p>You made a strategic decision in January. You thought through the options carefully. You documented the reasoning.</p>
+
+        <p>Six months later, you are evaluating an opportunity that affects that decision. Claude has no knowledge of the January decision. It advises as if the decision never happened.</p>
+
+        <p>You either re-explain, or — more often — you forget to connect the dots. The decision that was supposed to shape future choices exists in isolation.</p>
+
+        <h3>The Compounding Problem</h3>
+
+        <p>Context engineering's core value is compounding: each piece of knowledge makes every future interaction smarter. Without persistence, there is no compounding. There is only the current session, reset each time.</p>
+
+        <p>The AI that could compound understanding of your professional world over two years actually starts from zero every time you open it.</p>
+
+        <h2 id="three-fixes">Three Ways to Fight It Manually</h2>
+
+        <p>These approaches work. They are also all limited. Understanding the ceiling helps you decide how far to go before looking for a better architecture.</p>
+
+        <h3>Fix 1: The CLAUDE.md Identity Layer</h3>
+
+        <p>Claude Code reads a file called <code>CLAUDE.md</code> at the start of every session. Anything you put in it is automatically in Claude's context before you type your first message.</p>
+
+        <p>A well-built <code>CLAUDE.md</code> includes: your name, your role, your active clients, your working preferences, your communication style. Claude reads it, and every session begins with that baseline.</p>
+
+        <p>This works immediately. It costs nothing. It is the fastest fix for the most common version of the stateless problem — Claude not knowing who you are.</p>
+
+        <p>The limitation: <code>CLAUDE.md</code> is a static document. It does not update dynamically. It cannot cross-reference. A list of 5 clients is manageable. A list of 50 contacts with their relationship history, recent interactions, and active commitments is not a document — it is a database.</p>
+
+        <h3>Fix 2: Contact Files</h3>
+
+        <p>Create one markdown file per client or key contact. Include relationship history, recent conversations, active projects, notes from previous interactions. Load the relevant file at the start of any session involving that contact.</p>
+
+        <p>This works. It is more scalable than a single CLAUDE.md, because you only load what is relevant.</p>
+
+        <p>The limitation: you are maintaining these files manually. Every conversation you log, every decision you update, every new piece of context — someone has to write it down in the right file. That someone is you. The overhead accumulates.</p>
+
+        <h3>Fix 3: Paste Blocks</h3>
+
+        <p>Build a library of context paste blocks — formatted background summaries you can paste at the start of a session. One for each client. One for each active project. One for your overall identity and preferences.</p>
+
+        <p>This is the lowest-overhead version. No file maintenance required. Just keep the blocks updated and paste the relevant ones when you open a session.</p>
+
+        <p>The limitation: you are manually curating what goes in the blocks, manually deciding what is current, and manually pasting it in. The blocks do not update from your email. They do not know about the meeting you had this morning. They do not cross-reference.</p>
+
+        <h2 id="the-ceiling">The Ceiling</h2>
+
+        <p>The three manual fixes work. Every freelancer, consultant, or Claude Code power user who implements all three will have materially better AI interactions within a week.</p>
+
+        <p>But they share a ceiling.</p>
+
+        <p><strong>The maintenance ceiling.</strong> Every file you create requires upkeep. The contact file that was accurate in March becomes stale in June. The CLAUDE.md that reflected your priorities last quarter reflects a different reality today. Manual context engineering is only as good as your last update.</p>
+
+        <p><strong>The coverage ceiling.</strong> You interact with dozens of people and projects. Manual files capture what you consciously choose to capture. The commitment buried in an email thread, the decision made in a Slack message, the relationship signal from a call you forgot to debrief — these exist outside the system.</p>
+
+        <p><strong>The cross-referencing ceiling.</strong> The contact file, the decision log, the meeting debrief — these are separate documents. Connecting them requires manual effort. Most people do not do it. The result is siloed context, not a connected model.</p>
+
+        <!-- INLINE CTA BAND -->
+        <div class="inline-cta reveal">
+          <div class="inline-cta__label">Software of You</div>
+          <div class="inline-cta__title">Claude that knows your work. Automatically.</div>
+          <p class="inline-cta__sub">Eight modules — CRM, Gmail, Calendar, Projects, Conversations, Decisions, Journal, Notes — unified in a local SQLite database. Every session starts with full context.</p>
+          <a href="https://softwareof.you" class="inline-cta__btn" target="_blank" rel="noopener">See how it works</a>
+          <div class="inline-cta__price">$149 · one-time · your data stays on your machine</div>
+        </div>
+
+        <h2 id="what-fixed-looks-like">What It Looks Like When It's Fixed</h2>
+
+        <p>Here is what a solved version of the stateless problem looks like.</p>
+
+        <p>You open Claude Code. Before you type a single word, Claude already knows: your active clients, their relationship history with you, the emails you exchanged this week, the decisions you have made this quarter and the reasoning behind them, the commitments you made in your last five meetings, the projects that are at risk.</p>
+
+        <p>You ask "should I follow up with Marcus?" Claude knows who Marcus is, when you last spoke, what was discussed, what you committed to, and what a strong follow-up would look like given that history.</p>
+
+        <p>You do not paste in background. You do not rebuild context. You ask the question and get an answer that draws on everything that is actually relevant.</p>
+
+        <p>The system updates automatically — emails sync, decisions log, conversations add context. Each new piece of information makes every future interaction smarter. Not because the model improved. Because the context did.</p>
+
+        <p>This is what Software of You does. Eight modules — CRM, Gmail sync, Calendar, Projects, Conversations, Decisions, Journal, Notes — unified in a local SQLite database. Everything queryable in plain language through Claude. $149, once. Your data stays on your machine.</p>
+
+        <p><a href="https://softwareof.you" target="_blank" rel="noopener">softwareof.you →</a></p>
+
+        <!-- FAQ -->
+        <section class="faq-section" id="faq">
+          <h2>Frequently Asked Questions</h2>
+
+          <details class="faq-item">
+            <summary>Why does Claude forget everything between conversations?</summary>
+            <div class="faq-answer">
+              <p>Claude forgets because it is stateless by design. Large language models process each conversation as an independent event. When a session ends, no information is preserved — not your name, your clients, your projects, or your history. The model has no mechanism to store information between sessions unless you build one.</p>
+            </div>
+          </details>
+
+          <details class="faq-item">
+            <summary>Does Claude have any built-in memory?</summary>
+            <div class="faq-answer">
+              <p>Claude has a context window — the information currently loaded into a single session. Within that window, Claude remembers everything. But when the session ends, the window closes and everything in it disappears. Claude.ai has a limited memory feature for conversational preferences, but it does not store structured professional context.</p>
+            </div>
+          </details>
+
+          <details class="faq-item">
+            <summary>What is the context window and how does it relate to memory?</summary>
+            <div class="faq-answer">
+              <p>The context window is the amount of text Claude can process in a single session — currently up to 200,000 tokens. Within the window, Claude remembers everything you have said. But context windows are not databases. They are temporary working memory that disappears when the session ends.</p>
+            </div>
+          </details>
+
+          <details class="faq-item">
+            <summary>Can I use a CLAUDE.md file to give Claude memory?</summary>
+            <div class="faq-answer">
+              <p>Yes. CLAUDE.md is a markdown file that Claude Code automatically reads at the start of every session. You can write your identity, your clients, your preferences, and your working context directly into it. The limitation is scale: CLAUDE.md is a static document, not a queryable database.</p>
+            </div>
+          </details>
+
+          <details class="faq-item">
+            <summary>What is Software of You and how does it solve the stateless AI problem?</summary>
+            <div class="faq-answer">
+              <p>Software of You is a $149 one-time Claude Code plugin that builds a persistent, cross-referenced context system for your professional life. It stores your contacts, conversations, decisions, emails, calendar, projects, journal, and notes in a local SQLite database — and makes all of it available to Claude automatically. Every session starts with full context.</p>
+            </div>
+          </details>
+        </section>
+
+        <!-- BOTTOM CTA -->
+        <div class="bottom-cta reveal">
+          <div class="bottom-cta__label">Software of You</div>
+          <div class="bottom-cta__title">Build the memory layer Claude needs.</div>
+          <p class="bottom-cta__sub">$149 one-time. Eight modules. Your data on your machine. Every session starts with full context — automatically.</p>
+          <a href="https://softwareof.you" class="bottom-cta__btn" target="_blank" rel="noopener">Get Software of You</a>
+          <div class="bottom-cta__price">$149 · one-time · softwareof.you</div>
+        </div>
+
+        <!-- SIGNATURE -->
+        <p class="post-signature">You are not talking to AI. You are thinking with it.</p>
+
+      </article>
+
+      <!-- TOC SIDEBAR -->
+      <aside class="post-toc" aria-label="Table of contents">
+        <div class="post-toc__label">Contents</div>
+        <ul class="post-toc__list">
+          <li class="post-toc__item"><a href="#the-stateless-problem">The Stateless AI Problem</a></li>
+          <li class="post-toc__item"><a href="#why-every-session-starts-from-zero">Why Every Session Starts From Zero</a></li>
+          <li class="post-toc__item"><a href="#what-youre-losing">What You're Actually Losing</a></li>
+          <li class="post-toc__item"><a href="#three-fixes">Three Ways to Fight It Manually</a></li>
+          <li class="post-toc__item"><a href="#the-ceiling">The Ceiling</a></li>
+          <li class="post-toc__item"><a href="#what-fixed-looks-like">What It Looks Like When It's Fixed</a></li>
+          <li class="post-toc__item"><a href="#faq">FAQ</a></li>
+        </ul>
+      </aside>
+
+    </div><!-- end .post-layout -->
+
+    <!-- RELATED ARTICLES -->
+    <section class="related-section reveal">
+      <h2>Related Articles</h2>
+      <div class="related-grid">
+        <a href="how-to-make-claude-remember-context.html" class="related-card">
+          <div class="related-card__tag">Claude Code Memory</div>
+          <div class="related-card__title">How to Make Claude Remember Context Permanently</div>
+          <div class="related-card__meta">12 min read</div>
+        </a>
+        <a href="claude-code-persistent-memory.html" class="related-card">
+          <div class="related-card__tag">Claude Code Memory</div>
+          <div class="related-card__title">Claude Code Persistent Memory: A Complete Guide</div>
+          <div class="related-card__meta">14 min read</div>
+        </a>
+        <a href="personal-context-engineering.html" class="related-card">
+          <div class="related-card__tag">Context Engineering</div>
+          <div class="related-card__title">Personal Context Engineering</div>
+          <div class="related-card__meta">12 min read</div>
+        </a>
+      </div>
+    </section>
+
+  </div><!-- end .page-wrap -->
+
+  <!-- FOOTER -->
+  <footer class="footer">
+    <div class="footer__inner">
+      <a href="https://softwareof.you" class="footer__logo">Software <span>of You</span></a>
+      <span class="footer__copy">&copy; 2026 Software of You</span>
+      <a class="footer-email" data-u="kerry" data-d="softwareof.you" href="#" onclick="this.href='mailto:'+this.dataset.u+'@'+this.dataset.d;return false;" title="Email Kerry">kerry<span aria-hidden="true" style="display:none">&#8203;</span>&#64;softwareof.you</a>
+    </div>
+  </footer>
+
+  <script>
+    // Progress bar
+    var bar=document.getElementById('progressBar');
+    function up(){var s=window.scrollY,d=document.documentElement.scrollHeight-window.innerHeight;bar.style.width=(d>0?Math.min(s/d*100,100):0)+'%';}
+    window.addEventListener('scroll',up,{passive:true});
+    // ToC active
+    var hs=document.querySelectorAll('.post-body h2[id]'),ts=document.querySelectorAll('.post-toc__item');
+    if(hs.length&&ts.length){var ob=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){ts.forEach(function(t){t.classList.remove('active')});var a=document.querySelector('.post-toc__item a[href="#'+e.target.id+'"]');if(a)a.closest('.post-toc__item').classList.add('active');}});},{rootMargin:'-20% 0px -70% 0px'});hs.forEach(function(h){ob.observe(h);});}
+    // Reveals
+    var rs=document.querySelectorAll('.reveal');if(rs.length&&'IntersectionObserver' in window){var ro=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){e.target.classList.add('in');ro.unobserve(e.target);}});},{threshold:0.1});rs.forEach(function(r){ro.observe(r);});}else{rs.forEach(function(r){r.classList.add('in');});}
+  </script>
+
+</body>
+</html>

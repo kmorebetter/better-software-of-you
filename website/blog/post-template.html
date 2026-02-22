@@ -1,0 +1,961 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- ═══════ PER-ARTICLE: update these ═══════ -->
+  <title>{{ARTICLE_TITLE}} | Software of You</title>
+  <meta name="description" content="{{META_DESCRIPTION}}">
+  <meta name="robots" content="index, follow">
+  <meta property="og:title" content="{{ARTICLE_TITLE}}">
+  <meta property="og:description" content="{{META_DESCRIPTION}}">
+  <meta property="og:type" content="article">
+  <meta property="og:url" content="https://softwareof.you/blog/{{SLUG}}">
+  <link rel="canonical" href="https://softwareof.you/blog/{{SLUG}}">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@300;400;500&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300;1,9..40,400&display=swap" rel="stylesheet">
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    "headline": "{{ARTICLE_TITLE}}",
+    "description": "{{META_DESCRIPTION}}",
+    "author": {"@type": "Organization", "name": "Software of You"},
+    "datePublished": "{{DATE_PUBLISHED}}",
+    "dateModified": "{{DATE_MODIFIED}}",
+    "publisher": {"@type": "Organization", "name": "Software of You"},
+    "mainEntityOfPage": {"@type": "WebPage", "@id": "https://softwareof.you/blog/{{SLUG}}"},
+    "keywords": ["{{KEYWORD_1}}", "{{KEYWORD_2}}", "{{KEYWORD_3}}"]
+  }
+  </script>
+  <!-- ═══════════════════════════════════════ -->
+
+  <style>
+    :root {
+      --bone: #FAF9F6;
+      --bone-mid: #F2F0EB;
+      --bone-deep: #E8E4DC;
+      --ink: #0F0E0C;
+      --ink-2: #2C2A26;
+      --ink-3: #6B6860;
+      --ink-4: #A8A49C;
+      --ink-5: #D4D0C8;
+      --forest: #1A4731;
+      --forest-mid: #245E41;
+      --forest-pale: #EBF2EE;
+      --forest-bg: #F2F7F4;
+      --ember: #A63325;
+      --ember-pale: #FBF2F0;
+      --rule: rgba(15,14,12,0.08);
+      --rule-mid: rgba(15,14,12,0.13);
+      --rule-heavy: rgba(15,14,12,0.22);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html { font-size: 16px; scroll-behavior: smooth; }
+
+    body {
+      font-family: 'DM Sans', system-ui, sans-serif;
+      background: var(--bone);
+      color: var(--ink-2);
+      line-height: 1.7;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* NAV */
+    .nav {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 100;
+      background: rgba(250,249,246,0.95);
+      backdrop-filter: blur(8px);
+      border-bottom: 1px solid var(--rule);
+      height: 60px;
+    }
+
+    .nav__inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 24px;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      gap: 32px;
+    }
+
+    .nav__logo {
+      font-family: 'DM Serif Display', serif;
+      font-size: 17px;
+      color: var(--ink);
+      text-decoration: none;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    .nav__logo span { color: var(--forest); }
+
+    .nav__links {
+      display: flex;
+      list-style: none;
+      gap: 0;
+      align-items: center;
+      flex: 1;
+    }
+
+    .nav__links > li { position: relative; }
+
+    .nav__links > li > a {
+      display: block;
+      padding: 6px 14px;
+      font-size: 14px;
+      font-weight: 400;
+      color: var(--ink-3);
+      text-decoration: none;
+      transition: color 0.15s;
+      white-space: nowrap;
+    }
+
+    .nav__links > li > a:hover,
+    .nav__links > li > a[aria-current="page"] { color: var(--ink); }
+
+    .nav__links > li > a[aria-current="page"] { font-weight: 500; }
+
+    .nav__item--has-sub { position: relative; }
+
+    .nav__sub {
+      display: none;
+      position: absolute;
+      top: calc(100% + 8px);
+      left: 0;
+      background: var(--bone);
+      border: 1px solid var(--rule-mid);
+      border-radius: 8px;
+      padding: 8px;
+      list-style: none;
+      min-width: 200px;
+      box-shadow: 0 8px 32px rgba(15,14,12,0.10);
+      z-index: 200;
+    }
+
+    .nav__item--has-sub:hover .nav__sub { display: block; }
+
+    .nav__sub li a {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 12px;
+      font-size: 13px;
+      color: var(--ink-3);
+      text-decoration: none;
+      border-radius: 6px;
+      transition: background 0.1s, color 0.1s;
+    }
+
+    .nav__sub li a:hover { background: var(--bone-mid); color: var(--ink); }
+
+    .nav__sub__num {
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      color: var(--ink-5);
+    }
+
+    .nav__right {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-shrink: 0;
+      margin-left: auto;
+    }
+
+    .nav__meta {
+      font-family: 'DM Mono', monospace;
+      font-size: 12px;
+      color: var(--ink-4);
+      white-space: nowrap;
+    }
+
+    .nav__cta {
+      display: inline-block;
+      padding: 8px 18px;
+      background: var(--forest);
+      color: #fff;
+      font-size: 13px;
+      font-weight: 500;
+      text-decoration: none;
+      border-radius: 6px;
+      white-space: nowrap;
+      transition: background 0.15s;
+    }
+
+    .nav__cta:hover { background: var(--forest-mid); }
+
+    /* PROGRESS BAR */
+    .progress-bar-wrap {
+      position: fixed;
+      top: 60px;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: var(--rule);
+      z-index: 99;
+    }
+
+    #progressBar {
+      height: 100%;
+      width: 0%;
+      background: var(--forest);
+      transition: width 0.1s linear;
+    }
+
+    /* PAGE LAYOUT */
+    .page-wrap { padding-top: 62px; }
+
+    /* HERO */
+    .post-hero {
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 60px 24px 48px;
+    }
+
+    .breadcrumb {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      color: var(--ink-4);
+      margin-bottom: 20px;
+    }
+
+    .breadcrumb a {
+      color: var(--ink-4);
+      text-decoration: none;
+      transition: color 0.15s;
+    }
+
+    .breadcrumb a:hover { color: var(--ink-3); }
+
+    .breadcrumb__sep { color: var(--ink-5); }
+
+    .pillar-tag {
+      display: inline-block;
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--forest);
+      background: var(--forest-pale);
+      padding: 4px 10px;
+      border-radius: 4px;
+      margin-bottom: 20px;
+    }
+
+    .post-hero h1 {
+      font-family: 'DM Serif Display', serif;
+      font-size: clamp(32px, 5vw, 52px);
+      line-height: 1.15;
+      color: var(--ink);
+      margin-bottom: 20px;
+      letter-spacing: -0.02em;
+    }
+
+    .post-hero__subtitle {
+      font-size: 19px;
+      line-height: 1.6;
+      color: var(--ink-3);
+      max-width: 640px;
+      margin-bottom: 28px;
+      font-weight: 300;
+    }
+
+    .post-meta {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      font-family: 'DM Mono', monospace;
+      font-size: 12px;
+      color: var(--ink-4);
+    }
+
+    .post-meta__sep { color: var(--ink-5); }
+
+    .hero-rule {
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 0 24px;
+      border: none;
+      border-top: 1px solid var(--rule-mid);
+    }
+
+    /* 2-COLUMN LAYOUT */
+    .post-layout {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 48px 24px 80px;
+      display: grid;
+      grid-template-columns: 1fr 240px;
+      gap: 60px;
+      align-items: start;
+    }
+
+    /* PROSE */
+    .post-body { min-width: 0; }
+
+    .post-body p {
+      font-size: 17px;
+      line-height: 1.75;
+      color: var(--ink-2);
+      margin-bottom: 24px;
+    }
+
+    .post-body h2 {
+      font-family: 'DM Serif Display', serif;
+      font-size: 28px;
+      line-height: 1.25;
+      color: var(--ink);
+      margin-top: 56px;
+      margin-bottom: 20px;
+      letter-spacing: -0.01em;
+      scroll-margin-top: 80px;
+    }
+
+    .post-body h3 {
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--ink);
+      margin-top: 36px;
+      margin-bottom: 14px;
+      scroll-margin-top: 80px;
+    }
+
+    .post-body blockquote {
+      border-left: 3px solid var(--forest);
+      padding: 4px 0 4px 24px;
+      margin: 32px 0;
+      font-size: 18px;
+      font-style: italic;
+      color: var(--ink-3);
+      line-height: 1.65;
+    }
+
+    .post-body ul,
+    .post-body ol {
+      padding-left: 24px;
+      margin-bottom: 24px;
+    }
+
+    .post-body li {
+      font-size: 17px;
+      line-height: 1.7;
+      color: var(--ink-2);
+      margin-bottom: 8px;
+    }
+
+    .post-body strong { color: var(--ink); font-weight: 600; }
+
+    .post-body a {
+      color: var(--forest);
+      text-decoration: underline;
+      text-underline-offset: 3px;
+    }
+
+    .post-body a:hover { color: var(--forest-mid); }
+
+    .post-body code {
+      font-family: 'DM Mono', monospace;
+      font-size: 14px;
+      background: var(--bone-mid);
+      color: var(--ember);
+      padding: 2px 6px;
+      border-radius: 4px;
+      border: 1px solid var(--rule-mid);
+    }
+
+    .post-body pre {
+      background: #1A1915;
+      border-radius: 10px;
+      padding: 24px;
+      overflow-x: auto;
+      margin: 28px 0;
+      border: 1px solid rgba(255,255,255,0.05);
+    }
+
+    .post-body pre code {
+      font-family: 'DM Mono', monospace;
+      font-size: 13px;
+      line-height: 1.65;
+      background: none;
+      color: #D4D0C8;
+      padding: 0;
+      border: none;
+    }
+
+    .post-body table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 28px 0;
+      font-size: 15px;
+    }
+
+    .post-body th {
+      text-align: left;
+      padding: 10px 16px;
+      background: var(--bone-mid);
+      color: var(--ink);
+      font-weight: 600;
+      border-bottom: 2px solid var(--rule-mid);
+      font-size: 13px;
+    }
+
+    .post-body td {
+      padding: 10px 16px;
+      border-bottom: 1px solid var(--rule);
+      color: var(--ink-2);
+      vertical-align: top;
+    }
+
+    .post-body tr:last-child td { border-bottom: none; }
+
+    .post-body hr {
+      border: none;
+      border-top: 1px solid var(--rule-mid);
+      margin: 40px 0;
+    }
+
+    /* INLINE CTA BAND */
+    .inline-cta {
+      background: var(--forest);
+      color: #fff;
+      border-radius: 12px;
+      padding: 32px 36px;
+      margin: 48px 0;
+    }
+
+    .inline-cta__label {
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.55);
+      margin-bottom: 8px;
+    }
+
+    .inline-cta__title {
+      font-family: 'DM Serif Display', serif;
+      font-size: 22px;
+      color: #fff;
+      margin-bottom: 8px;
+      line-height: 1.3;
+    }
+
+    .inline-cta__sub {
+      font-size: 15px;
+      color: rgba(255,255,255,0.72);
+      margin-bottom: 20px;
+      line-height: 1.6;
+    }
+
+    .inline-cta__btn {
+      display: inline-block;
+      padding: 10px 22px;
+      background: #fff;
+      color: var(--forest);
+      font-size: 14px;
+      font-weight: 600;
+      text-decoration: none;
+      border-radius: 6px;
+      transition: opacity 0.15s;
+    }
+
+    .inline-cta__btn:hover { opacity: 0.9; }
+
+    .inline-cta__price {
+      font-family: 'DM Mono', monospace;
+      font-size: 12px;
+      color: rgba(255,255,255,0.5);
+      margin-top: 10px;
+    }
+
+    /* FAQ ACCORDION */
+    .faq-section { margin-top: 56px; }
+
+    .faq-section h2 {
+      font-family: 'DM Serif Display', serif;
+      font-size: 28px;
+      color: var(--ink);
+      margin-bottom: 24px;
+      scroll-margin-top: 80px;
+    }
+
+    .faq-item { border-top: 1px solid var(--rule-mid); }
+    .faq-item:last-child { border-bottom: 1px solid var(--rule-mid); }
+
+    .faq-item summary {
+      list-style: none;
+      padding: 20px 0;
+      font-size: 16px;
+      font-weight: 500;
+      color: var(--ink);
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .faq-item summary::-webkit-details-marker { display: none; }
+
+    .faq-item summary::after {
+      content: '+';
+      font-size: 20px;
+      font-weight: 300;
+      color: var(--ink-4);
+      flex-shrink: 0;
+      transition: transform 0.2s;
+    }
+
+    .faq-item[open] summary::after { transform: rotate(45deg); }
+
+    .faq-item .faq-answer {
+      padding-bottom: 20px;
+      font-size: 16px;
+      line-height: 1.7;
+      color: var(--ink-3);
+    }
+
+    /* BOTTOM CTA BOX */
+    .bottom-cta {
+      background: var(--forest-bg);
+      border: 1px solid rgba(26,71,49,0.15);
+      border-radius: 14px;
+      padding: 40px;
+      margin-top: 56px;
+      text-align: center;
+    }
+
+    .bottom-cta__label {
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--forest-mid);
+      margin-bottom: 12px;
+    }
+
+    .bottom-cta__title {
+      font-family: 'DM Serif Display', serif;
+      font-size: 28px;
+      color: var(--ink);
+      margin-bottom: 10px;
+    }
+
+    .bottom-cta__sub {
+      font-size: 16px;
+      color: var(--ink-3);
+      margin-bottom: 24px;
+      line-height: 1.6;
+    }
+
+    .bottom-cta__btn {
+      display: inline-block;
+      padding: 14px 32px;
+      background: var(--forest);
+      color: #fff;
+      font-size: 15px;
+      font-weight: 500;
+      text-decoration: none;
+      border-radius: 8px;
+      transition: background 0.15s;
+    }
+
+    .bottom-cta__btn:hover { background: var(--forest-mid); }
+
+    .bottom-cta__price {
+      font-family: 'DM Mono', monospace;
+      font-size: 12px;
+      color: var(--ink-4);
+      margin-top: 12px;
+    }
+
+    /* SIGNATURE */
+    .post-signature {
+      margin-top: 48px;
+      padding-top: 32px;
+      border-top: 1px solid var(--rule-mid);
+      font-style: italic;
+      font-size: 16px;
+      color: var(--ink-4);
+      text-align: center;
+    }
+
+    /* RELATED ARTICLES */
+    .related-section {
+      max-width: 860px;
+      margin: 64px auto 0;
+      padding: 0 24px 80px;
+    }
+
+    .related-section h2 {
+      font-family: 'DM Serif Display', serif;
+      font-size: 22px;
+      color: var(--ink);
+      margin-bottom: 28px;
+    }
+
+    .related-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+    }
+
+    .related-card {
+      background: var(--bone-mid);
+      border: 1px solid var(--rule-mid);
+      border-radius: 10px;
+      padding: 24px;
+      text-decoration: none;
+      display: block;
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+
+    .related-card:hover {
+      border-color: var(--rule-heavy);
+      box-shadow: 0 4px 16px rgba(15,14,12,0.07);
+    }
+
+    .related-card__tag {
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--forest);
+      margin-bottom: 10px;
+    }
+
+    .related-card__title {
+      font-size: 15px;
+      font-weight: 500;
+      color: var(--ink);
+      line-height: 1.4;
+      margin-bottom: 8px;
+    }
+
+    .related-card__meta {
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      color: var(--ink-4);
+    }
+
+    /* TOC SIDEBAR */
+    .post-toc {
+      position: sticky;
+      top: 80px;
+    }
+
+    .post-toc__label {
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--ink-4);
+      margin-bottom: 14px;
+    }
+
+    .post-toc__list { list-style: none; }
+
+    .post-toc__item { margin-bottom: 2px; }
+
+    .post-toc__item a {
+      display: block;
+      font-size: 13px;
+      color: var(--ink-4);
+      text-decoration: none;
+      padding: 5px 10px 5px 12px;
+      border-left: 2px solid transparent;
+      line-height: 1.4;
+      transition: color 0.15s, border-color 0.15s;
+    }
+
+    .post-toc__item a:hover { color: var(--ink-3); }
+
+    .post-toc__item.active a {
+      color: var(--forest);
+      border-left-color: var(--forest);
+      font-weight: 500;
+    }
+
+    /* FOOTER */
+    .footer {
+      background: var(--ink);
+      color: var(--ink-4);
+      padding: 40px 24px;
+    }
+
+    .footer__inner {
+      max-width: 1100px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+
+    .footer__logo {
+      font-family: 'DM Serif Display', serif;
+      font-size: 16px;
+      color: #fff;
+      text-decoration: none;
+    }
+
+    .footer__logo span { color: rgba(255,255,255,0.5); }
+
+    .footer__copy { font-size: 13px; color: var(--ink-4); }
+
+    .footer-email {
+      font-size: 13px;
+      color: var(--ink-4);
+      text-decoration: none;
+      transition: color 0.15s;
+    }
+
+    .footer-email:hover { color: var(--ink-5); }
+
+    /* REVEAL */
+    .reveal {
+      opacity: 0;
+      transform: translateY(16px);
+      transition: opacity 0.5s ease, transform 0.5s ease;
+    }
+
+    .reveal.in {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* RESPONSIVE */
+    @media (max-width: 800px) {
+      .post-layout { grid-template-columns: 1fr; }
+      .post-toc { display: none; }
+      .related-grid { grid-template-columns: 1fr; }
+      .post-hero h1 { font-size: 30px; }
+      .nav__links { display: none; }
+    }
+  </style>
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-TQFFERGZW1"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-TQFFERGZW1');
+  </script>
+</head>
+<body>
+
+  <!-- NAV -->
+  <nav class="nav" role="navigation" aria-label="Main navigation">
+    <div class="nav__inner">
+      <a href="https://softwareof.you" class="nav__logo">Software <span>of You</span></a>
+      <ul class="nav__links">
+        <li><a href="../features.html">Features</a></li>
+        <li class="nav__item--has-sub"><a href="../features.html#modules">Modules</a>
+          <ul class="nav__sub">
+            <li><a href="../modules/crm.html"><span class="nav__sub__num">01</span>CRM</a></li>
+            <li><a href="../modules/projects.html"><span class="nav__sub__num">02</span>Projects</a></li>
+            <li><a href="../modules/gmail.html"><span class="nav__sub__num">03</span>Gmail</a></li>
+            <li><a href="../modules/calendar.html"><span class="nav__sub__num">04</span>Calendar</a></li>
+            <li><a href="../modules/conversations.html"><span class="nav__sub__num">05</span>Conversations</a></li>
+            <li><a href="../modules/decisions.html"><span class="nav__sub__num">06</span>Decisions</a></li>
+            <li><a href="../modules/journal.html"><span class="nav__sub__num">07</span>Journal</a></li>
+            <li><a href="../modules/notes.html"><span class="nav__sub__num">08</span>Notes</a></li>
+          </ul>
+        </li>
+        <li><a href="../why-claude.html">Why Claude</a></li>
+        <li><a href="../your-data.html">Your Data</a></li>
+        <li><a href="../pricing.html">Pricing</a></li>
+        <li><a href="index.html" aria-current="page">Blog</a></li>
+      </ul>
+      <div class="nav__right">
+        <span class="nav__meta">$149 · once</span>
+        <a href="https://softwareof.you#get-started" class="nav__cta" target="_blank" rel="noopener">Get Started</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- PROGRESS BAR -->
+  <div class="progress-bar-wrap">
+    <div id="progressBar"></div>
+  </div>
+
+  <div class="page-wrap">
+
+    <!-- HERO -->
+    <header class="post-hero">
+      <nav class="breadcrumb" aria-label="Breadcrumb">
+        <a href="https://softwareof.you">Home</a>
+        <span class="breadcrumb__sep">›</span>
+        <a href="index.html">Blog</a>
+        <span class="breadcrumb__sep">›</span>
+        <span>{{PILLAR_NAME}}</span>
+      </nav>
+      <div class="pillar-tag">{{PILLAR_NAME}}</div>
+      <h1>{{ARTICLE_TITLE}}</h1>
+      <p class="post-hero__subtitle">{{META_DESCRIPTION}}</p>
+      <div class="post-meta">
+        <span>{{DATE_PUBLISHED}}</span>
+        <span class="post-meta__sep">·</span>
+        <span>{{READ_TIME}} read</span>
+      </div>
+    </header>
+
+    <hr class="hero-rule">
+
+    <!-- 2-COLUMN LAYOUT -->
+    <div class="post-layout">
+
+      <!-- MAIN PROSE -->
+      <article class="post-body">
+
+        <!-- ─────────────────────────────────────
+             ARTICLE CONTENT GOES HERE
+             Replace everything below with the
+             actual article sections
+        ───────────────────────────────────────── -->
+
+        <p>{{LEAD_PARAGRAPH}}</p>
+
+        <hr>
+
+        <h2 id="section-1">{{SECTION_1_TITLE}}</h2>
+
+        <p>{{SECTION_1_BODY}}</p>
+
+        <blockquote>{{CALLOUT_QUOTE}}</blockquote>
+
+        <!-- Continue article sections... -->
+
+        <!-- Mid-article inline CTA -->
+        <div class="inline-cta reveal">
+          <div class="inline-cta__label">Software of You</div>
+          <div class="inline-cta__title">The automatic version of everything in this article. $149, once.</div>
+          <p class="inline-cta__sub">Eight modules. SQLite-backed. Gmail and Calendar sync. All your context, automatically maintained. Your data stays on your machine.</p>
+          <a href="https://softwareof.you" class="inline-cta__btn" target="_blank" rel="noopener">See Software of You</a>
+          <div class="inline-cta__price">$149 · one-time · your data stays on your machine</div>
+        </div>
+
+        <!-- ─────────────────────────────────────
+             END ARTICLE CONTENT
+        ───────────────────────────────────────── -->
+
+        <!-- FAQ -->
+        <section class="faq-section" id="faq">
+          <h2>Frequently Asked Questions</h2>
+
+          <details class="faq-item">
+            <summary>{{FAQ_Q1}}</summary>
+            <div class="faq-answer"><p>{{FAQ_A1}}</p></div>
+          </details>
+
+          <details class="faq-item">
+            <summary>{{FAQ_Q2}}</summary>
+            <div class="faq-answer"><p>{{FAQ_A2}}</p></div>
+          </details>
+
+          <details class="faq-item">
+            <summary>{{FAQ_Q3}}</summary>
+            <div class="faq-answer"><p>{{FAQ_A3}}</p></div>
+          </details>
+
+          <details class="faq-item">
+            <summary>{{FAQ_Q4}}</summary>
+            <div class="faq-answer"><p>{{FAQ_A4}}</p></div>
+          </details>
+
+          <details class="faq-item">
+            <summary>{{FAQ_Q5}}</summary>
+            <div class="faq-answer"><p>{{FAQ_A5}}</p></div>
+          </details>
+        </section>
+
+        <!-- Bottom CTA -->
+        <div class="bottom-cta reveal">
+          <div class="bottom-cta__label">Software of You</div>
+          <div class="bottom-cta__title">The automatic version. Ready now.</div>
+          <p class="bottom-cta__sub">$149 one-time. Eight modules. SQLite-backed. Your data on your machine. No subscription, no cloud.</p>
+          <a href="https://softwareof.you" class="bottom-cta__btn" target="_blank" rel="noopener">Get Software of You</a>
+          <div class="bottom-cta__price">$149 · one-time · softwareof.you</div>
+        </div>
+
+        <!-- Signature -->
+        <p class="post-signature">You are not talking to AI. You are thinking with it.</p>
+
+      </article>
+
+      <!-- TOC SIDEBAR -->
+      <aside class="post-toc" aria-label="Table of contents">
+        <div class="post-toc__label">Contents</div>
+        <ul class="post-toc__list">
+          <li class="post-toc__item"><a href="#section-1">{{TOC_1}}</a></li>
+          <li class="post-toc__item"><a href="#section-2">{{TOC_2}}</a></li>
+          <li class="post-toc__item"><a href="#section-3">{{TOC_3}}</a></li>
+          <li class="post-toc__item"><a href="#section-4">{{TOC_4}}</a></li>
+          <li class="post-toc__item"><a href="#section-5">{{TOC_5}}</a></li>
+          <li class="post-toc__item"><a href="#faq">FAQ</a></li>
+        </ul>
+      </aside>
+
+    </div><!-- end .post-layout -->
+
+    <!-- RELATED ARTICLES -->
+    <section class="related-section reveal">
+      <h2>Related Articles</h2>
+      <div class="related-grid">
+        <a href="{{RELATED_1_SLUG}}.html" class="related-card">
+          <div class="related-card__tag">{{RELATED_1_PILLAR}}</div>
+          <div class="related-card__title">{{RELATED_1_TITLE}}</div>
+          <div class="related-card__meta">{{RELATED_1_READ}} read</div>
+        </a>
+        <a href="{{RELATED_2_SLUG}}.html" class="related-card">
+          <div class="related-card__tag">{{RELATED_2_PILLAR}}</div>
+          <div class="related-card__title">{{RELATED_2_TITLE}}</div>
+          <div class="related-card__meta">{{RELATED_2_READ}} read</div>
+        </a>
+        <a href="{{RELATED_3_SLUG}}.html" class="related-card">
+          <div class="related-card__tag">{{RELATED_3_PILLAR}}</div>
+          <div class="related-card__title">{{RELATED_3_TITLE}}</div>
+          <div class="related-card__meta">{{RELATED_3_READ}} read</div>
+        </a>
+      </div>
+    </section>
+
+  </div><!-- end .page-wrap -->
+
+  <!-- FOOTER -->
+  <footer class="footer">
+    <div class="footer__inner">
+      <a href="https://softwareof.you" class="footer__logo">Software <span>of You</span></a>
+      <span class="footer__copy">&copy; 2026 Software of You</span>
+      <a class="footer-email" data-u="kerry" data-d="softwareof.you" href="#" onclick="this.href='mailto:'+this.dataset.u+'@'+this.dataset.d;return false;" title="Email Kerry">kerry<span aria-hidden="true" style="display:none">&#8203;</span>&#64;softwareof.you</a>
+    </div>
+  </footer>
+
+  <script>
+    // Progress bar
+    var bar=document.getElementById('progressBar');
+    function up(){var s=window.scrollY,d=document.documentElement.scrollHeight-window.innerHeight;bar.style.width=(d>0?Math.min(s/d*100,100):0)+'%';}
+    window.addEventListener('scroll',up,{passive:true});
+    // ToC active
+    var hs=document.querySelectorAll('.post-body h2[id]'),ts=document.querySelectorAll('.post-toc__item');
+    if(hs.length&&ts.length){var ob=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){ts.forEach(function(t){t.classList.remove('active')});var a=document.querySelector('.post-toc__item a[href="#'+e.target.id+'"]');if(a)a.closest('.post-toc__item').classList.add('active');}});},{rootMargin:'-20% 0px -70% 0px'});hs.forEach(function(h){ob.observe(h);});}
+    // Reveals
+    var rs=document.querySelectorAll('.reveal');if(rs.length&&'IntersectionObserver' in window){var ro=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){e.target.classList.add('in');ro.unobserve(e.target);}});},{threshold:0.1});rs.forEach(function(r){ro.observe(r);});}else{rs.forEach(function(r){r.classList.add('in');});}
+  </script>
+
+</body>
+</html>
