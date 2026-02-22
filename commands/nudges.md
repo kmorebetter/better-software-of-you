@@ -122,16 +122,29 @@ WHERE com.status = 'open' AND com.deadline_date BETWEEN date('now') AND date('no
 
 ### If Decision Log installed:
 
-**Decisions without outcomes (older than 90 days):**
+**Decision reviews due** — scheduled check-ins that have passed:
 
 ```sql
 SELECT d.title, d.decided_at,
-  CAST(julianday('now') - julianday(d.decided_at) AS INTEGER) as days_ago
+  CAST(julianday('now') - julianday(d.decided_at) AS INTEGER) as days_ago,
+  CASE
+    WHEN d.review_180_date <= date('now') AND d.outcome_quality IS NULL THEN '180-day retrospective'
+    WHEN d.review_90_date <= date('now') AND d.outcome_quality IS NULL THEN '90-day review'
+    WHEN d.review_30_date <= date('now') AND d.process_quality IS NULL THEN '30-day check-in'
+    WHEN d.review_30_date IS NULL AND d.outcome IS NULL AND julianday('now') - julianday(d.decided_at) > 90 THEN '90-day review'
+    ELSE NULL
+  END as review_due
 FROM decisions d
-WHERE d.status = 'decided' AND d.outcome IS NULL
-  AND julianday('now') - julianday(d.decided_at) > 90
-ORDER BY d.decided_at ASC;
+WHERE
+  (d.review_30_date <= date('now') AND d.process_quality IS NULL)
+  OR (d.review_90_date <= date('now') AND d.outcome_quality IS NULL)
+  OR (d.review_180_date <= date('now') AND (d.outcome_quality IS NULL OR d.would_do_differently IS NULL))
+  OR (d.review_30_date IS NULL AND d.outcome IS NULL AND julianday('now') - julianday(d.decided_at) > 90)
+ORDER BY d.decided_at ASC
+LIMIT 5;
 ```
+
+Present each as: "[Decision title] — [review type] due (decided X days ago). Run `/decision review <title>`."
 
 ### If Calendar installed:
 
@@ -155,7 +168,7 @@ Group findings by urgency:
 - Follow-ups due soon, commitments due soon, approaching deadlines, today's meetings
 
 **Blue — Worth checking in on** (patterns)
-- Contacts going cold, stale projects, decisions without outcomes
+- Contacts going cold, stale projects, decision reviews due
 
 Present each nudge as a concise, actionable sentence. Examples:
 
