@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard — Software of You</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: { extend: { fontFamily: { sans: ['Inter', 'system-ui', 'sans-serif'] } } }
+        }
+    </script>
+    <style>
+        .nav-item { display:flex; align-items:center; gap:0.375rem; padding:0.375rem 0.75rem; border-radius:0.5rem; font-size:0.8125rem; color:#71717a; white-space:nowrap; transition:all 0.15s; text-decoration:none; }
+        .nav-item:hover { background:#f4f4f5; color:#18181b; }
+        .nav-item.active { background:#f4f4f5; color:#18181b; font-weight:600; }
+        .nav-badge { font-size:0.6875rem; background:#e4e4e7; color:#52525b; padding:0.0625rem 0.375rem; border-radius:9999px; font-weight:500; }
+        .nav-item.active .nav-badge { background:#3b82f6; color:white; }
+    </style>
+</head>
+<body class="bg-zinc-50 text-zinc-900 font-sans antialiased">
+    <!-- Nav -->
+    <nav class="bg-white border-b border-zinc-200">
+        <div class="max-w-6xl mx-auto px-4">
+            <div class="flex items-center gap-1 py-3">
+                <a class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-semibold text-zinc-900">
+                    <i data-lucide="hexagon" class="w-4 h-4"></i> SoY
+                </a>
+                <span class="w-px h-5 bg-zinc-200 mx-1"></span>
+                <a class="nav-item active"><i data-lucide="layout-dashboard" class="w-3.5 h-3.5"></i> Dashboard</a>
+                <a class="nav-item"><i data-lucide="users" class="w-3.5 h-3.5"></i> Contacts <span class="nav-badge">12</span></a>
+                <a class="nav-item"><i data-lucide="mail" class="w-3.5 h-3.5"></i> Email <span class="nav-badge">156</span></a>
+                <a class="nav-item"><i data-lucide="calendar" class="w-3.5 h-3.5"></i> Calendar <span class="nav-badge">24</span></a>
+                <a class="nav-item"><i data-lucide="message-square" class="w-3.5 h-3.5"></i> Conversations <span class="nav-badge">8</span></a>
+                <a class="nav-item"><i data-lucide="git-branch" class="w-3.5 h-3.5"></i> Decisions <span class="nav-badge">5</span></a>
+                <a class="nav-item"><i data-lucide="book-open" class="w-3.5 h-3.5"></i> Journal <span class="nav-badge">31</span></a>
+                <a class="nav-item"><i data-lucide="share-2" class="w-3.5 h-3.5"></i> Network</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="max-w-6xl mx-auto px-4 py-6">
+        <!-- Welcome Row -->
+        <div class="flex items-center justify-between mb-6">
+            <div>
+                <h1 class="text-2xl font-bold">Good morning, Kerry</h1>
+                <p class="text-zinc-500 text-sm mt-0.5">Thursday, February 20, 2026 &middot; 3 follow-ups due &middot; 2 meetings today</p>
+            </div>
+            <div class="flex gap-2">
+                <span class="px-3 py-1.5 bg-blue-50 text-blue-700 text-xs font-medium rounded-lg">7 modules active</span>
+                <span class="px-3 py-1.5 bg-green-50 text-green-700 text-xs font-medium rounded-lg">Gmail synced 2m ago</span>
+            </div>
+        </div>
+
+        <!-- Intelligence Tools Strip -->
+        <div class="bg-gradient-to-r from-violet-50 to-blue-50 rounded-xl border border-violet-100 p-4 mb-6">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                    <i data-lucide="sparkles" class="w-4 h-4 text-violet-600"></i>
+                    <span class="text-sm font-semibold text-violet-900">Intelligence Tools</span>
+                </div>
+                <div class="flex gap-2">
+                    <span class="px-3 py-1.5 bg-white text-violet-700 text-xs font-medium rounded-lg border border-violet-200 cursor-pointer hover:bg-violet-50">Weekly Review</span>
+                    <span class="px-3 py-1.5 bg-white text-violet-700 text-xs font-medium rounded-lg border border-violet-200 cursor-pointer hover:bg-violet-50">Nudges</span>
+                    <span class="px-3 py-1.5 bg-white text-violet-700 text-xs font-medium rounded-lg border border-violet-200 cursor-pointer hover:bg-violet-50">Timeline</span>
+                    <span class="px-3 py-1.5 bg-white text-violet-700 text-xs font-medium rounded-lg border border-violet-200 cursor-pointer hover:bg-violet-50">Search</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Grid -->
+        <div class="grid grid-cols-3 gap-6">
+            <!-- Activity Feed -->
+            <div class="col-span-1 bg-white rounded-xl border border-zinc-200 shadow-sm">
+                <div class="p-4 border-b border-zinc-100">
+                    <h2 class="text-sm font-semibold flex items-center gap-2"><i data-lucide="activity" class="w-4 h-4 text-zinc-400"></i> Recent Activity</h2>
+                </div>
+                <div class="divide-y divide-zinc-50">
+                    <div class="p-4">
+                        <div class="flex items-start gap-3">
+                            <div class="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0"><span class="text-xs font-bold text-blue-700">DB</span></div>
+                            <div><p class="text-sm"><span class="font-medium">Daniel Byrne</span> added as contact</p><p class="text-xs text-zinc-400">2 hours ago</p></div>
+                        </div>
+                    </div>
+                    <div class="p-4">
+                        <div class="flex items-start gap-3">
+                            <div class="w-8 h-8 rounded-full bg-purple-100 flex items-center justify-center flex-shrink-0"><i data-lucide="git-branch" class="w-3.5 h-3.5 text-purple-700"></i></div>
+                            <div><p class="text-sm">Decision logged: <span class="font-medium">CRM Platform Choice</span></p><p class="text-xs text-zinc-400">Yesterday</p></div>
+                        </div>
+                    </div>
+                    <div class="p-4">
+                        <div class="flex items-start gap-3">
+                            <div class="w-8 h-8 rounded-full bg-amber-100 flex items-center justify-center flex-shrink-0"><i data-lucide="book-open" class="w-3.5 h-3.5 text-amber-700"></i></div>
+                            <div><p class="text-sm">Journal entry: <span class="font-medium">Product launch reflection</span></p><p class="text-xs text-zinc-400">Yesterday</p></div>
+                        </div>
+                    </div>
+                    <div class="p-4">
+                        <div class="flex items-start gap-3">
+                            <div class="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0"><span class="text-xs font-bold text-green-700">SC</span></div>
+                            <div><p class="text-sm">Call with <span class="font-medium">Sarah Chen</span> — 3 commitments extracted</p><p class="text-xs text-zinc-400">2 days ago</p></div>
+                        </div>
+                    </div>
+                    <div class="p-4">
+                        <div class="flex items-start gap-3">
+                            <div class="w-8 h-8 rounded-full bg-red-100 flex items-center justify-center flex-shrink-0"><i data-lucide="mail" class="w-3.5 h-3.5 text-red-700"></i></div>
+                            <div><p class="text-sm">Email from <span class="font-medium">Vahid Jozi</span> — re: intro to Daniel</p><p class="text-xs text-zinc-400">3 days ago</p></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Email Preview -->
+            <div class="col-span-1 bg-white rounded-xl border border-zinc-200 shadow-sm">
+                <div class="p-4 border-b border-zinc-100">
+                    <h2 class="text-sm font-semibold flex items-center gap-2"><i data-lucide="mail" class="w-4 h-4 text-red-400"></i> Email <span class="text-xs font-normal text-zinc-400 ml-1">Last 24h</span></h2>
+                </div>
+                <div class="divide-y divide-zinc-50">
+                    <div class="p-4 bg-blue-50/30">
+                        <p class="text-sm font-medium">Re: API Integration Proposal</p>
+                        <p class="text-xs text-zinc-500 mt-0.5">Sarah Chen &middot; 45 min ago</p>
+                        <p class="text-xs text-zinc-400 mt-1 line-clamp-2">Looks great, let's move forward with the revised scope. Can we schedule a kickoff for next week?</p>
+                    </div>
+                    <div class="p-4">
+                        <p class="text-sm font-medium">Meeting Notes: Q1 Planning</p>
+                        <p class="text-xs text-zinc-500 mt-0.5">Alex Rivera &middot; 2 hours ago</p>
+                        <p class="text-xs text-zinc-400 mt-1 line-clamp-2">Attached are the notes from yesterday's session. Key decision: prioritize mobile-first.</p>
+                    </div>
+                    <div class="p-4">
+                        <p class="text-sm font-medium">Invoice #2847 Reminder</p>
+                        <p class="text-xs text-zinc-500 mt-0.5">Meridian Labs &middot; 5 hours ago</p>
+                        <p class="text-xs text-zinc-400 mt-1 line-clamp-2">Friendly reminder that invoice #2847 is due Feb 25th.</p>
+                    </div>
+                    <div class="p-4">
+                        <p class="text-sm font-medium">Intro: Kerry <> Daniel Byrne</p>
+                        <p class="text-xs text-zinc-500 mt-0.5">Vahid Jozi &middot; 3 days ago</p>
+                        <p class="text-xs text-zinc-400 mt-1 line-clamp-2">Kerry, meet Daniel. Daniel, meet Kerry. You two should definitely talk.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Calendar + Follow-ups -->
+            <div class="col-span-1 space-y-6">
+                <!-- Calendar -->
+                <div class="bg-white rounded-xl border border-zinc-200 shadow-sm">
+                    <div class="p-4 border-b border-zinc-100">
+                        <h2 class="text-sm font-semibold flex items-center gap-2"><i data-lucide="calendar" class="w-4 h-4 text-green-500"></i> Today</h2>
+                    </div>
+                    <div class="p-4 space-y-3">
+                        <div class="flex gap-3 items-start">
+                            <div class="text-xs font-mono text-zinc-400 w-12 flex-shrink-0 pt-0.5">8:30a</div>
+                            <div class="flex-1 bg-blue-50 rounded-lg p-2.5 border-l-2 border-blue-500">
+                                <p class="text-sm font-medium text-blue-900">Discovery Call — Daniel Byrne</p>
+                                <p class="text-xs text-blue-600">Google Meet &middot; 30 min</p>
+                            </div>
+                        </div>
+                        <div class="flex gap-3 items-start">
+                            <div class="text-xs font-mono text-zinc-400 w-12 flex-shrink-0 pt-0.5">2:00p</div>
+                            <div class="flex-1 bg-purple-50 rounded-lg p-2.5 border-l-2 border-purple-500">
+                                <p class="text-sm font-medium text-purple-900">API Review — Sarah Chen</p>
+                                <p class="text-xs text-purple-600">Zoom &middot; 45 min</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Follow-ups -->
+                <div class="bg-white rounded-xl border border-zinc-200 shadow-sm">
+                    <div class="p-4 border-b border-zinc-100">
+                        <h2 class="text-sm font-semibold flex items-center gap-2"><i data-lucide="bell" class="w-4 h-4 text-amber-500"></i> Follow-ups Due</h2>
+                    </div>
+                    <div class="p-4 space-y-3">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm font-medium">Send proposal to Alex Rivera</p>
+                                <p class="text-xs text-red-500 font-medium">Overdue by 2 days</p>
+                            </div>
+                            <div class="w-6 h-6 rounded-full bg-red-100 flex items-center justify-center"><i data-lucide="alert-circle" class="w-3.5 h-3.5 text-red-600"></i></div>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm font-medium">Check in with Meridian Labs</p>
+                                <p class="text-xs text-amber-500 font-medium">Due today</p>
+                            </div>
+                            <div class="w-6 h-6 rounded-full bg-amber-100 flex items-center justify-center"><i data-lucide="clock" class="w-3.5 h-3.5 text-amber-600"></i></div>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm font-medium">Follow up on contract review</p>
+                                <p class="text-xs text-zinc-400">Due in 3 days</p>
+                            </div>
+                            <div class="w-6 h-6 rounded-full bg-zinc-100 flex items-center justify-center"><i data-lucide="clock" class="w-3.5 h-3.5 text-zinc-400"></i></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>lucide.createIcons();</script>
+</body>
+</html>
