@@ -1,608 +1,1115 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Conversations — Software of You</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    fontFamily: { sans: ['Inter', 'system-ui', 'sans-serif'] }
-                }
-            }
-        }
-    </script>
-    <style>
-        .nav-item {
-            display: flex; align-items: center; gap: 0.375rem; padding: 0.375rem 0.75rem;
-            border-radius: 0.5rem; font-size: 0.8125rem; color: #71717a; white-space: nowrap;
-            transition: all 0.15s; text-decoration: none;
-        }
-        .nav-item:hover { background: #f4f4f5; color: #18181b; }
-        .nav-item.active { background: #f4f4f5; color: #18181b; font-weight: 600; }
-        .nav-badge {
-            font-size: 0.6875rem; background: #e4e4e7; color: #52525b;
-            padding: 0.0625rem 0.375rem; border-radius: 9999px; font-weight: 500;
-        }
-        .nav-item.active .nav-badge, .nav-dropdown-item.active .nav-badge { background: #3b82f6; color: white; }
-        .nav-group { position: relative; }
-        .nav-group-label {
-            display: flex; align-items: center; gap: 0.25rem; padding: 0.375rem 0.75rem;
-            border-radius: 0.5rem; font-size: 0.8125rem; color: #71717a; cursor: pointer;
-            white-space: nowrap; transition: all 0.15s; user-select: none;
-        }
-        .nav-group-label:hover, .nav-group.active > .nav-group-label { background: #f4f4f5; color: #18181b; }
-        .nav-group.active > .nav-group-label { font-weight: 600; }
-        .nav-chevron { transition: transform 0.15s; opacity: 0.5; }
-        .nav-group:hover .nav-chevron, .nav-group.open .nav-chevron { opacity: 1; }
-        .nav-group.open .nav-chevron { transform: rotate(180deg); }
-        .nav-dropdown {
-            display: none; position: absolute; top: 100%; left: 0; margin-top: 0.25rem;
-            min-width: 10rem; background: white; border: 1px solid #e4e4e7; border-radius: 0.75rem;
-            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -2px rgba(0,0,0,0.1);
-            padding: 0.375rem; z-index: 50;
-        }
-        .nav-group:hover > .nav-dropdown { display: block; }
-        .nav-group.open > .nav-dropdown { display: block; }
-        .nav-dropdown-item {
-            display: flex; align-items: center; gap: 0.375rem; padding: 0.375rem 0.625rem;
-            border-radius: 0.375rem; font-size: 0.8125rem; color: #71717a; white-space: nowrap;
-            transition: all 0.15s; text-decoration: none;
-        }
-        .nav-dropdown-item:hover { background: #f4f4f5; color: #18181b; }
-        .nav-dropdown-item.active { background: #eff6ff; color: #1d4ed8; font-weight: 600; }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Conversation Intelligence — Software of You</title>
+  <meta name="description" content="Import any meeting transcript. Extract commitments, measure talk ratios, build relationship health over time. Module 05 of Software of You.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@300;400;500&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300;1,9..40,400&display=swap" rel="stylesheet">
+
+  <style>
+    /* ─────────────────────────────────────────
+       TOKENS
+    ───────────────────────────────────────── */
+    :root {
+      --bone:       #FAF9F6;
+      --bone-mid:   #F2F0EB;
+      --bone-deep:  #E8E4DC;
+      --ink:        #0F0E0C;
+      --ink-2:      #2C2A26;
+      --ink-3:      #6B6860;
+      --ink-4:      #A8A49C;
+      --ink-5:      #D4D0C8;
+      --forest:     #1A4731;
+      --forest-mid: #245E41;
+      --forest-pale:#EBF2EE;
+      --forest-bg:  #F2F7F4;
+      --ember:      #A63325;
+      --ember-pale: #FBF2F0;
+      --rule:       rgba(15,14,12,0.08);
+      --rule-mid:   rgba(15,14,12,0.13);
+      --rule-heavy: rgba(15,14,12,0.22);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; font-size: 16px; }
+
+    body {
+      background: var(--bone);
+      color: var(--ink);
+      font-family: 'DM Sans', system-ui, sans-serif;
+      line-height: 1.6;
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ─────────────────────────────────────────
+       ANIMATIONS
+    ───────────────────────────────────────── */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to   { opacity: 1; }
+    }
+
+    .reveal {
+      opacity: 0;
+      transform: translateY(24px);
+      transition: opacity 0.6s ease, transform 0.6s ease;
+    }
+    .reveal.in { opacity: 1; transform: none; }
+    .reveal-delay-1 { transition-delay: 0.1s; }
+    .reveal-delay-2 { transition-delay: 0.2s; }
+    .reveal-delay-3 { transition-delay: 0.3s; }
+    .reveal-delay-4 { transition-delay: 0.4s; }
+
+    /* ─────────────────────────────────────────
+       NAVIGATION
+    ───────────────────────────────────────── */
+    .nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      background: rgba(250,249,246,0.92);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--rule);
+    }
+
+    .nav__inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 48px;
+      height: 64px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .nav__logo {
+      font-family: 'DM Serif Display', Georgia, serif;
+      font-size: 17px;
+      color: var(--ink);
+      text-decoration: none;
+      letter-spacing: 0.01em;
+    }
+    .nav__logo em { font-style: italic; color: var(--forest); }
+
+    .nav__links {
+      display: flex;
+      align-items: center;
+      gap: 32px;
+      list-style: none;
+    }
+    .nav__links a {
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--ink-3);
+      text-decoration: none;
+      transition: color 0.18s;
+    }
+    .nav__links a:hover { color: var(--ink); }
+
+    .nav__right {
+      display: flex;
+      align-items: center;
+      gap: 36px;
+    }
+
+    .nav__cta {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 13px;
+      font-weight: 500;
+      letter-spacing: 0.04em;
+      color: var(--bone);
+      background: var(--forest);
+      padding: 10px 24px;
+      text-decoration: none;
+      transition: background 0.18s, transform 0.14s;
+      border-radius: 2px;
+      white-space: nowrap;
+    }
+    .nav__cta:hover { background: var(--forest-mid); transform: translateY(-1px); }
+
+    /* ─────────────────────────────────────────
+       HERO
+    ───────────────────────────────────────── */
+    .hero {
+      padding-top: 64px;
+      min-height: 72vh;
+      background: var(--forest);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Grid texture */
+    .hero::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+      background-size: 40px 40px;
+      pointer-events: none;
+    }
+
+    /* Ghost module number */
+    .hero__ghost {
+      position: absolute;
+      right: -20px;
+      bottom: -60px;
+      font-family: 'DM Serif Display', Georgia, serif;
+      font-style: italic;
+      font-size: clamp(200px, 28vw, 380px);
+      line-height: 1;
+      color: rgba(255,255,255,0.04);
+      pointer-events: none;
+      user-select: none;
+      letter-spacing: -0.04em;
+    }
+
+    .hero__inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 80px 48px 96px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .hero__breadcrumb {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: rgba(235,242,238,0.5);
+      text-decoration: none;
+      margin-bottom: 40px;
+      transition: color 0.18s;
+    }
+    .hero__breadcrumb:hover { color: var(--forest-pale); }
+    .hero__breadcrumb svg { width: 14px; height: 14px; }
+
+    .hero__label {
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: rgba(235,242,238,0.55);
+      margin-bottom: 28px;
+      animation: fadeIn 0.6s ease both;
+      animation-delay: 0.1s;
+    }
+
+    .hero__headline {
+      font-family: 'DM Serif Display', Georgia, serif;
+      font-size: clamp(44px, 6vw, 80px);
+      line-height: 1.0;
+      letter-spacing: -0.02em;
+      color: var(--forest-pale);
+      margin-bottom: 32px;
+      max-width: 840px;
+      animation: fadeUp 0.7s ease both;
+      animation-delay: 0.2s;
+    }
+    .hero__headline em {
+      font-style: italic;
+      color: #ffffff;
+    }
+
+    .hero__sub {
+      font-family: 'DM Serif Display', Georgia, serif;
+      font-size: clamp(18px, 2vw, 24px);
+      font-style: italic;
+      color: rgba(235,242,238,0.65);
+      max-width: 620px;
+      line-height: 1.5;
+      animation: fadeUp 0.7s ease both;
+      animation-delay: 0.35s;
+    }
+
+    /* ─────────────────────────────────────────
+       CONTENT WRAPPER
+    ───────────────────────────────────────── */
+    .content {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 48px;
+    }
+
+    /* ─────────────────────────────────────────
+       SECTIONS — SHARED
+    ───────────────────────────────────────── */
+    .section {
+      padding: 96px 0;
+      border-bottom: 1px solid var(--rule);
+    }
+    .section:last-of-type { border-bottom: none; }
+
+    .section__eyebrow {
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--forest);
+      margin-bottom: 24px;
+    }
+
+    .section__headline {
+      font-family: 'DM Serif Display', Georgia, serif;
+      font-size: clamp(32px, 4vw, 48px);
+      line-height: 1.08;
+      letter-spacing: -0.02em;
+      color: var(--ink);
+      margin-bottom: 32px;
+      max-width: 720px;
+    }
+    .section__headline em { font-style: italic; color: var(--forest); }
+
+    .section__body {
+      font-size: 17px;
+      color: var(--ink-2);
+      line-height: 1.75;
+      max-width: 680px;
+    }
+    .section__body p + p { margin-top: 20px; }
+
+    /* Two-column layout */
+    .two-col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 80px;
+      align-items: start;
+    }
+    .two-col--wide { grid-template-columns: 5fr 4fr; }
+
+    /* ─────────────────────────────────────────
+       QUERY BLOCKS
+    ───────────────────────────────────────── */
+    .query-block {
+      background: var(--ink-2);
+      color: var(--forest-pale);
+      font-family: 'DM Mono', monospace;
+      font-size: 14px;
+      line-height: 1.6;
+      padding: 16px 20px;
+      border-left: 3px solid var(--forest);
+      margin-bottom: 12px;
+      border-radius: 0 2px 2px 0;
+    }
+    .query-block--action {
+      border-left-color: #52A885;
+    }
+
+    .query-label {
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--ink-4);
+      margin-bottom: 16px;
+    }
+
+    .query-result {
+      background: var(--forest-bg);
+      border: 1px solid var(--forest-pale);
+      border-left: 3px solid var(--forest);
+      padding: 16px 20px;
+      font-family: 'DM Mono', monospace;
+      font-size: 13px;
+      color: var(--forest);
+      line-height: 1.65;
+      margin-top: 8px;
+      border-radius: 0 2px 2px 0;
+    }
+
+    /* ─────────────────────────────────────────
+       DATA PANEL
+    ───────────────────────────────────────── */
+    .data-panel {
+      background: var(--forest-bg);
+      border: 1px solid var(--forest-pale);
+      padding: 24px 32px;
+      border-radius: 2px;
+    }
+
+    .data-panel__title {
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--forest);
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--rule-mid);
+    }
+
+    .data-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      padding: 11px 0;
+      border-bottom: 1px solid var(--rule);
+    }
+    .data-row:last-child { border-bottom: none; }
+
+    .data-row__label {
+      font-size: 14px;
+      color: var(--ink-2);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .data-row__label::before {
+      content: '';
+      width: 6px;
+      height: 6px;
+      background: var(--forest);
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    .data-row__value {
+      font-family: 'DM Mono', monospace;
+      font-size: 13px;
+      color: var(--forest);
+      font-weight: 500;
+    }
+
+    /* ─────────────────────────────────────────
+       METRIC CARDS
+    ───────────────────────────────────────── */
+    .metric-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 2px;
+      margin-top: 48px;
+    }
+
+    .metric-card {
+      background: var(--bone-mid);
+      padding: 28px 24px;
+      border: 1px solid var(--rule-mid);
+    }
+    .metric-card:first-child {
+      border-radius: 2px 0 0 2px;
+    }
+    .metric-card:last-child {
+      border-radius: 0 2px 2px 0;
+    }
+
+    .metric-card__number {
+      font-family: 'DM Serif Display', Georgia, serif;
+      font-size: 44px;
+      font-style: italic;
+      color: var(--forest);
+      line-height: 1;
+      margin-bottom: 8px;
+    }
+
+    .metric-card__label {
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--ink-3);
+    }
+
+    /* ─────────────────────────────────────────
+       EXTRACTION LIST
+    ───────────────────────────────────────── */
+    .extract-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2px;
+    }
+
+    .extract-item {
+      background: var(--bone-mid);
+      border: 1px solid var(--rule-mid);
+      padding: 24px 28px;
+      display: flex;
+      gap: 16px;
+      align-items: flex-start;
+    }
+
+    .extract-item__icon {
+      width: 32px;
+      height: 32px;
+      background: var(--forest);
+      border-radius: 2px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+    .extract-item__icon svg {
+      width: 14px;
+      height: 14px;
+      fill: none;
+      stroke: var(--forest-pale);
+      stroke-width: 1.5;
+    }
+
+    .extract-item__label {
+      font-size: 15px;
+      font-weight: 500;
+      color: var(--ink-2);
+      margin-bottom: 4px;
+      line-height: 1.3;
+    }
+    .extract-item__desc {
+      font-size: 13px;
+      color: var(--ink-3);
+      line-height: 1.5;
+    }
+
+    /* ─────────────────────────────────────────
+       SOURCE PILLS
+    ───────────────────────────────────────── */
+    .source-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 32px;
+    }
+    .source-pill {
+      font-family: 'DM Mono', monospace;
+      font-size: 12px;
+      letter-spacing: 0.04em;
+      color: var(--ink-3);
+      background: var(--bone-mid);
+      border: 1px solid var(--rule-heavy);
+      padding: 8px 16px;
+      border-radius: 40px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .source-pill::before {
+      content: '';
+      width: 6px;
+      height: 6px;
+      background: var(--forest);
+      border-radius: 50%;
+    }
+
+    /* ─────────────────────────────────────────
+       COACHING CALLOUT
+    ───────────────────────────────────────── */
+    .coaching-block {
+      background: var(--forest);
+      padding: 40px 48px;
+      position: relative;
+      overflow: hidden;
+      border-radius: 2px;
+    }
+    .coaching-block::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
+      background-size: 32px 32px;
+      pointer-events: none;
+    }
+    .coaching-block__eyebrow {
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: rgba(235,242,238,0.5);
+      margin-bottom: 20px;
+      position: relative;
+      z-index: 1;
+    }
+    .coaching-block__quote {
+      font-family: 'DM Serif Display', Georgia, serif;
+      font-size: clamp(18px, 2.2vw, 24px);
+      font-style: italic;
+      color: var(--forest-pale);
+      line-height: 1.55;
+      position: relative;
+      z-index: 1;
+    }
+    .coaching-block__attribution {
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: rgba(235,242,238,0.45);
+      margin-top: 24px;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* ─────────────────────────────────────────
+       CROSS-MODULE SECTION
+    ───────────────────────────────────────── */
+    .cross-module {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .cross-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 16px;
+      padding: 16px 20px;
+      background: var(--bone-mid);
+      border: 1px solid var(--rule-mid);
+      border-radius: 2px;
+    }
+
+    .cross-item__arrow {
+      font-family: 'DM Mono', monospace;
+      font-size: 13px;
+      color: var(--forest);
+      flex-shrink: 0;
+      margin-top: 2px;
+      font-weight: 500;
+    }
+
+    .cross-item__text {
+      font-size: 14px;
+      color: var(--ink-2);
+      line-height: 1.55;
+    }
+    .cross-item__text strong {
+      color: var(--ink);
+      font-weight: 500;
+    }
+
+    /* ─────────────────────────────────────────
+       CTA SECTION
+    ───────────────────────────────────────── */
+    .cta-section {
+      padding: 96px 0;
+      background: var(--forest);
+      position: relative;
+      overflow: hidden;
+    }
+    .cta-section::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
+      background-size: 40px 40px;
+      pointer-events: none;
+    }
+    .cta-section__inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 48px;
+      position: relative;
+      z-index: 1;
+    }
+    .cta-section__label {
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: rgba(235,242,238,0.45);
+      margin-bottom: 24px;
+    }
+    .cta-section__headline {
+      font-family: 'DM Serif Display', Georgia, serif;
+      font-size: clamp(36px, 5vw, 60px);
+      line-height: 1.05;
+      letter-spacing: -0.02em;
+      color: var(--forest-pale);
+      margin-bottom: 16px;
+      max-width: 640px;
+    }
+    .cta-section__headline em {
+      font-style: italic;
+      color: #ffffff;
+    }
+    .cta-section__sub {
+      font-size: 16px;
+      color: rgba(235,242,238,0.6);
+      margin-bottom: 48px;
+      max-width: 480px;
+      line-height: 1.6;
+    }
+    .cta-row {
+      display: flex;
+      align-items: center;
+      gap: 24px;
+      flex-wrap: wrap;
+    }
+    .cta-primary {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 15px;
+      font-weight: 500;
+      letter-spacing: 0.04em;
+      color: var(--forest);
+      background: var(--forest-pale);
+      padding: 14px 32px;
+      text-decoration: none;
+      border-radius: 2px;
+      transition: background 0.18s, transform 0.14s;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .cta-primary:hover { background: #ffffff; transform: translateY(-1px); }
+
+    .cta-next {
+      font-family: 'DM Mono', monospace;
+      font-size: 12px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: rgba(235,242,238,0.5);
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: color 0.18s;
+    }
+    .cta-next:hover { color: var(--forest-pale); }
+
+    /* ─────────────────────────────────────────
+       FOOTER
+    ───────────────────────────────────────── */
+    footer {
+      background: var(--ink);
+      padding: 40px 48px;
+    }
+    .footer__inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 24px;
+      flex-wrap: wrap;
+    }
+    .footer__copy {
+      font-family: 'DM Mono', monospace;
+      font-size: 12px;
+      letter-spacing: 0.06em;
+      color: var(--ink-4);
+    }
+    .footer__domain {
+      font-family: 'DM Mono', monospace;
+      font-size: 12px;
+      letter-spacing: 0.08em;
+      color: var(--ink-3);
+      text-decoration: none;
+      transition: color 0.18s;
+    }
+    .footer__domain:hover { color: var(--forest-pale); }
+
+    /* ─────────────────────────────────────────
+       RESPONSIVE
+    ───────────────────────────────────────── */
+    @media (max-width: 900px) {
+      .nav__inner { padding: 0 24px; }
+      .nav__links { display: none; }
+      .hero__inner { padding: 60px 24px 80px; }
+      .content { padding: 0 24px; }
+      .section { padding: 64px 0; }
+      .two-col { grid-template-columns: 1fr; gap: 48px; }
+      .two-col--wide { grid-template-columns: 1fr; }
+      .metric-grid { grid-template-columns: 1fr; gap: 2px; }
+      .metric-card { border-radius: 0; }
+      .extract-grid { grid-template-columns: 1fr; }
+      .coaching-block { padding: 28px 24px; }
+      .cta-section__inner { padding: 0 24px; }
+      footer { padding: 32px 24px; }
+      .hero__ghost { font-size: 160px; right: -10px; bottom: -20px; }
+    }
+  </style>
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-TQFFERGZW1"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-TQFFERGZW1');
+  </script>
 </head>
-<body class="bg-zinc-50 text-zinc-900 font-sans antialiased">
 
-<!-- Nav Bar -->
-<nav class="bg-white border-b border-zinc-200 mb-6">
-    <div class="max-w-6xl mx-auto px-4">
-        <div class="flex items-center gap-1 py-3">
-            <a href="dashboard.html" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-semibold text-zinc-900 hover:bg-zinc-50 transition-colors shrink-0">
-                <i data-lucide="hexagon" class="w-4 h-4"></i>
-                SoY
-            </a>
-            <span class="w-px h-5 bg-zinc-200 mx-1"></span>
-            <a href="dashboard.html" class="nav-item">
-                <i data-lucide="layout-dashboard" class="w-3.5 h-3.5"></i>
-                Dashboard
-            </a>
-            <div class="nav-group" onclick="this.classList.toggle('open')">
-                <div class="nav-group-label">
-                    <span>People</span>
-                    <i data-lucide="chevron-down" class="w-3 h-3 nav-chevron"></i>
-                </div>
-                <div class="nav-dropdown">
-                    <a href="contacts.html" class="nav-dropdown-item">
-                        <i data-lucide="users" class="w-3.5 h-3.5"></i>
-                        Contacts
-                        <span class="nav-badge">7</span>
-                    </a>
-                    <a href="network-map.html" class="nav-dropdown-item">
-                        <i data-lucide="share-2" class="w-3.5 h-3.5"></i>
-                        Network
-                    </a>
-                </div>
-            </div>
-            <div class="nav-group" onclick="this.classList.toggle('open')">
-                <div class="nav-group-label">
-                    <span>Comms</span>
-                    <i data-lucide="chevron-down" class="w-3 h-3 nav-chevron"></i>
-                </div>
-                <div class="nav-dropdown">
-                    <a href="email-hub.html" class="nav-dropdown-item">
-                        <i data-lucide="mail" class="w-3.5 h-3.5"></i>
-                        Email
-                        <span class="nav-badge">58</span>
-                    </a>
-                    <a href="week-view.html" class="nav-dropdown-item">
-                        <i data-lucide="calendar" class="w-3.5 h-3.5"></i>
-                        Calendar
-                        <span class="nav-badge">28</span>
-                    </a>
-                </div>
-            </div>
-            <div class="nav-group active" onclick="this.classList.toggle('open')">
-                <div class="nav-group-label">
-                    <span>Intelligence</span>
-                    <i data-lucide="chevron-down" class="w-3 h-3 nav-chevron"></i>
-                </div>
-                <div class="nav-dropdown">
-                    <a href="conversations.html" class="nav-dropdown-item active">
-                        <i data-lucide="message-square" class="w-3.5 h-3.5"></i>
-                        Conversations
-                        <span class="nav-badge">3</span>
-                    </a>
-                    <a href="decision-journal.html" class="nav-dropdown-item">
-                        <i data-lucide="git-branch" class="w-3.5 h-3.5"></i>
-                        Decisions
-                        <span class="nav-badge">5</span>
-                    </a>
-                    <a href="journal.html" class="nav-dropdown-item">
-                        <i data-lucide="book-open" class="w-3.5 h-3.5"></i>
-                        Journal
-                        <span class="nav-badge">1</span>
-                    </a>
-                    <a href="notes.html" class="nav-dropdown-item">
-                        <i data-lucide="sticky-note" class="w-3.5 h-3.5"></i>
-                        Notes
-                    </a>
-                </div>
-            </div>
-        </div>
-        <div class="flex items-center justify-between pb-3 -mt-1">
-            <div class="flex items-center gap-1.5 text-sm">
-                <a href="dashboard.html" class="text-zinc-400 hover:text-zinc-600">Dashboard</a>
-                <span class="text-zinc-300">&rsaquo;</span>
-                <span class="text-zinc-700 font-medium">Conversations</span>
-            </div>
-        </div>
+<body>
+
+  <!-- ─────────────────────────────────────────
+       NAVIGATION
+  ───────────────────────────────────────── -->
+  <nav class="nav">
+    <div class="nav__inner">
+      <a href="../index.html" class="nav__logo">Software <em>of You</em></a>
+      <ul class="nav__links">
+        <li><a href="../features.html">Features</a></li>
+        <li><a href="../features.html#modules">Modules</a></li>
+        <li><a href="../why-claude.html">Why Claude</a></li>
+        <li><a href="../pricing.html">Pricing</a></li>
+      </ul>
+      <div class="nav__right">
+        <a href="https://softwareof.you" class="nav__cta">Get SoY — $149 →</a>
+      </div>
     </div>
-</nav>
+  </nav>
 
-<div class="max-w-6xl mx-auto px-4 pb-8">
+  <!-- ─────────────────────────────────────────
+       HERO
+  ───────────────────────────────────────── -->
+  <section class="hero">
+    <div class="hero__ghost" aria-hidden="true">05</div>
+    <div class="hero__inner">
+      <a href="../features.html#modules" class="hero__breadcrumb">
+        <svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5">
+          <path d="M9 2L4 7l5 5"/>
+        </svg>
+        All modules
+      </a>
+      <p class="hero__label">Module 05 — Conversation Intelligence</p>
+      <h1 class="hero__headline">90% of what happens<br>in a meeting <em>disappears.</em><br>Stop letting it.</h1>
+      <p class="hero__sub">Commitments get lost in the noise. Patterns never get examined. The same dynamics repeat — because there was no system catching it.</p>
+    </div>
+  </section>
 
-    <!-- Header Card -->
-    <div class="bg-white rounded-xl shadow-sm border border-zinc-200 p-6 mb-6">
-        <div class="flex items-center justify-between flex-wrap gap-4">
+  <!-- ─────────────────────────────────────────
+       CONTENT
+  ───────────────────────────────────────── -->
+  <main>
+
+    <!-- SECTION 1: The disappearance problem -->
+    <section class="section">
+      <div class="content">
+        <div class="two-col two-col--wide">
+          <div>
+            <p class="section__eyebrow reveal">The problem</p>
+            <h2 class="section__headline reveal reveal-delay-1">After the meeting ends, everything starts to fade.</h2>
+            <div class="section__body reveal reveal-delay-2">
+              <p>The energy fades. The notes go unsaved. The commitments live in your head, where they compete with everything else until one by one, they fall out.</p>
+              <p>A week later you're wondering what you agreed to. A month later you can't remember the dynamic. Three months later you're walking into the same traps — the same misaligned expectations, the same person dominating the conversation, the same open items that never got resolved.</p>
+              <p>Not because you're careless. Because there was no system catching it.</p>
+            </div>
+          </div>
+          <div class="reveal reveal-delay-2">
+            <div class="metric-grid" style="margin-top: 0;">
+              <div class="metric-card">
+                <div class="metric-card__number">90%</div>
+                <div class="metric-card__label">of meeting content forgotten within a week</div>
+              </div>
+              <div class="metric-card">
+                <div class="metric-card__number">4.2×</div>
+                <div class="metric-card__label">average open commitments per key relationship</div>
+              </div>
+              <div class="metric-card">
+                <div class="metric-card__number">0</div>
+                <div class="metric-card__label">tools that track how you show up across calls</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 2: How you use it -->
+    <section class="section" style="background: var(--bone-mid);">
+      <div class="content">
+        <p class="section__eyebrow reveal">How you use it</p>
+        <h2 class="section__headline reveal reveal-delay-1">One command to import.<br>Everything extracted automatically.</h2>
+        <div class="two-col" style="margin-top: 48px;">
+          <div>
+            <p class="query-label reveal">Import a call</p>
+            <div class="query-block query-block--action reveal reveal-delay-1">
+              /import-call
+            </div>
+            <div class="query-result reveal reveal-delay-2">
+              → Paste transcript from any source.<br>
+              → Claude extracts commitments by party,<br>&nbsp;&nbsp;&nbsp;talk ratios, coaching signals, topic clusters.<br>
+              → All linked to existing contacts.
+            </div>
+
+            <p class="query-label reveal" style="margin-top: 32px;">Query your call history</p>
+            <div class="query-block reveal reveal-delay-1">"What did I commit to in my last call with Marcus?"</div>
+            <div class="query-block reveal reveal-delay-2">"What has Lauren committed to across our last 5 calls?"</div>
+            <div class="query-block reveal reveal-delay-3">"Show me my talk ratio trends with clients this month"</div>
+            <div class="query-block reveal reveal-delay-4">"What topics keep coming up with the Meridian team?"</div>
+          </div>
+          <div class="reveal reveal-delay-2">
+            <div class="data-panel">
+              <div class="data-panel__title">Call summary — Lauren Simms · Feb 18</div>
+              <div class="data-row">
+                <span class="data-row__label">Your talk ratio</span>
+                <span class="data-row__value">62%</span>
+              </div>
+              <div class="data-row">
+                <span class="data-row__label">Your commitments</span>
+                <span class="data-row__value">3 open</span>
+              </div>
+              <div class="data-row">
+                <span class="data-row__label">Her commitments</span>
+                <span class="data-row__value">1 open</span>
+              </div>
+              <div class="data-row">
+                <span class="data-row__label">Longest monologue</span>
+                <span class="data-row__value">4m 12s (you)</span>
+              </div>
+              <div class="data-row">
+                <span class="data-row__label">Topic shift detected</span>
+                <span class="data-row__value">Pricing ↑</span>
+              </div>
+              <div class="data-row">
+                <span class="data-row__label">Questions asked</span>
+                <span class="data-row__value">3 you / 7 her</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 3: What gets extracted -->
+    <section class="section">
+      <div class="content">
+        <p class="section__eyebrow reveal">What gets extracted</p>
+        <h2 class="section__headline reveal reveal-delay-1">Every transcript yields six signal types.</h2>
+        <p class="section__body reveal reveal-delay-2" style="margin-bottom: 48px;">Each extraction is automatic. Nothing requires manual tagging or summary — Claude reads the raw transcript and surfaces the signal.</p>
+        <div class="extract-grid">
+          <div class="extract-item reveal">
+            <div class="extract-item__icon">
+              <svg viewBox="0 0 24 24"><path d="M9 12l2 2 4-4M7 3H5a2 2 0 00-2 2v16a2 2 0 002 2h14a2 2 0 002-2V5a2 2 0 00-2-2h-2M7 3a2 2 0 012-2h6a2 2 0 012 2M7 3h10"/></svg>
+            </div>
             <div>
-                <div class="flex items-center gap-2">
-                    <i data-lucide="message-square" class="w-5 h-5 text-zinc-700"></i>
-                    <h1 class="text-2xl font-bold text-zinc-900">Conversations</h1>
-                </div>
-                <p class="text-sm text-zinc-500 mt-1">3 transcripts, 47 open commitments</p>
+              <div class="extract-item__label">Commitments by party</div>
+              <div class="extract-item__desc">Yours vs. theirs, auto-linked to contacts and surfaced as CRM nudges when overdue.</div>
             </div>
-            <div class="flex items-center gap-3 flex-wrap">
-                <span class="px-3 py-1 rounded-full text-xs font-medium bg-zinc-100 text-zinc-600 flex items-center gap-1">
-                    <i data-lucide="mic" class="w-3 h-3"></i>
-                    3 transcripts
-                </span>
-                <span class="px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-700 flex items-center gap-1">
-                    <i data-lucide="circle-dot" class="w-3 h-3"></i>
-                    13 your open
-                </span>
-                <span class="px-3 py-1 rounded-full text-xs font-medium bg-zinc-100 text-zinc-600 flex items-center gap-1">
-                    <i data-lucide="users" class="w-3 h-3"></i>
-                    34 their open
-                </span>
+          </div>
+          <div class="extract-item reveal reveal-delay-1">
+            <div class="extract-item__icon">
+              <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
             </div>
+            <div>
+              <div class="extract-item__label">Talk ratio</div>
+              <div class="extract-item__desc">Percentage of airtime per speaker across the call. Trends tracked over time.</div>
+            </div>
+          </div>
+          <div class="extract-item reveal reveal-delay-2">
+            <div class="extract-item__icon">
+              <svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+            </div>
+            <div>
+              <div class="extract-item__label">Question frequency</div>
+              <div class="extract-item__desc">Are you asking or telling? Useful signal for sales conversations and coaching dynamics.</div>
+            </div>
+          </div>
+          <div class="extract-item reveal reveal-delay-3">
+            <div class="extract-item__icon">
+              <svg viewBox="0 0 24 24"><path d="M13 17l5-5-5-5M6 17l5-5-5-5"/></svg>
+            </div>
+            <div>
+              <div class="extract-item__label">Longest monologue</div>
+              <div class="extract-item__desc">The single longest uninterrupted stretch. A concrete coaching signal for both parties.</div>
+            </div>
+          </div>
+          <div class="extract-item reveal">
+            <div class="extract-item__icon">
+              <svg viewBox="0 0 24 24"><circle cx="9" cy="12" r="1"/><circle cx="12" cy="9" r="1"/><circle cx="15" cy="12" r="1"/><circle cx="12" cy="15" r="1"/><path d="M3 12a9 9 0 1018 0 9 9 0 00-18 0z"/></svg>
+            </div>
+            <div>
+              <div class="extract-item__label">Topic clustering</div>
+              <div class="extract-item__desc">What themes are recurring across multiple calls with this contact or team.</div>
+            </div>
+          </div>
+          <div class="extract-item reveal reveal-delay-1">
+            <div class="extract-item__icon">
+              <svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>
+            </div>
+            <div>
+              <div class="extract-item__label">Relationship health signals</div>
+              <div class="extract-item__desc">Derived from tone patterns, reciprocity, and engagement over time. Not sentiment guessing — pattern-based.</div>
+            </div>
+          </div>
         </div>
+      </div>
+    </section>
+
+    <!-- SECTION 4: The coaching angle -->
+    <section class="section" style="background: var(--bone-mid);">
+      <div class="content">
+        <div class="two-col two-col--wide">
+          <div>
+            <p class="section__eyebrow reveal">The coaching angle</p>
+            <h2 class="section__headline reveal reveal-delay-1">The insight a communication coach would give — from the actual transcript.</h2>
+            <div class="section__body reveal reveal-delay-2">
+              <p>After 10 calls with a key client, Claude can tell you things no note-taking app can. Not because it's estimating — because it read every transcript.</p>
+              <p>The coaching data has always been in the calls. It was just inaccessible — locked in audio files, half-read transcripts, or the vague feeling that something's off.</p>
+              <p>Conversation Intelligence makes it legible.</p>
+            </div>
+          </div>
+          <div class="reveal reveal-delay-2">
+            <div class="coaching-block">
+              <div class="coaching-block__eyebrow">Claude insight — after 10 calls with Lauren</div>
+              <div class="coaching-block__quote">"You typically talk 68% of the time with Lauren. In your last 3 calls, the topic has shifted from logistics to pricing. You have 4 open commitments she's waiting on."</div>
+              <div class="coaching-block__attribution">Derived from transcripts · Not estimated</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 5: Compatible sources -->
+    <section class="section">
+      <div class="content">
+        <div class="two-col two-col--wide">
+          <div>
+            <p class="section__eyebrow reveal">Any source</p>
+            <h2 class="section__headline reveal reveal-delay-1">Import from wherever your calls live.</h2>
+            <div class="section__body reveal reveal-delay-2">
+              <p>You shouldn't have to change your meeting stack to get intelligence from your meetings. Import works with every major transcript source — or paste in directly from anywhere.</p>
+              <p>One command. The analysis is automatic. No structured format required.</p>
+            </div>
+            <div class="source-row reveal reveal-delay-3">
+              <div class="source-pill">Zoom</div>
+              <div class="source-pill">Google Meet (Gemini)</div>
+              <div class="source-pill">Otter.ai</div>
+              <div class="source-pill">Fireflies</div>
+              <div class="source-pill">Paste-in from any source</div>
+            </div>
+          </div>
+          <div class="reveal reveal-delay-2">
+            <div class="data-panel">
+              <div class="data-panel__title">Import command</div>
+              <div style="font-family: 'DM Mono', monospace; font-size: 13px; color: var(--forest); line-height: 1.8; padding: 8px 0;">
+                <span style="color: var(--ink-4);">→</span> /import-call<br>
+                <span style="color: var(--ink-4);">&nbsp;&nbsp;source:</span> zoom<br>
+                <span style="color: var(--ink-4);">&nbsp;&nbsp;contact:</span> Lauren Simms<br>
+                <span style="color: var(--ink-4);">&nbsp;&nbsp;date:</span> 2026-02-18<br>
+                <span style="color: var(--ink-4);">&nbsp;&nbsp;[paste transcript below]</span>
+              </div>
+              <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--rule-mid);">
+                <div style="font-family: 'DM Mono', monospace; font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-4); margin-bottom: 12px;">Extracted in seconds</div>
+                <div style="font-size: 13px; color: var(--ink-3); line-height: 1.7;">
+                  ✓ 3 commitments (yours)<br>
+                  ✓ 1 commitment (Lauren's)<br>
+                  ✓ Talk ratio calculated<br>
+                  ✓ Topics logged<br>
+                  ✓ CRM contact updated
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 6: Cross-module connections -->
+    <section class="section" style="background: var(--bone-mid);">
+      <div class="content">
+        <p class="section__eyebrow reveal">Connected intelligence</p>
+        <h2 class="section__headline reveal reveal-delay-1">Conversations connect to everything else.</h2>
+        <p class="section__body reveal reveal-delay-2" style="margin-bottom: 40px;">Conversation Intelligence doesn't operate in isolation. Extracted data feeds back into every other module — turning isolated call data into living context.</p>
+        <div class="cross-module reveal reveal-delay-3">
+          <div class="cross-item">
+            <span class="cross-item__arrow">→</span>
+            <span class="cross-item__text"><strong>CRM nudges.</strong> Extracted commitments surface automatically when they're overdue or when you're about to talk to that person again.</span>
+          </div>
+          <div class="cross-item">
+            <span class="cross-item__arrow">→</span>
+            <span class="cross-item__text"><strong>Project context.</strong> Topics from calls link to active projects — so your project log knows what's been discussed, not just what's been written down.</span>
+          </div>
+          <div class="cross-item">
+            <span class="cross-item__arrow">→</span>
+            <span class="cross-item__text"><strong>Relationship health scores.</strong> Talk ratios and topic patterns feed your overall contact health — so your strongest relationships are visible, and declining ones get flagged early.</span>
+          </div>
+          <div class="cross-item">
+            <span class="cross-item__arrow">→</span>
+            <span class="cross-item__text"><strong>Journal continuity.</strong> Key decisions from calls get surfaced in the decision log. Emotional context can be linked to journal entries from the same period.</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ─────────────────────────────────────────
+       CTA
+  ───────────────────────────────────────── -->
+  <section class="cta-section">
+    <div class="cta-section__inner">
+      <p class="cta-section__label reveal">Software of You</p>
+      <h2 class="cta-section__headline reveal reveal-delay-1">Stop losing what your meetings are telling you.</h2>
+      <p class="cta-section__sub reveal reveal-delay-2">One-time payment. No subscription. Works with your existing Claude subscription.</p>
+      <div class="cta-row reveal reveal-delay-3">
+        <a href="https://softwareof.you" class="cta-primary">
+          Get SoY — $149
+          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </a>
+        <a href="decisions.html" class="cta-next">
+          Next: Module 06 — Decision Log
+          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </a>
+      </div>
     </div>
+  </section>
 
-    <!-- Two-column layout -->
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-
-        <!-- Left column -->
-        <div class="lg:col-span-2 space-y-6">
-
-            <!-- Commitment Tracker -->
-            <div class="bg-white rounded-xl shadow-sm border border-zinc-200 p-5">
-                <div class="flex items-center gap-2 mb-4">
-                    <i data-lucide="circle-dot" class="w-4 h-4 text-zinc-500"></i>
-                    <h2 class="text-lg font-semibold text-zinc-900">Commitment Tracker</h2>
-                    <span class="text-xs text-zinc-400">48 total &middot; 1 completed</span>
-                </div>
-
-                <!-- Your Commitments -->
-                <h3 class="text-sm font-semibold text-zinc-700 mb-2">Your Commitments <span class="text-zinc-400 font-normal">(13 open)</span></h3>
-                <div class="space-y-2 mb-4">
-                    <div class="p-3 rounded-lg border-l-4 border-amber-400 bg-amber-50">
-                        <div class="text-sm text-zinc-700">Do Google Takeout export, then kill Marcus's and Kyle's Google accounts and set up forwards</div>
-                        <div class="text-xs text-zinc-500 mt-1">from <span class="font-medium">Weekly Kickoff - Verdant Co</span></div>
-                        <div class="text-xs text-amber-600 font-medium mt-0.5">Due Feb 17 &mdash; 3 days overdue</div>
-                    </div>
-                    <div class="p-3 rounded-lg border-l-4 border-amber-400 bg-amber-50">
-                        <div class="text-sm text-zinc-700">Generate transcript from Pharaoh interview recording once JP sends it</div>
-                        <div class="text-xs text-zinc-500 mt-1">from <span class="font-medium">Weekly Kickoff - Verdant Co</span></div>
-                        <div class="text-xs text-amber-600 font-medium mt-0.5">Due Feb 17 &mdash; 3 days overdue</div>
-                    </div>
-                    <div class="p-3 rounded-lg border-l-4 border-amber-400 bg-amber-50">
-                        <div class="text-sm text-zinc-700">Go through GG's SOPs with JP today, bring questions to GG tomorrow</div>
-                        <div class="text-xs text-zinc-500 mt-1">from <span class="font-medium">Weekly Kickoff - Verdant Co</span></div>
-                        <div class="text-xs text-amber-600 font-medium mt-0.5">Due Feb 18 &mdash; 2 days overdue</div>
-                    </div>
-                    <div class="p-3 rounded-lg border-l-4 border-blue-400 bg-blue-50/30">
-                        <div class="text-sm text-zinc-700">Follow-up call with Marcus at 1:30 PM Eastern (12:30 PM CST) today</div>
-                        <div class="text-xs text-zinc-500 mt-1">from <span class="font-medium">Kerry / Marcus Webb &mdash; Discovery Call</span></div>
-                        <div class="text-xs text-blue-600 font-medium mt-0.5">Due today</div>
-                    </div>
-                    <div class="p-3 rounded-lg border-l-4 border-zinc-200">
-                        <div class="text-sm text-zinc-700">Send Kyle a note about new responsibilities</div>
-                        <div class="text-xs text-zinc-500 mt-1">from <span class="font-medium">Weekly Kickoff - Verdant Co</span></div>
-                        <div class="text-xs text-zinc-400 mt-0.5">Due Feb 21</div>
-                    </div>
-                    <div class="p-3 rounded-lg border-l-4 border-zinc-200">
-                        <div class="text-sm text-zinc-700">Have conversation with General Assembly guy &mdash; offer 6 weeks at $600</div>
-                        <div class="text-xs text-zinc-500 mt-1">from <span class="font-medium">Weekly Kickoff - Verdant Co</span></div>
-                        <div class="text-xs text-zinc-400 mt-0.5">Due Feb 21</div>
-                    </div>
-                    <div class="p-3 rounded-lg border-l-4 border-zinc-200">
-                        <div class="text-sm text-zinc-700">Follow up with Conrad on cargo bike pilot</div>
-                        <div class="text-xs text-zinc-500 mt-1">from <span class="font-medium">Weekly Kickoff - Verdant Co</span></div>
-                        <div class="text-xs text-zinc-400 mt-0.5">Due Mar 6</div>
-                    </div>
-                    <div class="p-3 rounded-lg border-l-4 border-zinc-200">
-                        <div class="text-sm text-zinc-700">Skim the Code of Conduct and Workplace Harassment documents</div>
-                        <div class="text-xs text-zinc-500 mt-1">from <span class="font-medium">Kerry / Sofia Reyes</span></div>
-                        <div class="text-xs text-zinc-400 mt-0.5">No deadline</div>
-                    </div>
-                    <div class="p-3 rounded-lg border-l-4 border-zinc-200">
-                        <div class="text-sm text-zinc-700">Build a design skill/proof of concept from Marcus's brand materials</div>
-                        <div class="text-xs text-zinc-500 mt-1">from <span class="font-medium">Kerry / Marcus Webb &mdash; Discovery Call</span></div>
-                        <div class="text-xs text-zinc-400 mt-0.5">No deadline</div>
-                    </div>
-                </div>
-
-                <!-- Their Commitments -->
-                <h3 class="text-sm font-semibold text-zinc-700 mb-2 mt-6">Their Commitments <span class="text-zinc-400 font-normal">(34 open)</span></h3>
-
-                <!-- Marcus Webb -->
-                <h4 class="text-xs font-medium text-zinc-500 mt-3 mb-1"><a href="contact-daniel-byrne.html" class="text-blue-600 hover:text-blue-800 hover:underline">Marcus Webb</a> &middot; Northgate Development</h4>
-                <div class="space-y-2 mb-3">
-                    <div class="p-3 rounded-lg border-l-4 border-zinc-200">
-                        <div class="text-sm text-zinc-700">Send Kerry presentations and a non-proprietary document for the PoC</div>
-                        <div class="text-xs text-zinc-400 mt-0.5">No deadline</div>
-                    </div>
-                    <div class="p-3 rounded-lg border-l-4 border-zinc-200">
-                        <div class="text-sm text-zinc-700">Evaluate Kerry vs. the industry-specific AI subscription service</div>
-                        <div class="text-xs text-zinc-400 mt-0.5">No deadline</div>
-                    </div>
-                    <div class="p-3 rounded-lg border-l-4 border-zinc-200">
-                        <div class="text-sm text-zinc-700">Potentially connect Kerry with people in his network</div>
-                        <div class="text-xs text-zinc-400 mt-0.5">No deadline</div>
-                    </div>
-                </div>
-
-                <!-- Priya Nair -->
-                <h4 class="text-xs font-medium text-zinc-500 mt-3 mb-1"><a href="contact-emma-cuddy.html" class="text-blue-600 hover:text-blue-800 hover:underline">Priya Nair</a> &middot; Verdant Co</h4>
-                <div class="space-y-2 mb-3">
-                    <div class="p-3 rounded-lg border-l-4 border-amber-400 bg-amber-50">
-                        <div class="text-sm text-zinc-700">Interview Marissa (finance candidate) at 11:15</div>
-                        <div class="text-xs text-amber-600 font-medium mt-0.5">Due Feb 17 &mdash; 3 days overdue</div>
-                    </div>
-                    <div class="p-3 rounded-lg border-l-4 border-zinc-200">
-                        <div class="text-sm text-zinc-700">Build WeWork audit spreadsheet, send to Kerry, final by Friday 9am</div>
-                        <div class="text-xs text-zinc-400 mt-0.5">Due Feb 21</div>
-                    </div>
-                    <div class="p-3 rounded-lg border-l-4 border-zinc-200">
-                        <div class="text-sm text-zinc-700">Build standard of care document for Ricky at WeWork</div>
-                        <div class="text-xs text-zinc-400 mt-0.5">Due Feb 21</div>
-                    </div>
-                    <div class="p-3 rounded-lg border-l-4 border-zinc-200">
-                        <div class="text-sm text-zinc-700">Send out quotes for UFT and second site visit</div>
-                        <div class="text-xs text-zinc-400 mt-0.5">Due Feb 20</div>
-                    </div>
-                </div>
-
-                <!-- Sofia Reyes -->
-                <h4 class="text-xs font-medium text-zinc-500 mt-3 mb-1"><a href="contact-jp-moya.html" class="text-blue-600 hover:text-blue-800 hover:underline">Sofia Reyes</a> &middot; Verdant Co</h4>
-                <div class="space-y-2 mb-3">
-                    <div class="p-3 rounded-lg border-l-4 border-amber-400 bg-amber-50">
-                        <div class="text-sm text-zinc-700">Cancel his personal ChatGPT subscription on the company card</div>
-                        <div class="text-xs text-amber-600 font-medium mt-0.5">Due Feb 17 &mdash; 3 days overdue</div>
-                    </div>
-                    <div class="p-3 rounded-lg border-l-4 border-amber-400 bg-amber-50">
-                        <div class="text-sm text-zinc-700">Send Pharaoh interview recording to Kerry via Drive/Slack</div>
-                        <div class="text-xs text-amber-600 font-medium mt-0.5">Due Feb 17 &mdash; 3 days overdue</div>
-                    </div>
-                    <div class="p-3 rounded-lg border-l-4 border-zinc-200">
-                        <div class="text-sm text-zinc-700">Screen more finance candidates this week</div>
-                        <div class="text-xs text-zinc-400 mt-0.5">Due Feb 21</div>
-                    </div>
-                    <div class="p-3 rounded-lg border-l-4 border-zinc-200">
-                        <div class="text-sm text-zinc-700">Get Claude to act as CFO to critically review Orion financial numbers</div>
-                        <div class="text-xs text-zinc-400 mt-0.5">No deadline</div>
-                    </div>
-                    <div class="p-3 rounded-lg border-l-4 border-zinc-200">
-                        <div class="text-sm text-zinc-700">Reach out to CEO of Laser one more time re: Marissa</div>
-                        <div class="text-xs text-zinc-400 mt-0.5">No deadline</div>
-                    </div>
-                </div>
-
-                <!-- Zoe Hartley -->
-                <h4 class="text-xs font-medium text-zinc-500 mt-3 mb-1"><a href="contact-gigi-presentey.html" class="text-blue-600 hover:text-blue-800 hover:underline">Zoe Hartley</a> &middot; Verdant Co</h4>
-                <div class="space-y-2 mb-3">
-                    <div class="p-3 rounded-lg border-l-4 border-amber-400 bg-amber-50">
-                        <div class="text-sm text-zinc-700">Cancel all ChatGPT subscriptions &mdash; kill every receipt</div>
-                        <div class="text-xs text-amber-600 font-medium mt-0.5">Due Feb 17 &mdash; 3 days overdue</div>
-                    </div>
-                    <div class="p-3 rounded-lg border-l-4 border-zinc-200">
-                        <div class="text-sm text-zinc-700">File Maya's record of employment after last payroll</div>
-                        <div class="text-xs text-zinc-400 mt-0.5">Due Feb 21</div>
-                    </div>
-                </div>
-
-                <!-- Tariq Hassan -->
-                <h4 class="text-xs font-medium text-zinc-500 mt-3 mb-1"><a href="contact-nawid-fatahi.html" class="text-blue-600 hover:text-blue-800 hover:underline">Tariq Hassan</a> &middot; Verdant Co</h4>
-                <div class="space-y-2 mb-3">
-                    <div class="p-3 rounded-lg border-l-4 border-amber-400 bg-amber-50">
-                        <div class="text-sm text-zinc-700">Send Maya's complete hours CSV to JP, CC everyone</div>
-                        <div class="text-xs text-amber-600 font-medium mt-0.5">Due Feb 17 &mdash; 3 days overdue</div>
-                    </div>
-                    <div class="p-3 rounded-lg border-l-4 border-zinc-200">
-                        <div class="text-sm text-zinc-700">Enter timesheets manually for payroll this week</div>
-                        <div class="text-xs text-zinc-400 mt-0.5">Due Feb 21</div>
-                    </div>
-                </div>
-
-                <!-- Completed -->
-                <details class="mt-4 border-t border-zinc-100 pt-3">
-                    <summary class="text-xs text-zinc-400 cursor-pointer hover:text-zinc-600">Recently completed (1)</summary>
-                    <div class="mt-2 p-3 rounded-lg bg-zinc-50">
-                        <div class="text-sm text-zinc-500 line-through">Push Marissa offer forward at lunchtime if JP has not provided Laser CEO update</div>
-                        <div class="text-xs text-zinc-400 mt-0.5">Completed by you &middot; today</div>
-                    </div>
-                </details>
-            </div>
-
-            <!-- Transcript Timeline -->
-            <div class="bg-white rounded-xl shadow-sm border border-zinc-200 p-5">
-                <div class="flex items-center gap-2 mb-4">
-                    <i data-lucide="mic" class="w-4 h-4 text-zinc-500"></i>
-                    <h2 class="text-lg font-semibold text-zinc-900">Transcript Timeline</h2>
-                </div>
-                <div class="space-y-4">
-
-                    <!-- Transcript 3: Kerry / Marcus Webb -->
-                    <div class="p-4 rounded-lg border border-zinc-100 hover:border-zinc-200 transition-colors">
-                        <div class="flex items-center justify-between flex-wrap gap-2">
-                            <h3 class="font-semibold text-zinc-900">Kerry / Marcus Webb &mdash; Discovery Call</h3>
-                            <div class="flex items-center gap-2">
-                                <span class="px-2 py-0.5 rounded-full text-xs bg-zinc-100 text-zinc-500">37 min</span>
-                                <span class="text-xs text-zinc-400">Today</span>
-                            </div>
-                        </div>
-                        <div class="text-xs text-zinc-500 mt-1">
-                            with <a href="contact-daniel-byrne.html" class="text-blue-600 hover:text-blue-800 hover:underline">Marcus Webb</a>
-                        </div>
-                        <p class="text-sm text-zinc-600 mt-2 line-clamp-3">First discovery call with Marcus Webb (VP, Northgate Development). Warm, casual tone. Covered Northgate Development operations: small team running $100M+ projects, heavy use of PropTech Suite, ProjectSync, and M365. Key pain points: recurring report workflows, ad-hoc analysis, and acquisition due diligence. Agreed to send materials for Kerry to build a free proof of concept.</p>
-                        <div class="flex flex-wrap gap-1.5 mt-2">
-                            <span class="px-2 py-0.5 rounded-full text-xs bg-amber-100 text-amber-700">3 open commitments</span>
-                        </div>
-                    </div>
-
-                    <!-- Transcript 1: Kerry / Sofia Reyes -->
-                    <div class="p-4 rounded-lg border border-zinc-100 hover:border-zinc-200 transition-colors">
-                        <div class="flex items-center justify-between flex-wrap gap-2">
-                            <h3 class="font-semibold text-zinc-900">Kerry / Sofia Reyes &mdash; Verdant Co Weekly</h3>
-                            <div class="flex items-center gap-2">
-                                <span class="text-xs text-zinc-400">Yesterday</span>
-                            </div>
-                        </div>
-                        <div class="text-xs text-zinc-500 mt-1">
-                            Source: Gemini
-                        </div>
-                        <p class="text-sm text-zinc-600 mt-2 line-clamp-3">Wide-ranging operational sync covering Verdant Co hiring (Marissa pending, Carol top tech candidate, Spring under review), financials ($3K loss, bookkeeping concerns), policy rollout (Code of Conduct after Marcus signs), capacity planning, and AI tooling. Also covered communication style feedback.</p>
-                        <div class="flex flex-wrap gap-1.5 mt-2">
-                            <span class="px-2 py-0.5 rounded-full text-xs bg-amber-100 text-amber-700">12 open commitments</span>
-                        </div>
-                    </div>
-
-                    <!-- Transcript 2: Weekly Kickoff -->
-                    <div class="p-4 rounded-lg border border-zinc-100 hover:border-zinc-200 transition-colors">
-                        <div class="flex items-center justify-between flex-wrap gap-2">
-                            <h3 class="font-semibold text-zinc-900">Weekly Kickoff - Verdant Co</h3>
-                            <div class="flex items-center gap-2">
-                                <span class="px-2 py-0.5 rounded-full text-xs bg-zinc-100 text-zinc-500">64 min</span>
-                                <span class="text-xs text-zinc-400">3 days ago</span>
-                            </div>
-                        </div>
-                        <div class="text-xs text-zinc-500 mt-1">
-                            with <a href="contact-emma-cuddy.html" class="text-blue-600 hover:text-blue-800 hover:underline">Priya Nair</a>, <a href="contact-gigi-presentey.html" class="text-blue-600 hover:text-blue-800 hover:underline">Zoe Hartley</a>, <a href="contact-jp-moya.html" class="text-blue-600 hover:text-blue-800 hover:underline">Sofia Reyes</a>, <a href="contact-nawid-fatahi.html" class="text-blue-600 hover:text-blue-800 hover:underline">Tariq Hassan</a>
-                        </div>
-                        <p class="text-sm text-zinc-600 mt-2 line-clamp-3">High-energy weekly kickoff covering 12+ action items across hiring, operations, and finance. Key decisions: cancel all ChatGPT subscriptions, Common House vendor issue, cargo bike pilot approved in concept, finance hire (Marissa) is urgent priority. Kerry drove tight accountability with EOS framework.</p>
-                        <div class="flex flex-wrap gap-1.5 mt-2">
-                            <span class="px-2 py-0.5 rounded-full text-xs bg-amber-100 text-amber-700">30 open commitments</span>
-                            <span class="px-2 py-0.5 rounded-full text-xs bg-green-100 text-green-700">1 completed</span>
-                        </div>
-                    </div>
-
-                </div>
-            </div>
-
-        </div>
-
-        <!-- Right column -->
-        <div class="space-y-6">
-
-            <!-- Coaching Corner -->
-            <div class="bg-white rounded-xl shadow-sm border border-zinc-200 p-5">
-                <div class="flex items-center gap-2 mb-4">
-                    <i data-lucide="lightbulb" class="w-4 h-4 text-amber-500"></i>
-                    <h2 class="text-lg font-semibold text-zinc-900">Coaching Corner</h2>
-                </div>
-                <div class="space-y-4">
-
-                    <div class="p-3 rounded-lg bg-amber-50">
-                        <div class="flex items-center gap-2 mb-1">
-                            <i data-lucide="lightbulb" class="w-3.5 h-3.5 text-amber-600"></i>
-                            <span class="text-xs font-medium text-amber-700">Coach Note</span>
-                            <span class="w-2 h-2 rounded-full bg-green-400 ml-auto" title="positive"></span>
-                        </div>
-                        <p class="text-sm text-zinc-700">You showed Marcus the Software of You entity page mid-call and it landed perfectly. One refinement: when Marcus mentioned the competing option, dig deeper next time.</p>
-                        <div class="text-xs text-zinc-400 mt-1">From call with <a href="contact-daniel-byrne.html" class="text-blue-600 hover:text-blue-800 hover:underline">Marcus Webb</a></div>
-                    </div>
-
-                    <div class="p-3 rounded-lg bg-pink-50">
-                        <div class="flex items-center gap-2 mb-1">
-                            <i data-lucide="heart-pulse" class="w-3.5 h-3.5 text-pink-600"></i>
-                            <span class="text-xs font-medium text-pink-700">Relationship Pulse</span>
-                            <span class="w-2 h-2 rounded-full bg-green-400 ml-auto" title="positive"></span>
-                        </div>
-                        <p class="text-sm text-zinc-700">Marcus went from zero to warm very quickly. Offering referrals and booking same-day follow-up &mdash; both strong buying signals. The competing option creates urgency but validates the space.</p>
-                        <div class="text-xs text-zinc-400 mt-1">From call with <a href="contact-daniel-byrne.html" class="text-blue-600 hover:text-blue-800 hover:underline">Marcus Webb</a></div>
-                    </div>
-
-                    <div class="p-3 rounded-lg bg-amber-50">
-                        <div class="flex items-center gap-2 mb-1">
-                            <i data-lucide="lightbulb" class="w-3.5 h-3.5 text-amber-600"></i>
-                            <span class="text-xs font-medium text-amber-700">Coach Note</span>
-                            <span class="w-2 h-2 rounded-full bg-red-400 ml-auto" title="needs attention"></span>
-                        </div>
-                        <p class="text-sm text-zinc-700">JP directly asked you to acknowledge more explicitly &mdash; he wants reactions, emojis, or brief confirmations. Consider a daily micro-habit: scan JP's messages and react to at least one.</p>
-                        <div class="text-xs text-zinc-400 mt-1">From call with <a href="contact-jp-moya.html" class="text-blue-600 hover:text-blue-800 hover:underline">Sofia Reyes</a></div>
-                    </div>
-
-                    <div class="p-3 rounded-lg bg-red-50">
-                        <div class="flex items-center gap-2 mb-1">
-                            <i data-lucide="alert-triangle" class="w-3.5 h-3.5 text-red-600"></i>
-                            <span class="text-xs font-medium text-red-700">Pattern Alert</span>
-                            <span class="w-2 h-2 rounded-full bg-red-400 ml-auto" title="needs attention"></span>
-                        </div>
-                        <p class="text-sm text-zinc-700">Single call generated 12 commitments &mdash; 4 for you, 8 for JP. JP is carrying 2x your load. Worth checking if he can absorb all of this.</p>
-                        <div class="text-xs text-zinc-400 mt-1">From call with <a href="contact-jp-moya.html" class="text-blue-600 hover:text-blue-800 hover:underline">Sofia Reyes</a></div>
-                    </div>
-
-                    <div class="p-3 rounded-lg bg-pink-50">
-                        <div class="flex items-center gap-2 mb-1">
-                            <i data-lucide="heart-pulse" class="w-3.5 h-3.5 text-pink-600"></i>
-                            <span class="text-xs font-medium text-pink-700">Relationship Pulse</span>
-                            <span class="w-2 h-2 rounded-full bg-green-400 ml-auto" title="positive"></span>
-                        </div>
-                        <p class="text-sm text-zinc-700">High-trust working relationship with JP. He felt safe enough to give you direct communication feedback mid-meeting. Both comfortable context-switching together.</p>
-                        <div class="text-xs text-zinc-400 mt-1">From call with <a href="contact-jp-moya.html" class="text-blue-600 hover:text-blue-800 hover:underline">Sofia Reyes</a></div>
-                    </div>
-
-                    <div class="p-3 rounded-lg bg-amber-50">
-                        <div class="flex items-center gap-2 mb-1">
-                            <i data-lucide="lightbulb" class="w-3.5 h-3.5 text-amber-600"></i>
-                            <span class="text-xs font-medium text-amber-700">Coach Note</span>
-                            <span class="w-2 h-2 rounded-full bg-red-400 ml-auto" title="needs attention"></span>
-                        </div>
-                        <p class="text-sm text-zinc-700">Common House pot crisis surfaced mid-meeting with no clear single owner. Designate one person per open issue before moving on.</p>
-                        <div class="text-xs text-zinc-400 mt-1">From <span class="font-medium">Weekly Kickoff</span></div>
-                    </div>
-
-                </div>
-            </div>
-
-            <!-- Relationship Health -->
-            <div class="bg-white rounded-xl shadow-sm border border-zinc-200 p-5">
-                <div class="flex items-center gap-2 mb-4">
-                    <i data-lucide="heart-pulse" class="w-4 h-4 text-pink-500"></i>
-                    <h2 class="text-lg font-semibold text-zinc-900">Relationship Health</h2>
-                </div>
-                <div class="space-y-4">
-
-                    <!-- Marcus Webb -->
-                    <div class="flex items-start justify-between">
-                        <div>
-                            <a href="contact-daniel-byrne.html" class="font-medium text-blue-600 hover:text-blue-800 hover:underline text-sm">Marcus Webb</a>
-                            <div class="flex items-center gap-2 mt-1">
-                                <span class="px-2 py-0.5 rounded-full text-xs bg-blue-50 text-blue-700">professional</span>
-                                <span class="flex items-center gap-0.5 text-xs text-green-600">
-                                    <i data-lucide="trending-up" class="w-3 h-3"></i>
-                                    strengthening
-                                </span>
-                            </div>
-                            <div class="text-xs text-zinc-400 mt-0.5">Meeting freq: biweekly</div>
-                        </div>
-                    </div>
-
-                    <!-- James Okafor -->
-                    <div class="flex items-start justify-between">
-                        <div>
-                            <a href="contact-charles-bernard.html" class="font-medium text-blue-600 hover:text-blue-800 hover:underline text-sm">James Okafor</a>
-                            <div class="flex items-center gap-2 mt-1">
-                                <span class="px-2 py-0.5 rounded-full text-xs bg-zinc-100 text-zinc-600">transactional</span>
-                                <span class="flex items-center gap-0.5 text-xs text-green-600">
-                                    <i data-lucide="trending-up" class="w-3 h-3"></i>
-                                    strengthening
-                                </span>
-                            </div>
-                            <div class="text-xs text-zinc-400 mt-0.5">Meeting freq: monthly</div>
-                        </div>
-                    </div>
-
-                    <!-- Priya Nair -->
-                    <div class="flex items-start justify-between">
-                        <div>
-                            <a href="contact-emma-cuddy.html" class="font-medium text-blue-600 hover:text-blue-800 hover:underline text-sm">Priya Nair</a>
-                            <div class="flex items-center gap-2 mt-1">
-                                <span class="px-2 py-0.5 rounded-full text-xs bg-purple-50 text-purple-700">collaborative</span>
-                                <span class="flex items-center gap-0.5 text-xs text-green-600">
-                                    <i data-lucide="trending-up" class="w-3 h-3"></i>
-                                    strengthening
-                                </span>
-                            </div>
-                            <div class="text-xs text-zinc-400 mt-0.5">Follow-through: 85% &middot; Weekly meetings</div>
-                        </div>
-                    </div>
-
-                    <!-- Sofia Reyes -->
-                    <div class="flex items-start justify-between">
-                        <div>
-                            <a href="contact-jp-moya.html" class="font-medium text-blue-600 hover:text-blue-800 hover:underline text-sm">Sofia Reyes</a>
-                            <div class="flex items-center gap-2 mt-1">
-                                <span class="px-2 py-0.5 rounded-full text-xs bg-green-50 text-green-700">trusted</span>
-                                <span class="flex items-center gap-0.5 text-xs text-zinc-400">
-                                    <i data-lucide="minus" class="w-3 h-3"></i>
-                                    stable
-                                </span>
-                            </div>
-                            <div class="text-xs text-zinc-400 mt-0.5">Follow-through: 80% &middot; 5x/week meetings</div>
-                        </div>
-                    </div>
-
-                    <!-- Tariq Hassan -->
-                    <div class="flex items-start justify-between">
-                        <div>
-                            <a href="contact-nawid-fatahi.html" class="font-medium text-blue-600 hover:text-blue-800 hover:underline text-sm">Tariq Hassan</a>
-                            <div class="flex items-center gap-2 mt-1">
-                                <span class="px-2 py-0.5 rounded-full text-xs bg-blue-50 text-blue-700">professional</span>
-                                <span class="flex items-center gap-0.5 text-xs text-zinc-400">
-                                    <i data-lucide="minus" class="w-3 h-3"></i>
-                                    stable
-                                </span>
-                            </div>
-                            <div class="text-xs text-zinc-400 mt-0.5">Follow-through: 70% &middot; Weekly meetings</div>
-                        </div>
-                    </div>
-
-                    <!-- Zoe Hartley -->
-                    <div class="flex items-start justify-between">
-                        <div>
-                            <a href="contact-gigi-presentey.html" class="font-medium text-blue-600 hover:text-blue-800 hover:underline text-sm">Zoe Hartley</a>
-                            <div class="flex items-center gap-2 mt-1">
-                                <span class="px-2 py-0.5 rounded-full text-xs bg-blue-50 text-blue-700">professional</span>
-                                <span class="flex items-center gap-0.5 text-xs text-amber-500">
-                                    <i data-lucide="trending-down" class="w-3 h-3"></i>
-                                    cooling
-                                </span>
-                            </div>
-                            <div class="text-xs text-zinc-400 mt-0.5">Follow-through: 90% &middot; Weekly meetings</div>
-                        </div>
-                    </div>
-
-                </div>
-            </div>
-
-        </div>
+  <!-- ─────────────────────────────────────────
+       FOOTER
+  ───────────────────────────────────────── -->
+  <footer>
+    <div class="footer__inner">
+      <span class="footer__copy">© 2026 Software of You · Built by Kerry</span>
+      <a href="https://softwareof.you" class="footer__domain">softwareof.you</a>
     </div>
+  </footer>
 
-    <!-- Footer -->
-    <footer class="mt-8 pt-4 border-t border-zinc-100 text-center">
-        <p class="text-xs text-zinc-400">Generated by Software of You &middot; February 20, 2026 at 3:45 PM</p>
-    </footer>
+  <!-- ─────────────────────────────────────────
+       SCROLL REVEAL
+  ───────────────────────────────────────── -->
+  <script>
+    (function() {
+      var reveals = document.querySelectorAll('.reveal');
 
-</div>
+      if (!('IntersectionObserver' in window)) {
+        // Fallback: show all immediately
+        reveals.forEach(function(el) { el.classList.add('in'); });
+        return;
+      }
 
-<script>lucide.createIcons();</script>
-<!-- DEMO BANNER -->
+      var observer = new IntersectionObserver(function(entries) {
+        entries.forEach(function(entry) {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('in');
+            observer.unobserve(entry.target);
+          }
+        });
+      }, {
+        threshold: 0.1,
+        rootMargin: '0px 0px -40px 0px'
+      });
+
+      reveals.forEach(function(el) { observer.observe(el); });
+    })();
+  </script>
+
 <div id="demo-banner" style="position:fixed;bottom:0;left:0;right:0;z-index:9999;background:#1A4731;color:white;font-family:'DM Mono',monospace;font-size:12px;letter-spacing:0.04em;display:flex;align-items:center;justify-content:center;gap:24px;padding:10px 24px;box-shadow:0 -2px 16px rgba(0,0,0,0.2);">
   <span style="opacity:0.7;">✦ LIVE DEMO — anonymized data</span>
   <span style="opacity:0.4;">|</span>
-  <span>This is what Software of You looks like with 3 months of real use.</span>
-  <span style="opacity:0.4;">|</span>
-  <a href="https://softwareof.you" style="color:#a8e6c0;text-decoration:none;font-weight:500;white-space:nowrap;" target="_top">Get it for yourself →</a>
+  <a href="https://softwareof.you/getting-started.html" style="color:#a8e6c0;text-decoration:none;font-weight:500;white-space:nowrap;" target="_top">Get it for yourself →</a>
   <button onclick="document.getElementById('demo-banner').style.display='none'" style="margin-left:8px;background:none;border:none;color:rgba(255,255,255,0.4);cursor:pointer;font-size:16px;line-height:1;padding:0 4px;" title="Dismiss">×</button>
 </div>
-<div style="height:44px;"></div><!-- spacer so banner doesn't cover content -->
+<div style="height:44px;"></div>
 </body>
 </html>
