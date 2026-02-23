@@ -17,14 +17,212 @@
             }
         }
     </script>
+    <style>
+        /* ── SIDEBAR ── */
+        .sidebar {
+            position: fixed; top: 0; left: 0; height: 100vh; width: 15rem;
+            background: white; border-right: 1px solid #e4e4e7;
+            display: flex; flex-direction: column; z-index: 40;
+            transform: translateX(-100%); transition: transform 0.2s ease;
+        }
+        @media (min-width: 1024px) { .sidebar { transform: translateX(0); } }
+        .sidebar.open { transform: translateX(0); }
+        .sidebar-header { padding: 1rem; border-bottom: 1px solid #f4f4f5; flex-shrink: 0; }
+        .sidebar-logo {
+            display: flex; align-items: center; gap: 0.5rem;
+            font-size: 0.875rem; font-weight: 600; color: #18181b; text-decoration: none;
+        }
+        .sidebar-logo:hover { color: #3b82f6; }
+        .sidebar-nav { flex: 1; overflow-y: auto; padding: 0.5rem; }
+        .sidebar-item {
+            display: flex; align-items: center; gap: 0.5rem;
+            padding: 0.375rem 0.75rem; border-radius: 0.375rem;
+            font-size: 0.8125rem; color: #71717a; text-decoration: none;
+            transition: all 0.15s; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        }
+        .sidebar-item:hover { background: #f4f4f5; color: #18181b; }
+        .sidebar-item.active { background: #eff6ff; color: #1d4ed8; font-weight: 600; }
+        .sidebar-item-disabled { opacity: 0.4; cursor: default; pointer-events: none; }
+        .sidebar-badge {
+            margin-left: auto; font-size: 0.6875rem; background: #e4e4e7; color: #52525b;
+            padding: 0.0625rem 0.375rem; border-radius: 9999px; font-weight: 500; flex-shrink: 0;
+        }
+        .sidebar-item.active .sidebar-badge { background: #3b82f6; color: white; }
+        .sidebar-badge-alert { background: #fecaca; color: #dc2626; }
+        .sidebar-section { margin-top: 0.5rem; }
+        .sidebar-section-label {
+            display: flex; align-items: center; justify-content: space-between; width: 100%;
+            padding: 0.375rem 0.75rem; font-size: 0.6875rem; font-weight: 600;
+            color: #a1a1aa; text-transform: uppercase; letter-spacing: 0.05em;
+            cursor: pointer; background: none; border: none; font-family: inherit; transition: color 0.15s;
+        }
+        .sidebar-section-label:hover { color: #71717a; }
+        .sidebar-chevron { transition: transform 0.15s; flex-shrink: 0; }
+        .sidebar-section.open > .sidebar-section-label .sidebar-chevron { transform: rotate(90deg); }
+        .sidebar-section-content { display: none; padding-top: 0.125rem; }
+        .sidebar-section.open > .sidebar-section-content { display: block; }
+        .sidebar-entity {
+            display: block; padding: 0.25rem 0.75rem 0.25rem 1.75rem;
+            font-size: 0.8125rem; color: #71717a; text-decoration: none;
+            transition: all 0.15s; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        }
+        .sidebar-entity:hover { background: #f4f4f5; color: #18181b; border-radius: 0.375rem; }
+        .sidebar-entity.active { background: #eff6ff; color: #1d4ed8; font-weight: 600; border-radius: 0.375rem; }
+        .sidebar-divider { height: 1px; background: #f4f4f5; margin: 0.375rem 0.75rem; }
+        .sidebar-show-all {
+            display: block; width: 100%; padding: 0.25rem 0.75rem 0.25rem 1.75rem;
+            font-size: 0.75rem; color: #3b82f6; text-align: left;
+            cursor: pointer; background: none; border: none; font-family: inherit;
+        }
+        .sidebar-show-all:hover { color: #1d4ed8; }
+        .sidebar-entity-overflow { display: none; }
+        .sidebar-section.show-all .sidebar-entity-overflow { display: block; }
+        .sidebar-section.show-all .sidebar-show-all { display: none; }
+        .sidebar-tip-zone { padding: 0.75rem; border-top: 1px solid #f4f4f5; flex-shrink: 0; }
+        .sidebar-tip { background: #fafafa; border-radius: 0.5rem; padding: 0.75rem; }
+        .sidebar-tip-label { font-size: 0.625rem; text-transform: uppercase; letter-spacing: 0.05em; color: #a1a1aa; font-weight: 600; margin-bottom: 0.25rem; }
+        .sidebar-tip-text { font-size: 0.75rem; color: #71717a; line-height: 1.4; }
+        .sidebar-mobile-toggle {
+            position: fixed; top: 1rem; left: 1rem; z-index: 50;
+            display: flex; align-items: center; justify-content: center;
+            background: white; border: 1px solid #e4e4e7; border-radius: 0.5rem;
+            padding: 0.5rem; box-shadow: 0 1px 2px rgba(0,0,0,0.05); cursor: pointer; color: #52525b;
+        }
+        @media (min-width: 1024px) { .sidebar-mobile-toggle { display: none; } }
+        .sidebar-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.3); z-index: 30; display: none; }
+        .sidebar-backdrop.visible { display: block; }
+        @media (min-width: 1024px) { .sidebar-backdrop { display: none !important; } }
+    </style>
 </head>
 <body class="bg-zinc-50 text-zinc-900 font-sans antialiased">
-    <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
 
-        <!-- Back link -->
-        <div class="mb-6">
-            <span class="text-sm text-zinc-400">Software of You / Contacts</span>
+    <!-- Sidebar -->
+    <aside id="sidebar" class="sidebar">
+        <div class="sidebar-header">
+            <a href="dashboard.html" class="sidebar-logo">
+                <i data-lucide="hexagon" class="w-4 h-4"></i>
+                <span>Software of You</span>
+            </a>
         </div>
+        <nav class="sidebar-nav">
+            <a href="dashboard.html" class="sidebar-item">
+                <i data-lucide="layout-dashboard" class="w-4 h-4"></i>
+                Dashboard
+            </a>
+            <div class="sidebar-section open" id="section-people">
+                <button class="sidebar-section-label" onclick="toggleSection('section-people')">
+                    <span>People</span>
+                    <i data-lucide="chevron-right" class="w-3.5 h-3.5 sidebar-chevron"></i>
+                </button>
+                <div class="sidebar-section-content">
+                    <a href="contacts.html" class="sidebar-item">
+                        <i data-lucide="users" class="w-4 h-4"></i>
+                        Contacts
+                        <span class="sidebar-badge">9</span>
+                    </a>
+                    <a href="network-map.html" class="sidebar-item">
+                        <i data-lucide="share-2" class="w-4 h-4"></i>
+                        Network Map
+                    </a>
+                    <div class="sidebar-divider"></div>
+                    <a href="contact-daniel-byrne.html" class="sidebar-entity active">Daniel Byrne</a>
+                    <a href="contact-sarah-chen.html" class="sidebar-entity">Sarah Chen</a>
+                    <a href="contact-marcus-webb.html" class="sidebar-entity">Marcus Webb</a>
+                </div>
+            </div>
+            <div class="sidebar-section" id="section-projects">
+                <button class="sidebar-section-label" onclick="toggleSection('section-projects')">
+                    <span>Projects</span>
+                    <i data-lucide="chevron-right" class="w-3.5 h-3.5 sidebar-chevron"></i>
+                </button>
+                <div class="sidebar-section-content">
+                    <a href="project-ai-for-mainmain.html" class="sidebar-entity">AI for Main+Main</a>
+                </div>
+            </div>
+            <div class="sidebar-section" id="section-comms">
+                <button class="sidebar-section-label" onclick="toggleSection('section-comms')">
+                    <span>Comms</span>
+                    <i data-lucide="chevron-right" class="w-3.5 h-3.5 sidebar-chevron"></i>
+                </button>
+                <div class="sidebar-section-content">
+                    <a href="email-hub.html" class="sidebar-item">
+                        <i data-lucide="mail" class="w-4 h-4"></i>
+                        Email
+                        <span class="sidebar-badge">50</span>
+                    </a>
+                    <a href="week-view.html" class="sidebar-item">
+                        <i data-lucide="calendar" class="w-4 h-4"></i>
+                        Calendar
+                        <span class="sidebar-badge">27</span>
+                    </a>
+                </div>
+            </div>
+            <div class="sidebar-section" id="section-intelligence">
+                <button class="sidebar-section-label" onclick="toggleSection('section-intelligence')">
+                    <span>Intelligence</span>
+                    <i data-lucide="chevron-right" class="w-3.5 h-3.5 sidebar-chevron"></i>
+                </button>
+                <div class="sidebar-section-content">
+                    <a href="conversations.html" class="sidebar-item">
+                        <i data-lucide="message-square" class="w-4 h-4"></i>
+                        Conversations
+                    </a>
+                    <a href="decision-journal.html" class="sidebar-item">
+                        <i data-lucide="git-branch" class="w-4 h-4"></i>
+                        Decisions
+                    </a>
+                    <a href="journal.html" class="sidebar-item">
+                        <i data-lucide="book-open" class="w-4 h-4"></i>
+                        Journal
+                    </a>
+                    <a href="notes.html" class="sidebar-item">
+                        <i data-lucide="sticky-note" class="w-4 h-4"></i>
+                        Notes
+                    </a>
+                </div>
+            </div>
+            <div class="sidebar-section" id="section-tools">
+                <button class="sidebar-section-label" onclick="toggleSection('section-tools')">
+                    <span>Tools</span>
+                    <i data-lucide="chevron-right" class="w-3.5 h-3.5 sidebar-chevron"></i>
+                </button>
+                <div class="sidebar-section-content">
+                    <a href="weekly-review.html" class="sidebar-item">
+                        <i data-lucide="clipboard-list" class="w-4 h-4"></i>
+                        Weekly Review
+                    </a>
+                    <a href="nudges.html" class="sidebar-item">
+                        <i data-lucide="bell" class="w-4 h-4"></i>
+                        Nudges
+                    </a>
+                    <a href="timeline.html" class="sidebar-item">
+                        <i data-lucide="clock" class="w-4 h-4"></i>
+                        Timeline
+                    </a>
+                    <a href="search.html" class="sidebar-item">
+                        <i data-lucide="search" class="w-4 h-4"></i>
+                        Search
+                    </a>
+                </div>
+            </div>
+        </nav>
+        <div class="sidebar-tip-zone">
+            <div class="sidebar-tip">
+                <p class="sidebar-tip-label">Tip</p>
+                <p class="sidebar-tip-text">Use /follow-up to set a reminder for this person.</p>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Mobile toggle + backdrop -->
+    <button id="sidebar-toggle" class="sidebar-mobile-toggle" onclick="toggleSidebar()">
+        <i data-lucide="menu" class="w-5 h-5"></i>
+    </button>
+    <div id="sidebar-backdrop" class="sidebar-backdrop" onclick="toggleSidebar()"></div>
+
+    <!-- Main content -->
+    <main class="lg:ml-60">
+        <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
 
         <!-- Contact Header -->
         <div class="bg-white rounded-xl shadow-sm border border-zinc-200 p-6 mb-6">
@@ -363,12 +561,40 @@
         </div>
 
         <!-- Footer -->
-        <footer class="mt-8 text-center">
-            <p class="text-xs text-zinc-400">Generated by Software of You &middot; Contact Card &middot; February 19, 2026</p>
+        <footer class="mt-8 pb-8">
+            <div class="pt-4 border-t border-zinc-100 text-center">
+                <p class="text-xs text-zinc-400">Generated by Software of You &middot; Contact Card &middot; February 19, 2026</p>
+            </div>
         </footer>
 
-    </div>
+        </div>
+    </main>
 
-    <script>lucide.createIcons();</script>
+    <script>
+        function toggleSection(id) {
+            var section = document.getElementById(id);
+            if (section) section.classList.toggle('open');
+        }
+        function showAllEntities(sectionId) {
+            var section = document.getElementById(sectionId);
+            if (section) section.classList.add('show-all');
+        }
+        function toggleSidebar() {
+            var sidebar = document.getElementById('sidebar');
+            var backdrop = document.getElementById('sidebar-backdrop');
+            var isOpen = sidebar.classList.contains('open');
+            if (isOpen) { sidebar.classList.remove('open'); backdrop.classList.remove('visible'); }
+            else { sidebar.classList.add('open'); backdrop.classList.add('visible'); }
+        }
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                var sidebar = document.getElementById('sidebar');
+                var backdrop = document.getElementById('sidebar-backdrop');
+                if (sidebar) sidebar.classList.remove('open');
+                if (backdrop) backdrop.classList.remove('visible');
+            }
+        });
+        lucide.createIcons();
+    </script>
 </body>
 </html>

@@ -15,7 +15,7 @@ Before building, ensure data is fresh. Follow the auto-sync procedure in CLAUDE.
 
 Read these files first:
 - `${CLAUDE_PLUGIN_ROOT}/skills/dashboard-generation/references/template-base.html` — HTML skeleton
-- `${CLAUDE_PLUGIN_ROOT}/skills/dashboard-generation/references/navigation-patterns.md` — nav bar patterns
+- `${CLAUDE_PLUGIN_ROOT}/skills/dashboard-generation/references/navigation-patterns.md` — sidebar patterns
 
 ## Step 2: Check Modules & Gather Data
 
@@ -220,17 +220,14 @@ WHERE p.status = 'active' AND p.target_date BETWEEN date('now') AND date('now', 
 
 Generate a self-contained HTML file. Follow the template-base.html structure (Tailwind CDN, Lucide CDN, Inter font).
 
-### Nav Bar
+### Sidebar
 
-Use navigation-patterns.md. For this page:
-- "Dashboard" nav item gets `active` class (this is a Dashboard sub-page)
-- Breadcrumb: `Dashboard > Review`
-- No sub-nav
+Include the sidebar from `navigation-patterns.md` with Weekly Review active in the Tools section.
 
 ### Page Structure
 
 ```
-Nav bar (Dashboard active, breadcrumb: Dashboard > Review)
+Sidebar (Weekly Review active in Tools section)
 
 Header card (full width)
 +-- Title: "Week of Feb 16-22, 2026" (calculate actual dates)

@@ -123,7 +123,7 @@ Generate a single self-contained HTML file. CDN includes:
 ### Page Structure
 
 ```
-Nav bar (from navigation-patterns.md — breadcrumb style, "Dashboard / Network Map")
+Sidebar (from navigation-patterns.md — Network Map active in the People section)
 
 Header card (full width)
 ├── Title: "Your Network"

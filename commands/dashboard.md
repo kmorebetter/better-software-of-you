@@ -18,7 +18,7 @@ Before building the dashboard, ensure data is fresh. Follow the auto-sync proced
 Read these files first:
 - `${CLAUDE_PLUGIN_ROOT}/skills/dashboard-generation/references/template-base.html` — HTML skeleton
 - `${CLAUDE_PLUGIN_ROOT}/skills/dashboard-generation/references/component-patterns.md` — component snippets
-- `${CLAUDE_PLUGIN_ROOT}/skills/dashboard-generation/references/navigation-patterns.md` — nav bar patterns
+- `${CLAUDE_PLUGIN_ROOT}/skills/dashboard-generation/references/navigation-patterns.md` — sidebar patterns
 
 ## Step 2: Gather Data
 
@@ -148,8 +148,8 @@ Group raw email results into threads: group by `thread_id`, show the latest mess
 
 Generate a self-contained HTML file. Follow this **exact layout structure**:
 
-### Nav Bar (always)
-Include the dashboard nav bar from `navigation-patterns.md` — shows "Dashboard" label + pills linking to generated entity pages.
+### Sidebar (always)
+Include the sidebar from `navigation-patterns.md` with Dashboard active.
 
 ### Header (always)
 - Title: "Software of You"

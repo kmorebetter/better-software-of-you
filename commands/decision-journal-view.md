@@ -11,7 +11,7 @@ Generate a standalone HTML page showing the Decision Journal — all tracked dec
 
 Read these files first:
 - `${CLAUDE_PLUGIN_ROOT}/skills/dashboard-generation/references/template-base.html` — HTML skeleton
-- `${CLAUDE_PLUGIN_ROOT}/skills/dashboard-generation/references/navigation-patterns.md` — nav bar patterns
+- `${CLAUDE_PLUGIN_ROOT}/skills/dashboard-generation/references/navigation-patterns.md` — sidebar patterns
 
 ## Step 2: Gather Data
 
@@ -65,9 +65,9 @@ LIMIT 10;
 
 Generate a self-contained HTML file using the template-base.html skeleton (Tailwind CDN, Lucide CDN, Inter font). Use `max-w-5xl` container.
 
-### Nav Bar
+### Sidebar
 
-Include a nav bar following `navigation-patterns.md`. Use the Dashboard-style nav pattern with "Dashboard" link on the left, breadcrumb separator, then "Decision Journal" as current page (plain text, not a link). On the right, show pills linking to other generated entity pages (from the `generated_views` query, limit 5 most recent, excluding the current page).
+Include the sidebar from `navigation-patterns.md` with Decisions active in the Intelligence section.
 
 ### Header Card
 

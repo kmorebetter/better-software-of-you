@@ -15,7 +15,7 @@ Before building the view, ensure calendar data is fresh. Follow the auto-sync pr
 
 Read these files first:
 - `${CLAUDE_PLUGIN_ROOT}/skills/dashboard-generation/references/template-base.html` — HTML skeleton
-- `${CLAUDE_PLUGIN_ROOT}/skills/dashboard-generation/references/navigation-patterns.md` — nav bar patterns
+- `${CLAUDE_PLUGIN_ROOT}/skills/dashboard-generation/references/navigation-patterns.md` — sidebar patterns
 
 ## Step 2: Gather Data
 
@@ -72,32 +72,14 @@ LIMIT 10;
 
 Generate a self-contained HTML file following the template-base.html structure (Tailwind CDN, Lucide CDN, Inter font).
 
-### Nav Bar
+### Sidebar
 
-Include the nav bar from `navigation-patterns.md`. For this page:
-- Left side: Dashboard link + separator + "Week View" as current page (plain text, not a link)
-- Right side: Quick links to generated entity pages (up to 5 most recent)
-
-```html
-<nav class="flex items-center justify-between mb-6 pb-4 border-b border-zinc-200">
-    <div class="flex items-center gap-3">
-        <a href="dashboard.html" class="flex items-center gap-1.5 text-sm text-zinc-500 hover:text-zinc-900 transition-colors">
-            <i data-lucide="layout-dashboard" class="w-4 h-4"></i>
-            <span>Dashboard</span>
-        </a>
-        <span class="text-zinc-300">/</span>
-        <span class="text-sm font-medium text-zinc-900">Week View</span>
-    </div>
-    <div class="flex items-center gap-2">
-        <!-- Quick links to entity pages from generated_views -->
-    </div>
-</nav>
-```
+Include the sidebar from `navigation-patterns.md` with Calendar active in the Comms section.
 
 ### Layout Structure
 
 ```
-Nav bar
+Sidebar
 
 Header card
 ├── Title: "This Week" + date range (e.g., "Feb 17–23, 2026")

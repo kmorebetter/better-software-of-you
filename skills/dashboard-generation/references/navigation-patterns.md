@@ -1,16 +1,16 @@
 # Navigation Patterns
 
-Every generated page in Software of You includes a **consistent grouped navigation system**: a primary nav bar with dropdown groups, and a breadcrumb showing where you are. This navigation is the SAME on every page — it is not dynamically assembled.
+Every generated page in Software of You includes a **persistent left sidebar** that lists all pages — module views and individual entity pages — so every page is one click away. The sidebar is the SAME on every page; only the active state changes.
 
 ## Navigation Data Queries
 
-Before generating ANY HTML page, run these queries to populate the nav:
+Before generating ANY HTML page, run these queries to populate the sidebar:
 
 ```sql
--- Installed modules (determines which nav items and groups to show)
+-- Installed modules (determines which sections to show)
 SELECT name FROM modules WHERE enabled = 1;
 
--- Data counts for nav badges
+-- Data counts for sidebar badges
 SELECT 'contacts' as section, COUNT(*) as count FROM contacts WHERE status = 'active'
 UNION ALL SELECT 'emails', COUNT(*) FROM emails
 UNION ALL SELECT 'calendar', COUNT(*) FROM calendar_events WHERE start_time > datetime('now', '-30 days')
@@ -22,15 +22,27 @@ UNION ALL SELECT 'notes', COUNT(*) FROM standalone_notes;
 -- Which module views have been generated (for linking)
 SELECT entity_name, filename FROM generated_views WHERE view_type = 'module_view';
 
--- Entity pages (for sub-nav within sections)
-SELECT entity_type, entity_id, entity_name, filename FROM generated_views
-WHERE view_type = 'entity_page'
-ORDER BY updated_at DESC;
+-- Contact entity pages for sidebar (alphabetical)
+SELECT entity_id, entity_name, filename FROM generated_views
+WHERE view_type = 'entity_page' AND entity_type = 'contact'
+ORDER BY entity_name ASC;
+
+-- Project entity pages for sidebar (alphabetical)
+SELECT entity_id, entity_name, filename FROM generated_views
+WHERE view_type = 'entity_page' AND entity_type = 'project'
+ORDER BY entity_name ASC;
+
+-- Nudge count for Tools section badge
+SELECT
+  (SELECT COUNT(*) FROM follow_ups WHERE status = 'pending' AND due_date < date('now'))
+  + (SELECT COUNT(*) FROM commitments WHERE status IN ('open','overdue') AND deadline_date < date('now'))
+  + (SELECT COUNT(*) FROM tasks t JOIN projects p ON p.id = t.project_id WHERE t.status NOT IN ('done') AND t.due_date < date('now'))
+  as urgent_count;
 ```
 
 ### Ungenerated Page Fallback
 
-Nav items must never link to pages that don't exist yet. Before rendering each nav item, check whether its target file appears in the `generated_views` results above.
+Sidebar items must never link to pages that don't exist yet. Before rendering each item, check whether its target file appears in the `generated_views` results above.
 
 **If the page has been generated** → render as a normal `<a>` tag linking to the file.
 
@@ -38,43 +50,37 @@ Nav items must never link to pages that don't exist yet. Before rendering each n
 
 ```html
 <!-- Generated — normal link -->
-<a href="contacts.html" class="nav-dropdown-item">
-  <i data-lucide="users" class="w-3.5 h-3.5"></i>
+<a href="contacts.html" class="sidebar-item">
+  <i data-lucide="users" class="w-4 h-4"></i>
   Contacts
-  <span class="nav-badge">7</span>
+  <span class="sidebar-badge">7</span>
 </a>
 
 <!-- Not yet generated — greyed out, non-clickable -->
-<span class="nav-dropdown-item nav-item-disabled" title="Run /contacts to generate this view">
-  <i data-lucide="users" class="w-3.5 h-3.5"></i>
+<span class="sidebar-item sidebar-item-disabled" title="Run /contacts to generate this view">
+  <i data-lucide="users" class="w-4 h-4"></i>
   Contacts
 </span>
 ```
 
-Add this CSS to every page's `<style>` block alongside the other nav classes:
-
-```css
-.nav-item-disabled {
-  opacity: 0.4;
-  cursor: default;
-  pointer-events: none;
-}
-```
-
-Apply this same pattern to standalone nav items (e.g., the Dashboard link itself — though that one is always generated since you're currently generating it).
+Apply this same pattern to entity page links in the sidebar.
 
 **Module view filenames to check against `generated_views`:**
 
 | Nav Item | Expected filename |
 |----------|------------------|
 | Contacts | `contacts.html` |
-| Network | `network-map.html` |
+| Network Map | `network-map.html` |
 | Email | `email-hub.html` |
 | Calendar | `week-view.html` |
 | Conversations | `conversations.html` |
 | Decisions | `decision-journal.html` |
 | Journal | `journal.html` |
 | Notes | `notes.html` |
+| Weekly Review | `weekly-review.html` |
+| Nudges | `nudges.html` |
+| Timeline | `timeline.html` |
+| Search | `search.html` |
 
 ## After Writing Any HTML Page
 
@@ -110,387 +116,644 @@ ON CONFLICT(filename) DO UPDATE SET
 
 ---
 
-## Primary Nav Bar — Grouped Dropdowns
+## Sidebar Structure
 
-The primary nav uses **grouped dropdown menus** to avoid horizontal overcrowding. Three groups (People, Comms, Intelligence) plus standalone items (SoY logo, Dashboard).
+The sidebar is a fixed-position `<aside>` on the left side of the viewport. It contains all navigation organized into collapsible sections, with entity pages listed directly by name.
 
-### Group Definitions
+```
+┌─────────────────────┐
+│ ⬡ Software of You   │  ← header (links to dashboard)
+├─────────────────────┤
+│ ▫ Dashboard          │  ← always present
+│                      │
+│ ▸ People             │  ← collapsible, if CRM installed
+│   Contacts (9)       │
+│   Network Map        │
+│   ─────────          │
+│   Daniel Byrne       │  ← entity pages listed directly
+│   Sarah Chen         │
+│   Marcus Webb        │
+│   ...                │
+│   Show all (24)      │  ← if >10 contacts
+│                      │
+│ ▸ Projects           │  ← if Project Tracker installed
+│   All Projects       │  ← no index view yet, but placeholder
+│   Meridian Rebrand   │  ← project entity pages
+│   AI for Main+Main   │
+│                      │
+│ ▸ Comms              │  ← if Gmail or Calendar installed
+│   Email (12)         │
+│   Calendar (5)       │
+│                      │
+│ ▸ Intelligence       │  ← if any intel module installed
+│   Conversations      │
+│   Decisions          │
+│   Journal            │
+│   Notes              │
+│                      │
+│ ▸ Tools              │  ← always present
+│   Weekly Review      │
+│   Nudges (3!)        │
+│   Timeline           │
+│   Search             │
+├─────────────────────┤
+│ TIP                  │  ← contextual card
+│ Use /follow-up to    │
+│ set a reminder.      │
+└─────────────────────┘
+```
 
-| Group | Label | Items | Shows if... |
-|-------|-------|-------|-------------|
-| — | SoY | Home/logo link | Always |
-| — | Dashboard | Dashboard link | Always |
-| People | People | Contacts, Network | CRM installed |
-| Comms | Comms | Email, Calendar | Gmail or Calendar installed |
-| Intelligence | Intelligence | Conversations, Decisions, Journal, Notes | Any of these modules installed |
-
-**A group only renders if at least one module within it is installed.** For example, if only Gmail is installed (not Calendar), the Comms group still shows but only contains Email.
-
-### Structure
+### HTML Structure
 
 ```html
-<nav class="bg-white border-b border-zinc-200 mb-6">
-  <div class="max-w-6xl mx-auto px-4">
-    <!-- Primary nav -->
-    <div class="flex items-center gap-1 py-3">
-      <!-- Logo/home -->
-      <a href="dashboard.html" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-semibold text-zinc-900 hover:bg-zinc-50 transition-colors shrink-0">
-        <i data-lucide="hexagon" class="w-4 h-4"></i>
-        SoY
-      </a>
+<!-- Sidebar -->
+<aside id="sidebar" class="sidebar">
+  <!-- Header -->
+  <div class="sidebar-header">
+    <a href="dashboard.html" class="sidebar-logo">
+      <i data-lucide="hexagon" class="w-4 h-4"></i>
+      <span>Software of You</span>
+    </a>
+  </div>
 
-      <span class="w-px h-5 bg-zinc-200 mx-1"></span>
+  <!-- Scrollable nav area -->
+  <nav class="sidebar-nav">
+    <!-- Dashboard (always present) -->
+    <a href="dashboard.html" class="sidebar-item active">
+      <i data-lucide="layout-dashboard" class="w-4 h-4"></i>
+      Dashboard
+    </a>
 
-      <!-- Dashboard (standalone, always shown) -->
-      <a href="dashboard.html" class="nav-item active">
-        <i data-lucide="layout-dashboard" class="w-3.5 h-3.5"></i>
-        Dashboard
-      </a>
-
-      <!-- People group (if CRM installed) -->
-      <div class="nav-group" id="nav-people">
-        <button class="nav-group-label" onclick="toggleNav('nav-people')">
-          <span>People</span>
-          <i data-lucide="chevron-down" class="w-3 h-3 nav-chevron"></i>
-        </button>
-        <div class="nav-dropdown">
-          <!-- Always (CRM is always installed if this group shows) -->
-          <a href="contacts.html" class="nav-dropdown-item">
-            <i data-lucide="users" class="w-3.5 h-3.5"></i>
-            Contacts
-            <span class="nav-badge">7</span>
-          </a>
-          <!-- If CRM installed and 2+ contacts -->
-          <a href="network-map.html" class="nav-dropdown-item">
-            <i data-lucide="share-2" class="w-3.5 h-3.5"></i>
-            Network
-          </a>
-        </div>
-      </div>
-
-      <!-- Comms group (if Gmail or Calendar installed) -->
-      <div class="nav-group" id="nav-comms">
-        <button class="nav-group-label" onclick="toggleNav('nav-comms')">
-          <span>Comms</span>
-          <i data-lucide="chevron-down" class="w-3 h-3 nav-chevron"></i>
-        </button>
-        <div class="nav-dropdown">
-          <!-- If Gmail installed -->
-          <a href="email-hub.html" class="nav-dropdown-item">
-            <i data-lucide="mail" class="w-3.5 h-3.5"></i>
-            Email
-            <span class="nav-badge">50</span>
-          </a>
-          <!-- If Calendar installed -->
-          <a href="week-view.html" class="nav-dropdown-item">
-            <i data-lucide="calendar" class="w-3.5 h-3.5"></i>
-            Calendar
-            <span class="nav-badge">27</span>
-          </a>
-        </div>
-      </div>
-
-      <!-- Intelligence group (if any intelligence module installed) -->
-      <div class="nav-group" id="nav-intelligence">
-        <button class="nav-group-label" onclick="toggleNav('nav-intelligence')">
-          <span>Intelligence</span>
-          <i data-lucide="chevron-down" class="w-3 h-3 nav-chevron"></i>
-        </button>
-        <div class="nav-dropdown">
-          <!-- If Conversation Intelligence installed -->
-          <a href="conversations.html" class="nav-dropdown-item">
-            <i data-lucide="message-square" class="w-3.5 h-3.5"></i>
-            Conversations
-          </a>
-          <!-- If Decision Log installed -->
-          <a href="decision-journal.html" class="nav-dropdown-item">
-            <i data-lucide="git-branch" class="w-3.5 h-3.5"></i>
-            Decisions
-          </a>
-          <!-- If Journal installed -->
-          <a href="journal.html" class="nav-dropdown-item">
-            <i data-lucide="book-open" class="w-3.5 h-3.5"></i>
-            Journal
-          </a>
-          <!-- If Notes installed -->
-          <a href="notes.html" class="nav-dropdown-item">
-            <i data-lucide="sticky-note" class="w-3.5 h-3.5"></i>
-            Notes
-          </a>
-        </div>
+    <!-- People section (if CRM installed) -->
+    <div class="sidebar-section open" id="section-people">
+      <button class="sidebar-section-label" onclick="toggleSection('section-people')">
+        <span>People</span>
+        <i data-lucide="chevron-right" class="w-3.5 h-3.5 sidebar-chevron"></i>
+      </button>
+      <div class="sidebar-section-content">
+        <!-- Module views -->
+        <a href="contacts.html" class="sidebar-item">
+          <i data-lucide="users" class="w-4 h-4"></i>
+          Contacts
+          <span class="sidebar-badge">9</span>
+        </a>
+        <a href="network-map.html" class="sidebar-item">
+          <i data-lucide="share-2" class="w-4 h-4"></i>
+          Network Map
+        </a>
+        <!-- Divider before entity pages -->
+        <div class="sidebar-divider"></div>
+        <!-- Contact entity pages (alphabetical, capped at 10) -->
+        <a href="contact-daniel-byrne.html" class="sidebar-entity active">Daniel Byrne</a>
+        <a href="contact-sarah-chen.html" class="sidebar-entity">Sarah Chen</a>
+        <a href="contact-marcus-webb.html" class="sidebar-entity">Marcus Webb</a>
+        <!-- ... more contacts ... -->
+        <!-- Show if >10 contact entity pages exist -->
+        <button class="sidebar-show-all" onclick="showAllEntities('section-people')">Show all (24)</button>
       </div>
     </div>
 
-    <!-- Breadcrumb + sub-nav (only on non-dashboard pages) -->
-    <div class="flex items-center justify-between pb-3 -mt-1">
-      <div class="flex items-center gap-1.5 text-sm">
-        <a href="dashboard.html" class="text-zinc-400 hover:text-zinc-600">Dashboard</a>
-        <span class="text-zinc-300">›</span>
-        <a href="contacts.html" class="text-zinc-400 hover:text-zinc-600">Contacts</a>
-        <span class="text-zinc-300">›</span>
-        <span class="text-zinc-700 font-medium">Daniel Byrne</span>
+    <!-- Projects section (if Project Tracker installed) -->
+    <div class="sidebar-section" id="section-projects">
+      <button class="sidebar-section-label" onclick="toggleSection('section-projects')">
+        <span>Projects</span>
+        <i data-lucide="chevron-right" class="w-3.5 h-3.5 sidebar-chevron"></i>
+      </button>
+      <div class="sidebar-section-content">
+        <!-- Project entity pages (alphabetical) -->
+        <a href="project-meridian-rebrand.html" class="sidebar-entity">Meridian Rebrand</a>
+        <a href="project-ai-for-mainmain.html" class="sidebar-entity">AI for Main+Main</a>
       </div>
+    </div>
 
-      <!-- Sub-nav: other pages in this section -->
-      <div class="flex items-center gap-1.5">
-        <a href="contact-sarah-chen.html" class="px-2 py-0.5 rounded text-xs bg-zinc-100 text-zinc-500 hover:bg-zinc-200 hover:text-zinc-700 transition-colors">Sarah Chen</a>
+    <!-- Comms section (if Gmail or Calendar installed) -->
+    <div class="sidebar-section" id="section-comms">
+      <button class="sidebar-section-label" onclick="toggleSection('section-comms')">
+        <span>Comms</span>
+        <i data-lucide="chevron-right" class="w-3.5 h-3.5 sidebar-chevron"></i>
+      </button>
+      <div class="sidebar-section-content">
+        <!-- If Gmail installed -->
+        <a href="email-hub.html" class="sidebar-item">
+          <i data-lucide="mail" class="w-4 h-4"></i>
+          Email
+          <span class="sidebar-badge">50</span>
+        </a>
+        <!-- If Calendar installed -->
+        <a href="week-view.html" class="sidebar-item">
+          <i data-lucide="calendar" class="w-4 h-4"></i>
+          Calendar
+          <span class="sidebar-badge">27</span>
+        </a>
       </div>
+    </div>
+
+    <!-- Intelligence section (if any intelligence module installed) -->
+    <div class="sidebar-section" id="section-intelligence">
+      <button class="sidebar-section-label" onclick="toggleSection('section-intelligence')">
+        <span>Intelligence</span>
+        <i data-lucide="chevron-right" class="w-3.5 h-3.5 sidebar-chevron"></i>
+      </button>
+      <div class="sidebar-section-content">
+        <!-- If Conversation Intelligence installed -->
+        <a href="conversations.html" class="sidebar-item">
+          <i data-lucide="message-square" class="w-4 h-4"></i>
+          Conversations
+        </a>
+        <!-- If Decision Log installed -->
+        <a href="decision-journal.html" class="sidebar-item">
+          <i data-lucide="git-branch" class="w-4 h-4"></i>
+          Decisions
+        </a>
+        <!-- If Journal installed -->
+        <a href="journal.html" class="sidebar-item">
+          <i data-lucide="book-open" class="w-4 h-4"></i>
+          Journal
+        </a>
+        <!-- If Notes installed -->
+        <a href="notes.html" class="sidebar-item">
+          <i data-lucide="sticky-note" class="w-4 h-4"></i>
+          Notes
+        </a>
+      </div>
+    </div>
+
+    <!-- Tools section (always present) -->
+    <div class="sidebar-section" id="section-tools">
+      <button class="sidebar-section-label" onclick="toggleSection('section-tools')">
+        <span>Tools</span>
+        <i data-lucide="chevron-right" class="w-3.5 h-3.5 sidebar-chevron"></i>
+      </button>
+      <div class="sidebar-section-content">
+        <a href="weekly-review.html" class="sidebar-item">
+          <i data-lucide="clipboard-list" class="w-4 h-4"></i>
+          Weekly Review
+        </a>
+        <a href="nudges.html" class="sidebar-item">
+          <i data-lucide="bell" class="w-4 h-4"></i>
+          Nudges
+          <span class="sidebar-badge sidebar-badge-alert">3</span>
+        </a>
+        <a href="timeline.html" class="sidebar-item">
+          <i data-lucide="clock" class="w-4 h-4"></i>
+          Timeline
+        </a>
+        <a href="search.html" class="sidebar-item">
+          <i data-lucide="search" class="w-4 h-4"></i>
+          Search
+        </a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Tip card (bottom zone) -->
+  <div class="sidebar-tip-zone">
+    <div class="sidebar-tip">
+      <p class="sidebar-tip-label">Tip</p>
+      <p class="sidebar-tip-text">Use /follow-up to set a reminder for any contact.</p>
     </div>
   </div>
-</nav>
+</aside>
+
+<!-- Mobile hamburger toggle -->
+<button id="sidebar-toggle" class="sidebar-mobile-toggle" onclick="toggleSidebar()">
+  <i data-lucide="menu" class="w-5 h-5"></i>
+</button>
+
+<!-- Mobile backdrop -->
+<div id="sidebar-backdrop" class="sidebar-backdrop" onclick="toggleSidebar()"></div>
+
+<!-- Main content wrapper -->
+<main class="lg:ml-60">
+  <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- Page content goes here -->
+  </div>
+</main>
 ```
 
 ### CSS Classes (include in every page's `<style>` block)
 
 ```css
-.nav-item {
+/* ── SIDEBAR ── */
+.sidebar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100vh;
+  width: 15rem; /* 240px */
+  background: white;
+  border-right: 1px solid #e4e4e7;
+  display: flex;
+  flex-direction: column;
+  z-index: 40;
+  transform: translateX(-100%);
+  transition: transform 0.2s ease;
+}
+@media (min-width: 1024px) {
+  .sidebar { transform: translateX(0); }
+}
+.sidebar.open { transform: translateX(0); }
+
+.sidebar-header {
+  padding: 1rem 1rem;
+  border-bottom: 1px solid #f4f4f5;
+  flex-shrink: 0;
+}
+.sidebar-logo {
   display: flex;
   align-items: center;
-  gap: 0.375rem;
-  padding: 0.375rem 0.75rem;
-  border-radius: 0.5rem;
-  font-size: 0.8125rem;
-  color: #71717a;
-  white-space: nowrap;
-  transition: all 0.15s;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #18181b;
   text-decoration: none;
 }
-.nav-item:hover {
+.sidebar-logo:hover { color: #3b82f6; }
+
+.sidebar-nav {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0.5rem 0.5rem;
+}
+
+/* Sidebar items (module views + dashboard) */
+.sidebar-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.375rem 0.75rem;
+  border-radius: 0.375rem;
+  font-size: 0.8125rem;
+  color: #71717a;
+  text-decoration: none;
+  transition: all 0.15s;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.sidebar-item:hover {
   background: #f4f4f5;
   color: #18181b;
 }
-.nav-item.active {
-  background: #f4f4f5;
-  color: #18181b;
+.sidebar-item.active {
+  background: #eff6ff;
+  color: #1d4ed8;
   font-weight: 600;
 }
-.nav-badge {
+.sidebar-item-disabled {
+  opacity: 0.4;
+  cursor: default;
+  pointer-events: none;
+}
+
+/* Sidebar badges */
+.sidebar-badge {
+  margin-left: auto;
   font-size: 0.6875rem;
   background: #e4e4e7;
   color: #52525b;
   padding: 0.0625rem 0.375rem;
   border-radius: 9999px;
   font-weight: 500;
+  flex-shrink: 0;
 }
-.nav-item.active .nav-badge,
-.nav-dropdown-item.active .nav-badge {
+.sidebar-item.active .sidebar-badge {
   background: #3b82f6;
   color: white;
 }
-
-/* Grouped dropdown nav */
-.nav-group {
-  position: relative;
+.sidebar-badge-alert {
+  background: #fecaca;
+  color: #dc2626;
 }
-.nav-group-label {
+.sidebar-item.active .sidebar-badge-alert {
+  background: #dc2626;
+  color: white;
+}
+
+/* Sidebar sections (collapsible groups) */
+.sidebar-section {
+  margin-top: 0.5rem;
+}
+.sidebar-section-label {
   display: flex;
   align-items: center;
-  gap: 0.25rem;
+  justify-content: space-between;
+  width: 100%;
   padding: 0.375rem 0.75rem;
-  border-radius: 0.5rem;
-  font-size: 0.8125rem;
-  color: #71717a;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: #a1a1aa;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
   cursor: pointer;
-  white-space: nowrap;
-  transition: all 0.15s;
-  user-select: none;
   background: none;
   border: none;
   font-family: inherit;
+  transition: color 0.15s;
 }
-.nav-group-label:hover {
-  background: #f4f4f5;
-  color: #18181b;
+.sidebar-section-label:hover {
+  color: #71717a;
 }
-.nav-group.active > .nav-group-label {
-  background: #f4f4f5;
-  color: #18181b;
-  font-weight: 600;
-}
-.nav-chevron {
+.sidebar-chevron {
   transition: transform 0.15s;
-  opacity: 0.5;
+  flex-shrink: 0;
 }
-.nav-group.open .nav-chevron {
-  transform: rotate(180deg);
-  opacity: 1;
+.sidebar-section.open > .sidebar-section-label .sidebar-chevron {
+  transform: rotate(90deg);
 }
-.nav-dropdown {
+.sidebar-section-content {
   display: none;
-  position: absolute;
-  top: calc(100% + 2px);
-  left: 0;
-  min-width: 10rem;
-  background: white;
-  border: 1px solid #e4e4e7;
-  border-radius: 0.75rem;
-  box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -2px rgba(0,0,0,0.1);
-  padding: 0.375rem;
-  z-index: 50;
+  padding-top: 0.125rem;
 }
-/* Open only via JS-controlled class — no hover */
-.nav-group.open > .nav-dropdown {
+.sidebar-section.open > .sidebar-section-content {
   display: block;
 }
-.nav-dropdown-item {
-  display: flex;
-  align-items: center;
-  gap: 0.375rem;
-  padding: 0.375rem 0.625rem;
-  border-radius: 0.375rem;
+
+/* Entity page links (contacts, projects listed by name) */
+.sidebar-entity {
+  display: block;
+  padding: 0.25rem 0.75rem 0.25rem 1.75rem;
   font-size: 0.8125rem;
   color: #71717a;
-  white-space: nowrap;
-  transition: all 0.15s;
   text-decoration: none;
+  transition: all 0.15s;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
-.nav-dropdown-item:hover {
+.sidebar-entity:hover {
   background: #f4f4f5;
   color: #18181b;
+  border-radius: 0.375rem;
 }
-.nav-dropdown-item.active {
+.sidebar-entity.active {
   background: #eff6ff;
   color: #1d4ed8;
   font-weight: 600;
+  border-radius: 0.375rem;
+}
+.sidebar-entity-disabled {
+  opacity: 0.4;
+  cursor: default;
+  pointer-events: none;
+}
+
+/* Divider between module views and entity pages */
+.sidebar-divider {
+  height: 1px;
+  background: #f4f4f5;
+  margin: 0.375rem 0.75rem;
+}
+
+/* "Show all" button for overflow entity lists */
+.sidebar-show-all {
+  display: block;
+  width: 100%;
+  padding: 0.25rem 0.75rem 0.25rem 1.75rem;
+  font-size: 0.75rem;
+  color: #3b82f6;
+  text-align: left;
+  cursor: pointer;
+  background: none;
+  border: none;
+  font-family: inherit;
+  transition: color 0.15s;
+}
+.sidebar-show-all:hover { color: #1d4ed8; }
+
+/* Hidden entity pages (shown when "Show all" is clicked) */
+.sidebar-entity-overflow {
+  display: none;
+}
+.sidebar-section.show-all .sidebar-entity-overflow {
+  display: block;
+}
+.sidebar-section.show-all .sidebar-show-all {
+  display: none;
+}
+
+/* Tip card zone (bottom of sidebar) */
+.sidebar-tip-zone {
+  padding: 0.75rem;
+  border-top: 1px solid #f4f4f5;
+  flex-shrink: 0;
+}
+.sidebar-tip {
+  background: #fafafa;
+  border-radius: 0.5rem;
+  padding: 0.75rem;
+}
+.sidebar-tip-label {
+  font-size: 0.625rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #a1a1aa;
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+}
+.sidebar-tip-text {
+  font-size: 0.75rem;
+  color: #71717a;
+  line-height: 1.4;
+}
+
+/* Mobile toggle button */
+.sidebar-mobile-toggle {
+  position: fixed;
+  top: 1rem;
+  left: 1rem;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: white;
+  border: 1px solid #e4e4e7;
+  border-radius: 0.5rem;
+  padding: 0.5rem;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+  cursor: pointer;
+  color: #52525b;
+}
+@media (min-width: 1024px) {
+  .sidebar-mobile-toggle { display: none; }
+}
+
+/* Mobile backdrop */
+.sidebar-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.3);
+  z-index: 30;
+  display: none;
+}
+.sidebar-backdrop.visible {
+  display: block;
+}
+@media (min-width: 1024px) {
+  .sidebar-backdrop { display: none !important; }
 }
 ```
 
 ---
 
-## Nav Bar Variants
+## Sidebar Variants (Active States)
 
 ### On the Dashboard
 
-- "Dashboard" nav item has the `active` class
-- No group has the `active` class
-- No breadcrumb row (the breadcrumb div is omitted entirely)
-- No sub-nav needed
+- "Dashboard" sidebar item has the `active` class
+- No entity or section item is active
+- All sections collapsed by default (except Tools, which auto-expands)
 
 ### On a Module View (e.g., Email Hub)
 
-- The corresponding dropdown item gets `active` (e.g., "Email" dropdown item is active on email-hub.html)
-- The parent group label also gets the `active` class on the `.nav-group` (e.g., the Comms group has `active`)
-- "Dashboard" nav item does NOT have `active`
-- Breadcrumb shows: `Dashboard › Email`
-- Sub-nav is empty (no sub-pages for module views)
+- The corresponding sidebar item gets `active` (e.g., "Email" is active on email-hub.html)
+- The parent section auto-expands (e.g., Comms section has `open` class)
+- "Dashboard" does NOT have `active`
 
 ### On a Contact Entity Page
 
-- "Contacts" dropdown item gets `active`
-- The People group gets `active` class on the `.nav-group`
-- "Dashboard" nav item does NOT have `active`
-- Breadcrumb shows: `Dashboard › Contacts › Daniel Byrne`
-- Sub-nav shows other contact entity pages as small pills (excluding the current contact)
-- Limit sub-nav to 5 most recently updated contact pages
+- The contact's name in the People section gets `active` on the `.sidebar-entity`
+- The People section auto-expands
+- "Contacts" module view item does NOT get `active` — only the specific entity
+- "Dashboard" does NOT have `active`
 
 ### On a Project Entity Page
 
-- "Dashboard" nav item gets `active` (projects don't have their own section)
-- No group has the `active` class
-- Breadcrumb shows: `Dashboard › Projects › Meridian Rebrand`
-- Sub-nav shows other project entity pages as pills
+- The project's name in the Projects section gets `active` on the `.sidebar-entity`
+- The Projects section auto-expands
+- "Dashboard" does NOT have `active`
+
+### On a Tools Sub-Page (Weekly Review, Nudges, Timeline, Search)
+
+- The corresponding item in the Tools section gets `active`
+- The Tools section auto-expands
+- "Dashboard" does NOT have `active`
 
 ### On the Notes View
 
-- "Notes" dropdown item gets `active`
-- The Intelligence group gets `active` class on the `.nav-group`
-- Breadcrumb shows: `Dashboard › Notes`
-- No sub-nav
+- "Notes" sidebar item gets `active`
+- The Intelligence section auto-expands
+- "Dashboard" does NOT have `active`
 
 ### On the Network Map
 
-- "Network" dropdown item gets `active`
-- The People group gets `active` class on the `.nav-group`
-- Breadcrumb shows: `Dashboard › Network`
-- No sub-nav
+- "Network Map" sidebar item gets `active`
+- The People section auto-expands
+- "Dashboard" does NOT have `active`
 
 ---
 
 ## Section-to-View Mapping
 
-When a nav item is clicked, it goes to the module view page. If the view hasn't been generated yet, the link should still point to the correct filename.
-
-| Nav Item | Group | Links to | Generated by |
-|----------|-------|----------|-------------|
+| Nav Item | Section | Links to | Generated by |
+|----------|---------|----------|-------------|
 | Dashboard | — | `dashboard.html` | `/dashboard` |
 | Contacts | People | `contacts.html` | `/contacts` |
-| Network | People | `network-map.html` | `/network-map` |
+| Network Map | People | `network-map.html` | `/network-map` |
 | Email | Comms | `email-hub.html` | `/email-hub` |
 | Calendar | Comms | `week-view.html` | `/week-view` |
 | Conversations | Intelligence | `conversations.html` | `/conversations-view` |
 | Decisions | Intelligence | `decision-journal.html` | `/decision-journal-view` |
 | Journal | Intelligence | `journal.html` | `/journal-view` |
 | Notes | Intelligence | `notes.html` | `/notes-view` |
-
-### Dashboard Sub-Pages
-
-These cross-cutting views are sub-pages of Dashboard — they do NOT appear in the nav bar or any dropdown. Instead, they are accessed via the Intelligence Tools strip on the dashboard itself.
-
-| Sub-Page | Links to | Generated by |
-|----------|----------|-------------|
-| Weekly Review | `weekly-review.html` | `/weekly-review` |
-| Nudges | `nudges.html` | `/nudges-view` |
-| Timeline | `timeline.html` | `/timeline` |
-| Search | `search.html` | `/search-hub` |
-
-On these sub-pages:
-- "Dashboard" nav item gets `active` class
-- No group has the `active` class
-- Breadcrumb: `Dashboard > [Page Name]` (e.g., `Dashboard > Nudges`)
-- No sub-nav
+| Weekly Review | Tools | `weekly-review.html` | `/weekly-review` |
+| Nudges | Tools | `nudges.html` | `/nudges-view` |
+| Timeline | Tools | `timeline.html` | `/timeline` |
+| Search | Tools | `search.html` | `/search-hub` |
 
 **Note:** "Contacts" links to `contacts.html`, which is the contact directory view generated by `/view contacts`. This is different from individual contact entity pages (`contact-{slug}.html`).
 
 ---
 
+## Entity Page Listing Rules
+
+Contact and project entity pages are listed directly in the sidebar by name, making every person and project one click away.
+
+1. **Contacts appear in the People section**, below the module views (Contacts, Network Map), separated by a `.sidebar-divider`.
+2. **Projects appear in the Projects section**, listed directly (no module views above them unless a project index exists).
+3. **Alphabetical order** by entity name.
+4. **Cap at 10 visible** by default. If more than 10 exist, the first 10 render normally and the rest get `class="sidebar-entity sidebar-entity-overflow"`. A "Show all (N)" button appears at the bottom.
+5. **Ungenerated entity pages** render as `<span class="sidebar-entity sidebar-entity-disabled">` — same greyed-out pattern as module views.
+
+---
+
 ## Rules
 
-1. **The primary nav is identical on every page.** Same groups, same items, same counts. The only things that change are which item has `active` and which group has `active`.
-2. **Only show groups that have at least one installed module.** If no Comms modules are installed, the Comms group doesn't appear.
-3. **Only show items for installed modules within each group.** If Gmail is installed but Calendar isn't, the Comms group shows only Email.
+1. **The sidebar is identical on every page.** Same sections, same items, same counts. The only things that change are which item has `active` and which section has `open`.
+2. **Only show sections that have at least one installed module** (except Dashboard and Tools, which always show).
+3. **Only show items for installed modules within each section.** If Gmail is installed but Calendar isn't, the Comms section shows only Email.
 4. **Data counts are baked in at generation time.** They reflect the state when the page was built.
-5. **Breadcrumb depth is max 3 levels.** Dashboard › Section › Page. Never deeper.
-6. **Sub-nav only appears on entity pages.** Module views and the dashboard don't have sub-nav.
-7. **Sub-nav shows sibling pages.** On a contact entity page, sub-nav shows other contacts.
-8. **Limit sub-nav to 5 items.** Most recently updated first.
-9. **Links use relative paths.** All pages live in `output/` together.
-10. **If a view hasn't been generated, render the nav item as a greyed-out `<span>` (non-clickable) instead of an `<a>` tag.** Check the `generated_views` query results to determine whether each page exists. Never link to a file that hasn't been generated. See "Ungenerated Page Fallback" above for the exact pattern.
-11. **Active state propagates upward.** When a dropdown item is active, its parent `.nav-group` also gets the `active` class.
-12. **Dropdowns open on click only — no hover.** Use `toggleNav(id)` via the button's `onclick`. Never use CSS `:hover` to show dropdowns. This prevents accidental dismissal when moving the mouse toward a menu item.
-13. **Each nav group needs a unique `id`** (`nav-people`, `nav-comms`, `nav-intelligence`) for the `toggleNav()` function to target.
-14. **Nav group labels use `<button>` not `<div>`.** This ensures keyboard accessibility and correct click behavior.
+5. **Links use relative paths.** All pages live in `output/` together.
+6. **If a view hasn't been generated, render the sidebar item as a greyed-out `<span>` (non-clickable) instead of an `<a>` tag.** Check the `generated_views` query results. Never link to a file that hasn't been generated.
+7. **Active state determines which section is auto-expanded.** The section containing the active page gets the `open` class on load. Other sections are collapsed.
+8. **Entity pages capped at 10 visible.** Overflow uses "Show all" expander.
+9. **Sections use `<button>` not `<div>` for labels.** Ensures keyboard accessibility.
+10. **Each section needs a unique `id`** (`section-people`, `section-projects`, `section-comms`, `section-intelligence`, `section-tools`) for the JS functions.
+11. **No breadcrumbs.** The sidebar provides full hierarchy at all times.
+12. **No sub-nav pills.** Entity pages are listed directly in the sidebar.
 
 ---
 
 ## Required JavaScript (include in every page's `<script>` block)
 
-Every generated page **must** include this nav JS. It handles click-to-open, close-on-outside-click, and keyboard escape.
+Every generated page **must** include this sidebar JS. It handles section toggle, mobile sidebar, and "show all" entity expansion.
 
 ```javascript
-// ── NAV DROPDOWN TOGGLE ──
-function toggleNav(id) {
-  const group = document.getElementById(id);
-  const isOpen = group.classList.contains('open');
-  // Close all open groups first
-  document.querySelectorAll('.nav-group.open').forEach(g => g.classList.remove('open'));
-  // Then open the clicked one (unless it was already open)
-  if (!isOpen) group.classList.add('open');
+// ── SIDEBAR SECTION TOGGLE ──
+function toggleSection(id) {
+  var section = document.getElementById(id);
+  if (section) section.classList.toggle('open');
 }
 
-// Close dropdowns when clicking outside the nav
-document.addEventListener('click', function(e) {
-  if (!e.target.closest('.nav-group')) {
-    document.querySelectorAll('.nav-group.open').forEach(g => g.classList.remove('open'));
-  }
-});
+// ── SHOW ALL ENTITIES ──
+function showAllEntities(sectionId) {
+  var section = document.getElementById(sectionId);
+  if (section) section.classList.add('show-all');
+}
 
-// Close dropdowns on Escape key
+// ── MOBILE SIDEBAR TOGGLE ──
+function toggleSidebar() {
+  var sidebar = document.getElementById('sidebar');
+  var backdrop = document.getElementById('sidebar-backdrop');
+  var isOpen = sidebar.classList.contains('open');
+  if (isOpen) {
+    sidebar.classList.remove('open');
+    backdrop.classList.remove('visible');
+  } else {
+    sidebar.classList.add('open');
+    backdrop.classList.add('visible');
+  }
+}
+
+// Close sidebar on Escape key (mobile)
 document.addEventListener('keydown', function(e) {
   if (e.key === 'Escape') {
-    document.querySelectorAll('.nav-group.open').forEach(g => g.classList.remove('open'));
+    var sidebar = document.getElementById('sidebar');
+    var backdrop = document.getElementById('sidebar-backdrop');
+    if (sidebar) sidebar.classList.remove('open');
+    if (backdrop) backdrop.classList.remove('visible');
   }
 });
 ```
+
+---
+
+## Tip Card Content
+
+The tip card at the bottom of the sidebar shows contextual hints. Rotate through these based on the current page:
+
+| Current Page | Tip Text |
+|-------------|----------|
+| Dashboard | "Use /contact to add someone new." |
+| Contact Entity | "Use /follow-up to set a reminder for this person." |
+| Project Entity | "Use /project status to get a quick update." |
+| Email Hub | "Use /email to compose a message." |
+| Calendar | "Use /calendar to create an event." |
+| Conversations | "Use /import-call to analyze a transcript." |
+| Decisions | "Use /decision to log a new decision." |
+| Journal | "Use /journal to write today's entry." |
+| Notes | "Use /note to capture a thought." |
+| Default | "Use /help-soy to see all available commands." |
 
 ---
 
@@ -511,12 +774,50 @@ If no page exists, render as plain text.
 
 ---
 
-## Page Footer
+## Page Layout Wrapper
 
-Every page includes a footer:
+Every page uses this layout structure (sidebar + main content):
 
 ```html
-<footer class="mt-8 pt-4 border-t border-zinc-100 text-center">
-    <p class="text-xs text-zinc-400">Generated by Software of You · February 20, 2026 at 3:45 PM</p>
+<body class="bg-zinc-50 text-zinc-900 font-sans antialiased">
+  <!-- Sidebar (from above) -->
+  <!-- Mobile toggle + backdrop (from above) -->
+
+  <main class="lg:ml-60">
+    <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <!-- Page content here -->
+    </div>
+
+    <footer class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 mt-8 pb-8">
+      <div class="pt-4 border-t border-zinc-100 text-center">
+        <p class="text-xs text-zinc-400">Generated by Software of You · February 23, 2026 at 3:45 PM</p>
+      </div>
+    </footer>
+  </main>
+
+  <script>
+    // Sidebar JS (from above)
+    lucide.createIcons();
+  </script>
+</body>
+```
+
+**Key dimensions:**
+- Sidebar: `w-60` (240px), fixed left
+- Content: `lg:ml-60` pushes content right on desktop, full width on mobile
+- Content max-width: `max-w-5xl` (1024px) centered in remaining space
+- At 1280px viewport: 240px sidebar + 1040px content area → `max-w-5xl` fits comfortably
+
+---
+
+## Page Footer
+
+Every page includes a footer inside the `<main>` wrapper:
+
+```html
+<footer class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 mt-8 pb-8">
+    <div class="pt-4 border-t border-zinc-100 text-center">
+        <p class="text-xs text-zinc-400">Generated by Software of You · February 23, 2026 at 3:45 PM</p>
+    </div>
 </footer>
 ```

@@ -21,7 +21,7 @@ If the value is NULL or older than 15 minutes, run the Gmail sync silently befor
 
 Read these design references in parallel:
 - `${CLAUDE_PLUGIN_ROOT}/skills/dashboard-generation/references/template-base.html` — HTML skeleton
-- `${CLAUDE_PLUGIN_ROOT}/skills/dashboard-generation/references/navigation-patterns.md` — nav bar patterns
+- `${CLAUDE_PLUGIN_ROOT}/skills/dashboard-generation/references/navigation-patterns.md` — sidebar patterns
 
 At the same time, gather data from `${CLAUDE_PLUGIN_ROOT}/data/soy.db`:
 
@@ -84,7 +84,7 @@ LIMIT 10;
 SELECT entity_id, filename FROM generated_views WHERE entity_type = 'contact';
 ```
 
-### Nav bar pages
+### Sidebar navigation data
 
 ```sql
 SELECT view_type, entity_name, filename, updated_at
@@ -109,27 +109,9 @@ Group raw emails into threads by `thread_id`. For each thread, compute:
 
 Generate a self-contained HTML file using the template-base.html skeleton. Follow the layout below exactly.
 
-### Nav Bar
+### Sidebar
 
-Include the nav bar from `navigation-patterns.md`. Use this structure for module view pages:
-
-```html
-<nav class="flex items-center justify-between mb-6 pb-4 border-b border-zinc-200">
-    <div class="flex items-center gap-3">
-        <a href="dashboard.html" class="flex items-center gap-1.5 text-sm text-zinc-500 hover:text-zinc-900 transition-colors">
-            <i data-lucide="layout-dashboard" class="w-4 h-4"></i>
-            <span>Dashboard</span>
-        </a>
-        <span class="text-zinc-300">/</span>
-        <span class="text-sm font-medium text-zinc-900">Email Hub</span>
-    </div>
-
-    <!-- Quick links to generated entity pages -->
-    <div class="flex items-center gap-2">
-        <!-- pills for existing entity pages from generated_views -->
-    </div>
-</nav>
-```
+Include the sidebar from `navigation-patterns.md` with Email active in the Comms section.
 
 ### Header Card
 

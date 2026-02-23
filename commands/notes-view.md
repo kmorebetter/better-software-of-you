@@ -11,7 +11,7 @@ Generate a standalone HTML page for the Notes module — showing all notes with 
 
 Read these files first:
 - `${CLAUDE_PLUGIN_ROOT}/skills/dashboard-generation/references/template-base.html` — HTML skeleton
-- `${CLAUDE_PLUGIN_ROOT}/skills/dashboard-generation/references/navigation-patterns.md` — nav bar patterns
+- `${CLAUDE_PLUGIN_ROOT}/skills/dashboard-generation/references/navigation-patterns.md` — sidebar patterns
 
 ## Step 2: Check Module & Gather Data
 
@@ -109,16 +109,14 @@ SELECT entity_id, entity_type, filename FROM generated_views WHERE view_type = '
 
 Generate a self-contained HTML file following the template-base.html structure (Tailwind CDN, Lucide CDN, Inter font).
 
-### Nav Bar
+### Sidebar
 
-Include the nav bar from `navigation-patterns.md`. For this page:
-- "Notes" is the active nav item (within the Intelligence group)
-- Breadcrumb: `Dashboard › Notes`
+Include the sidebar from `navigation-patterns.md` with Notes active in the Intelligence section.
 
 ### Layout Structure
 
 ```
-Nav bar
+Sidebar
 
 Header card
 +-- Title: "Notes"

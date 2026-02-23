@@ -15,7 +15,7 @@ Before building, ensure data is fresh. Follow the auto-sync procedure in CLAUDE.
 
 Read these files first:
 - `${CLAUDE_PLUGIN_ROOT}/skills/dashboard-generation/references/template-base.html` — HTML skeleton
-- `${CLAUDE_PLUGIN_ROOT}/skills/dashboard-generation/references/navigation-patterns.md` — nav bar patterns
+- `${CLAUDE_PLUGIN_ROOT}/skills/dashboard-generation/references/navigation-patterns.md` — sidebar patterns
 
 ## Step 2: Check Modules & Gather Data
 
@@ -159,17 +159,14 @@ Only include categories for installed modules.
 
 Generate a self-contained HTML file. Follow the template-base.html structure (Tailwind CDN, Lucide CDN, Inter font).
 
-### Nav Bar
+### Sidebar
 
-Use navigation-patterns.md. For this page:
-- "Dashboard" nav item gets `active` class (this is a Dashboard sub-page)
-- Breadcrumb: `Dashboard > Search`
-- No sub-nav
+Include the sidebar from `navigation-patterns.md` with Search active in the Tools section.
 
 ### Page Structure
 
 ```
-Nav bar (Dashboard active, breadcrumb: Dashboard > Search)
+Sidebar (Search active in Tools section)
 
 Search card (full width, prominent)
 +-- Search input (large, with icon)
