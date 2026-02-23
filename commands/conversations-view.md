@@ -79,6 +79,10 @@ ORDER BY rs.trajectory DESC;
 
 -- Entity pages for linking
 SELECT entity_id, filename FROM generated_views WHERE entity_type = 'contact';
+
+-- Transcript detail pages (for "View full analysis" links)
+SELECT entity_id, filename FROM generated_views
+WHERE view_type = 'transcript_page' AND entity_type = 'transcript';
 ```
 
 Also query for navigation:
@@ -146,14 +150,15 @@ Left column (lg:col-span-2):
   ├── Card header: mic icon + "Transcript Timeline"
   ├── Transcripts listed chronologically (newest first)
   ├── Each transcript entry:
-  │   ├── Title (bold) + date (relative) + duration badge ("32 min")
+  │   ├── Title (linked to transcript detail page if it exists in generated_views, otherwise bold text) + date (relative) + duration badge ("32 min")
   │   ├── Participants (linked to entity pages if they exist)
   │   ├── Call intelligence badges (if call_intelligence JSON exists):
   │   │   ├── Pain point count badge (red/amber pill)
   │   │   ├── Concern count badge (amber/zinc pill)
   │   │   └── Tech stack pills (up to 3, blue pills, "+N more")
   │   ├── Summary text (2-3 sentences, line-clamp-3)
-  │   └── Commitments from this call (inline pills: amber for open, red for overdue, green for completed)
+  │   ├── Commitments from this call (inline pills: amber for open, red for overdue, green for completed)
+  │   └── "View full analysis →" link (if transcript detail page exists in generated_views)
   └── Empty state: "No conversations imported yet. Use /import-call to get started." with mic-off icon
 
 Right column:
@@ -206,6 +211,13 @@ Footer
 - Relationship trajectory: color-coded Lucide icons with matching text color
 - Relationship depth: colored pill badges
 - Contact name linking: check entity pages query — if a page exists for a contact, render their name as `<a href="contact-{slug}.html" class="font-medium text-blue-600 hover:text-blue-800 hover:underline">Name</a>`. Otherwise plain text.
+- Transcript title linking: check transcript detail pages query — if a detail page exists for a transcript, wrap the title in `<a href="transcript-{slug}.html" class="font-medium text-blue-600 hover:text-blue-800 hover:underline">Title</a>`. Otherwise render as bold text. If a detail page exists, also add after the transcript entry:
+  ```html
+  <a href="transcript-{slug}.html" class="inline-flex items-center gap-1 text-xs text-blue-600 hover:text-blue-800 hover:underline mt-1">
+    View full analysis <i data-lucide="arrow-right" class="w-3 h-3"></i>
+  </a>
+  ```
+  Only render these links if the transcript's detail page exists in `generated_views`.
 - All data static in HTML — no JavaScript data fetching
 - The only JS: Lucide icon initialization (`lucide.createIcons()`)
 - Responsive: sidebar stacks below on mobile via `grid-cols-1 lg:grid-cols-3`

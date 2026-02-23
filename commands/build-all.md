@@ -25,6 +25,12 @@ SELECT id, name FROM contacts WHERE status = 'active';
 -- All active/planning projects (these each get a project page)
 SELECT id, name FROM projects WHERE status IN ('active', 'planning');
 
+-- All analyzed transcripts (these each get a transcript detail page)
+SELECT id, title FROM transcripts
+WHERE summary IS NOT NULL
+   OR call_intelligence IS NOT NULL
+   OR id IN (SELECT DISTINCT transcript_id FROM conversation_metrics);
+
 -- What views already exist (to report what's new vs. updated)
 SELECT filename, updated_at FROM generated_views;
 ```
@@ -32,6 +38,16 @@ SELECT filename, updated_at FROM generated_views;
 ## Step 2: Generate Everything
 
 Run each command's FULL specification. Do NOT generate lightweight summaries — use the complete command file for each page. Generate in this order:
+
+### Transcript Pages (one per analyzed transcript)
+
+For EACH transcript with summary, call_intelligence, or conversation_metrics, run the complete `/transcript-page` workflow:
+- Read `${CLAUDE_PLUGIN_ROOT}/commands/transcript-page.md` and follow it completely
+- Full data gathering: transcript details, participants, metrics, commitments, coaching insights
+- Generate the full HTML with navigation
+- Register in `generated_views`
+
+**Generate transcript pages FIRST** so that entity pages and conversations-view can link to them with "View full analysis" links.
 
 ### Entity Pages (one per active contact)
 
@@ -113,6 +129,7 @@ open "${CLAUDE_PLUGIN_ROOT}/output/dashboard.html"
 Tell the user what was built:
 
 "**Built X pages:**
+- **T transcript pages**: [list transcript titles]
 - **Y entity pages**: [list contact names]
 - **Z project pages**: [list project names]
 - **N module views**: [list which ones]
