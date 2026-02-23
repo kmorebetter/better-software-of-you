@@ -64,34 +64,35 @@
 
     /* ── NAV ─────────────────────────────────── */
     .nav {
-      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
-      background: rgba(250,249,246,0.92);
-      backdrop-filter: blur(16px);
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      background: rgba(250,249,246,0.95);
+      backdrop-filter: blur(8px);
       border-bottom: 1px solid var(--rule);
+      height: 60px;
     }
     .nav__inner {
-      max-width: 1200px; margin: 0 auto; padding: 0 48px;
-      height: 64px; display: flex; align-items: center; justify-content: space-between;
+      max-width: 1200px; margin: 0 auto; padding: 0 24px;
+      height: 100%; display: flex; align-items: center; gap: 32px;
     }
-    .nav__logo { font-family: 'DM Serif Display', Georgia, serif; font-size: 17px; color: var(--ink); text-decoration: none; letter-spacing: 0.01em; }
-    .nav__logo span { font-style: italic; color: var(--forest); }
-    .nav__links { display: flex; align-items: center; gap: 28px; list-style: none; }
-    .nav__links a { font-family: 'DM Mono', monospace; font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-3); text-decoration: none; transition: color 0.18s; }
-    .nav__links a:hover, .nav__links a[aria-current="page"] { color: var(--ink); }
+    .nav__logo { font-family: 'DM Serif Display', serif; font-size: 17px; color: var(--ink); text-decoration: none; white-space: nowrap; flex-shrink: 0; }
+    .nav__logo span { color: var(--forest); }
+    .nav__links { display: flex; list-style: none; gap: 0; align-items: center; flex: 1; }
+    .nav__links > li { position: relative; }
+    .nav__links > li > a { display: block; padding: 6px 14px; font-size: 14px; font-weight: 400; color: var(--ink-3); text-decoration: none; transition: color 0.15s; white-space: nowrap; }
+    .nav__links > li > a:hover, .nav__links > li > a[aria-current="page"] { color: var(--ink); }
+    .nav__links > li > a[aria-current="page"] { font-weight: 500; }
     .nav__item--has-sub { position: relative; }
-    .nav__item--has-sub > a::after { content: ''; display: inline-block; width: 5px; height: 5px; border-right: 1.5px solid currentColor; border-bottom: 1.5px solid currentColor; transform: rotate(45deg) translateY(-2px); margin-left: 6px; opacity: 0.5; transition: transform 0.18s; }
-    .nav__item--has-sub:hover > a::after { transform: rotate(225deg) translateY(-2px); }
-    .nav__sub { position: absolute; top: calc(100% + 8px); left: 50%; transform: translateX(-50%) translateY(-4px); background: white; border: 1px solid var(--rule-heavy); min-width: 220px; padding: 8px 0; list-style: none; opacity: 0; visibility: hidden; pointer-events: none; transition: opacity 0.16s, transform 0.16s; box-shadow: 0 8px 24px rgba(0,0,0,0.08); }
-    .nav__item--has-sub:hover .nav__sub { opacity: 1; visibility: visible; pointer-events: auto; transform: translateX(-50%) translateY(0); }
-    .nav__sub li a { display: flex; align-items: center; gap: 10px; padding: 9px 20px; font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 400; letter-spacing: 0; text-transform: none; color: var(--ink-2); text-decoration: none; transition: background 0.12s, color 0.12s; }
-    .nav__sub li a:hover { background: var(--bone); color: var(--ink); }
-    .nav__sub__num { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--ink-5); min-width: 16px; }
-    .nav__sub__divider { height: 1px; background: var(--rule); margin: 6px 20px; }
-    .nav__right { display: flex; align-items: center; gap: 36px; }
-    .nav__meta { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--ink-4); letter-spacing: 0.06em; }
-    .nav__cta { font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 500; letter-spacing: 0.04em; color: var(--bone); background: var(--forest); padding: 10px 24px; text-decoration: none; border-radius: 2px; transition: background 0.18s, transform 0.14s; }
-    .nav__cta:hover { background: var(--forest-mid); transform: translateY(-1px); }
-    @media (max-width: 900px) { .nav__links { display: none; } }
+    .nav__sub { display: none; position: absolute; top: calc(100% + 8px); left: 0; background: var(--bone); border: 1px solid var(--rule-mid); border-radius: 8px; padding: 8px; list-style: none; min-width: 200px; box-shadow: 0 8px 32px rgba(15,14,12,0.10); z-index: 200; }
+    .nav__item--has-sub:hover .nav__sub { display: block; }
+    .nav__sub li a { display: flex; align-items: center; gap: 10px; padding: 8px 12px; font-size: 13px; color: var(--ink-3); text-decoration: none; border-radius: 6px; transition: background 0.1s, color 0.1s; }
+    .nav__sub li a:hover { background: var(--bone-mid); color: var(--ink); }
+    .nav__sub__num { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--ink-5); }
+    .nav__right { display: flex; align-items: center; gap: 12px; flex-shrink: 0; margin-left: auto; }
+    .nav__meta { font-family: 'DM Mono', monospace; font-size: 12px; color: var(--ink-4); white-space: nowrap; }
+    .nav__cta { display: inline-block; padding: 8px 18px; background: var(--forest); color: #fff; font-size: 13px; font-weight: 500; text-decoration: none; border-radius: 6px; white-space: nowrap; transition: background 0.15s; }
+    .nav__cta:hover { background: var(--forest-mid); }
 
     /* ── PAGE HERO ───────────────────────────── */
     .blog-hero {
@@ -105,17 +106,6 @@
       position: relative;
     }
 
-    .blog-hero::before {
-      content: '';
-      position: fixed;
-      inset: 0;
-      background: repeating-linear-gradient(
-        0deg, transparent, transparent 27px,
-        var(--rule) 27px, var(--rule) 28px
-      );
-      pointer-events: none;
-      z-index: -1;
-    }
 
     .blog-hero__eyebrow {
       font-family: 'DM Mono', monospace;
@@ -271,15 +261,7 @@
       position: relative;
       overflow: hidden;
     }
-    .article-featured__visual::before {
-      content: '';
-      position: absolute;
-      inset: 0;
-      background: repeating-linear-gradient(
-        0deg, transparent, transparent 27px,
-        rgba(255,255,255,0.04) 27px, rgba(255,255,255,0.04) 28px
-      );
-    }
+
     .article-featured__visual-label {
       font-family: 'DM Mono', monospace;
       font-size: 10px;
@@ -299,7 +281,7 @@
       z-index: 1;
     }
 
-    /* Article grid — remaining posts -->
+    /* Article grid — remaining posts */
     .article-grid {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
@@ -462,21 +444,13 @@
     }
 
     /* ── FOOTER ──────────────────────────────── */
-    footer {
-      border-top: 1px solid var(--rule-mid);
-      padding: 28px 48px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      font-family: 'DM Mono', monospace;
-      font-size: 12px;
-      color: var(--ink-4);
-      letter-spacing: 0.03em;
-    }
-    footer a { color: var(--ink-4); text-decoration: none; }
-    footer a:hover { color: var(--forest); }
-    .footer-email { color: var(--ink-4); text-decoration: none; font-size: 12px; }
-    .footer-email:hover { color: var(--forest); }
+    .footer { background: var(--ink); color: var(--ink-4); padding: 40px 24px; }
+    .footer__inner { max-width: 1100px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px; }
+    .footer__logo { font-family: 'DM Serif Display', serif; font-size: 16px; color: #fff; text-decoration: none; }
+    .footer__logo span { color: rgba(255,255,255,0.5); }
+    .footer__copy { font-size: 13px; color: var(--ink-4); }
+    .footer-email { font-size: 13px; color: var(--ink-4); text-decoration: none; transition: color 0.15s; }
+    .footer-email:hover { color: var(--ink-5); }
 
     /* ── RESPONSIVE ──────────────────────────── */
     @media (max-width: 1000px) {
@@ -484,6 +458,7 @@
       .article-featured { grid-template-columns: 1fr; }
       .article-featured__visual { display: none; }
     }
+    @media (max-width: 800px) { .nav__links { display: none; } }
     @media (max-width: 760px) {
       .blog-hero { padding: 120px 24px 56px; grid-template-columns: 1fr; }
       .blog-hero__stat { text-align: left; }
@@ -492,17 +467,9 @@
       .article-grid { grid-template-columns: 1fr; }
       .lead-band { padding: 32px 24px; grid-template-columns: 1fr; }
       .lead-band__guide { min-width: 0; }
-      footer { padding: 20px 24px; flex-direction: column; gap: 8px; text-align: center; }
+      .footer__inner { flex-direction: column; text-align: center; }
     }
   </style>
-  <!-- Google tag (gtag.js) -->
-  <script async src="https://www.googletagmanager.com/gtag/js?id=G-TQFFERGZW1"></script>
-  <script>
-    window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
-    gtag('js', new Date());
-    gtag('config', 'G-TQFFERGZW1');
-  </script>
 </head>
 <body>
 
@@ -720,12 +687,12 @@
       <p class="lead-band__body">Two complete implementation guides — free, no signup required. Templates, frameworks, and everything you need to build your context system today.</p>
     </div>
     <div class="lead-band__guides">
-      <a href="../../lead-magnets/context-engineering-guide.html" class="lead-band__guide" target="_blank" rel="noopener">
+      <a href="../lead-magnets/context-engineering-guide.html" class="lead-band__guide" target="_blank" rel="noopener">
         <span class="lead-band__guide-num">Guide 01</span>
         <span class="lead-band__guide-title">The Claude Code Power User's Guide to Context Engineering</span>
         <span class="lead-band__guide-badge">Free PDF</span>
       </a>
-      <a href="../../lead-magnets/freelancer-client-intelligence.html" class="lead-band__guide" target="_blank" rel="noopener">
+      <a href="../lead-magnets/freelancer-client-intelligence.html" class="lead-band__guide" target="_blank" rel="noopener">
         <span class="lead-band__guide-num">Guide 02</span>
         <span class="lead-band__guide-title">The Freelancer's Client Intelligence System</span>
         <span class="lead-band__guide-badge">Free PDF</span>
@@ -736,13 +703,12 @@
   <!-- ═══════════════════════════════════════
        FOOTER
   ═══════════════════════════════════════ -->
-  <footer>
-    <span>© 2026 Software of You · Built by Kerry Morrison</span>
-    <a href="https://softwareof.you" target="_blank" rel="noopener">softwareof.you</a>
-    <a class="footer-email" data-u="kerry" data-d="softwareof.you" href="#"
-       onclick="this.href='mailto:'+this.dataset.u+'@'+this.dataset.d;return false;" title="Email Kerry">
-      kerry<span aria-hidden="true" style="display:none">&#8203;</span>&#64;softwareof.you
-    </a>
+  <footer class="footer">
+    <div class="footer__inner">
+      <a href="https://softwareof.you" class="footer__logo">Software <span>of You</span></a>
+      <span class="footer__copy">&copy; 2026 Software of You</span>
+      <a class="footer-email" data-u="kerry" data-d="softwareof.you" href="#" onclick="this.href='mailto:'+this.dataset.u+'@'+this.dataset.d;return false;" title="Email Kerry">kerry<span aria-hidden="true" style="display:none">&#8203;</span>&#64;softwareof.you</a>
+    </div>
   </footer>
 
   <script>
