@@ -28,6 +28,54 @@ WHERE view_type = 'entity_page'
 ORDER BY updated_at DESC;
 ```
 
+### Ungenerated Page Fallback
+
+Nav items must never link to pages that don't exist yet. Before rendering each nav item, check whether its target file appears in the `generated_views` results above.
+
+**If the page has been generated** → render as a normal `<a>` tag linking to the file.
+
+**If the page has NOT been generated yet** → render as a `<span>` with a tooltip. Example:
+
+```html
+<!-- Generated — normal link -->
+<a href="contacts.html" class="nav-dropdown-item">
+  <i data-lucide="users" class="w-3.5 h-3.5"></i>
+  Contacts
+  <span class="nav-badge">7</span>
+</a>
+
+<!-- Not yet generated — greyed out, non-clickable -->
+<span class="nav-dropdown-item nav-item-disabled" title="Run /contacts to generate this view">
+  <i data-lucide="users" class="w-3.5 h-3.5"></i>
+  Contacts
+</span>
+```
+
+Add this CSS to every page's `<style>` block alongside the other nav classes:
+
+```css
+.nav-item-disabled {
+  opacity: 0.4;
+  cursor: default;
+  pointer-events: none;
+}
+```
+
+Apply this same pattern to standalone nav items (e.g., the Dashboard link itself — though that one is always generated since you're currently generating it).
+
+**Module view filenames to check against `generated_views`:**
+
+| Nav Item | Expected filename |
+|----------|------------------|
+| Contacts | `contacts.html` |
+| Network | `network-map.html` |
+| Email | `email-hub.html` |
+| Calendar | `week-view.html` |
+| Conversations | `conversations.html` |
+| Decisions | `decision-journal.html` |
+| Journal | `journal.html` |
+| Notes | `notes.html` |
+
 ## After Writing Any HTML Page
 
 **Always register/update the view in the database:**
@@ -406,7 +454,7 @@ On these sub-pages:
 7. **Sub-nav shows sibling pages.** On a contact entity page, sub-nav shows other contacts.
 8. **Limit sub-nav to 5 items.** Most recently updated first.
 9. **Links use relative paths.** All pages live in `output/` together.
-10. **If a view hasn't been generated, still include the nav item** — just point to the expected filename.
+10. **If a view hasn't been generated, render the nav item as a greyed-out `<span>` (non-clickable) instead of an `<a>` tag.** Check the `generated_views` query results to determine whether each page exists. Never link to a file that hasn't been generated. See "Ungenerated Page Fallback" above for the exact pattern.
 11. **Active state propagates upward.** When a dropdown item is active, its parent `.nav-group` also gets the `active` class.
 12. **Dropdowns open on click only — no hover.** Use `toggleNav(id)` via the button's `onclick`. Never use CSS `:hover` to show dropdowns. This prevents accidental dismissal when moving the mouse toward a menu item.
 13. **Each nav group needs a unique `id`** (`nav-people`, `nav-comms`, `nav-intelligence`) for the `toggleNav()` function to target.

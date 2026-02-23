@@ -52,26 +52,33 @@ For EACH active or planning project, run the complete `/project-page` workflow:
 - Full data gathering, intelligence synthesis, risk assessment, task checklist
 - Register in `generated_views`
 
-### Module Views (one per installed module)
+### Contacts Index (always, if CRM installed)
 
-Generate each module's dedicated view if the module is installed:
+Always generate the contacts index — even if there are 0 contacts. An empty state is better than a broken nav link.
+- Follow `commands/contacts.md` completely
+- If 0 contacts: show empty state ("No contacts yet — try `/contact add` to get started")
+- Output: `contacts.html`
 
-| Module | Command spec to follow | Output file |
-|--------|----------------------|-------------|
-| Gmail | `commands/email-hub.md` | `email-hub.html` |
-| Calendar | `commands/week-view.md` | `week-view.html` |
-| Conversation Intelligence | `commands/conversations-view.md` | `conversations.html` |
-| Decision Log | `commands/decision-journal-view.md` | `decision-journal.html` |
-| Journal | `commands/journal-view.md` | `journal.html` |
-| Notes | `commands/notes-view.md` | `notes.html` |
+### Module Views (one per installed module — ALWAYS generate, even if empty)
 
-For each: read the full command file and follow it completely.
+Generate each installed module's view **regardless of whether there is any content**. Nav links must always resolve. If a module has no data, show its empty state — never skip the file.
+
+| Module | Command spec to follow | Output file | Empty state message |
+|--------|----------------------|-------------|-------------------|
+| Gmail | `commands/email-hub.md` | `email-hub.html` | "No emails synced yet — try `/google-setup` to connect Gmail" |
+| Calendar | `commands/week-view.md` | `week-view.html` | "No calendar events — connect Google Calendar via `/google-setup`" |
+| Conversation Intelligence | `commands/conversations-view.md` | `conversations.html` | "No transcripts yet — try `/import-call` to import a meeting" |
+| Decision Log | `commands/decision-journal-view.md` | `decision-journal.html` | "No decisions logged yet — try `/decision` to record one" |
+| Journal | `commands/journal-view.md` | `journal.html` | "No journal entries yet — try `/journal` to write your first entry" |
+| Notes | `commands/notes-view.md` | `notes.html` | "No notes yet — try `/note` to create one" |
+
+For each: read the full command file and follow it completely. If the module has data, generate the full rich view. If empty, generate the page with the empty state message above — same nav, same layout, just no data rows.
 
 ### Network Map
 
-If CRM module is installed and there are 2+ contacts:
-- Follow `commands/network-map.md` completely
-- Generate the D3.js interactive visualization
+If CRM module is installed:
+- If 2+ contacts: follow `commands/network-map.md` completely, generate the D3.js interactive visualization
+- If 0–1 contacts: generate `network-map.html` with an empty state ("Add more contacts to see your network map — connections appear once you have 2 or more people")
 
 ### Cross-Cutting Views (after all entity/module pages)
 
