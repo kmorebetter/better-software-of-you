@@ -82,7 +82,7 @@ SELECT
 
 Write to `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/output/contacts.html`.
 
-Use the full nav bar from `skills/dashboard-generation/references/navigation-patterns.md`. Active state: "Contacts" dropdown item active, People group active.
+Include the sidebar from `skills/dashboard-generation/references/navigation-patterns.md` with Contacts active in the People section.
 
 ### Design system
 - Background: `bg-zinc-50`, cards: `bg-white border border-zinc-200 rounded-xl shadow-sm`
@@ -93,8 +93,7 @@ Use the full nav bar from `skills/dashboard-generation/references/navigation-pat
 ### Page structure
 
 ```
-[Nav bar]
-[Breadcrumb: Dashboard › Contacts]
+[Sidebar (Contacts active in People section)]
 
 [Stats bar]  — 4 stat chips: Active contacts | Companies | With follow-ups | Going cold
 
@@ -216,7 +215,7 @@ All data is baked into the HTML as a JSON array in a `<script>` block. The JS ha
 - `setView(type)` — toggles table/card, persists to `localStorage`
 - `setGroupBy(field)` — groups the list and re-renders
 - `toggleGroup(id)` — collapses/expands a group
-- `toggleNav(id)` — standard nav dropdown (from nav-patterns reference)
+- `toggleSidebar()` — standard sidebar toggle (from nav-patterns reference)
 - `clearFilters()` — resets all filters and search
 
 Restore last view preference from `localStorage` on page load.

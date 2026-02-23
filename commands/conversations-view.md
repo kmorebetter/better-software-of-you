@@ -110,7 +110,7 @@ Generate a self-contained HTML file. Follow the template-base.html structure (Ta
 ### Page Structure
 
 ```
-Nav bar (from navigation-patterns.md — "Dashboard" link + quick links to other pages, current page = "Conversations" as plain text)
+Sidebar (from navigation-patterns.md — Conversations active in the Intelligence section)
 
 Header card (full width)
 ├── Title: "Conversations"

@@ -84,9 +84,9 @@ def _format_time(iso_str: str) -> str:
         return iso_str
 
 
-def _get_nav_context(active_page: str = "dashboard", active_group: str = "",
-                      breadcrumbs: list = None, sub_nav: list = None) -> dict:
-    """Build navigation context for templates."""
+def _get_nav_context(active_page: str = "dashboard", active_section: str = "",
+                      active_entity_id: int = None, tip_text: str = None) -> dict:
+    """Build sidebar navigation context for templates."""
     modules = get_installed_modules()
 
     # Nav counts
@@ -101,13 +101,53 @@ def _get_nav_context(active_page: str = "dashboard", active_group: str = "",
     except Exception:
         pass
 
+    # Urgent nudge count for Tools section badge
+    urgent = 0
+    try:
+        row = execute("""
+            SELECT
+              (SELECT COUNT(*) FROM follow_ups WHERE status = 'pending' AND due_date < date('now'))
+              + (SELECT COUNT(*) FROM commitments WHERE status IN ('open','overdue') AND deadline_date < date('now'))
+              + (SELECT COUNT(*) FROM tasks t JOIN projects p ON p.id = t.project_id WHERE t.status NOT IN ('done') AND t.due_date < date('now'))
+              as urgent_count
+        """)
+        if row:
+            urgent = row[0]["urgent_count"] or 0
+    except Exception:
+        pass
+    counts["urgent"] = urgent
+
+    # Contact entity pages for sidebar
+    contact_pages = []
+    try:
+        contact_pages = execute("""
+            SELECT entity_id, entity_name, filename FROM generated_views
+            WHERE view_type = 'entity_page' AND entity_type = 'contact'
+            ORDER BY entity_name ASC
+        """)
+    except Exception:
+        pass
+
+    # Project entity pages for sidebar
+    project_pages = []
+    try:
+        project_pages = execute("""
+            SELECT entity_id, entity_name, filename FROM generated_views
+            WHERE view_type = 'entity_page' AND entity_type = 'project'
+            ORDER BY entity_name ASC
+        """)
+    except Exception:
+        pass
+
     return {
         "modules": modules,
         "active_page": active_page,
-        "active_group": active_group,
+        "active_section": active_section,
+        "active_entity_id": active_entity_id,
         "nav_counts": type("Counts", (), counts)(),
-        "breadcrumbs": breadcrumbs or [],
-        "sub_nav": sub_nav or [],
+        "contact_pages": contact_pages,
+        "project_pages": project_pages,
+        "tip_text": tip_text or "Use /help-soy to see all available commands.",
         "generated_at": datetime.now().strftime("%B %d, %Y at %-I:%M %p"),
     }
 
@@ -152,8 +192,8 @@ def register(server: FastMCP) -> None:
            - discovery_questions: HTML list of questions
 
         sections_data is a JSON string for module_view, containing:
-          page_title, page_subtitle, active_page, active_group,
-          breadcrumbs, header_stats, sections (array of section objects)
+          page_title, page_subtitle, active_page, active_section,
+          header_stats, sections (array of section objects)
         """
         if view_type == "dashboard":
             return _render_dashboard(open_after)
@@ -362,19 +402,9 @@ def _render_entity_page(contact_id: int, narrative_sections_json: str, open_afte
     for c in "'.()":
         slug = slug.replace(c, "")
 
-    # Nav context
-    breadcrumbs = [
-        {"href": "dashboard.html", "label": "Dashboard"},
-        {"href": "contacts.html", "label": "Contacts"},
-        {"href": "#", "label": contact["name"]},
-    ]
-    other_pages = rows_to_dicts(execute(
-        "SELECT entity_name, filename FROM generated_views WHERE entity_type = 'contact' AND entity_id != ? ORDER BY updated_at DESC LIMIT 5",
-        (contact_id,),
-    ))
-    sub_nav = [{"href": p["filename"], "label": p["entity_name"]} for p in other_pages]
-
-    ctx = _get_nav_context("contacts", "people", breadcrumbs, sub_nav)
+    # Nav context — sidebar with this contact active in People section
+    ctx = _get_nav_context("contacts", "people", active_entity_id=contact_id,
+                            tip_text="Use /follow-up to set a reminder for this person.")
     ctx["contact"] = contact
 
     # Tags
@@ -542,14 +572,9 @@ def _render_module_view(sections_data_json: str, open_after: bool) -> dict:
     page_title = data.get("page_title", "View")
     filename = data.get("filename", page_title.lower().replace(" ", "-") + ".html")
     active_page = data.get("active_page", "dashboard")
-    active_group = data.get("active_group", "")
+    active_section = data.get("active_section", "")
 
-    breadcrumbs = data.get("breadcrumbs", [
-        {"href": "dashboard.html", "label": "Dashboard"},
-        {"href": "#", "label": page_title},
-    ])
-
-    ctx = _get_nav_context(active_page, active_group, breadcrumbs)
+    ctx = _get_nav_context(active_page, active_section)
     ctx["page_title"] = page_title
     ctx["page_subtitle"] = data.get("page_subtitle", "")
     ctx["header_stats"] = data.get("header_stats", [])

@@ -249,12 +249,7 @@ Footer
 
 ## Step 6: Add Navigation
 
-Before generating, query existing pages for the nav bar:
-```sql
-SELECT entity_name, filename FROM generated_views WHERE view_type != 'dashboard' ORDER BY updated_at DESC LIMIT 5;
-```
-
-Include the nav bar from `navigation-patterns.md` at the top of the page — "Dashboard" breadcrumb link + pills for other generated entity pages (excluding the current project). Show the current project name as the breadcrumb text.
+Include the sidebar from `navigation-patterns.md` with this project highlighted in the Projects section. The Projects section auto-expands with this project's `.sidebar-entity` having the `active` class.
 
 ## Step 7: Write, Register, and Open
 

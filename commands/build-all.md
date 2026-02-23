@@ -97,7 +97,7 @@ For each: read the full command file and follow it completely. Generate them in 
 
 Generate the dashboard LAST so it can link to all the entity pages, module views, and cross-cutting views that now exist:
 - Follow `commands/dashboard.md` completely
-- The nav bar will populate with all the pages generated above
+- The sidebar will populate with all the pages generated above
 - Contact names throughout will link to entity pages
 - The Intelligence Tools strip will link to the four cross-cutting views
 
@@ -118,7 +118,7 @@ Tell the user what was built:
 - **N module views**: [list which ones]
 - Dashboard with links to everything
 
-All pages are in `output/` and linked via the nav bar."
+All pages are in `output/` and linked via the sidebar."
 
 ## Important
 

@@ -40,7 +40,7 @@ If CRM installed, also get pending follow-ups per contact.
 
 Layout: Card grid showing each contact with name, company, email, tags, project count, and last activity date. Each contact name links to their entity page if one exists.
 
-**Write to:** `${CLAUDE_PLUGIN_ROOT}/output/contacts.html` (always this filename — the nav bar links here)
+**Write to:** `${CLAUDE_PLUGIN_ROOT}/output/contacts.html` (always this filename — the sidebar links here)
 
 **Register:**
 ```sql
@@ -80,7 +80,7 @@ For custom descriptions, interpret what the user wants, query the relevant data,
 
 ## Navigation
 
-**Every view must include the primary nav bar** from `${CLAUDE_PLUGIN_ROOT}/skills/dashboard-generation/references/navigation-patterns.md`. Read it before generating any HTML. The nav bar is consistent across all pages — same sections, same counts, same order.
+**Every view must include the sidebar** from `${CLAUDE_PLUGIN_ROOT}/skills/dashboard-generation/references/navigation-patterns.md`. Read it before generating any HTML. The sidebar is consistent across all pages — same sections, same structure, same order.
 
 ## Output
 
