@@ -176,6 +176,10 @@ ORDER BY score_date DESC LIMIT 1;
 -- Communication insights
 SELECT insight_type, content, sentiment FROM communication_insights
 WHERE contact_id = ? ORDER BY created_at DESC LIMIT 5;
+
+-- Transcript detail pages (for "View full analysis" links)
+SELECT entity_id, filename FROM generated_views
+WHERE view_type = 'transcript_page' AND entity_type = 'transcript';
 ```
 
 **Aggregate call intelligence across transcripts:**
@@ -185,6 +189,18 @@ When processing the transcript query results, if any transcripts have `call_inte
 - **Cumulative pain points** — collect from all calls, deduplicate by title (keep most recent occurrence), sort most recent first
 - **Known tech stack** — merge tool names from all calls, deduplicate by name
 - **Unresolved concerns** — concerns where `addressed` is false, plus all concerns from the most recent call (even if addressed — shows current state)
+
+**Per-call detail links:**
+
+For each transcript listed in the Call Intelligence card, check if a transcript detail page exists in `generated_views` (match `view_type = 'transcript_page'` and `entity_id` = transcript ID). If so, add a "View full analysis" link after the call summary:
+
+```html
+<a href="transcript-{slug}.html" class="inline-flex items-center gap-1 text-xs text-blue-600 hover:text-blue-800 hover:underline mt-1">
+  View full analysis <i data-lucide="arrow-right" class="w-3 h-3"></i>
+</a>
+```
+
+Only render this link if the transcript's detail page exists in `generated_views`.
 
 ### If Notes module installed:
 
