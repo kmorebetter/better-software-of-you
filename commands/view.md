@@ -10,7 +10,7 @@ Generate a specialized HTML view based on $ARGUMENTS. Unlike `/dashboard` (which
 
 ## Determine View Type
 
-- **"contacts"** → Contact directory view
+- **"contacts"** → Run `/contacts` (tell user: "Generating your Contacts Index...")
 - **"projects"** → Project board view
 - **"emails"** or **"email"** or **"gmail"** → Run `/email-hub` (tell user: "Generating your Email Hub...")
 - **"calendar"** or **"week"** or **"schedule"** → Run `/week-view`
