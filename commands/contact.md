@@ -6,7 +6,7 @@ argument-hint: <name> [email] [company] or "list" or "find <query>"
 
 # Contact Management
 
-Handle contact operations based on $ARGUMENTS. Database at `${CLAUDE_PLUGIN_ROOT}/data/soy.db`.
+Handle contact operations based on $ARGUMENTS. Database at `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/data/soy.db`.
 
 ## Determine the Operation
 

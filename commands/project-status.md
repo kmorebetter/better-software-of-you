@@ -8,7 +8,7 @@ argument-hint: <project name or id>
 
 Generate a concise status update for the project specified in $ARGUMENTS.
 
-Query `${CLAUDE_PLUGIN_ROOT}/data/soy.db`:
+Query `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/data/soy.db`:
 
 ```sql
 -- Project overview

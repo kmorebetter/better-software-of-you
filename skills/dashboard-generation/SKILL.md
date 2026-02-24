@@ -38,5 +38,5 @@ All views share a consistent visual language:
 
 ## Output
 
-Write all HTML files to `${CLAUDE_PLUGIN_ROOT}/output/`
+Write all HTML files to `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/output/`
 Open with `open <filepath>` on macOS after writing.

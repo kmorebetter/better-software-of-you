@@ -8,7 +8,7 @@ argument-hint: <contact name or id>
 
 Generate a contact intelligence brief for the contact specified in $ARGUMENTS. This is the flagship view — a single page that synthesizes everything the system knows about a person: profile, relationship context, company intel, email history, projects, upcoming events, and AI-generated prep.
 
-**Reference implementation:** `${CLAUDE_PLUGIN_ROOT}/skills/dashboard-generation/references/entity-page-reference.html` — this is the gold standard. Match its layout, density, and tone.
+**Reference implementation:** `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/dashboard-generation/references/entity-page-reference.html` — this is the gold standard. Match its layout, density, and tone.
 
 ## Step 0: Auto-Sync External Data
 
@@ -17,13 +17,13 @@ Before building the entity page, ensure data is fresh. Follow the auto-sync proc
 ## Step 1: Read References + Resolve Entity
 
 Read design references in parallel:
-- `${CLAUDE_PLUGIN_ROOT}/skills/dashboard-generation/references/entity-page-reference.html`
-- `${CLAUDE_PLUGIN_ROOT}/skills/dashboard-generation/references/template-base.html`
-- `${CLAUDE_PLUGIN_ROOT}/skills/dashboard-generation/references/component-patterns.md`
-- `${CLAUDE_PLUGIN_ROOT}/skills/dashboard-generation/references/activity-feed-patterns.md`
-- `${CLAUDE_PLUGIN_ROOT}/skills/dashboard-generation/references/navigation-patterns.md`
+- `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/dashboard-generation/references/entity-page-reference.html`
+- `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/dashboard-generation/references/template-base.html`
+- `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/dashboard-generation/references/component-patterns.md`
+- `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/dashboard-generation/references/activity-feed-patterns.md`
+- `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/dashboard-generation/references/navigation-patterns.md`
 
-At the same time, resolve the contact. Query `${CLAUDE_PLUGIN_ROOT}/data/soy.db`:
+At the same time, resolve the contact. Query `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/data/soy.db`:
 
 ```sql
 SELECT * FROM contacts WHERE name LIKE '%$ARGUMENTS%' OR id = '$ARGUMENTS';
@@ -339,7 +339,7 @@ Include the sidebar from `navigation-patterns.md` with this contact highlighted 
 
 Generate a filename slug from the contact name (lowercase, hyphens for spaces):
 
-Write to `${CLAUDE_PLUGIN_ROOT}/output/contact-{slug}.html`
+Write to `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/output/contact-{slug}.html`
 
 **Register the view** so other pages can link to it:
 ```sql
@@ -350,6 +350,6 @@ ON CONFLICT(filename) DO UPDATE SET
   updated_at = datetime('now');
 ```
 
-Open with: `open "${CLAUDE_PLUGIN_ROOT}/output/contact-{slug}.html"`
+Open with: `open "${CLAUDE_PLUGIN_ROOT:-$(pwd)}/output/contact-{slug}.html"`
 
 Tell the user: "Contact page for **{contact name}** opened." Then briefly summarize what's on it — e.g., "Shows relationship context from Vahid's intro, 6-email thread, upcoming discovery call, and 5 prep questions."

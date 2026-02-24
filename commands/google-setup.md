@@ -11,7 +11,7 @@ This sets up Gmail and Google Calendar access for Software of You. Credentials a
 
 Run:
 ```
-python3 "${CLAUDE_PLUGIN_ROOT}/shared/google_auth.py" status
+python3 "${CLAUDE_PLUGIN_ROOT:-$(pwd)}/shared/google_auth.py" status
 ```
 
 If already authenticated and token is valid, tell the user: "Your Google account is connected as [email]. Gmail and Calendar are ready." Then suggest `/gmail` and `/calendar`. **Stop here.**
@@ -24,7 +24,7 @@ Tell the user: "Opening Google sign-in in your browser — just sign in and clic
 
 Run:
 ```
-python3 "${CLAUDE_PLUGIN_ROOT}/shared/google_auth.py" auth
+python3 "${CLAUDE_PLUGIN_ROOT:-$(pwd)}/shared/google_auth.py" auth
 ```
 
 This opens the browser, the user authenticates, and the token is saved automatically.
@@ -33,7 +33,7 @@ This opens the browser, the user authenticates, and the token is saved automatic
 
 Run status check:
 ```
-python3 "${CLAUDE_PLUGIN_ROOT}/shared/google_auth.py" status
+python3 "${CLAUDE_PLUGIN_ROOT:-$(pwd)}/shared/google_auth.py" status
 ```
 
 Confirm: "Connected as [email]. Gmail and Calendar are ready.
@@ -58,4 +58,4 @@ Then run the full auth flow from Step 2 above. The `prompt=consent` parameter fo
 
 ## Advanced: Custom OAuth Credentials
 
-If a user wants to use their own Google Cloud project instead of the built-in one, they can place a `google_credentials.json` file in `${CLAUDE_PLUGIN_ROOT}/config/`. This overrides the embedded defaults.
+If a user wants to use their own Google Cloud project instead of the built-in one, they can place a `google_credentials.json` file in `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/config/`. This overrides the embedded defaults.

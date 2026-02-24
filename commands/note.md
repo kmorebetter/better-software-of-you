@@ -6,7 +6,7 @@ argument-hint: <note content> or <entity name> <note> or list | search <term> | 
 
 # Note
 
-Handle note operations based on $ARGUMENTS. Database at `${CLAUDE_PLUGIN_ROOT}/data/soy.db`.
+Handle note operations based on $ARGUMENTS. Database at `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/data/soy.db`.
 
 ## Determine the Operation
 

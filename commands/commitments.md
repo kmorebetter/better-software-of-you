@@ -6,7 +6,7 @@ argument-hint: [mine | theirs | overdue | <contact name> | complete <id>]
 
 # Commitments
 
-View and manage commitments from conversation transcripts. Database at `${CLAUDE_PLUGIN_ROOT}/data/soy.db`.
+View and manage commitments from conversation transcripts. Database at `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/data/soy.db`.
 
 ## Determine the Operation
 

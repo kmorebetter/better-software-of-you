@@ -6,7 +6,7 @@ argument-hint: [today | week | all] [contact/project name]
 
 # Activity Log
 
-Show the activity timeline from `${CLAUDE_PLUGIN_ROOT}/data/soy.db`.
+Show the activity timeline from `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/data/soy.db`.
 
 Default: last 7 days. Parse $ARGUMENTS for time range and optional entity filter.
 

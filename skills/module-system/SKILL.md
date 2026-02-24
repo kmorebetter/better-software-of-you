@@ -21,7 +21,7 @@ Check installed modules:
 SELECT name, version, enabled FROM modules WHERE enabled = 1;
 ```
 
-Read manifests from `${CLAUDE_PLUGIN_ROOT}/modules/*/manifest.json` for enhancement details.
+Read manifests from `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/modules/*/manifest.json` for enhancement details.
 
 ## Cross-Module Enhancement Rules
 

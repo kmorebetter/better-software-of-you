@@ -6,7 +6,7 @@ argument-hint: <journal entry text, or "today" or "week" or "read <date>">
 
 # Journal
 
-Handle journal operations based on $ARGUMENTS. Database at `${CLAUDE_PLUGIN_ROOT}/data/soy.db`.
+Handle journal operations based on $ARGUMENTS. Database at `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/data/soy.db`.
 
 ## Determine the Operation
 

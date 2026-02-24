@@ -13,11 +13,11 @@ Generate a per-transcript detail page for the transcript specified in $ARGUMENTS
 ## Step 1: Read References + Resolve Transcript
 
 Read design references in parallel:
-- `${CLAUDE_PLUGIN_ROOT}/skills/dashboard-generation/references/template-base.html`
-- `${CLAUDE_PLUGIN_ROOT}/skills/dashboard-generation/references/component-patterns.md`
-- `${CLAUDE_PLUGIN_ROOT}/skills/dashboard-generation/references/navigation-patterns.md`
+- `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/dashboard-generation/references/template-base.html`
+- `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/dashboard-generation/references/component-patterns.md`
+- `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/dashboard-generation/references/navigation-patterns.md`
 
-At the same time, resolve the transcript. Query `${CLAUDE_PLUGIN_ROOT}/data/soy.db`:
+At the same time, resolve the transcript. Query `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/data/soy.db`:
 
 ```sql
 -- Match by title, participant name, or ID
@@ -46,17 +46,20 @@ SELECT id, title, raw_text, summary, duration_minutes, occurred_at, source, call
 FROM transcripts WHERE id = ?;
 
 -- Participants with contact info
-SELECT tp.is_user, tp.speaker_label, tp.word_count,
+SELECT tp.is_user, tp.speaker_label,
   c.id as contact_id, c.name, c.role, c.company, c.email
 FROM transcript_participants tp
 LEFT JOIN contacts c ON c.id = tp.contact_id
 WHERE tp.transcript_id = ?;
 
--- Per-speaker conversation metrics
-SELECT speaker_label, word_count, question_count, interruption_count,
-  longest_monologue_words, talk_ratio_percentage, filler_word_count
-FROM conversation_metrics
-WHERE transcript_id = ?;
+-- Per-speaker conversation metrics (join to get speaker_label from participants)
+SELECT tp.speaker_label, cm.contact_id, cm.talk_ratio, cm.word_count,
+  cm.question_count, cm.interruption_count, cm.longest_monologue_seconds
+FROM conversation_metrics cm
+LEFT JOIN transcript_participants tp
+  ON tp.transcript_id = cm.transcript_id
+  AND (tp.contact_id = cm.contact_id OR (tp.contact_id IS NULL AND cm.contact_id IS NULL))
+WHERE cm.transcript_id = ?;
 
 -- Commitments from this call
 SELECT id, description, deadline_date, status, is_user_commitment,
@@ -84,7 +87,7 @@ FROM generated_views ORDER BY updated_at DESC;
 
 1. **Participants**: Match speaker labels to contacts. For each participant with a contact_id, check if an entity page exists — if so, make their name a link.
 
-2. **Speaker metrics**: Build per-speaker stat blocks. Calculate talk ratio bars. If conversation_metrics exist, use those values. If not, derive from transcript_participants word counts.
+2. **Speaker metrics**: Build per-speaker stat blocks. Calculate talk ratio bars. Use available data from conversation_metrics. If no metrics exist, note that metrics were not captured for this call.
 
 3. **Call intelligence**: Parse the `call_intelligence` JSON (if present). Extract:
    - **Pain points** — each with severity (high/medium/low) and description
@@ -124,7 +127,7 @@ Left column (lg:col-span-2):
   │   ├── Speaker name (or "You") + role/company if known
   │   ├── Talk ratio bar (visual percentage bar, colored per speaker)
   │   ├── Stats row: word count, question count, interruption count
-  │   └── Longest monologue (word count, estimated duration at ~150 wpm)
+  │   └── Longest monologue (seconds)
   └── Overall talk ratio summary
 
   Call Intelligence card (if call_intelligence JSON exists)
@@ -221,13 +224,13 @@ Show empty states for sections with no data — never hide the card:
 - No call intelligence: "No call intelligence data for this transcript." with `brain` icon
 - No commitments: "No commitments extracted from this call." with `circle-dot` icon
 - No coaching insights: "No coaching insights for this call." with `lightbulb` icon
-- No conversation metrics: Show participant word counts from transcript_participants instead
+- No conversation metrics: "Metrics were not captured for this call." with `bar-chart-3` icon
 
 ## Step 5: Write, Register, and Open
 
 Generate a filename slug from the transcript title (lowercase, hyphens for spaces, strip special chars). If multiple transcripts would produce the same slug, append the transcript ID: `transcript-{slug}-{id}.html`.
 
-Write to `${CLAUDE_PLUGIN_ROOT}/output/transcript-{slug}.html`
+Write to `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/output/transcript-{slug}.html`
 
 **Register the view:**
 ```sql
@@ -238,6 +241,6 @@ ON CONFLICT(filename) DO UPDATE SET
   updated_at = datetime('now');
 ```
 
-Open with: `open "${CLAUDE_PLUGIN_ROOT}/output/transcript-{slug}.html"`
+Open with: `open "${CLAUDE_PLUGIN_ROOT:-$(pwd)}/output/transcript-{slug}.html"`
 
 Tell the user: "Transcript page for **{title}** opened." Then briefly summarize what's on it — e.g., "Shows speaker metrics (you 62%, them 38%), 3 pain points, 5 commitments, and coaching insights on question technique."

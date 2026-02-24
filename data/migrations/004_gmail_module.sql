@@ -26,3 +26,5 @@ CREATE INDEX IF NOT EXISTS idx_emails_gmail_id ON emails(gmail_id);
 
 -- Register module
 INSERT OR REPLACE INTO modules (name, version) VALUES ('gmail', '1.0.0');
+
+ALTER TABLE emails ADD COLUMN from_name TEXT;

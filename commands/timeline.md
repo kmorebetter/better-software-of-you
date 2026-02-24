@@ -14,12 +14,12 @@ Before building, ensure data is fresh. Follow the auto-sync procedure in CLAUDE.
 ## Step 1: Read the Design System
 
 Read these files first:
-- `${CLAUDE_PLUGIN_ROOT}/skills/dashboard-generation/references/template-base.html` — HTML skeleton
-- `${CLAUDE_PLUGIN_ROOT}/skills/dashboard-generation/references/navigation-patterns.md` — sidebar patterns
+- `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/dashboard-generation/references/template-base.html` — HTML skeleton
+- `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/dashboard-generation/references/navigation-patterns.md` — sidebar patterns
 
 ## Step 2: Check Modules & Gather Data
 
-Query `${CLAUDE_PLUGIN_ROOT}/data/soy.db`. Run all queries in a single `sqlite3` heredoc call for efficiency.
+Query `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/data/soy.db`. Run all queries in a single `sqlite3` heredoc call for efficiency.
 
 ```sql
 -- Installed modules
@@ -384,7 +384,7 @@ If no timeline data exists at all:
 
 ## Step 5: Write, Register, and Open
 
-Write to `${CLAUDE_PLUGIN_ROOT}/output/timeline.html`
+Write to `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/output/timeline.html`
 
 **Register the view:**
 ```sql
@@ -393,6 +393,6 @@ VALUES ('module_view', 'module', NULL, 'Timeline', 'timeline.html')
 ON CONFLICT(filename) DO UPDATE SET updated_at = datetime('now');
 ```
 
-Open with: `open "${CLAUDE_PLUGIN_ROOT}/output/timeline.html"`
+Open with: `open "${CLAUDE_PLUGIN_ROOT:-$(pwd)}/output/timeline.html"`
 
 Tell the user: "Timeline opened." Then briefly summarize — e.g., "Showing 47 entries over the last 30 days across contacts, email, calendar, and decisions."

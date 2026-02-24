@@ -19,13 +19,13 @@ Walk the user through installing a new Software of You module.
    - Required files
 
 5. Copy files to the correct locations:
-   - `manifest.json` → `${CLAUDE_PLUGIN_ROOT}/modules/{module-name}/manifest.json`
-   - Migration `.sql` → `${CLAUDE_PLUGIN_ROOT}/data/migrations/`
-   - Command `.md` files → `${CLAUDE_PLUGIN_ROOT}/commands/`
+   - `manifest.json` → `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/modules/{module-name}/manifest.json`
+   - Migration `.sql` → `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/data/migrations/`
+   - Command `.md` files → `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/commands/`
 
 6. Run the migration:
    ```
-   sqlite3 "${CLAUDE_PLUGIN_ROOT}/data/soy.db" < "${CLAUDE_PLUGIN_ROOT}/data/migrations/{migration-file}"
+   sqlite3 "${CLAUDE_PLUGIN_ROOT:-$(pwd)}/data/soy.db" < "${CLAUDE_PLUGIN_ROOT:-$(pwd)}/data/migrations/{migration-file}"
    ```
 
 7. Verify the module registered: `SELECT * FROM modules WHERE name = '{module-name}';`

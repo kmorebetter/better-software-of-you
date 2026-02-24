@@ -10,7 +10,7 @@ Generate an AI-powered relationship summary for the contact specified in $ARGUME
 
 ## Step 1: Gather All Data
 
-Query `${CLAUDE_PLUGIN_ROOT}/data/soy.db` for everything about this contact:
+Query `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/data/soy.db` for everything about this contact:
 
 ```sql
 -- Find the contact

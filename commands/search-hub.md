@@ -14,12 +14,12 @@ Before building, ensure data is fresh. Follow the auto-sync procedure in CLAUDE.
 ## Step 1: Read the Design System
 
 Read these files first:
-- `${CLAUDE_PLUGIN_ROOT}/skills/dashboard-generation/references/template-base.html` — HTML skeleton
-- `${CLAUDE_PLUGIN_ROOT}/skills/dashboard-generation/references/navigation-patterns.md` — sidebar patterns
+- `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/dashboard-generation/references/template-base.html` — HTML skeleton
+- `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/dashboard-generation/references/navigation-patterns.md` — sidebar patterns
 
 ## Step 2: Check Modules & Gather Data
 
-Query `${CLAUDE_PLUGIN_ROOT}/data/soy.db`. Run all queries in a single `sqlite3` heredoc call for efficiency.
+Query `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/data/soy.db`. Run all queries in a single `sqlite3` heredoc call for efficiency.
 
 ```sql
 -- Installed modules
@@ -539,7 +539,7 @@ Keep the page size manageable by limiting data:
 
 ## Step 5: Write, Register, and Open
 
-Write to `${CLAUDE_PLUGIN_ROOT}/output/search.html`
+Write to `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/output/search.html`
 
 **Register the view:**
 ```sql
@@ -548,6 +548,6 @@ VALUES ('module_view', 'module', NULL, 'Search', 'search.html')
 ON CONFLICT(filename) DO UPDATE SET updated_at = datetime('now');
 ```
 
-Open with: `open "${CLAUDE_PLUGIN_ROOT}/output/search.html"`
+Open with: `open "${CLAUDE_PLUGIN_ROOT:-$(pwd)}/output/search.html"`
 
 Tell the user: "Search hub opened. Indexed X contacts, Y emails, Z projects across all modules."

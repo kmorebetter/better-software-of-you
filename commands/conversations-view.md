@@ -10,13 +10,13 @@ Generate a standalone HTML page for the Conversation Intelligence module. This i
 ## Step 1: Read the Design System
 
 Read these files first:
-- `${CLAUDE_PLUGIN_ROOT}/skills/dashboard-generation/references/template-base.html`
-- `${CLAUDE_PLUGIN_ROOT}/skills/dashboard-generation/references/navigation-patterns.md`
-- `${CLAUDE_PLUGIN_ROOT}/skills/dashboard-generation/references/activity-feed-patterns.md`
+- `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/dashboard-generation/references/template-base.html`
+- `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/dashboard-generation/references/navigation-patterns.md`
+- `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/dashboard-generation/references/activity-feed-patterns.md`
 
 ## Step 2: Gather Data
 
-Query `${CLAUDE_PLUGIN_ROOT}/data/soy.db`. Run all queries in a single `sqlite3` heredoc call for efficiency.
+Query `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/data/soy.db`. Run all queries in a single `sqlite3` heredoc call for efficiency.
 
 ```sql
 -- All transcripts with participants and call intelligence
@@ -234,7 +234,7 @@ If no data exists for a section, show the empty state — never hide the card. E
 
 ## Step 5: Write, Register, and Open
 
-Write to `${CLAUDE_PLUGIN_ROOT}/output/conversations.html`
+Write to `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/output/conversations.html`
 
 **Register the view:**
 ```sql
@@ -243,6 +243,6 @@ VALUES ('module_view', 'module', NULL, 'Conversations', 'conversations.html')
 ON CONFLICT(filename) DO UPDATE SET updated_at = datetime('now');
 ```
 
-Open with: `open "${CLAUDE_PLUGIN_ROOT}/output/conversations.html"`
+Open with: `open "${CLAUDE_PLUGIN_ROOT:-$(pwd)}/output/conversations.html"`
 
 Tell the user: "Conversations view opened." Then briefly summarize what's on it — e.g., "Shows 5 transcripts, 3 open commitments (2 yours), and relationship health for 4 contacts."

@@ -5,7 +5,7 @@ allowed-tools: ["Bash", "Read"]
 
 # Software of You — Help
 
-Check installed modules by querying `${CLAUDE_PLUGIN_ROOT}/data/soy.db`:
+Check installed modules by querying `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/data/soy.db`:
 ```sql
 SELECT name FROM modules WHERE enabled = 1;
 ```

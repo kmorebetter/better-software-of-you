@@ -6,7 +6,7 @@ argument-hint: <action> [tag name] [entity name] or "list"
 
 # Tag Management
 
-Handle tag operations based on $ARGUMENTS. Database at `${CLAUDE_PLUGIN_ROOT}/data/soy.db`.
+Handle tag operations based on $ARGUMENTS. Database at `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/data/soy.db`.
 
 ## Operations
 

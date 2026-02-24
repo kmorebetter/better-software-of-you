@@ -6,7 +6,7 @@ argument-hint: [export | import <path> | status]
 
 # Backup
 
-Manage full database backups for `${CLAUDE_PLUGIN_ROOT}/data/soy.db`.
+Manage full database backups for `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/data/soy.db`.
 
 Parse $ARGUMENTS to determine the subcommand. Default (no args) is **export**.
 
@@ -34,7 +34,7 @@ For tables that don't exist yet (module not installed), skip them — don't erro
 }
 ```
 
-3. Write to `${CLAUDE_PLUGIN_ROOT}/output/backup-{YYYY-MM-DD}.json` (use today's date).
+3. Write to `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/output/backup-{YYYY-MM-DD}.json` (use today's date).
 
 4. Stamp the backup time in soy_meta:
 ```sql
@@ -67,6 +67,6 @@ Show the last backup time and available backup files.
 SELECT value FROM soy_meta WHERE key = 'last_backup_at';
 ```
 
-2. List backup files in `${CLAUDE_PLUGIN_ROOT}/output/` matching `backup-*.json`, showing filename and size.
+2. List backup files in `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/output/` matching `backup-*.json`, showing filename and size.
 
 3. Present clearly: "Last backup: 3 days ago. 2 backup files found." If no backups exist, say so and suggest running `/backup`.

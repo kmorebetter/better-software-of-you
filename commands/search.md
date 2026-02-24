@@ -8,7 +8,7 @@ argument-hint: <what you're looking for>
 
 The user wants to search their Software of You data. Their query: $ARGUMENTS
 
-Translate their natural language query into SQL against `${CLAUDE_PLUGIN_ROOT}/data/soy.db`.
+Translate their natural language query into SQL against `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/data/soy.db`.
 
 ## Available Tables
 
