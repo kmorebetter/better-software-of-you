@@ -31,6 +31,10 @@ Ask the user which speaker is them (if not obvious from context).
 
 ## Step 3: Process the Transcript
 
+**Read scoring references first:**
+- `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/conversation-intelligence/references/scoring-methodology.md` — formulas, thresholds, NULL conditions
+- `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/conversation-intelligence/references/coaching-guidelines.md` — SBI+T framework, threshold checklist
+
 Run the full analysis pipeline:
 
 **3a. Save the transcript:**
@@ -70,7 +74,7 @@ All metrics MUST be computed by counting/measuring the actual transcript text. D
 | `word_count` | Count actual words in each speaker's segments | Always calculable — every transcript has words |
 | `talk_ratio` | Each speaker's `word_count / total_word_count` as a decimal (0.0–1.0) | Always calculable from word counts |
 | `question_count` | Count sentences ending in `?` in each speaker's segments | Always calculable — count the `?` marks |
-| `interruption_count` | Count speaker changes mid-sentence (incomplete thoughts cut off by another speaker) | Set to `0` if format doesn't show interruptions |
+| `interruption_count` | Count explicit overlap markers only: `[overlapping]`, `<crosstalk>`, `[cross-talk]`. Do NOT estimate from punctuation or speaker change patterns. | Set to `0` if format doesn't contain overlap markers |
 | `longest_monologue_seconds` | Find longest consecutive block per speaker. If timestamps exist, use them. If not, estimate from word count at ~150 words/minute | Use word-count estimation only for this field, and state you estimated it |
 
 **Show your work (MANDATORY):** Before storing ANY metrics, output a calculation summary the user can verify. Example:
@@ -80,6 +84,7 @@ All metrics MUST be computed by counting/measuring the actual transcript text. D
 > - Sarah: 983 words, 12 questions, talk ratio 0.44
 > - Total: 2,230 words across 32 minutes
 > - Longest monologue: Kerry, 4:12–6:48 (2m36s)
+> - Dominance ratio: Kerry 1.12x (balanced for 2-person call), Sarah 0.88x
 
 If you cannot show how you got a number, you must not store it — use NULL instead.
 
@@ -92,14 +97,17 @@ VALUES (?, ?, ?, ?, ?, ?, ?);
 
 Generate a **relationship pulse** (how is this relationship going, based on all historical data):
 ```sql
-INSERT INTO communication_insights (transcript_id, contact_id, insight_type, content, sentiment)
-VALUES (?, ?, 'relationship_pulse', ?, ?);
+INSERT INTO communication_insights (transcript_id, contact_id, insight_type, content, sentiment, data_points)
+VALUES (?, ?, 'relationship_pulse', ?, ?, ?);
+-- data_points JSON: {"meetings_90d":N, "talk_ratio_avg":N, "dominance_avg":N, "follow_through_user":N, "follow_through_contact":N, "depth":"level", "trajectory":"label"}
 ```
 
 Generate a **coach note** (must reference a specific moment from THIS call):
 ```sql
-INSERT INTO communication_insights (transcript_id, contact_id, insight_type, content, sentiment)
-VALUES (?, ?, 'coach_note', ?, ?);
+INSERT INTO communication_insights (transcript_id, contact_id, insight_type, content, sentiment, data_points)
+VALUES (?, ?, 'coach_note', ?, ?, ?);
+-- data_points JSON: {"trigger":"threshold_name", "value":N, "threshold":N, "context":"meeting type"}
+-- A coach note must cross at least one threshold from scoring-methodology.md. No threshold = no coach note.
 ```
 
 Check for **pattern alerts** (only if 3+ transcripts with same contact exist):
@@ -109,10 +117,26 @@ JOIN transcript_participants tp ON tp.transcript_id = t.id
 WHERE tp.contact_id = ?;
 ```
 
+If a pattern triggers, INSERT with data_points:
+```sql
+INSERT INTO communication_insights (transcript_id, contact_id, insight_type, content, sentiment, data_points)
+VALUES (?, ?, 'pattern_alert', ?, 'needs_attention', ?);
+-- data_points JSON: {"pattern":"pattern_name", "values":[...], "dates":[...]}
+-- Only generate if a pattern rule from scoring-methodology.md triggers. No rule triggered = no pattern_alert row.
+```
+
 **3f. Update relationship scores:**
 ```sql
-INSERT INTO relationship_scores (contact_id, score_date, meeting_frequency, talk_ratio_avg, commitment_follow_through, relationship_depth, trajectory, notes)
-VALUES (?, date('now'), ?, ?, ?, ?, ?, ?);
+-- Compute all values using formulas from scoring-methodology.md:
+-- meeting_frequency = COUNT(transcripts in 90d) / 13.0
+-- talk_ratio_avg = AVG(user talk_ratio) across 90d transcripts
+-- commitment_follow_through = completed / (completed + overdue) in 90d (user direction)
+-- relationship_depth = first matching threshold (Trusted > Collaborative > Professional > Transactional)
+-- trajectory = 45d window comparison (NULL if insufficient data)
+-- topic_diversity = NULL (deprecated)
+-- notes = depth reasoning: "{Level} — {meetings} meetings in 90d, follow-through user:{pct}% contact:{pct}%, dominance {ratio}x"
+INSERT INTO relationship_scores (contact_id, score_date, meeting_frequency, talk_ratio_avg, commitment_follow_through, topic_diversity, relationship_depth, trajectory, notes)
+VALUES (?, date('now'), ?, ?, ?, NULL, ?, ?, ?);
 ```
 
 **3g. Log activity and create CRM interactions (if CRM installed):**
@@ -166,7 +190,7 @@ Present structured blocks first (at-a-glance), then narrative prose (deeper cont
 | Stat | Source | Fallback |
 |------|--------|----------|
 | **Org/Team Size** | `call_intelligence.org_intel.team_size` | "—" if not discussed |
-| **Talk Ratio** | `conversation_metrics.talk_ratio` | Always available from 3d — include balance assessment (e.g., "You: 62% — slightly dominant") |
+| **Talk Ratio** | `conversation_metrics.talk_ratio` + dominance_ratio | Always available from 3d — show ratio and dominance: "You: 62% (dominance 1.24x — balanced)" or "You: 78% (dominance 1.56x — dominant)" |
 | **Questions Asked** | `conversation_metrics.question_count` | Always available from 3d — include depth assessment (e.g., "8 questions — strong discovery") |
 | **Commitments** | Count from `commitments` for this transcript | Always available from 3c — include yours/theirs breakdown |
 
@@ -192,7 +216,7 @@ Present structured blocks first (at-a-glance), then narrative prose (deeper cont
 
 **Commitments:** You said you'd **send the updated proposal by Friday** and **schedule a follow-up with design**. Sarah is going to **share the brand guidelines doc**.
 
-**Relationship pulse:** This is your **6th meeting** this quarter. Conversations have shifted from project logistics to team concerns — that signals **growing trust**. Open commitment follow-through with Sarah is at **85%**.
+**Relationship pulse:** Relationship depth: **Collaborative** — 6 meetings in 90 days, follow-through user:85% contact:80%, dominance 0.9x (balanced). Trajectory: **Strengthening** — frequency up from 3 meetings last quarter.
 
 **Coach's note:** You asked Sarah what worried her most about the timeline, then **stayed quiet while she worked through it**. That space led to the most productive part of the call. More of that."
 

@@ -173,9 +173,24 @@ SELECT * FROM relationship_scores
 WHERE contact_id = ?
 ORDER BY score_date DESC LIMIT 1;
 
--- Communication insights
-SELECT insight_type, content, sentiment FROM communication_insights
+-- Communication insights (with evidence data)
+SELECT insight_type, content, sentiment, data_points FROM communication_insights
 WHERE contact_id = ? ORDER BY created_at DESC LIMIT 5;
+
+-- Per-call metrics for dominance calculation
+SELECT cm.transcript_id, cm.talk_ratio, cm.word_count,
+  (SELECT COUNT(*) FROM transcript_participants WHERE transcript_id = cm.transcript_id) as participant_count,
+  cm.talk_ratio / (1.0 / (SELECT COUNT(*) FROM transcript_participants WHERE transcript_id = cm.transcript_id)) as dominance_ratio,
+  t.occurred_at
+FROM conversation_metrics cm
+JOIN transcripts t ON t.id = cm.transcript_id
+WHERE cm.transcript_id IN (
+  SELECT transcript_id FROM transcript_participants WHERE contact_id = ?
+)
+AND cm.contact_id IN (
+  SELECT contact_id FROM transcript_participants tp WHERE tp.transcript_id = cm.transcript_id AND tp.is_user = 1
+)
+ORDER BY t.occurred_at DESC LIMIT 10;
 
 -- Transcript detail pages (for "View full analysis" links)
 SELECT entity_id, filename FROM generated_views
@@ -245,13 +260,16 @@ This is where the page goes beyond raw data. Using all gathered data, synthesize
 
 ### Relationship Context Card
 
-Tell the story of this relationship:
+Tell the story of this relationship, grounded in computed conversation intelligence data:
+
+- **Relationship depth and trajectory** (if Conversation Intelligence data exists) — show the computed depth level and reasoning from `relationship_scores.notes`: e.g., "**Collaborative** — 7 meetings in 90d, dominance 1.1x, follow-through user:75% contact:68%". Show trajectory with evidence.
 - **How you met** — who introduced you, when, what context
 - **Key moments** — notable exchanges, mishaps, breakthroughs (e.g. "meeting didn't happen — calendar glitch, both laughed it off")
+- **Communication patterns** — show dominance_ratio alongside talk_ratio_avg. Show follow-through percentages for both directions. Use "--" for NULL values.
 - **Intent / opportunity** — what this person wants, what you might do together
 - **What's next** — highlight the immediate next action (e.g. "First call tomorrow — 8:30 AM")
 
-Pull from: interactions, email content/snippets, notes, relationship notes, commitments. If there's an upcoming event, surface it prominently with an amber callout.
+Pull from: interactions, email content/snippets, notes, relationship scores (especially `notes` field for depth reasoning), commitments, data_points from insights. If there's an upcoming event, surface it prominently with an amber callout. Never use vague language like "a sign of growing trust" — use the computed depth level and metrics.
 
 ### Company Intel Card
 

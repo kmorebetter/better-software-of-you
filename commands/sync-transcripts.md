@@ -63,7 +63,11 @@ Fetch the raw text:
 python3 "${CLAUDE_PLUGIN_ROOT:-$(pwd)}/shared/sync_transcripts.py" get <id>
 ```
 
-Then follow the **exact same analysis pipeline as `/import-call`**, starting from Step 2 (Identify Participants). The raw text from the Google Doc IS the transcript. Specifically:
+Then follow the **exact same analysis pipeline as `/import-call`**, starting from Step 2 (Identify Participants). The raw text from the Google Doc IS the transcript.
+
+**Important:** The `/import-call` pipeline now requires reading `scoring-methodology.md` and `coaching-guidelines.md` before generating insights and scores. Ensure these references are followed when running the analysis pipeline.
+
+Specifically:
 
 1. **Identify participants** — parse speaker labels, match to contacts, ask user to confirm
 2. **Save participants** to `transcript_participants`

@@ -58,8 +58,8 @@ SELECT
   SUM(CASE WHEN is_user_commitment = 1 AND status IN ('open','overdue') THEN 1 ELSE 0 END) as your_open
 FROM commitments;
 
--- Latest coaching insights
-SELECT ci.insight_type, ci.content, ci.sentiment, ci.created_at,
+-- Latest coaching insights (with evidence data)
+SELECT ci.insight_type, ci.content, ci.sentiment, ci.data_points, ci.created_at,
   c.name as contact_name, t.title as from_call
 FROM communication_insights ci
 LEFT JOIN contacts c ON c.id = ci.contact_id
@@ -171,6 +171,10 @@ Right column:
   │   │   ├── coach_note → lightbulb (amber-50/amber-600)
   │   │   └── pattern_alert → alert-triangle (red-50/red-600)
   │   ├── Content text (text-sm)
+  │   ├── Evidence line (if data_points exists, text-xs text-zinc-500 italic):
+  │   │   ├── coach_note: "Triggered by {trigger}: {value} (threshold: {threshold})"
+  │   │   ├── relationship_pulse: "{depth}, {trajectory} — {meetings_90d} meetings, follow-through {follow_through_user}%/{follow_through_contact}%"
+  │   │   └── pattern_alert: "Pattern: {pattern} — values: {values}"
   │   ├── Sentiment indicator dot:
   │   │   ├── positive → bg-green-400 (green dot)
   │   │   ├── neutral → bg-amber-400 (amber dot)
@@ -192,7 +196,7 @@ Right column:
   │   │   ├── stable → minus icon, text-zinc-400
   │   │   ├── cooling → trending-down icon, text-amber-500
   │   │   └── at_risk → alert-triangle icon, text-red-500
-  │   ├── Follow-through percentage (if available)
+  │   ├── Follow-through percentage (show as "X%" if available, "--" if NULL)
   │   └── Meeting frequency (text-xs)
   └── Empty state: "No relationship data yet. Scores build as you import conversations."
 

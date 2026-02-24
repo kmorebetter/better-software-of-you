@@ -28,6 +28,7 @@ def register(server: FastMCP) -> None:
         metrics: str = "",
         commitments_data: str = "",
         insights: str = "",
+        relationship_scores: str = "",
         call_intelligence: str = "",
         summary: str = "",
         duration_minutes: int = 0,
@@ -37,7 +38,7 @@ def register(server: FastMCP) -> None:
 
         Actions:
           import            — Store a transcript for analysis (raw_text required, title optional)
-          add_analysis      — Store analysis results (transcript_id required, plus metrics/commitments/insights)
+          add_analysis      — Store analysis results (transcript_id required, plus metrics/commitments/insights/relationship_scores)
           list              — List recent transcripts
           get               — Get full transcript details (transcript_id required)
           commitments       — List open commitments (optional transcript_id filter)
@@ -57,7 +58,7 @@ def register(server: FastMCP) -> None:
             return _import(raw_text, title, source, occurred_at)
         elif action == "add_analysis":
             return _add_analysis(transcript_id, participants, metrics, commitments_data,
-                                 insights, call_intelligence, summary, duration_minutes)
+                                 insights, relationship_scores, call_intelligence, summary, duration_minutes)
         elif action == "list":
             return _list()
         elif action == "get":
@@ -113,9 +114,11 @@ def _import(raw_text, title, source, occurred_at):
                 "2. Count sentences ending in '?' (question_count)",
                 "3. Calculate talk_ratio = their words / total words",
                 "4. Find longest consecutive block (longest_monologue_seconds — use timestamps if available, estimate from words at ~150wpm if not)",
-                "5. Count interruptions (speaker changes mid-sentence)",
+                "5. Count interruptions (explicit overlap markers only: [overlapping], <crosstalk>, [cross-talk]). Store 0 if none found.",
                 "6. Extract commitments (things people said they'd do)",
                 "7. Generate a relationship pulse insight and a coach note",
+                "7b. Include data_points JSON on every insight (see scoring-methodology.md)",
+                "7c. Compute relationship scores using formulas from scoring-methodology.md",
                 "8. Extract call intelligence (org intel, pain points, tech stack, concerns)",
                 "9. Parse duration from first and last timestamps (NULL if none)",
                 "10. Show your work before storing — output the calculation summary",
@@ -127,7 +130,7 @@ def _import(raw_text, title, source, occurred_at):
 
 
 def _add_analysis(transcript_id, participants, metrics, commitments_data,
-                   insights, call_intelligence, summary, duration_minutes):
+                   insights, relationship_scores, call_intelligence, summary, duration_minutes):
     if not transcript_id:
         return {"error": "transcript_id is required."}
 
@@ -205,10 +208,30 @@ def _add_analysis(transcript_id, participants, metrics, commitments_data,
             for i in ins:
                 statements.append((
                     """INSERT INTO communication_insights
-                       (transcript_id, contact_id, insight_type, content, sentiment)
-                       VALUES (?, ?, ?, ?, ?)""",
+                       (transcript_id, contact_id, insight_type, content, sentiment, data_points)
+                       VALUES (?, ?, ?, ?, ?, ?)""",
                     (transcript_id, i.get("contact_id"), i["insight_type"],
-                     i["content"], i.get("sentiment", "neutral")),
+                     i["content"], i.get("sentiment", "neutral"),
+                     json.dumps(i["data_points"]) if i.get("data_points") else None),
+                ))
+        except (json.JSONDecodeError, KeyError):
+            pass
+
+    # Save relationship scores: JSON array of {contact_id, meeting_frequency, talk_ratio_avg, ...}
+    if relationship_scores:
+        try:
+            scores = json.loads(relationship_scores) if isinstance(relationship_scores, str) else relationship_scores
+            for s in scores:
+                statements.append((
+                    """INSERT INTO relationship_scores
+                       (contact_id, score_date, meeting_frequency, talk_ratio_avg,
+                        commitment_follow_through, topic_diversity, relationship_depth,
+                        trajectory, notes)
+                       VALUES (?, date('now'), ?, ?, ?, NULL, ?, ?, ?)""",
+                    (s["contact_id"], s.get("meeting_frequency"),
+                     s.get("talk_ratio_avg"), s.get("commitment_follow_through"),
+                     s.get("relationship_depth"), s.get("trajectory"),
+                     s.get("notes")),
                 ))
         except (json.JSONDecodeError, KeyError):
             pass

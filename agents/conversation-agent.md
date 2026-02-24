@@ -23,6 +23,13 @@ Location: `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/data/soy.db`
 5. **Generate insights** — relationship pulse, coach note, pattern alerts
 6. **Update relationship scores** — trajectory and depth assessment
 
+## Reference Files (read before generating any insight or score)
+
+- `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/conversation-intelligence/references/scoring-methodology.md` — formulas, thresholds, NULL conditions for every computed value
+- `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/conversation-intelligence/references/coaching-guidelines.md` — SBI+T framework, threshold checklist, tone
+
+**Every computed value follows scoring-methodology.md. Insufficient data = NULL. No exceptions.**
+
 ## Transcript Parsing
 
 Handle any format. Common patterns:
@@ -60,7 +67,8 @@ Calculate per participant:
 - **Talk ratio** — percentage of total words spoken (0.0 to 1.0)
 - **Word count** — total words spoken
 - **Question count** — sentences ending in `?` or phrased as questions
-- **Interruption count** — speaker changes mid-sentence (heuristic: previous turn ends without punctuation)
+- **Interruption count** — explicit overlap markers only (`[overlapping]`, `<crosstalk>`, `[cross-talk]`). Store 0 if transcript format doesn't contain overlap markers. Never estimate from punctuation.
+- **Dominance ratio** — `talk_ratio / (1.0 / participant_count)`. Computed at display time, not stored. 1.0=balanced, >1.5=dominant. Accounts for meeting size.
 - **Longest monologue** — estimated seconds of longest unbroken speaking stretch
 
 ## Insight Generation
@@ -83,6 +91,8 @@ BAD: "Try to ask more open-ended questions." (Too generic, no reference to actua
 
 BAD: "Good job listening." (Not specific enough)
 
+Use the SBI+T framework and threshold checklist from `coaching-guidelines.md`. A coach note must cross at least one threshold to be generated.
+
 If nothing notable happened in the call, say: "Straightforward call — no standout coaching moments." Don't manufacture insight.
 
 ### Pattern Alert
@@ -92,21 +102,27 @@ Only generate if you find a pattern across 3+ conversations with the same person
 - Commitment follow-through declining
 - Topic evolution (e.g., shifting from logistics to strategy)
 
+### data_points (mandatory)
+
+Every insight row MUST include a `data_points` JSON value. Format per insight type:
+
+- **relationship_pulse**: `{"meetings_90d":N, "talk_ratio_avg":N, "dominance_avg":N, "follow_through_user":N, "follow_through_contact":N, "depth":"level", "trajectory":"label"}`
+- **coach_note**: `{"trigger":"threshold_name", "value":N, "threshold":N, "context":"meeting type"}`
+- **pattern_alert**: `{"pattern":"pattern_name", "values":[...], "dates":[...]}`
+
+No evidence = no insight row. See `scoring-methodology.md` for exact specifications.
+
 ## Relationship Scoring
 
 After processing a transcript, recalculate scores for each participant. Use the last 90 days of data.
 
 **Depth assessment:**
-- Transactional — focused, limited scope, low frequency
-- Professional — regular, task-oriented, moderate depth
-- Collaborative — frequent, balanced, shared problem-solving
-- Trusted — high depth, personal + professional topics, strong follow-through
+Use the depth thresholds from `scoring-methodology.md` (first matching level wins: Trusted → Collaborative → Professional → Transactional). Output reasoning in the `notes` field: "{Level} — {meetings} meetings in 90d, follow-through user:{pct}% contact:{pct}%, dominance {ratio}x"
 
 **Trajectory:**
-- Strengthening — positive trend in frequency, balance, or depth
-- Stable — no significant change
-- Cooling — declining frequency or increasing imbalance
-- At Risk — multiple negative signals
+Use the 45-day window comparison from `scoring-methodology.md`. Compare current 45d vs previous 45d for frequency, depth, and follow-through. Set trajectory to NULL if insufficient data (first score, all meetings in one window, or fewer than 2 meetings total).
+
+Always set `topic_diversity = NULL` — this field is deprecated per scoring-methodology.md.
 
 ## Output Style
 

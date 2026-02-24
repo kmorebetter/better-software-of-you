@@ -68,8 +68,8 @@ FROM commitments
 WHERE transcript_id = ?
 ORDER BY is_user_commitment DESC, deadline_date ASC NULLS LAST;
 
--- Communication insights for this call
-SELECT insight_type, content, sentiment, contact_id
+-- Communication insights for this call (with evidence data)
+SELECT insight_type, content, sentiment, data_points, contact_id
 FROM communication_insights
 WHERE transcript_id = ?
 ORDER BY created_at DESC;
@@ -87,7 +87,7 @@ FROM generated_views ORDER BY updated_at DESC;
 
 1. **Participants**: Match speaker labels to contacts. For each participant with a contact_id, check if an entity page exists — if so, make their name a link.
 
-2. **Speaker metrics**: Build per-speaker stat blocks. Calculate talk ratio bars. Use available data from conversation_metrics. If no metrics exist, note that metrics were not captured for this call.
+2. **Speaker metrics**: Build per-speaker stat blocks. Calculate talk ratio bars and dominance ratios (`talk_ratio / (1.0 / participant_count)`). Use available data from conversation_metrics. If no metrics exist, note that metrics were not captured for this call. For interruption count: display the stored value. If 0, show "0 (format doesn't support detection)" rather than implying no interruptions occurred.
 
 3. **Call intelligence**: Parse the `call_intelligence` JSON (if present). Extract:
    - **Pain points** — each with severity (high/medium/low) and description
@@ -126,9 +126,11 @@ Left column (lg:col-span-2):
   ├── Per-speaker rows:
   │   ├── Speaker name (or "You") + role/company if known
   │   ├── Talk ratio bar (visual percentage bar, colored per speaker)
+  │   ├── Dominance ratio badge: "1.24x" (green if 0.6-1.5, amber if 1.5-2.0 or 0.4-0.6, red if >2.0 or <0.4)
+  │   │   └── Computed as: talk_ratio / (1.0 / participant_count). Not stored — always calculated at display time.
   │   ├── Stats row: word count, question count, interruption count
   │   └── Longest monologue (seconds)
-  └── Overall talk ratio summary
+  └── Overall talk ratio + dominance summary
 
   Call Intelligence card (if call_intelligence JSON exists)
   ├── Card header: brain icon + "Call Intelligence"
@@ -172,6 +174,10 @@ Right column (lg:col-span-1):
   ├── Each insight:
   │   ├── Icon by type (heart-pulse / lightbulb / alert-triangle)
   │   ├── Content text
+  │   ├── Evidence line (if data_points JSON exists, text-xs text-zinc-500 italic):
+  │   │   ├── coach_note: "Triggered by {trigger}: {value} (threshold: {threshold})"
+  │   │   ├── relationship_pulse: "{depth}, {trajectory} — {meetings_90d} meetings"
+  │   │   └── pattern_alert: "Pattern: {pattern} — values: {values}"
   │   ├── Sentiment dot (green/amber/red)
   │   └── Contact context if relevant
   └── Empty state: "No coaching insights for this call."
