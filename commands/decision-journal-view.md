@@ -10,12 +10,12 @@ Generate a standalone HTML page showing the Decision Journal — all tracked dec
 ## Step 1: Read the Design System
 
 Read these files first:
-- `${CLAUDE_PLUGIN_ROOT}/skills/dashboard-generation/references/template-base.html` — HTML skeleton
-- `${CLAUDE_PLUGIN_ROOT}/skills/dashboard-generation/references/navigation-patterns.md` — sidebar patterns
+- `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/dashboard-generation/references/template-base.html` — HTML skeleton
+- `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/dashboard-generation/references/navigation-patterns.md` — sidebar patterns
 
 ## Step 2: Gather Data
 
-Query `${CLAUDE_PLUGIN_ROOT}/data/soy.db`. Run all queries in a single `sqlite3` heredoc call for efficiency.
+Query `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/data/soy.db`. Run all queries in a single `sqlite3` heredoc call for efficiency.
 
 ```sql
 -- All decisions with linked project/contact
@@ -245,7 +245,7 @@ Anywhere a project or contact name appears, check if an entity page exists for i
 
 ## Step 5: Write, Register, and Open
 
-Write to `${CLAUDE_PLUGIN_ROOT}/output/decision-journal.html`.
+Write to `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/output/decision-journal.html`.
 
 **Register the view:**
 ```sql
@@ -254,6 +254,6 @@ VALUES ('module_view', 'module', NULL, 'Decision Journal', 'decision-journal.htm
 ON CONFLICT(filename) DO UPDATE SET updated_at = datetime('now');
 ```
 
-Open with: `open "${CLAUDE_PLUGIN_ROOT}/output/decision-journal.html"`
+Open with: `open "${CLAUDE_PLUGIN_ROOT:-$(pwd)}/output/decision-journal.html"`
 
 Tell the user: "Decision Journal opened." Then briefly summarize what's shown — e.g., "Shows 12 decisions: 5 validated, 2 regretted, 3 need review. Grouped by month from February 2026 back to October 2025."

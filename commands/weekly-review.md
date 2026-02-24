@@ -14,12 +14,12 @@ Before building, ensure data is fresh. Follow the auto-sync procedure in CLAUDE.
 ## Step 1: Read the Design System
 
 Read these files first:
-- `${CLAUDE_PLUGIN_ROOT}/skills/dashboard-generation/references/template-base.html` — HTML skeleton
-- `${CLAUDE_PLUGIN_ROOT}/skills/dashboard-generation/references/navigation-patterns.md` — sidebar patterns
+- `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/dashboard-generation/references/template-base.html` — HTML skeleton
+- `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/dashboard-generation/references/navigation-patterns.md` — sidebar patterns
 
 ## Step 2: Check Modules & Gather Data
 
-Query `${CLAUDE_PLUGIN_ROOT}/data/soy.db`. Run all queries in a single `sqlite3` heredoc call for efficiency.
+Query `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/data/soy.db`. Run all queries in a single `sqlite3` heredoc call for efficiency.
 
 ```sql
 -- Installed modules
@@ -376,7 +376,7 @@ If no page exists, render as bold plain text.
 
 ## Step 4: Write, Register, and Open
 
-Write to `${CLAUDE_PLUGIN_ROOT}/output/weekly-review.html`
+Write to `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/output/weekly-review.html`
 
 **Register the view:**
 ```sql
@@ -385,6 +385,6 @@ VALUES ('module_view', 'module', NULL, 'Weekly Review', 'weekly-review.html')
 ON CONFLICT(filename) DO UPDATE SET updated_at = datetime('now');
 ```
 
-Open with: `open "${CLAUDE_PLUGIN_ROOT}/output/weekly-review.html"`
+Open with: `open "${CLAUDE_PLUGIN_ROOT:-$(pwd)}/output/weekly-review.html"`
 
 Tell the user: "Weekly review opened." Then briefly summarize highlights — e.g., "Touched 5 contacts, attended 3 meetings, completed 4 tasks. 2 follow-ups due next week."

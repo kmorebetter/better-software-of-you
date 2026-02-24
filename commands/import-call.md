@@ -6,7 +6,7 @@ argument-hint: [paste transcript text, or provide a file path]
 
 # Import Call Transcript
 
-Import a meeting transcript into Software of You. Database at `${CLAUDE_PLUGIN_ROOT}/data/soy.db`.
+Import a meeting transcript into Software of You. Database at `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/data/soy.db`.
 
 ## Step 1: Get the Transcript
 

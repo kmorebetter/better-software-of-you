@@ -10,12 +10,12 @@ Generate a standalone HTML page for the Journal module — showing entries with 
 ## Step 1: Read the Design System
 
 Read these files first:
-- `${CLAUDE_PLUGIN_ROOT}/skills/dashboard-generation/references/template-base.html` — HTML skeleton
-- `${CLAUDE_PLUGIN_ROOT}/skills/dashboard-generation/references/navigation-patterns.md` — sidebar patterns
+- `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/dashboard-generation/references/template-base.html` — HTML skeleton
+- `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/dashboard-generation/references/navigation-patterns.md` — sidebar patterns
 
 ## Step 2: Check Module & Gather Data
 
-Query `${CLAUDE_PLUGIN_ROOT}/data/soy.db`. First verify the journal module is installed:
+Query `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/data/soy.db`. First verify the journal module is installed:
 
 ```sql
 SELECT name FROM modules WHERE name = 'journal' AND enabled = 1;
@@ -460,7 +460,7 @@ Never hide a section because it's empty. Show the empty state instead.
 
 ## Step 4: Write, Register, Open
 
-Write to `${CLAUDE_PLUGIN_ROOT}/output/journal.html`.
+Write to `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/output/journal.html`.
 
 **Register the view:**
 ```sql
@@ -469,6 +469,6 @@ VALUES ('module_view', 'module', NULL, 'Journal', 'journal.html')
 ON CONFLICT(filename) DO UPDATE SET updated_at = datetime('now');
 ```
 
-Open: `open "${CLAUDE_PLUGIN_ROOT}/output/journal.html"`
+Open: `open "${CLAUDE_PLUGIN_ROOT:-$(pwd)}/output/journal.html"`
 
 Tell user: "Journal view opened. X entries over Y days, Z day streak." Then briefly mention trends if data exists (e.g., "Average energy 3.2, most common mood: focused.").

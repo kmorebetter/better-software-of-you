@@ -10,7 +10,7 @@ Generate a comprehensive project brief for the project specified in $ARGUMENTS.
 
 ## Step 1: Gather All Data
 
-Query `${CLAUDE_PLUGIN_ROOT}/data/soy.db`:
+Query `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/data/soy.db`:
 
 ```sql
 -- Project details

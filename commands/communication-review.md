@@ -6,7 +6,7 @@ argument-hint: [week | month | <contact name>]
 
 # Communication Review
 
-Provide a communication assessment based on conversation data. Database at `${CLAUDE_PLUGIN_ROOT}/data/soy.db`.
+Provide a communication assessment based on conversation data. Database at `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/data/soy.db`.
 
 ## Determine the Scope
 

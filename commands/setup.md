@@ -9,9 +9,9 @@ allowed-tools: ["Bash", "Read", "Write"]
 
 Create the data directory and run all migrations:
 ```bash
-mkdir -p "${CLAUDE_PLUGIN_ROOT}/data"
-for f in "${CLAUDE_PLUGIN_ROOT}"/data/migrations/*.sql; do
-  sqlite3 "${CLAUDE_PLUGIN_ROOT}/data/soy.db" < "$f"
+mkdir -p "${CLAUDE_PLUGIN_ROOT:-$(pwd)}/data"
+for f in "${CLAUDE_PLUGIN_ROOT:-$(pwd)}"/data/migrations/*.sql; do
+  sqlite3 "${CLAUDE_PLUGIN_ROOT:-$(pwd)}/data/soy.db" < "$f"
 done
 ```
 
@@ -43,5 +43,5 @@ Google: [connected as email / not connected — run `/google-setup`]"
 
 Check Google status:
 ```
-python3 "${CLAUDE_PLUGIN_ROOT}/shared/google_auth.py" status 2>/dev/null
+python3 "${CLAUDE_PLUGIN_ROOT:-$(pwd)}/shared/google_auth.py" status 2>/dev/null
 ```

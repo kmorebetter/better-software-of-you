@@ -14,12 +14,12 @@ Before building the view, ensure calendar data is fresh. Follow the auto-sync pr
 ## Step 1: Read the Design System
 
 Read these files first:
-- `${CLAUDE_PLUGIN_ROOT}/skills/dashboard-generation/references/template-base.html` — HTML skeleton
-- `${CLAUDE_PLUGIN_ROOT}/skills/dashboard-generation/references/navigation-patterns.md` — sidebar patterns
+- `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/dashboard-generation/references/template-base.html` — HTML skeleton
+- `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/dashboard-generation/references/navigation-patterns.md` — sidebar patterns
 
 ## Step 2: Gather Data
 
-Query `${CLAUDE_PLUGIN_ROOT}/data/soy.db`:
+Query `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/data/soy.db`:
 
 ```sql
 -- This week's events (Monday through Sunday of current week)
@@ -305,7 +305,7 @@ If no page exists, render as plain text.
 
 ## Step 4: Write, Register, Open
 
-Write to `${CLAUDE_PLUGIN_ROOT}/output/week-view.html`.
+Write to `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/output/week-view.html`.
 
 **Register the view:**
 ```sql
@@ -314,6 +314,6 @@ VALUES ('module_view', 'module', NULL, 'Week View', 'week-view.html')
 ON CONFLICT(filename) DO UPDATE SET updated_at = datetime('now');
 ```
 
-Open: `open "${CLAUDE_PLUGIN_ROOT}/output/week-view.html"`
+Open: `open "${CLAUDE_PLUGIN_ROOT:-$(pwd)}/output/week-view.html"`
 
 Tell user: "Week view opened. X events this week, Y hours of meetings."

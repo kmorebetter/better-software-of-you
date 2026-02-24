@@ -6,12 +6,12 @@ argument-hint: [today | week | schedule <event> | with <contact name>]
 
 # Calendar
 
-Manage Google Calendar events. Database at `${CLAUDE_PLUGIN_ROOT}/data/soy.db`.
+Manage Google Calendar events. Database at `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/data/soy.db`.
 
 ## Step 1: Check Authentication
 
 ```
-ACCESS_TOKEN=$(python3 "${CLAUDE_PLUGIN_ROOT}/shared/google_auth.py" token)
+ACCESS_TOKEN=$(python3 "${CLAUDE_PLUGIN_ROOT:-$(pwd)}/shared/google_auth.py" token)
 ```
 
 If this fails: "Calendar isn't connected. Run `/google-setup` to connect your Google account."

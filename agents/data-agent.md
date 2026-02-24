@@ -12,9 +12,9 @@ You are the data operations agent for Software of You. You handle all direct dat
 
 ## Database
 
-Location: `${CLAUDE_PLUGIN_ROOT}/data/soy.db`
-Schema reference: `${CLAUDE_PLUGIN_ROOT}/skills/sqlite-operations/references/schema.sql`
-Query patterns: `${CLAUDE_PLUGIN_ROOT}/skills/sqlite-operations/references/query-patterns.md`
+Location: `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/data/soy.db`
+Schema reference: `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/sqlite-operations/references/schema.sql`
+Query patterns: `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/sqlite-operations/references/query-patterns.md`
 
 ## Capabilities
 
@@ -26,7 +26,7 @@ Query patterns: `${CLAUDE_PLUGIN_ROOT}/skills/sqlite-operations/references/query
 
 ## Rules
 
-- Always use `sqlite3 "${CLAUDE_PLUGIN_ROOT}/data/soy.db"` for operations
+- Always use `sqlite3 "${CLAUDE_PLUGIN_ROOT:-$(pwd)}/data/soy.db"` for operations
 - Check installed modules before querying module-specific tables
 - Always log changes to `activity_log`
 - Always update `updated_at` timestamps on modifications

@@ -10,12 +10,12 @@ Generate a standalone HTML page for the Notes module — showing all notes with 
 ## Step 1: Read the Design System
 
 Read these files first:
-- `${CLAUDE_PLUGIN_ROOT}/skills/dashboard-generation/references/template-base.html` — HTML skeleton
-- `${CLAUDE_PLUGIN_ROOT}/skills/dashboard-generation/references/navigation-patterns.md` — sidebar patterns
+- `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/dashboard-generation/references/template-base.html` — HTML skeleton
+- `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/dashboard-generation/references/navigation-patterns.md` — sidebar patterns
 
 ## Step 2: Check Module & Gather Data
 
-Query `${CLAUDE_PLUGIN_ROOT}/data/soy.db`. First verify the notes module is installed:
+Query `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/data/soy.db`. First verify the notes module is installed:
 
 ```sql
 SELECT name FROM modules WHERE name = 'notes' AND enabled = 1;
@@ -362,7 +362,7 @@ Never hide a section because it's empty (except Pinned, which is only shown when
 
 ## Step 4: Write, Register, Open
 
-Write to `${CLAUDE_PLUGIN_ROOT}/output/notes.html`.
+Write to `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/output/notes.html`.
 
 **Register the view:**
 ```sql
@@ -371,6 +371,6 @@ VALUES ('module_view', 'module', NULL, 'Notes', 'notes.html')
 ON CONFLICT(filename) DO UPDATE SET updated_at = datetime('now');
 ```
 
-Open: `open "${CLAUDE_PLUGIN_ROOT}/output/notes.html"`
+Open: `open "${CLAUDE_PLUGIN_ROOT:-$(pwd)}/output/notes.html"`
 
 Tell user: "Notes view opened. X notes total, Y pinned." Then briefly mention top tags or most referenced contacts if data exists.

@@ -16,13 +16,13 @@ Before building the dashboard, ensure data is fresh. Follow the auto-sync proced
 ## Step 1: Read the Design System
 
 Read these files first:
-- `${CLAUDE_PLUGIN_ROOT}/skills/dashboard-generation/references/template-base.html` — HTML skeleton
-- `${CLAUDE_PLUGIN_ROOT}/skills/dashboard-generation/references/component-patterns.md` — component snippets
-- `${CLAUDE_PLUGIN_ROOT}/skills/dashboard-generation/references/navigation-patterns.md` — sidebar patterns
+- `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/dashboard-generation/references/template-base.html` — HTML skeleton
+- `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/dashboard-generation/references/component-patterns.md` — component snippets
+- `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/dashboard-generation/references/navigation-patterns.md` — sidebar patterns
 
 ## Step 2: Gather Data
 
-Query `${CLAUDE_PLUGIN_ROOT}/data/soy.db`. Check installed modules first:
+Query `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/data/soy.db`. Check installed modules first:
 ```sql
 SELECT name FROM modules WHERE enabled = 1;
 ```
@@ -362,7 +362,7 @@ If a section has no data, show a subtle empty state:
 
 Never hide a section because it's empty if the module is installed. Show the empty state instead — it tells the user the feature is available.
 
-Write to `${CLAUDE_PLUGIN_ROOT}/output/dashboard.html`.
+Write to `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/output/dashboard.html`.
 
 ## Step 4: Register, Open
 
@@ -373,6 +373,6 @@ VALUES ('dashboard', NULL, NULL, 'Dashboard', 'dashboard.html')
 ON CONFLICT(filename) DO UPDATE SET updated_at = datetime('now');
 ```
 
-Run: `open "${CLAUDE_PLUGIN_ROOT}/output/dashboard.html"`
+Run: `open "${CLAUDE_PLUGIN_ROOT:-$(pwd)}/output/dashboard.html"`
 
 Tell the user: "Dashboard updated and opened."

@@ -12,7 +12,7 @@ You analyze meeting transcripts and produce structured intelligence for Software
 
 ## Database
 
-Location: `${CLAUDE_PLUGIN_ROOT}/data/soy.db`
+Location: `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/data/soy.db`
 
 ## What You Do
 

@@ -6,7 +6,7 @@ argument-hint: [scan | pending | analyze <id> | analyze-all]
 
 # Sync Gemini Meeting Transcripts
 
-Automatically detect Gemini note-taker emails, fetch the full Google Doc transcript, and optionally run the full analysis pipeline. Database at `${CLAUDE_PLUGIN_ROOT}/data/soy.db`.
+Automatically detect Gemini note-taker emails, fetch the full Google Doc transcript, and optionally run the full analysis pipeline. Database at `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/data/soy.db`.
 
 ## Determine Action
 
@@ -22,7 +22,7 @@ Parse $ARGUMENTS:
 
 Run:
 ```
-python3 "${CLAUDE_PLUGIN_ROOT}/shared/sync_transcripts.py" scan
+python3 "${CLAUDE_PLUGIN_ROOT:-$(pwd)}/shared/sync_transcripts.py" scan
 ```
 
 Parse the JSON output.
@@ -44,7 +44,7 @@ Parse the JSON output.
 
 Run:
 ```
-python3 "${CLAUDE_PLUGIN_ROOT}/shared/sync_transcripts.py" pending
+python3 "${CLAUDE_PLUGIN_ROOT:-$(pwd)}/shared/sync_transcripts.py" pending
 ```
 
 Present the list:
@@ -60,7 +60,7 @@ If none pending: "All transcripts have been analyzed. You're caught up."
 
 Fetch the raw text:
 ```
-python3 "${CLAUDE_PLUGIN_ROOT}/shared/sync_transcripts.py" get <id>
+python3 "${CLAUDE_PLUGIN_ROOT:-$(pwd)}/shared/sync_transcripts.py" get <id>
 ```
 
 Then follow the **exact same analysis pipeline as `/import-call`**, starting from Step 2 (Identify Participants). The raw text from the Google Doc IS the transcript. Specifically:
@@ -85,7 +85,7 @@ Then follow the **exact same analysis pipeline as `/import-call`**, starting fro
 
 Run the pending check first:
 ```
-python3 "${CLAUDE_PLUGIN_ROOT}/shared/sync_transcripts.py" pending
+python3 "${CLAUDE_PLUGIN_ROOT:-$(pwd)}/shared/sync_transcripts.py" pending
 ```
 
 If none pending, say so and stop.

@@ -6,13 +6,13 @@ argument-hint: [inbox | unread | search <query> | from <name> | summary]
 
 # Gmail
 
-Read and triage emails from the user's Gmail account. Database at `${CLAUDE_PLUGIN_ROOT}/data/soy.db`.
+Read and triage emails from the user's Gmail account. Database at `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/data/soy.db`.
 
 ## Step 1: Check Authentication
 
 Get a valid access token:
 ```
-ACCESS_TOKEN=$(python3 "${CLAUDE_PLUGIN_ROOT}/shared/google_auth.py" token)
+ACCESS_TOKEN=$(python3 "${CLAUDE_PLUGIN_ROOT:-$(pwd)}/shared/google_auth.py" token)
 ```
 
 If this fails, tell the user: "Gmail isn't connected yet. Run `/google-setup` to connect your Google account."

@@ -21,7 +21,7 @@ This skill provides reference material for all database operations in Software o
 
 ## Conventions
 
-- Always use `sqlite3 "${CLAUDE_PLUGIN_ROOT}/data/soy.db"` for operations
+- Always use `sqlite3 "${CLAUDE_PLUGIN_ROOT:-$(pwd)}/data/soy.db"` for operations
 - All datetimes are ISO-8601 text via `datetime('now')`
 - Always INSERT into `activity_log` after any data modification
 - Always SET `updated_at = datetime('now')` on updates

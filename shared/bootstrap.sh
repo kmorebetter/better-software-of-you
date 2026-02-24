@@ -6,6 +6,11 @@
 # repo re-downloads and updates. A symlink in data/soy.db points
 # to the real location.
 
+if ! command -v sqlite3 &>/dev/null; then
+  echo "error|sqlite3 not found|Install sqlite3 to use Software of You"
+  exit 1
+fi
+
 PLUGIN_ROOT="${CLAUDE_PLUGIN_ROOT:-$(cd "$(dirname "$0")/.." && pwd)}"
 DATA_HOME="${XDG_DATA_HOME:-$HOME/.local/share}/software-of-you"
 DB_REAL="$DATA_HOME/soy.db"

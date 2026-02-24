@@ -16,7 +16,7 @@ WHERE entity_name LIKE '%$ARGUMENTS%' OR filename LIKE '%$ARGUMENTS%'
 ORDER BY updated_at DESC LIMIT 1;
 ```
 
-- If found, open it: `open "${CLAUDE_PLUGIN_ROOT}/output/{filename}"`
+- If found, open it: `open "${CLAUDE_PLUGIN_ROOT:-$(pwd)}/output/{filename}"`
 - If not found, say "No page found matching '$ARGUMENTS'." and show all available pages (fall through to the no-arguments flow below).
 
 If **no arguments**, list all available pages.
@@ -29,7 +29,7 @@ FROM generated_views ORDER BY updated_at DESC;
 
 Also check for HTML files in output/ that aren't registered:
 ```bash
-ls "${CLAUDE_PLUGIN_ROOT}/output/"*.html 2>/dev/null
+ls "${CLAUDE_PLUGIN_ROOT:-$(pwd)}/output/"*.html 2>/dev/null
 ```
 
 Present results as a table with columns: **Page Name**, **Type**, **Last Updated** (human-readable, e.g. "2 days ago").

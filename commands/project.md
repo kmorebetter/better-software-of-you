@@ -6,7 +6,7 @@ argument-hint: <project name> [--client <name>] [--status <status>] or "list" or
 
 # Project Management
 
-Handle project and task operations based on $ARGUMENTS. Database at `${CLAUDE_PLUGIN_ROOT}/data/soy.db`.
+Handle project and task operations based on $ARGUMENTS. Database at `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/data/soy.db`.
 
 ## Determine the Operation
 

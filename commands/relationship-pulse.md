@@ -6,7 +6,7 @@ argument-hint: <contact name>
 
 # Relationship Pulse
 
-Provide a comprehensive view of a relationship, combining CRM data with conversation intelligence. Database at `${CLAUDE_PLUGIN_ROOT}/data/soy.db`.
+Provide a comprehensive view of a relationship, combining CRM data with conversation intelligence. Database at `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/data/soy.db`.
 
 ## Gather All Data
 

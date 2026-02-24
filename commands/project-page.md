@@ -15,11 +15,11 @@ Before building the project page, ensure data is fresh. Follow the auto-sync pro
 ## Step 1: Read References + Resolve Project
 
 Read design references in parallel:
-- `${CLAUDE_PLUGIN_ROOT}/skills/dashboard-generation/references/template-base.html`
-- `${CLAUDE_PLUGIN_ROOT}/skills/dashboard-generation/references/component-patterns.md`
-- `${CLAUDE_PLUGIN_ROOT}/skills/dashboard-generation/references/navigation-patterns.md`
+- `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/dashboard-generation/references/template-base.html`
+- `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/dashboard-generation/references/component-patterns.md`
+- `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/dashboard-generation/references/navigation-patterns.md`
 
-At the same time, resolve the project. Query `${CLAUDE_PLUGIN_ROOT}/data/soy.db`:
+At the same time, resolve the project. Query `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/data/soy.db`:
 
 ```sql
 SELECT * FROM projects WHERE name LIKE '%$ARGUMENTS%' OR id = '$ARGUMENTS';
@@ -255,7 +255,7 @@ Include the sidebar from `navigation-patterns.md` with this project highlighted 
 
 Generate a filename slug from the project name (lowercase, hyphens for spaces).
 
-Write to `${CLAUDE_PLUGIN_ROOT}/output/project-{slug}.html`
+Write to `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/output/project-{slug}.html`
 
 **Register the view** so other pages can link to it:
 ```sql
@@ -266,6 +266,6 @@ ON CONFLICT(filename) DO UPDATE SET
   updated_at = datetime('now');
 ```
 
-Open with: `open "${CLAUDE_PLUGIN_ROOT}/output/project-{slug}.html"`
+Open with: `open "${CLAUDE_PLUGIN_ROOT:-$(pwd)}/output/project-{slug}.html"`
 
 Tell the user: "Project page for **{project name}** opened." Then briefly summarize what's on it — e.g., "Shows 12/18 tasks complete, client relationship context with Sarah, 2 overdue tasks flagged as risks, and 4 prioritized next actions."

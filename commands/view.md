@@ -23,7 +23,7 @@ Generate a specialized HTML view based on $ARGUMENTS. Unlike `/dashboard` (which
 
 ## Contact Directory View
 
-Query `${CLAUDE_PLUGIN_ROOT}/data/soy.db`:
+Query `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/data/soy.db`:
 ```sql
 SELECT c.*,
   (SELECT COUNT(*) FROM notes WHERE entity_type='contact' AND entity_id=c.id) as note_count,
@@ -40,7 +40,7 @@ If CRM installed, also get pending follow-ups per contact.
 
 Layout: Card grid showing each contact with name, company, email, tags, project count, and last activity date. Each contact name links to their entity page if one exists.
 
-**Write to:** `${CLAUDE_PLUGIN_ROOT}/output/contacts.html` (always this filename — the sidebar links here)
+**Write to:** `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/output/contacts.html` (always this filename — the sidebar links here)
 
 **Register:**
 ```sql
@@ -65,7 +65,7 @@ ORDER BY p.priority DESC;
 
 Layout: Kanban-style columns by status (Planning, Active, Paused) or card list with task progress bars. Each project name links to its project page if one exists.
 
-**Write to:** `${CLAUDE_PLUGIN_ROOT}/output/projects.html` (always this filename)
+**Write to:** `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/output/projects.html` (always this filename)
 
 **Register:**
 ```sql
@@ -80,11 +80,11 @@ For custom descriptions, interpret what the user wants, query the relevant data,
 
 ## Navigation
 
-**Every view must include the sidebar** from `${CLAUDE_PLUGIN_ROOT}/skills/dashboard-generation/references/navigation-patterns.md`. Read it before generating any HTML. The sidebar is consistent across all pages — same sections, same structure, same order.
+**Every view must include the sidebar** from `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/dashboard-generation/references/navigation-patterns.md`. Read it before generating any HTML. The sidebar is consistent across all pages — same sections, same structure, same order.
 
 ## Output
 
-Read template and patterns from `${CLAUDE_PLUGIN_ROOT}/skills/dashboard-generation/references/`.
-Write HTML to `${CLAUDE_PLUGIN_ROOT}/output/{view-name}.html`.
+Read template and patterns from `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/dashboard-generation/references/`.
+Write HTML to `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/output/{view-name}.html`.
 Register in `generated_views`.
 Open with `open <filepath>`.

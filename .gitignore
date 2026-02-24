@@ -11,3 +11,11 @@ __pycache__/
 *.pyc
 mcp-server/dist/
 mcp-server/*.egg-info/
+
+# Internal planning and marketing (not shipped to users)
+context-engineering-manifesto.md
+idea.prd
+this-is-software-of-you.md
+marketing/
+next-features/
+output/screenshots/

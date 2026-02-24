@@ -12,10 +12,10 @@ You generate self-contained HTML files for Software of You dashboards and views.
 
 ## Process
 
-1. Read the design system references from `${CLAUDE_PLUGIN_ROOT}/skills/dashboard-generation/references/`
-2. Query the SQLite database at `${CLAUDE_PLUGIN_ROOT}/data/soy.db` for the requested data
+1. Read the design system references from `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/dashboard-generation/references/`
+2. Query the SQLite database at `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/data/soy.db` for the requested data
 3. Generate a complete HTML file following the design system
-4. Write to `${CLAUDE_PLUGIN_ROOT}/output/`
+4. Write to `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/output/`
 5. Open the file with `open <filepath>`
 
 ## Design Rules

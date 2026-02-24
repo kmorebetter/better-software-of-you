@@ -11,14 +11,14 @@ Compose and send an email through the user's Gmail account. **Always show the dr
 ## Step 1: Check Authentication
 
 ```
-ACCESS_TOKEN=$(python3 "${CLAUDE_PLUGIN_ROOT}/shared/google_auth.py" token)
+ACCESS_TOKEN=$(python3 "${CLAUDE_PLUGIN_ROOT:-$(pwd)}/shared/google_auth.py" token)
 ```
 
 If this fails: "Gmail isn't connected. Run `/google-setup` first."
 
 ## Step 2: Resolve the Recipient
 
-Parse $ARGUMENTS for the recipient. Look up in the database at `${CLAUDE_PLUGIN_ROOT}/data/soy.db`:
+Parse $ARGUMENTS for the recipient. Look up in the database at `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/data/soy.db`:
 
 ```sql
 SELECT id, name, email, company, role FROM contacts WHERE name LIKE ? OR email LIKE ?;

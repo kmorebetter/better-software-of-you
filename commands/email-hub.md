@@ -20,10 +20,10 @@ If the value is NULL or older than 15 minutes, run the Gmail sync silently befor
 ## Step 1: Read Design References + Gather Data
 
 Read these design references in parallel:
-- `${CLAUDE_PLUGIN_ROOT}/skills/dashboard-generation/references/template-base.html` — HTML skeleton
-- `${CLAUDE_PLUGIN_ROOT}/skills/dashboard-generation/references/navigation-patterns.md` — sidebar patterns
+- `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/dashboard-generation/references/template-base.html` — HTML skeleton
+- `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/dashboard-generation/references/navigation-patterns.md` — sidebar patterns
 
-At the same time, gather data from `${CLAUDE_PLUGIN_ROOT}/data/soy.db`:
+At the same time, gather data from `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/data/soy.db`:
 
 ### All emails (last 30 days)
 
@@ -215,7 +215,7 @@ Show top contacts by email volume (from the top-contacts query). Each contact sh
 
 ## Step 3: Write HTML
 
-Write the generated HTML to `${CLAUDE_PLUGIN_ROOT}/output/email-hub.html`.
+Write the generated HTML to `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/output/email-hub.html`.
 
 ## Step 4: Register and Open
 
@@ -230,7 +230,7 @@ ON CONFLICT(filename) DO UPDATE SET updated_at = datetime('now');
 Open the file:
 
 ```
-open "${CLAUDE_PLUGIN_ROOT}/output/email-hub.html"
+open "${CLAUDE_PLUGIN_ROOT:-$(pwd)}/output/email-hub.html"
 ```
 
 Tell the user: "Email Hub opened. X threads, Y unread, Z need a response."

@@ -9,7 +9,7 @@ This is proactive pattern detection — not a data dump. Scan all data and surfa
 
 ## Step 1: Check installed modules
 
-Query the database at `${CLAUDE_PLUGIN_ROOT}/data/soy.db`:
+Query the database at `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/data/soy.db`:
 
 ```sql
 SELECT name FROM modules WHERE enabled = 1;

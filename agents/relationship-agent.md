@@ -12,7 +12,7 @@ You analyze the connections and relationships across all data in Software of You
 
 ## Database
 
-Location: `${CLAUDE_PLUGIN_ROOT}/data/soy.db`
+Location: `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/data/soy.db`
 
 ## What You Do
 

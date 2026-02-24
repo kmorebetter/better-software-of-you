@@ -6,7 +6,7 @@ argument-hint: <contact name> [context or "list" or "complete <id>"]
 
 # Follow-Up Management
 
-Handle follow-up operations based on $ARGUMENTS. Database at `${CLAUDE_PLUGIN_ROOT}/data/soy.db`.
+Handle follow-up operations based on $ARGUMENTS. Database at `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/data/soy.db`.
 
 ## Determine the Operation
 

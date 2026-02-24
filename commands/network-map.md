@@ -10,8 +10,8 @@ Generate an interactive D3.js force-directed network map of the user's contacts.
 ## Step 1: Read References + Check Modules
 
 Read design references:
-- `${CLAUDE_PLUGIN_ROOT}/skills/dashboard-generation/references/template-base.html`
-- `${CLAUDE_PLUGIN_ROOT}/skills/dashboard-generation/references/navigation-patterns.md`
+- `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/dashboard-generation/references/template-base.html`
+- `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/dashboard-generation/references/navigation-patterns.md`
 
 Check installed modules:
 ```sql
@@ -20,7 +20,7 @@ SELECT name FROM modules WHERE enabled = 1;
 
 ## Step 2: Gather Data
 
-Query `${CLAUDE_PLUGIN_ROOT}/data/soy.db`. Run all queries in a single `sqlite3` heredoc call for efficiency.
+Query `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/data/soy.db`. Run all queries in a single `sqlite3` heredoc call for efficiency.
 
 ### Always query:
 
@@ -362,7 +362,7 @@ The tooltip is a `div` positioned absolutely near the cursor:
 
 Position it with JS on mouseover, offset from cursor by ~12px.
 
-Write the complete HTML to: `${CLAUDE_PLUGIN_ROOT}/output/network-map.html`
+Write the complete HTML to: `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/output/network-map.html`
 
 ## Step 5: Register and Open
 
@@ -373,6 +373,6 @@ VALUES ('network_map', NULL, NULL, 'Network Map', 'network-map.html')
 ON CONFLICT(filename) DO UPDATE SET updated_at = datetime('now');
 ```
 
-Open with: `open "${CLAUDE_PLUGIN_ROOT}/output/network-map.html"`
+Open with: `open "${CLAUDE_PLUGIN_ROOT:-$(pwd)}/output/network-map.html"`
 
 Tell the user: "Network map opened. X contacts, Y connections. Hover to explore, click to open entity pages, drag to rearrange."

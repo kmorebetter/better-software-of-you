@@ -65,7 +65,7 @@ If a match is found, ask the user: "I found an existing contact [name]. Update i
 
 ## Step 4: Insert the Data
 
-Use the database at `${CLAUDE_PLUGIN_ROOT}/data/soy.db`.
+Use the database at `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/data/soy.db`.
 
 For each record, run the INSERT and activity_log together in one sqlite3 call:
 ```sql

@@ -14,12 +14,12 @@ Before building, ensure data is fresh. Follow the auto-sync procedure in CLAUDE.
 ## Step 1: Read the Design System
 
 Read these files first:
-- `${CLAUDE_PLUGIN_ROOT}/skills/dashboard-generation/references/template-base.html` — HTML skeleton
-- `${CLAUDE_PLUGIN_ROOT}/skills/dashboard-generation/references/navigation-patterns.md` — sidebar patterns
+- `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/dashboard-generation/references/template-base.html` — HTML skeleton
+- `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/dashboard-generation/references/navigation-patterns.md` — sidebar patterns
 
 ## Step 2: Check Modules & Gather Data
 
-Query `${CLAUDE_PLUGIN_ROOT}/data/soy.db`. Run all queries in a single `sqlite3` heredoc call for efficiency.
+Query `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/data/soy.db`. Run all queries in a single `sqlite3` heredoc call for efficiency.
 
 ```sql
 -- Installed modules
@@ -398,7 +398,7 @@ Only show pills for categories with items.
 
 ## Step 5: Write, Register, and Open
 
-Write to `${CLAUDE_PLUGIN_ROOT}/output/nudges.html`
+Write to `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/output/nudges.html`
 
 **Register the view:**
 ```sql
@@ -407,6 +407,6 @@ VALUES ('module_view', 'module', NULL, 'Nudges', 'nudges.html')
 ON CONFLICT(filename) DO UPDATE SET updated_at = datetime('now');
 ```
 
-Open with: `open "${CLAUDE_PLUGIN_ROOT}/output/nudges.html"`
+Open with: `open "${CLAUDE_PLUGIN_ROOT:-$(pwd)}/output/nudges.html"`
 
 Tell the user: "Nudges view opened." Then summarize: "X urgent, Y upcoming, Z worth a look." or "All clear — nothing needs your attention."

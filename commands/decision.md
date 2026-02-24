@@ -6,7 +6,7 @@ argument-hint: <decision description or "list" or "revisit" or "review <id>" or 
 
 # Decision Tracking
 
-Handle decision operations based on $ARGUMENTS. Database at `${CLAUDE_PLUGIN_ROOT}/data/soy.db`.
+Handle decision operations based on $ARGUMENTS. Database at `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/data/soy.db`.
 
 ## Determine the Operation
 
