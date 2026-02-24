@@ -42,13 +42,24 @@ SELECT COUNT(*) as total, SUM(CASE WHEN status='active' THEN 1 ELSE 0 END) as ac
 SELECT id, name, company, email, status, updated_at FROM contacts
 WHERE status = 'active' ORDER BY updated_at DESC LIMIT 8;
 
--- Recent activity
+-- Recent activity (weighted — high-value events surface even if older)
 SELECT al.*, CASE al.entity_type
     WHEN 'contact' THEN (SELECT name FROM contacts WHERE id = al.entity_id)
     WHEN 'project' THEN (SELECT name FROM projects WHERE id = al.entity_id)
     ELSE al.entity_type || ' #' || al.entity_id
-  END as entity_name
-FROM activity_log al ORDER BY al.created_at DESC LIMIT 15;
+  END as entity_name,
+  CASE al.entity_type
+    WHEN 'commitment' THEN 5
+    WHEN 'task' THEN 4
+    WHEN 'follow_up' THEN 4
+    WHEN 'project' THEN 3
+    WHEN 'contact' THEN 2
+    ELSE 1
+  END as weight
+FROM activity_log al
+WHERE al.created_at >= date('now', '-14 days')
+ORDER BY weight DESC, al.created_at DESC
+LIMIT 20;
 ```
 
 **If CRM module installed:**
@@ -260,6 +271,36 @@ For each event:
 - If an attendee has an entity page, link their name: `[Sarah Chen →]` opens entity page
 
 If today has no events: show "No meetings today" with a subtle `calendar-off` icon. Still show the card.
+
+**Hero callout priority formula (determines what gets the "Next up" treatment):**
+
+Priority order — first match wins:
+1. Overdue commitments or follow-ups (most days overdue first)
+2. Event starting within 30 minutes
+3. Multiple unresponded emails (5+ threads needing reply)
+4. Today's next event (current behavior)
+5. "All clear" empty state
+
+Tiebreaker within category: most days overdue wins. If still tied: alphabetical by entity name.
+
+Query for overdue items:
+```sql
+SELECT 'follow_up' as type, f.id, c.name, f.reason,
+  CAST(julianday('now') - julianday(f.due_date) AS INTEGER) as days_overdue
+FROM follow_ups f JOIN contacts c ON c.id = f.contact_id
+WHERE f.status = 'pending' AND f.due_date < date('now')
+UNION ALL
+SELECT 'commitment' as type, com.id,
+  CASE WHEN com.is_user_commitment = 1 THEN 'You' ELSE c.name END,
+  com.description,
+  CAST(julianday('now') - julianday(com.deadline_date) AS INTEGER) as days_overdue
+FROM commitments com
+LEFT JOIN contacts c ON c.id = com.owner_contact_id
+WHERE com.status IN ('open', 'overdue') AND com.deadline_date < date('now')
+ORDER BY days_overdue DESC;
+```
+
+The hero callout shows the highest-priority item from this formula — not just the next calendar event.
 
 **Tomorrow preview**: Below today's events, a subtle divider line, then "Tomorrow" with a compact list (just times and titles, no full details). This gives a look-ahead without cluttering.
 

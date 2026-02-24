@@ -41,15 +41,25 @@ VALUES ('contact', (SELECT contact_id FROM follow_ups WHERE id = ?), 'follow_up_
    - Recent interactions (if CRM installed)
    - Recent notes
    - Active projects together (if Project Tracker installed)
+   - Latest relationship score (if Conversation Intelligence installed):
+     ```sql
+     SELECT relationship_depth, trajectory FROM relationship_scores
+     WHERE contact_id = ? ORDER BY score_date DESC LIMIT 1;
+     ```
 
-2. Draft a message that:
-   - References the last interaction naturally
-   - Mentions relevant projects or shared topics
-   - Has a clear purpose (check-in, update, request, offer)
-   - Matches a professional but warm tone
-   - Is concise (3-5 sentences)
+2. Draft using this template structure:
+   1. **Greeting + reference to last interaction:** "Following up on our {interaction_type} {days_ago} days ago about {topic}."
+   2. **Purpose statement:** one sentence on why you're reaching out
+   3. **Relevant context:** mention active project or pending commitment if applicable
+   4. **Clear ask or next step**
+   5. **Sign-off**
 
-3. Ask if the user wants to:
+3. Tone — match the relationship depth from `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/conversation-intelligence/references/scoring-methodology.md`:
+   - **Trusted / Collaborative:** casual, first-name, brief. Skip formalities.
+   - **Professional:** standard business, slightly more formal.
+   - **Transactional** (or no score): concise, action-focused. Get to the point.
+
+4. Ask if the user wants to:
    - Refine the message
    - Schedule a follow-up reminder
    - Log this as an interaction

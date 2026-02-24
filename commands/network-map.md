@@ -97,8 +97,13 @@ From the gathered data, construct two arrays: `nodes` and `links`.
 - `role`: role/title
 - `type`: contact type
 - `size`: based on interaction count (more interactions = larger). Range: 8px (no interactions) to 40px (most interactions). Scale linearly.
-- `color`: assigned by company from the palette (see below). If Conversation Intelligence is installed, override with relationship health color (green = strong, amber = moderate, red = weak).
-- `opacity`: based on recency of last activity. Activity in the last 7 days = 1.0, last 30 days = 0.85, last 90 days = 0.7, older = 0.55.
+- `color`: assigned by company from the palette (see below). If Conversation Intelligence is installed, override with relationship depth color mapping:
+    - `trusted` → `#10b981` (emerald-500)
+    - `collaborative` → `#8b5cf6` (violet-500)
+    - `professional` → `#3b82f6` (blue-500)
+    - `transactional` → `#a1a1aa` (zinc-400)
+    - no score → `#d4d4d8` (zinc-300, fall back to company color if available)
+- `opacity`: based on recency of last activity. Activity in the last 7 days = 1.0, last 30 days = 0.85, last 90 days = 0.7, last 180 days = 0.55, older than 180 days = 0.4 (floor).
 - `entityPage`: filename from `generated_views` if one exists, otherwise null.
 - `tags`: array of `{name, color}` from entity_tags.
 - `recentlyActive`: true if last activity within 7 days (drives pulse animation).
@@ -134,6 +139,8 @@ Main visualization (full width, ~70vh height)
 ├── SVG with D3 force-directed graph
 ├── Zoom controls (subtle, bottom-right: zoom in, zoom out, reset)
 └── Legend (bottom-left: node size = activity level, colors = companies or health)
+    If Conversation Intelligence installed, add a "Relationship Health" legend:
+    ● Trusted (#10b981) ● Collaborative (#8b5cf6) ● Professional (#3b82f6) ● Transactional (#a1a1aa) ● No data (#d4d4d8)
 
 Stats bar (4-column grid below visualization)
 ├── Total contacts
@@ -153,7 +160,7 @@ Embed ALL graph data and D3 code inline in a `<script>` tag. The key implementat
 const nodes = [/* node objects from Step 3 */];
 const links = [/* link objects from Step 3 */];
 
-// Company color palette
+// Company color palette (used when no relationship depth data)
 const companyColors = ["#3b82f6", "#10b981", "#f59e0b", "#ef4444", "#8b5cf6", "#ec4899", "#06b6d4", "#f97316"];
 const companyColorMap = {};
 let colorIdx = 0;
@@ -163,6 +170,15 @@ nodes.forEach(n => {
     colorIdx++;
   }
 });
+
+// Relationship depth → color mapping (overrides company color when available)
+const depthColorMap = {
+  'trusted': '#10b981',      // emerald-500
+  'collaborative': '#8b5cf6', // violet-500
+  'professional': '#3b82f6',  // blue-500
+  'transactional': '#a1a1aa'  // zinc-400
+};
+// Apply: node.color = depthColorMap[node.relationshipDepth] || companyColorMap[node.company] || '#d4d4d8'
 
 // SVG setup with zoom
 const svg = d3.select("#network-svg");
