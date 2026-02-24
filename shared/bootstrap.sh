@@ -3,8 +3,9 @@
 # Safe to run multiple times (all migrations are idempotent).
 #
 # Data lives in ~/.local/share/software-of-you/ so it survives
-# repo re-downloads and updates. A symlink in data/soy.db points
-# to the real location.
+# repo re-downloads and updates. Symlinks point to the real location:
+#   data/soy.db → ~/.local/share/software-of-you/soy.db
+#   output/     → ~/.local/share/software-of-you/output/
 
 if ! command -v sqlite3 &>/dev/null; then
   echo "error|sqlite3 not found|Install sqlite3 to use Software of You"
@@ -17,12 +18,14 @@ DB_REAL="$DATA_HOME/soy.db"
 DB_LINK="$PLUGIN_ROOT/data/soy.db"
 TOKEN_REAL="$DATA_HOME/google_token.json"
 TOKEN_LINK="$PLUGIN_ROOT/config/google_token.json"
+OUTPUT_REAL="$DATA_HOME/output"
+OUTPUT_LINK="$PLUGIN_ROOT/output"
 
 # Create directories
 mkdir -p "$DATA_HOME"
+mkdir -p "$OUTPUT_REAL"
 mkdir -p "$PLUGIN_ROOT/data"
 mkdir -p "$PLUGIN_ROOT/config"
-mkdir -p "$PLUGIN_ROOT/output"
 
 # --- Database ---
 
@@ -46,6 +49,19 @@ fi
 # Create symlink if needed (only if real token exists)
 if [ -f "$TOKEN_REAL" ] && [ ! -e "$TOKEN_LINK" ]; then
   ln -sf "$TOKEN_REAL" "$TOKEN_LINK"
+fi
+
+# --- Output Directory ---
+
+# If there's a real directory (not symlink) at output/, migrate its contents out
+if [ -d "$OUTPUT_LINK" ] && [ ! -L "$OUTPUT_LINK" ]; then
+  cp -a "$OUTPUT_LINK"/. "$OUTPUT_REAL"/ 2>/dev/null
+  rm -rf "$OUTPUT_LINK"
+fi
+
+# Create symlink if needed
+if [ ! -e "$OUTPUT_LINK" ]; then
+  ln -sf "$OUTPUT_REAL" "$OUTPUT_LINK"
 fi
 
 # --- Auto-Backup (before any changes) ---
