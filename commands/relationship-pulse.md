@@ -34,7 +34,7 @@ WHERE cm.contact_id = ? ORDER BY t.occurred_at DESC;
 
 **All insights for this contact:**
 ```sql
-SELECT * FROM communication_insights WHERE contact_id = ?
+SELECT *, data_points FROM communication_insights WHERE contact_id = ?
 ORDER BY created_at DESC;
 ```
 
@@ -69,16 +69,22 @@ SELECT * FROM projects WHERE client_id = ? AND status IN ('active', 'planning');
 
 ## Present as Narrative
 
-This is the "how are things with Sarah?" command. Present as a comprehensive but readable briefing:
+This is the "how are things with Sarah?" command. Present as a comprehensive but readable briefing **grounded in computed values from scoring-methodology.md**.
+
+**Ground every claim in data.** Use the computed depth, trajectory, follow-through percentages, and dominance ratios — never vibes-based language like "a sign of growing trust" or "well-balanced."
 
 "Here's where things stand with **Sarah Chen** (CTO, Meridian Labs).
 
-**The relationship is strengthening.** You've had **6 meetings** this quarter, up from 3 last quarter. Conversations have evolved from pure **project logistics** to more strategic discussions about **team structure** and **technical direction** — a sign of growing trust.
+**Relationship depth: Collaborative** — 7 meetings in 90 days, dominance 1.1x in 1:1s, follow-through user:75% contact:68%. *(Show the depth reasoning from the `notes` field of the latest relationship_score.)*
 
-**Communication patterns:** Your talk ratio with Sarah averages **45%** — well-balanced. You ask her about **3 questions per call**, and she tends to give detailed answers. Interruptions are rare on both sides. Your best conversations with her happen when you ask open-ended questions and give her room to think.
+**Trajectory: Strengthening** — meeting frequency up 40% vs previous 45 days (4 meetings current vs 3 previous).
 
-**Open commitments:** You owe Sarah the **updated proposal** (due Friday) and she's sending you the **brand guidelines doc**. Follow-through between you is at **85%** — solid.
+**Communication patterns:** Your talk ratio with Sarah averages **45%** (dominance 0.9x — balanced for 1:1 meetings). You ask about **3 questions per call**. Interruptions: 0 (format doesn't support detection).
 
-**Active projects together:** The **Rebrand** project is in progress, high priority, targeting end of March. There are 2 blocked tasks that came up in your last conversation.
+**Open commitments:** You owe Sarah the **updated proposal** (due Friday). She's sending the **brand guidelines doc**. Follow-through: you **75%**, Sarah **68%** — both above the collaborative threshold.
 
-**Coach's take:** This is one of your strongest professional relationships right now. The shift from transactional to collaborative conversations is exactly what you want. One thing to watch — you've mentioned the **database migration** in 3 separate calls without creating a task for it. Either scope it or take it off the table."
+**Active projects together:** The **Rebrand** project is in progress, high priority, targeting end of March.
+
+**Coach's take:** *(Pull the latest coach_note content. If the coach note includes data_points, reference the trigger and threshold.)* In your last call, your dominance ratio was 1.72x — above the 1.5 threshold. You talked through the entire requirements section without checking in. Try pausing every 2-3 minutes to ask her reaction."
+
+Show depth reasoning from the `notes` field. Display dominance_ratio alongside talk_ratio_avg. Show follow-through percentages for both directions (user and contact). Use "--" for any NULL values.

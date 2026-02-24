@@ -40,12 +40,28 @@ JOIN transcripts t ON t.id = cm.transcript_id
 WHERE t.occurred_at >= date('now', '-7 days');
 ```
 
+```sql
+-- Per-call dominance ratios (for trend analysis)
+SELECT cm.transcript_id, cm.talk_ratio,
+  (SELECT COUNT(*) FROM transcript_participants WHERE transcript_id = cm.transcript_id) as participant_count,
+  cm.talk_ratio / (1.0 / (SELECT COUNT(*) FROM transcript_participants WHERE transcript_id = cm.transcript_id)) as dominance_ratio,
+  t.occurred_at
+FROM conversation_metrics cm
+JOIN transcript_participants tp ON tp.transcript_id = cm.transcript_id AND tp.is_user = 1
+JOIN transcripts t ON t.id = cm.transcript_id
+WHERE t.occurred_at >= date('now', '-7 days')
+  AND cm.contact_id = tp.contact_id;
+```
+
 **Commitment follow-through:**
 ```sql
+-- Follow-through rate: completed / (completed + overdue). Open-not-yet-due excluded.
 SELECT
   COUNT(*) as total,
   SUM(CASE WHEN status = 'completed' THEN 1 ELSE 0 END) as completed,
-  SUM(CASE WHEN status = 'overdue' THEN 1 ELSE 0 END) as overdue
+  SUM(CASE WHEN status = 'overdue' THEN 1 ELSE 0 END) as overdue,
+  CAST(SUM(CASE WHEN status = 'completed' THEN 1 ELSE 0 END) AS REAL)
+    / NULLIF(SUM(CASE WHEN status IN ('completed', 'overdue') THEN 1 ELSE 0 END), 0) as follow_through_rate
 FROM commitments WHERE created_at >= date('now', '-30 days');
 ```
 
@@ -68,12 +84,16 @@ ORDER BY rs.trajectory ASC;
 
 ## Present as Narrative
 
-"This week you had **4 calls** totalling about **2 hours 15 minutes**. Your average talk ratio was **58%** — a bit high, meaning you were talking more than listening in most conversations.
+Ground every number in computed values. Use dominance ratios (not "a bit high"), follow-through percentages (not "could be better"), and exact meeting counts.
 
-You asked **12 questions** across those calls, mostly in your sessions with **Sarah** and **Bob**. The conversation with **Mike** was more one-directional — you did most of the talking there.
+"This week you had **4 calls** totalling about **2 hours 15 minutes**. Your average talk ratio was **58%** with an average dominance ratio of **1.16x** — balanced overall, though your call with **Mike** hit **1.72x** (dominant in a 1:1).
 
-**Commitment follow-through** is at **78%** this month — you've completed 7 of 9 commitments on time, but the **design review notes** for Sarah and the **scope document** for the Meridian project are overdue.
+You asked **12 questions** across those calls, mostly in your sessions with **Sarah** and **Bob**. The conversation with **Mike** had a dominance ratio of 1.72x — you did most of the talking there.
 
-**Relationships needing attention:** Your calls with **Bob Johnson** have been declining in frequency — down to once this month from weekly last quarter. The conversations have narrowed to just status updates. Consider a longer catch-up.
+**Commitment follow-through** is at **78%** this month (7 completed / 9 resolved). The **design review notes** for Sarah and the **scope document** for the Meridian project are overdue.
 
-**Coach highlight:** The best moment this week was in your call with Sarah — you asked her what worried her about the rebrand, then gave her space to think. That led to the most substantive part of the conversation. Try that same approach with Mike next time — he had something to say about the timeline but didn't get the room."
+**Relationships needing attention:** Your calls with **Bob Johnson** show a frequency drop — 1 meeting this month vs weekly last quarter. Trajectory: **cooling**. Consider a longer catch-up.
+
+**Coach highlight:** *(Pull the strongest coach_note from the period, with its data_points trigger and threshold.)*"
+
+Display dominance_ratio per call alongside talk_ratio. Use follow-through formula from scoring-methodology.md. Show "--" for NULL values.
