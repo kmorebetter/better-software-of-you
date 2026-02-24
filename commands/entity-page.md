@@ -260,27 +260,37 @@ This is where the page goes beyond raw data. Using all gathered data, synthesize
 
 ### Relationship Context Card
 
-Tell the story of this relationship, grounded in computed conversation intelligence data:
+Template with required data points, in this order:
 
-- **Relationship depth and trajectory** (if Conversation Intelligence data exists) — show the computed depth level and reasoning from `relationship_scores.notes`: e.g., "**Collaborative** — 7 meetings in 90d, dominance 1.1x, follow-through user:75% contact:68%". Show trajectory with evidence.
-- **How you met** — who introduced you, when, what context
-- **Key moments** — notable exchanges, mishaps, breakthroughs (e.g. "meeting didn't happen — calendar glitch, both laughed it off")
-- **Communication patterns** — show dominance_ratio alongside talk_ratio_avg. Show follow-through percentages for both directions. Use "--" for NULL values.
-- **Intent / opportunity** — what this person wants, what you might do together
-- **What's next** — highlight the immediate next action (e.g. "First call tomorrow — 8:30 AM")
+1. **Depth + reasoning** (from `relationship_scores.notes`) — ALWAYS first if data exists. Display the depth level and the exact reasoning string from the notes field: e.g., "**Collaborative** — 7 meetings in 90d, dominance 1.1x, follow-through user:75% contact:68%"
+2. **Trajectory + evidence** — show trajectory label with frequency comparison: "Strengthening — meeting frequency up 40% (current: 1.8/week vs previous: 1.3/week)"
+3. **Follow-through both directions** — "Your follow-through: 85% · Their follow-through: 72%" — use "—" for NULL values
+4. **Communication pattern** — dominance ratio + talk ratio avg: "You talk 55% of the time (dominance: 1.1x in 1:1s)" — use "—" for NULL values
+5. **Next action** — from `calendar_events` or `follow_ups`, whichever is sooner. Surface prominently with amber callout if upcoming event.
+6. **How you met / key moments** — from interactions and notes (keep as narrative, but AFTER the computed data above)
 
-Pull from: interactions, email content/snippets, notes, relationship scores (especially `notes` field for depth reasoning), commitments, data_points from insights. If there's an upcoming event, surface it prominently with an amber callout. Never use vague language like "a sign of growing trust" — use the computed depth level and metrics.
+If no Conversation Intelligence data exists: skip items 1–4, show interaction frequency and recency instead:
+- "N interactions in the last 30 days (last: X days ago)"
+
+Pull from: relationship_scores (especially `notes` field), contact_interactions, calendar_events, follow_ups, notes, commitments, communication_insights. Never use vague language like "a sign of growing trust" — use the computed depth level and metrics.
 
 ### Company Intel Card
 
-If the contact has a `company` value, build a company context card:
-- Company name + website (from contact or notes)
-- Key stats if available in notes (headcount, revenue, properties, etc.)
-- Brief description of what the company does
-- **Key team** — other contacts in the system at the same company, with their roles
-- **Notable projects/work** — from notes or project data
+If the contact has a `company` value, build a company context card with defined extraction rules:
 
-Pull from: contact fields, notes, other contacts with matching company, projects.
+- **Key team** — always computable:
+  ```sql
+  SELECT name, role FROM contacts WHERE company = ? AND status = 'active' AND id != ?;
+  ```
+- **Project count** — always computable:
+  ```sql
+  SELECT COUNT(*) FROM projects WHERE client_id = ?;
+  ```
+- **Stats from notes** — only show if notes contain explicit numbers. Match patterns like "$X", "X employees", "X properties", "X revenue". Don't infer stats that aren't stated.
+- **Description** — pull from notes if available. Don't invent a company description.
+- **Website** — from contact fields or notes. Don't guess.
+
+Pull from: contact fields, notes, other contacts with matching company, projects. Never fabricate company information.
 
 ### Email Thread Card
 
@@ -291,12 +301,19 @@ When emails exist, show the **full conversation expanded** — not collapsed. Ea
 
 Group by thread. Show the most active/recent thread first. Use color-coded avatars: emerald for you, blue for the contact, zinc for third parties.
 
-### Discovery Questions (AI-generated)
+### Discovery Questions (gated — not always shown)
 
-If there's an upcoming meeting or the relationship is early (few interactions), generate 3-5 discovery questions tailored to:
-- The contact's role and company
-- What you already know about their intent
-- Gaps in your knowledge
+**Generate ONLY when at least one condition is true:**
+- `COUNT(contact_interactions WHERE contact_id = ?) < 3` (early relationship)
+- `MAX(contact_interactions.occurred_at) < date('now', '-14 days')` (stale — need to re-engage)
+- Upcoming calendar event with this contact within 3 days
+
+**If none of these conditions are met: skip the Discovery Questions card entirely.**
+
+When generated, anchor to data:
+- "Based on {contact.role} at {contact.company}, and that your last {N} conversations focused on {topics from call_intelligence}..."
+- Reference specific gaps: "You haven't discussed {X} yet" or "Last call touched on {Y} — worth following up"
+- 3-5 questions tailored to the contact's role, company, known concerns, and gaps in your knowledge
 
 These should feel like a smart advisor prepped them — not generic.
 

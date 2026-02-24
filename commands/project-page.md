@@ -18,6 +18,7 @@ Read design references in parallel:
 - `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/dashboard-generation/references/template-base.html`
 - `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/dashboard-generation/references/component-patterns.md`
 - `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/dashboard-generation/references/navigation-patterns.md`
+- `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/project-tracker/references/project-methodology.md`
 
 At the same time, resolve the project. Query `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/data/soy.db`:
 
@@ -57,7 +58,7 @@ ORDER BY
 SELECT status, COUNT(*) as count FROM tasks WHERE project_id = ? GROUP BY status;
 
 -- Milestones
-SELECT * FROM milestones WHERE project_id = ? ORDER BY due_date ASC NULLS LAST;
+SELECT * FROM milestones WHERE project_id = ? ORDER BY target_date ASC NULLS LAST;
 
 -- Notes on this project
 SELECT content, created_at FROM notes
@@ -161,35 +162,43 @@ This is where the page goes beyond raw data. Using all gathered data, synthesize
 Tell the story of where this project stands right now:
 - **Current state** — what phase is it in, what's actively being worked on
 - **Blockers** — anything stalled, overdue, or waiting on someone
-- **Momentum** — is work accelerating, stalling, or steady? Base this on recent activity and task completion patterns
+- **Momentum** — use the velocity formula from project-methodology.md. Display format: "Accelerating — 5 tasks completed this period vs 2 last period" (always show the numbers). If no task completions exist, show "—".
 - **What just happened** — the most notable recent developments (task completions, milestone hits, client conversations)
 
 Pull from: tasks, milestones, activity log, recent interactions, notes.
 
 ### Client Relationship Card
 
-If a client exists, tell the story of this client relationship as it pertains to the project:
-- How the project started — context from early interactions or notes
-- Communication pattern — frequent check-ins or long silences?
-- Client satisfaction signals — from email tone, interaction notes, commitments kept/broken
-- Current dynamic — where do things stand between you and the client right now?
+If a client exists, ground the relationship assessment in computed data:
+- **Relationship depth + trajectory** — pull from `relationship_scores` (depth, trajectory, follow-through percentages, meeting_frequency). Display format per project-methodology.md.
+- **Interaction frequency** — computed as interactions/week from contact_interactions over 30 days.
+- **How the project started** — context from early interactions or notes
+- **Open commitments** — list any open/overdue commitments between you and this client
+- If no Conversation Intelligence data: "No conversation data — relationship based on interaction frequency only ({N}/week)"
 
-Pull from: interactions, emails, notes, commitments, follow-ups.
+Pull from: relationship_scores, contact_interactions, notes, commitments, follow-ups. Never use: "email tone", "current dynamic", "client satisfaction signals" — these are not computable.
 
 ### Risk Assessment
 
-AI assessment of project risks. Be specific, not generic:
-- **Overdue tasks** — name them, say how overdue
-- **Missed milestones** — which ones, by how much
-- **Stale activity** — if no activity in 7+ days, flag it
-- **Commitment gaps** — promises made but not tracked or overdue
-- **Scope concerns** — tasks piling up without milestones being hit
+Use risk thresholds from project-methodology.md. Run the required queries and apply the first matching level:
+- **High** — >=3 overdue tasks, OR >=1 missed milestone, OR no activity in 14+ days on an active project
+- **Medium** — 1–2 overdue tasks, OR overdue commitments, OR target date within 14 days with open > completed tasks
+- **Low** — all tasks on track, no overdue items, regular activity
 
-Rate overall risk: Low / Medium / High with a one-sentence rationale.
+Output reasoning in this format: "Medium — 2 overdue tasks, target date in 11 days with 8/12 tasks remaining"
+
+Within the card, still name specific overdue tasks (with days overdue), missed milestones (with how much), commitment gaps, and scope concerns. The threshold determines the badge; the details provide context.
 
 ### What's Next
 
-Prioritized list of 3-5 concrete next actions based on all the data. These should be specific and actionable:
+Use the action prioritization formula from project-methodology.md. Show 3-5 actions in ranked order:
+1. Unblock blocked tasks (highest priority — blocking other work)
+2. Overdue tasks (most days overdue first)
+3. Approaching milestones (within 14 days)
+4. Tasks due soon (within 7 days)
+5. Follow-ups needed for project client
+
+Each action must be specific and reference data:
 - Not "Follow up with client" but "Send Sarah the revised timeline — she asked for it in the Feb 12 email"
 - Not "Complete tasks" but "Finish the API integration task (3 days overdue) to unblock the testing milestone"
 

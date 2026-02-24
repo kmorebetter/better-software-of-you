@@ -8,6 +8,9 @@ argument-hint: <project name or id>
 
 Generate a comprehensive project brief for the project specified in $ARGUMENTS.
 
+Read the project scoring methodology before generating:
+- `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/project-tracker/references/project-methodology.md`
+
 ## Step 1: Gather All Data
 
 Query `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/data/soy.db`:
@@ -51,11 +54,11 @@ ORDER BY occurred_at DESC LIMIT 10;
 
 Write a project brief covering:
 
-1. **Status Snapshot** — current status, priority, timeline (start → target), days remaining/overdue
+1. **Status Snapshot** — current status, priority, timeline (start → target), days remaining/overdue, momentum (use velocity formula from project-methodology.md), risk level (use threshold table from project-methodology.md with reasoning)
 2. **Progress** — tasks done vs total, breakdown by status, milestone status
 3. **Blockers & Risks** — blocked tasks, overdue items, missed milestones
-4. **Client Context** (if CRM installed & project has client) — who the client is, recent interactions, relationship temperature
+4. **Client Context** (if CRM installed & project has client) — who the client is, recent interactions. Pull from `relationship_scores`: show depth, trajectory, follow-through percentages. If no conversation data, show interaction frequency (interactions/week over 30 days).
 5. **Recent Activity** — what happened recently on this project
-6. **Next Steps** — AI-suggested next actions based on current state (unblocking tasks, upcoming milestones, follow-ups needed)
+6. **Next Steps** — use the action prioritization formula from project-methodology.md. Ranked order: unblock blocked tasks → overdue tasks → approaching milestones → tasks due soon → client follow-ups. Each action must be specific and reference data.
 
 Present as a clean, professional brief. This should feel like something you could share with a stakeholder.
