@@ -31,6 +31,7 @@ Present available commands based on what's installed:
 | `/network-map` | Interactive visual map of your contact network |
 | `/entity-page <name>` | Generate a contact intelligence brief |
 | `/build-all` | Generate ALL views — entity pages, project pages, module views, dashboard |
+| `/soul` | Generate a soul.md snapshot — your profile, patterns, and insights |
 | `/help-soy` | This help page |
 
 ## If CRM Module Installed

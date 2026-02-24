@@ -1,0 +1,33 @@
+{
+  "name": "user-profile",
+  "display_name": "User Profile",
+  "version": "1.0.0",
+  "description": "Your identity, preferences, and derived insights. Powers the /soul command to generate a living profile enriched with usage patterns.",
+  "migration": "013_user_profiles.sql",
+  "tables": ["user_profile"],
+  "entities": ["user_profile"],
+  "commands": ["soul"],
+  "standalone_features": [
+    "Structured profile with identity, preferences, and patterns",
+    "Onboarding collects name, role, focus areas, and communication style",
+    "Monthly soul.md snapshot with derived insights from all modules",
+    "Automatic pattern detection from usage data"
+  ],
+  "enhancements": [
+    {
+      "requires_module": "conversation-intelligence",
+      "features": ["Talk ratio trends in soul snapshot", "Commitment follow-through rate", "Communication style insights"],
+      "description": "Conversation data enriches your soul profile with communication patterns and reliability metrics."
+    },
+    {
+      "requires_module": "journal",
+      "features": ["Average energy levels", "Dominant mood patterns", "Journaling frequency"],
+      "description": "Journal entries reveal energy and mood patterns in your soul snapshot."
+    },
+    {
+      "requires_module": "decision-log",
+      "features": ["Decision success rate", "Decision patterns and tendencies"],
+      "description": "Decision outcomes contribute success rate and pattern insights to your soul profile."
+    }
+  ]
+}
