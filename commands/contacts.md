@@ -82,7 +82,7 @@ SELECT
 
 Write to `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/output/contacts.html`.
 
-Include the sidebar from `skills/dashboard-generation/references/navigation-patterns.md` with Contacts active in the People section.
+Include the sidebar from `skills/dashboard-generation/references/navigation-patterns.md` with Contacts active in the People section. Also read `skills/dashboard-generation/references/delight-patterns.md` for micro-interactions and delight.
 
 ### Design system
 - Background: `bg-zinc-50`, cards: `bg-white border border-zinc-200 rounded-xl shadow-sm`

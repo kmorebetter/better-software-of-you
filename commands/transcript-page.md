@@ -16,6 +16,7 @@ Read design references in parallel:
 - `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/dashboard-generation/references/template-base.html`
 - `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/dashboard-generation/references/component-patterns.md`
 - `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/dashboard-generation/references/navigation-patterns.md`
+- `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/dashboard-generation/references/delight-patterns.md` — micro-interactions and delight
 
 At the same time, resolve the transcript. Query `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/data/soy.db`:
 
@@ -219,7 +220,7 @@ Footer
 - Coaching insight icons: pink for relationship_pulse, amber for coach_note, red for pattern_alert
 - Contact name linking: check entity pages query — if a page exists for a contact, render their name as `<a href="contact-{slug}.html" class="font-medium text-blue-600 hover:text-blue-800 hover:underline">Name</a>`. Otherwise plain text.
 - All data static in HTML — no JavaScript data fetching
-- The only JS: Lucide icon initialization (`lucide.createIcons()`) + sidebar JS
+- JS: Lucide icons + delight layer from template-base.html (countups, scroll reveals, card stagger) + sidebar JS
 - Responsive: sidebar stacks below on mobile via `grid-cols-1 lg:grid-cols-3`
 - Collapsed sections use native `<details>` for zero-JS collapsing
 

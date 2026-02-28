@@ -16,6 +16,7 @@ Before building, ensure data is fresh. Follow the auto-sync procedure in CLAUDE.
 Read these files first:
 - `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/dashboard-generation/references/template-base.html` — HTML skeleton
 - `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/dashboard-generation/references/navigation-patterns.md` — sidebar patterns
+- `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/dashboard-generation/references/delight-patterns.md` — micro-interactions and delight
 
 ## Step 2: Check Modules & Gather Data
 
@@ -177,12 +178,35 @@ ORDER BY e.received_at ASC
 LIMIT 5;
 ```
 
+**Untracked frequent contacts** (5+ emails, not in CRM, if Gmail installed):
+```sql
+SELECT e.from_address, e.from_name,
+  COUNT(*) as email_count,
+  MAX(e.received_at) as last_email
+FROM emails e
+WHERE e.direction = 'inbound'
+  AND e.contact_id IS NULL
+  AND e.from_address NOT LIKE '%noreply%'
+  AND e.from_address NOT LIKE '%no-reply%'
+  AND e.from_address NOT LIKE '%notifications%'
+  AND e.from_address NOT LIKE '%mailer-daemon%'
+  AND e.from_address NOT LIKE '%@calendar.google.com'
+  AND e.from_address NOT IN (
+    SELECT email FROM contacts WHERE email IS NOT NULL AND email != ''
+  )
+GROUP BY e.from_address
+HAVING email_count >= 5
+ORDER BY email_count DESC
+LIMIT 3;
+```
+Show as: "{from_name or email} — {email_count} emails, not tracked · Run `/discover` to review"
+
 ## Step 3: Compute Counts
 
 After gathering data, compute:
 - `urgent_count`: total overdue follow-ups + overdue commitments + overdue tasks
 - `soon_count`: total due-soon follow-ups + due-soon commitments + due-soon tasks + today's meetings + approaching projects
-- `awareness_count`: cold contacts + stale projects + pending decisions + old unread emails
+- `awareness_count`: cold contacts + stale projects + pending decisions + old unread emails + untracked frequent contacts
 - `total_count`: urgent_count + soon_count + awareness_count
 
 Determine the **most urgent single item** for the hero callout. Priority order:
@@ -338,6 +362,7 @@ Color variants:
 - Stale project: "No activity in {days_stale} days"
 - Pending decision: "Decided {days_ago} days ago · No outcome recorded"
 - Old email: "From {from_name} · {days_old} days ago · '{subject}'"
+- Untracked contact: "{from_name or email} · {email_count} emails, not tracked"
 
 ### Suggested Actions
 
@@ -350,6 +375,7 @@ Color variants:
 - Stale project: "Check in on progress"
 - Decision: "Record the outcome"
 - Email: "Reply or archive"
+- Untracked contact: "Run `/discover` to review"
 
 ### All Clear State
 
@@ -393,7 +419,7 @@ Only show pills for categories with items.
 - Grid of nudge cards: `grid grid-cols-1 md:grid-cols-2 gap-3`
 - Section headers: `text-xs font-semibold uppercase tracking-wider` with a colored dot (8px, `rounded-full`)
 - All data static in HTML — no JavaScript data fetching
-- The only JS: Lucide icon initialization (`lucide.createIcons()`)
+- JS: Lucide icons + delight layer from template-base.html (countups, scroll reveals, card stagger)
 - Module-aware: only show nudges for installed modules. Skip queries entirely for uninstalled modules.
 
 ## Step 5: Write, Register, and Open

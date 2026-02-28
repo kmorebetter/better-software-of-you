@@ -19,6 +19,141 @@
     </script>
     <style>
         /* Sidebar CSS — see navigation-patterns.md for full reference */
+
+        /* === Delight Layer CSS === */
+
+        /* Card entrance — staggered fade-up */
+        @keyframes delightFadeUp {
+            from { opacity: 0; transform: translateY(12px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .delight-card {
+            opacity: 0;
+            animation: delightFadeUp 0.4s ease-out forwards;
+        }
+        .delight-card:nth-child(1) { animation-delay: 0ms; }
+        .delight-card:nth-child(2) { animation-delay: 50ms; }
+        .delight-card:nth-child(3) { animation-delay: 100ms; }
+        .delight-card:nth-child(4) { animation-delay: 150ms; }
+        .delight-card:nth-child(5) { animation-delay: 200ms; }
+        .delight-card:nth-child(6) { animation-delay: 250ms; }
+        .delight-card:nth-child(7) { animation-delay: 300ms; }
+        .delight-card:nth-child(8) { animation-delay: 350ms; }
+        .delight-card:nth-child(9) { animation-delay: 400ms; }
+        .delight-card:nth-child(10) { animation-delay: 450ms; }
+        .delight-card:nth-child(11) { animation-delay: 500ms; }
+        .delight-card:nth-child(12) { animation-delay: 550ms; }
+
+        /* Card hover lift */
+        .delight-hover {
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .delight-hover:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        }
+
+        /* Progress bar fill */
+        @keyframes delightFillBar {
+            from { width: 0%; }
+        }
+        .delight-progress {
+            animation: delightFillBar 0.8s ease-out forwards;
+        }
+
+        /* Row hover transition */
+        .delight-row {
+            transition: background-color 0.15s ease;
+        }
+        .delight-row:hover {
+            background-color: #fafafa;
+        }
+
+        /* Section scroll reveal */
+        .delight-section {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.5s ease, transform 0.5s ease;
+        }
+        .delight-section.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Link underline animation */
+        .delight-link {
+            text-decoration: none;
+            background-image: linear-gradient(currentColor, currentColor);
+            background-size: 0% 1px;
+            background-repeat: no-repeat;
+            background-position: left bottom;
+            transition: background-size 0.3s ease;
+        }
+        .delight-link:hover {
+            background-size: 100% 1px;
+        }
+
+        /* Checkmark draw animation */
+        @keyframes delightDrawCheck {
+            to { stroke-dashoffset: 0; }
+        }
+        .delight-check {
+            stroke-dasharray: 24;
+            stroke-dashoffset: 24;
+            animation: delightDrawCheck 0.4s ease-out 0.2s forwards;
+        }
+
+        /* Sidebar active page dot */
+        @keyframes delightSoftPulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.4; }
+        }
+        .sidebar-active-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: #3b82f6;
+            display: inline-block;
+            flex-shrink: 0;
+            animation: delightSoftPulse 2.5s ease-in-out infinite;
+        }
+
+        /* Sidebar logo hover spin */
+        .sidebar-logo-icon {
+            transition: transform 0.5s ease;
+        }
+        .sidebar-logo-icon:hover {
+            transform: rotate(360deg);
+        }
+
+        /* Reduced motion — disable all delight animations */
+        @media (prefers-reduced-motion: reduce) {
+            .delight-card {
+                animation: none !important;
+                opacity: 1 !important;
+            }
+            .delight-section {
+                opacity: 1 !important;
+                transform: none !important;
+                transition: none !important;
+            }
+            .delight-progress {
+                animation: none !important;
+            }
+            .delight-check {
+                animation: none !important;
+                stroke-dashoffset: 0 !important;
+            }
+            .delight-hover:hover {
+                transform: none !important;
+            }
+            .sidebar-active-dot {
+                animation: none !important;
+            }
+            .sidebar-logo-icon:hover {
+                transform: none !important;
+            }
+        }
     </style>
 </head>
 <body class="bg-zinc-50 text-zinc-900 font-sans antialiased">
@@ -92,7 +227,86 @@
                 if (backdrop) backdrop.classList.remove('visible');
             }
         });
+
+        // === Delight Layer JS ===
+
+        // Stat countup animation
+        function initCountups() {
+            var els = document.querySelectorAll('[data-countup]');
+            for (var i = 0; i < els.length; i++) {
+                (function(el) {
+                    var target = parseInt(el.getAttribute('data-countup'), 10);
+                    var prefix = el.getAttribute('data-countup-prefix') || '';
+                    var suffix = el.getAttribute('data-countup-suffix') || '';
+                    if (isNaN(target) || target === 0) {
+                        el.textContent = prefix + '0' + suffix;
+                        return;
+                    }
+                    var duration = 600;
+                    var start = performance.now();
+                    function tick(now) {
+                        var elapsed = now - start;
+                        var progress = Math.min(elapsed / duration, 1);
+                        var eased = 1 - Math.pow(1 - progress, 3);
+                        el.textContent = prefix + Math.round(target * eased) + suffix;
+                        if (progress < 1) requestAnimationFrame(tick);
+                    }
+                    requestAnimationFrame(tick);
+                })(els[i]);
+            }
+        }
+
+        // Scroll-triggered section reveals
+        function initScrollReveals() {
+            var sections = document.querySelectorAll('.delight-section');
+            if (!sections.length) return;
+            if (!('IntersectionObserver' in window)) {
+                for (var i = 0; i < sections.length; i++) sections[i].classList.add('visible');
+                return;
+            }
+            var observer = new IntersectionObserver(function(entries) {
+                for (var i = 0; i < entries.length; i++) {
+                    if (entries[i].isIntersecting) {
+                        entries[i].target.classList.add('visible');
+                        observer.unobserve(entries[i].target);
+                    }
+                }
+            }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+            for (var i = 0; i < sections.length; i++) observer.observe(sections[i]);
+        }
+
+        // Card stagger for grids with >12 items
+        function initCardStagger() {
+            var cards = document.querySelectorAll('.delight-card');
+            for (var i = 12; i < cards.length; i++) {
+                cards[i].style.animationDelay = (i * 50) + 'ms';
+            }
+        }
+
+        // Time-aware greeting
+        function getTimeGreeting(name) {
+            var hour = new Date().getHours();
+            var greetings;
+            if (hour < 12) {
+                greetings = ['Good morning, ' + name, 'Morning, ' + name, 'Hey ' + name + ' \u2014 here\u2019s your day'];
+            } else if (hour < 17) {
+                greetings = ['Good afternoon, ' + name, 'Afternoon, ' + name, 'Hey ' + name + ' \u2014 here\u2019s what\u2019s happening'];
+            } else {
+                greetings = ['Good evening, ' + name, 'Evening, ' + name, 'Hey ' + name + ' \u2014 here\u2019s where things stand'];
+            }
+            return greetings[Math.floor(Math.random() * greetings.length)];
+        }
+
+        // Initialize all delight features
+        function initDelight() {
+            initCountups();
+            initScrollReveals();
+            initCardStagger();
+        }
+
+        // Run delight init after Lucide icons are created
         lucide.createIcons();
+        initDelight();
     </script>
 </body>
 </html>

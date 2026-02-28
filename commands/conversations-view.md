@@ -13,6 +13,7 @@ Read these files first:
 - `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/dashboard-generation/references/template-base.html`
 - `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/dashboard-generation/references/navigation-patterns.md`
 - `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/dashboard-generation/references/activity-feed-patterns.md`
+- `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/dashboard-generation/references/delight-patterns.md` — micro-interactions and delight
 
 ## Step 2: Gather Data
 
@@ -223,7 +224,7 @@ Footer
   ```
   Only render these links if the transcript's detail page exists in `generated_views`.
 - All data static in HTML — no JavaScript data fetching
-- The only JS: Lucide icon initialization (`lucide.createIcons()`)
+- JS: Lucide icons + delight layer from template-base.html (countups, scroll reveals, card stagger)
 - Responsive: sidebar stacks below on mobile via `grid-cols-1 lg:grid-cols-3`
 - Collapsed sections use native `<details>` for zero-JS collapsing
 

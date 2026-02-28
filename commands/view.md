@@ -14,6 +14,7 @@ Generate a specialized HTML view based on $ARGUMENTS. Unlike `/dashboard` (which
 - **"projects"** → Project board view
 - **"emails"** or **"email"** or **"gmail"** → Run `/email-hub` (tell user: "Generating your Email Hub...")
 - **"calendar"** or **"week"** or **"schedule"** → Run `/week-view`
+- **"prep"** or **"meeting prep"** → Run `/prep` (tell user: "Generating prep brief for your next meeting...")
 - **"conversations"** or **"transcripts"** or **"calls"** → Run `/conversations-view`
 - **"decisions"** → Run `/decision-journal-view`
 - **"journal"** or **"diary"** → Run `/journal-view`
@@ -76,7 +77,7 @@ ON CONFLICT(filename) DO UPDATE SET updated_at = datetime('now');
 
 ## Custom View
 
-For custom descriptions, interpret what the user wants, query the relevant data, and generate an appropriate HTML layout. Use the design system from `skills/dashboard-generation/references/`.
+For custom descriptions, interpret what the user wants, query the relevant data, and generate an appropriate HTML layout. Use the design system from `skills/dashboard-generation/references/`, including `delight-patterns.md` for micro-interactions and copy personality.
 
 ## Navigation
 

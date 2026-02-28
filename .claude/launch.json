@@ -1,0 +1,12 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "MCP Server",
+      "runtimeExecutable": "python3",
+      "runtimeArgs": ["-m", "software_of_you", "serve"],
+      "port": null,
+      "_note": "stdio transport — not an HTTP server. Run from mcp-server/ directory with venv active. Claude Desktop manages this automatically via 'software-of-you serve'."
+    }
+  ]
+}
