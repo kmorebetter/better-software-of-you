@@ -24,7 +24,9 @@ CREATE TABLE IF NOT EXISTS contacts (
     status TEXT NOT NULL DEFAULT 'active' CHECK (status IN ('active', 'inactive', 'archived')),
     notes TEXT,
     created_at TEXT NOT NULL DEFAULT (datetime('now')),
-    updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+    updated_at TEXT NOT NULL DEFAULT (datetime('now')),
+    relationship_type TEXT,
+    title TEXT
 );
 
 -- Tags
