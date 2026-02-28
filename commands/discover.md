@@ -24,47 +24,19 @@ SELECT COUNT(*) FROM emails;
 
 If zero emails, tell the user: "No emails synced yet. Run `/gmail` to pull in your recent messages first."
 
-## Step 2: Find Unknown Senders
+## Step 2: Find Unknown Senders — Use Computed View
 
-Query for email addresses that appear frequently but don't match any existing contact.
+All discovery candidate data comes from the `v_discovery_candidates` view (defined in `data/migrations/014_computed_views.sql`). This view pre-computes email counts, thread counts, recency, and relevance scores — Claude does NOT calculate these values.
 
 ```sql
--- Frequent inbound senders not in contacts
-SELECT
-  e.from_address,
-  e.from_name,
-  COUNT(*) as email_count,
-  COUNT(DISTINCT e.thread_id) as thread_count,
-  MAX(e.received_at) as last_email,
-  MIN(e.received_at) as first_email,
-  CAST(julianday('now') - julianday(MAX(e.received_at)) AS INTEGER) as days_since_last
-FROM emails e
-WHERE e.direction = 'inbound'
-  AND e.contact_id IS NULL
-  AND e.from_address NOT LIKE '%noreply%'
-  AND e.from_address NOT LIKE '%no-reply%'
-  AND e.from_address NOT LIKE '%do-not-reply%'
-  AND e.from_address NOT LIKE '%notifications%'
-  AND e.from_address NOT LIKE '%newsletter%'
-  AND e.from_address NOT LIKE '%digest%'
-  AND e.from_address NOT LIKE '%automated%'
-  AND e.from_address NOT LIKE '%mailer-daemon%'
-  AND e.from_address NOT LIKE '%calendar-notification%'
-  AND e.from_address NOT LIKE '%@calendar.google.com'
-  AND e.from_address NOT LIKE '%@docs.google.com'
-  AND e.from_address NOT LIKE '%@github.com'
-  AND e.from_address NOT LIKE '%@linkedin.com'
-  AND e.from_address NOT LIKE '%@slack.com'
-  AND e.from_address NOT IN (
-    SELECT email FROM contacts WHERE email IS NOT NULL AND email != ''
-  )
-GROUP BY e.from_address
-HAVING email_count >= 2
-ORDER BY email_count DESC, last_email DESC
+-- All candidates with pre-computed scores
+SELECT from_address, from_name, email_count, thread_count,
+  last_email, first_email, days_since_last, relevance_score
+FROM v_discovery_candidates
 LIMIT 15;
 ```
 
-Also check for two-way communication. For each inbound sender found above, check if you've also sent them emails (this boosts their score):
+Also check for two-way communication. For each candidate, check if you've also sent them emails (boosts their score):
 
 ```sql
 -- Check outbound emails to discovered addresses
@@ -88,15 +60,17 @@ Parse attendee emails from these events and cross-reference against `contacts.em
 
 ## Step 3: Score and Rank Candidates
 
-For each discovered address, compute a simple relevance score:
+The `v_discovery_candidates` view pre-computes a `relevance_score` for each candidate based on:
 
 - **Email volume**: +1 per email (capped at 10)
 - **Thread diversity**: +2 per distinct thread (capped at 10)
 - **Recency**: +5 if last email within 7 days, +3 if within 14 days, +1 if within 30 days
+
+Add these bonuses based on Step 2 cross-referencing (not in the view):
 - **Calendar presence**: +5 if they appear in any calendar event
 - **Two-way communication**: +3 if you have both inbound and outbound emails
 
-Sort by score descending. Present the top 10.
+Sort by adjusted score descending. Present the top 10.
 
 ## Step 4: Present Results
 
