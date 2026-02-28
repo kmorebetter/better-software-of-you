@@ -59,7 +59,7 @@
 --   status TEXT ['idea','planning','active','paused','completed','cancelled'],
 --   priority TEXT ['low','medium','high','urgent'],
 --   start_date TEXT, target_date TEXT, completed_date TEXT,
---   created_at TEXT, updated_at TEXT)
+--   created_at TEXT, updated_at TEXT, notes TEXT)
 
 -- Tasks
 -- tasks(id INTEGER PK, project_id INTEGER FK→projects,

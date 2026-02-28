@@ -12,7 +12,8 @@ CREATE TABLE IF NOT EXISTS projects (
     target_date TEXT,
     completed_date TEXT,
     created_at TEXT NOT NULL DEFAULT (datetime('now')),
-    updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+    updated_at TEXT NOT NULL DEFAULT (datetime('now')),
+    notes TEXT
 );
 
 CREATE TABLE IF NOT EXISTS tasks (
