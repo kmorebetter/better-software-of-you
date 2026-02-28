@@ -195,6 +195,23 @@ Before generating any view (dashboard, entity page, or any HTML output) or answe
 - Pure database operations (adding contacts, logging interactions, creating projects)
 - When the user explicitly says "use cached data" or "don't sync"
 
+## Computed Views (Calculation Layer)
+
+The database includes pre-computed SQL views (defined in `data/migrations/014_computed_views.sql`) that handle all deterministic calculations. **When a computed view exists for the data you need, always use the view instead of writing ad-hoc queries.** Claude narrates the numbers — it does not compute them.
+
+| View | What it provides | Use instead of |
+|------|-----------------|----------------|
+| `v_contact_health` | Per-contact: email counts, interaction counts, days silent, relationship depth/trajectory, open commitments, next meeting | Ad-hoc JOINs across emails + interactions + commitments + relationship_scores |
+| `v_commitment_status` | All open/overdue commitments with owner name, source call, days overdue, urgency tier | Manual commitment queries with CASE statements |
+| `v_nudge_items` | Unified nudge feed: all urgency tiers, all entity types, pre-computed days and context | Separate queries per nudge type (follow-ups, commitments, tasks, cold contacts, etc.) |
+| `v_nudge_summary` | Count per tier (urgent/soon/awareness) | Manually summing nudge queries |
+| `v_discovery_candidates` | Frequent emailers not in CRM with relevance scores | The inline discovery query with 15 NOT LIKE filters |
+| `v_meeting_prep` | Per-event: time context, minutes until, duration, project info | Ad-hoc calendar queries with time calculations |
+| `v_project_health` | Per-project: task counts, completion %, overdue tasks, days to target, milestones | Separate task/milestone/activity queries per project |
+| `v_email_response_queue` | Inbound emails needing reply with age and urgency | Complex thread-matching subqueries |
+
+**The rule:** If a view column provides the number, use it directly. Don't re-derive `days_silent` from raw timestamps when `v_contact_health.days_silent` already has it.
+
 ## Module Awareness
 
 Check installed modules: `SELECT name, version FROM modules WHERE enabled = 1;`

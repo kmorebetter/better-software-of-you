@@ -41,72 +41,36 @@ UNION ALL SELECT 'journal', COUNT(*) FROM journal_entries;
 SELECT entity_type, entity_id, entity_name, filename FROM generated_views WHERE view_type = 'entity_page';
 ```
 
-### Urgent (Red) — Needs immediate attention
+### Nudge Data — Use Computed Views
 
-**Overdue follow-ups** (if CRM installed):
+All nudge data comes from the `v_nudge_items` view (defined in `data/migrations/014_computed_views.sql`). This view pre-computes all urgency tiers, entity names, dates, and context — Claude does NOT calculate these values.
+
 ```sql
-SELECT f.id, f.reason, f.due_date, c.name as contact_name, c.id as contact_id,
-  CAST(julianday('now') - julianday(f.due_date) AS INTEGER) as days_overdue
-FROM follow_ups f
-JOIN contacts c ON c.id = f.contact_id
-WHERE f.status = 'pending' AND f.due_date < date('now')
-ORDER BY f.due_date ASC;
+-- All nudge items, pre-computed with urgency tiers
+SELECT nudge_type, entity_id, tier, entity_name, contact_id, project_id,
+  description, relevant_date, days_value, extra_context, icon
+FROM v_nudge_items
+ORDER BY
+  CASE tier WHEN 'urgent' THEN 1 WHEN 'soon' THEN 2 WHEN 'awareness' THEN 3 END,
+  days_value DESC;
+
+-- Summary counts for header pills
+SELECT tier, count FROM v_nudge_summary;
+
+-- Emails needing response (for awareness section, separate view)
+SELECT id, subject, from_name, from_address, contact_name, days_old, urgency
+FROM v_email_response_queue
+WHERE days_old > 3
+LIMIT 5;
 ```
 
-**Overdue commitments** (if Conversation Intelligence installed):
-```sql
-SELECT com.id, com.description, com.deadline_date,
-  CASE WHEN com.is_user_commitment = 1 THEN 'You' ELSE c.name END as owner,
-  c.id as owner_id,
-  CAST(julianday('now') - julianday(com.deadline_date) AS INTEGER) as days_overdue
-FROM commitments com
-LEFT JOIN contacts c ON c.id = com.owner_contact_id
-WHERE com.status IN ('open', 'overdue') AND com.deadline_date < date('now')
-ORDER BY com.deadline_date ASC;
-```
+### Tier Reference
 
-**Overdue tasks** (if Project Tracker installed):
-```sql
-SELECT t.id, t.title, t.due_date, p.name as project_name, p.id as project_id,
-  CAST(julianday('now') - julianday(t.due_date) AS INTEGER) as days_overdue
-FROM tasks t
-JOIN projects p ON p.id = t.project_id
-WHERE t.status NOT IN ('done') AND t.due_date < date('now')
-ORDER BY t.due_date ASC;
-```
+- **Urgent (red):** `tier = 'urgent'` — overdue follow-ups, overdue commitments, overdue tasks
+- **Soon (amber):** `tier = 'soon'` — due within 3 days (follow-ups, commitments, tasks), projects approaching target within 7 days
+- **Awareness (blue):** `tier = 'awareness'` — cold contacts (30+ days), stale projects (14+ days), decisions pending outcome (90+ days), untracked frequent contacts (5+ emails)
 
-### Soon (Amber) — Coming up in the next few days
-
-**Follow-ups due within 3 days** (if CRM installed):
-```sql
-SELECT f.id, f.reason, f.due_date, c.name as contact_name, c.id as contact_id
-FROM follow_ups f
-JOIN contacts c ON c.id = f.contact_id
-WHERE f.status = 'pending' AND f.due_date BETWEEN date('now') AND date('now', '+3 days')
-ORDER BY f.due_date ASC;
-```
-
-**Commitments due within 3 days** (if Conversation Intelligence installed):
-```sql
-SELECT com.id, com.description, com.deadline_date,
-  CASE WHEN com.is_user_commitment = 1 THEN 'You' ELSE c.name END as owner,
-  c.id as owner_id
-FROM commitments com
-LEFT JOIN contacts c ON c.id = com.owner_contact_id
-WHERE com.status = 'open' AND com.deadline_date BETWEEN date('now') AND date('now', '+3 days')
-ORDER BY com.deadline_date ASC;
-```
-
-**Tasks due within 3 days** (if Project Tracker installed):
-```sql
-SELECT t.id, t.title, t.due_date, p.name as project_name, p.id as project_id
-FROM tasks t
-JOIN projects p ON p.id = t.project_id
-WHERE t.status NOT IN ('done') AND t.due_date BETWEEN date('now') AND date('now', '+3 days')
-ORDER BY t.due_date ASC;
-```
-
-**Today's meetings** (if Calendar installed):
+Also add today's meetings to the Soon section separately (these aren't in the nudge view since they're not "problems"):
 ```sql
 SELECT title, start_time, end_time, attendees, location
 FROM calendar_events
@@ -114,100 +78,19 @@ WHERE date(start_time) = date('now') AND status != 'cancelled'
 ORDER BY start_time ASC;
 ```
 
-**Projects approaching target date** (if Project Tracker installed):
-```sql
-SELECT p.name, p.id, p.target_date,
-  CAST(julianday(p.target_date) - julianday('now') AS INTEGER) as days_until,
-  (SELECT COUNT(*) FROM tasks WHERE project_id = p.id AND status != 'done') as open_tasks
-FROM projects p
-WHERE p.status = 'active' AND p.target_date BETWEEN date('now') AND date('now', '+7 days');
-```
-
-### Awareness (Blue) — Worth knowing about
-
-**Contacts going cold** (30+ days no activity):
-```sql
-SELECT c.id, c.name, c.company, c.email,
-  MAX(al.created_at) as last_activity,
-  CAST(julianday('now') - julianday(MAX(al.created_at)) AS INTEGER) as days_silent
-FROM contacts c
-JOIN activity_log al ON al.entity_type = 'contact' AND al.entity_id = c.id
-WHERE c.status = 'active'
-GROUP BY c.id
-HAVING days_silent > 30
-ORDER BY days_silent DESC
-LIMIT 5;
-```
-
-**Stale projects** (14+ days no activity, if Project Tracker installed):
-```sql
-SELECT p.id, p.name, p.status, p.target_date,
-  MAX(al.created_at) as last_activity,
-  CAST(julianday('now') - julianday(MAX(al.created_at)) AS INTEGER) as days_stale
-FROM projects p
-LEFT JOIN activity_log al ON al.entity_type = 'project' AND al.entity_id = p.id
-WHERE p.status IN ('active', 'planning')
-GROUP BY p.id
-HAVING days_stale > 14 OR last_activity IS NULL
-ORDER BY days_stale DESC;
-```
-
-**Decisions pending outcome** (90+ days old, if Decision Log installed):
-```sql
-SELECT d.id, d.title, d.decided_at,
-  CAST(julianday('now') - julianday(d.decided_at) AS INTEGER) as days_ago
-FROM decisions d
-WHERE d.status = 'decided' AND d.outcome IS NULL
-  AND julianday('now') - julianday(d.decided_at) > 90
-ORDER BY d.decided_at ASC;
-```
-
-**Emails needing response** (inbound, unread, 3+ days old, if Gmail installed):
-```sql
-SELECT e.id, e.subject, e.from_name, e.from_address, e.received_at,
-  c.name as contact_name, c.id as contact_id,
-  CAST(julianday('now') - julianday(e.received_at) AS INTEGER) as days_old
-FROM emails e
-LEFT JOIN contacts c ON e.contact_id = c.id
-WHERE e.direction = 'inbound' AND e.is_read = 0
-  AND julianday('now') - julianday(e.received_at) > 3
-  AND e.thread_id NOT IN (
-    SELECT thread_id FROM emails WHERE direction = 'outbound' AND received_at > e.received_at
-  )
-ORDER BY e.received_at ASC
-LIMIT 5;
-```
-
-**Untracked frequent contacts** (5+ emails, not in CRM, if Gmail installed):
-```sql
-SELECT e.from_address, e.from_name,
-  COUNT(*) as email_count,
-  MAX(e.received_at) as last_email
-FROM emails e
-WHERE e.direction = 'inbound'
-  AND e.contact_id IS NULL
-  AND e.from_address NOT LIKE '%noreply%'
-  AND e.from_address NOT LIKE '%no-reply%'
-  AND e.from_address NOT LIKE '%notifications%'
-  AND e.from_address NOT LIKE '%mailer-daemon%'
-  AND e.from_address NOT LIKE '%@calendar.google.com'
-  AND e.from_address NOT IN (
-    SELECT email FROM contacts WHERE email IS NOT NULL AND email != ''
-  )
-GROUP BY e.from_address
-HAVING email_count >= 5
-ORDER BY email_count DESC
-LIMIT 3;
-```
-Show as: "{from_name or email} — {email_count} emails, not tracked · Run `/discover` to review"
-
 ## Step 3: Compute Counts
 
-After gathering data, compute:
-- `urgent_count`: total overdue follow-ups + overdue commitments + overdue tasks
-- `soon_count`: total due-soon follow-ups + due-soon commitments + due-soon tasks + today's meetings + approaching projects
-- `awareness_count`: cold contacts + stale projects + pending decisions + old unread emails + untracked frequent contacts
-- `total_count`: urgent_count + soon_count + awareness_count
+Counts come directly from the `v_nudge_summary` view — do not compute manually:
+
+```sql
+SELECT tier, count FROM v_nudge_summary;
+```
+
+This returns rows like `urgent|12`, `soon|4`, `awareness|9`. Adjust counts:
+- Add the today's-meetings count to `soon_count`
+- Add the `v_email_response_queue` count (WHERE `days_old > 3`) to `awareness_count`
+
+These two sources are separate from the nudge views and must be added manually.
 
 Determine the **most urgent single item** for the hero callout. Priority order:
 1. The most overdue follow-up or commitment (whichever has more days overdue)
