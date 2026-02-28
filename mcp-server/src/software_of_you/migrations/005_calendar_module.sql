@@ -15,7 +15,8 @@ CREATE TABLE IF NOT EXISTS calendar_events (
     attendees TEXT,
     contact_ids TEXT,
     project_id INTEGER REFERENCES projects(id) ON DELETE SET NULL,
-    synced_at TEXT NOT NULL DEFAULT (datetime('now'))
+    synced_at TEXT NOT NULL DEFAULT (datetime('now')),
+    updated_at TEXT NOT NULL DEFAULT (datetime('now'))
 );
 
 CREATE INDEX IF NOT EXISTS idx_events_start ON calendar_events(start_time);
