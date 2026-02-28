@@ -22,6 +22,7 @@ Read design references in parallel:
 - `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/dashboard-generation/references/component-patterns.md`
 - `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/dashboard-generation/references/activity-feed-patterns.md`
 - `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/dashboard-generation/references/navigation-patterns.md`
+- `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/dashboard-generation/references/delight-patterns.md` — micro-interactions and delight
 
 At the same time, resolve the contact. Query `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/data/soy.db`:
 
@@ -356,7 +357,7 @@ Footer
 - Callout cards: `bg-amber-50 border-amber-100` for urgent/upcoming, `bg-blue-50 border-blue-100` for informational
 - Stats grid: `bg-zinc-50 rounded-lg p-3 text-center` with bold number + label
 - All data static in HTML — no JavaScript data fetching
-- The only JS: Lucide icon initialization (`lucide.createIcons()`)
+- JS: Lucide icons + delight layer from template-base.html (countups, scroll reveals, card stagger)
 - Responsive: sidebar stacks below on mobile via `grid-cols-1 lg:grid-cols-3`
 
 ### Rendering Principles

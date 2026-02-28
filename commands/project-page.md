@@ -18,6 +18,7 @@ Read design references in parallel:
 - `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/dashboard-generation/references/template-base.html`
 - `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/dashboard-generation/references/component-patterns.md`
 - `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/dashboard-generation/references/navigation-patterns.md`
+- `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/dashboard-generation/references/delight-patterns.md` — micro-interactions and delight
 - `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/project-tracker/references/project-methodology.md`
 
 At the same time, resolve the project. Query `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/data/soy.db`:
@@ -245,7 +246,7 @@ Footer
 - Task checklist: checkmarks (`text-emerald-500`) for done, squares (`text-blue-500`) for in-progress, circles (`text-zinc-300`) for todo, alert triangles (`text-red-500`) for blocked
 - Client name linked to entity page: check `generated_views` for the contact, link if exists
 - All data static in HTML — no JavaScript data fetching
-- The only JS: Lucide icon initialization (`lucide.createIcons()`)
+- JS: Lucide icons + delight layer from template-base.html (countups, scroll reveals, card stagger)
 - Responsive: sidebar stacks below on mobile via `grid-cols-1 lg:grid-cols-3`
 
 ### Rendering Principles

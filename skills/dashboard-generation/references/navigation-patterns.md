@@ -114,6 +114,7 @@ ON CONFLICT(filename) DO UPDATE SET
 | Timeline | `'module_view'` | `'module'` | `timeline.html` |
 | Search Hub | `'module_view'` | `'module'` | `search.html` |
 | Transcript Page | `'transcript_page'` | `'transcript'` | `transcript-{slug}.html` |
+| Prep Brief | `'prep_page'` | `'calendar_event'` or `'contact'` | `prep-{slug}.html` |
 
 ---
 
@@ -672,6 +673,8 @@ The sidebar is a fixed-position `<aside>` on the left side of the viewport. It c
 
 **Note:** Transcript detail pages (`transcript-{slug}.html`) do **not** appear in the sidebar. They are sub-pages accessed via "View full analysis" links from entity pages and the Conversations view. On transcript pages, "Conversations" in the Intelligence section is the active sidebar item.
 
+**Note:** Prep brief pages (`prep-{slug}.html`) do **not** appear in the sidebar. They are sub-pages accessed via the `/prep` command. On prep pages, "Calendar" in the Comms section is the active sidebar item.
+
 ---
 
 ## Entity Page Listing Rules
@@ -760,6 +763,7 @@ The tip card at the bottom of the sidebar shows contextual hints. Rotate through
 | Calendar | "Use /calendar to create an event." |
 | Conversations | "Use /import-call to analyze a transcript." |
 | Transcript Detail | "Use /import-call to analyze another transcript." |
+| Prep Brief | "Use /prep before any meeting to get a full brief." |
 | Decisions | "Use /decision to log a new decision." |
 | Journal | "Use /journal to write today's entry." |
 | Notes | "Use /note to capture a thought." |

@@ -12,6 +12,7 @@ Generate a standalone HTML page showing the Decision Journal — all tracked dec
 Read these files first:
 - `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/dashboard-generation/references/template-base.html` — HTML skeleton
 - `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/dashboard-generation/references/navigation-patterns.md` — sidebar patterns
+- `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/dashboard-generation/references/delight-patterns.md` — micro-interactions and delight
 
 ## Step 2: Gather Data
 
@@ -236,7 +237,7 @@ If there are no decisions at all, show a single centered card:
 - Outcome sections: `bg-green-50` for validated, `bg-red-50` for regretted
 - Month group headers: `text-sm font-medium text-zinc-400 uppercase tracking-wider`
 - All data static in HTML — no JavaScript data fetching
-- The only JS: Lucide icon initialization (`lucide.createIcons()`)
+- JS: Lucide icons + delight layer from template-base.html (countups, scroll reveals, card stagger)
 - Parse `options_considered` as JSON — it's stored as a JSON array in the database
 
 ### Contact & Project Name Linking

@@ -55,12 +55,14 @@ Present available commands based on what's installed:
 | `/gmail [inbox\|unread\|from <name>]` | View, search, and triage your inbox |
 | `/email <contact> [context]` | Compose and send an email (with confirmation) |
 | `/email-hub` | Generate an Email Hub page with threads, response queue, and contact stats |
+| `/discover` | Find frequent email contacts who aren't in your CRM yet |
 
 ## If Calendar Module Installed
 | Command | Description |
 |---------|-------------|
 | `/calendar [today\|week\|schedule]` | View or create calendar events |
 | `/week-view` | Generate a visual calendar week view |
+| `/prep [contact or event]` | Generate a meeting prep brief — relationship context, open items, and talking points |
 
 ## If Conversation Intelligence Installed
 | Command | Description |

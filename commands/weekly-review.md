@@ -16,6 +16,7 @@ Before building, ensure data is fresh. Follow the auto-sync procedure in CLAUDE.
 Read these files first:
 - `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/dashboard-generation/references/template-base.html` — HTML skeleton
 - `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/dashboard-generation/references/navigation-patterns.md` — sidebar patterns
+- `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/dashboard-generation/references/delight-patterns.md` — micro-interactions and delight
 
 ## Step 2: Check Modules & Gather Data
 
@@ -371,7 +372,7 @@ If no page exists, render as bold plain text.
 - Cold contacts: `bg-amber-50 border-l-4 border-amber-400` warning style
 - Due soon items: `bg-amber-50 border-l-4 border-amber-400` if due within 3 days, `bg-red-50 border-l-4 border-red-400` if overdue
 - All data static in HTML — no JavaScript data fetching
-- The only JS: Lucide icon initialization (`lucide.createIcons()`)
+- JS: Lucide icons + delight layer from template-base.html (countups, scroll reveals, card stagger)
 - Responsive: `grid grid-cols-1 lg:grid-cols-5 gap-6`
 
 ## Step 4: Write, Register, and Open

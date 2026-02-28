@@ -1,0 +1,1225 @@
+---
+title: Software of You — SaaS Platform
+type: spec
+tags: [product, saas, web, cloud, prd]
+created: 2026-02-24
+last_touched: 2026-02-24
+status: ready-to-build
+decisions:
+  - target-user: solo-first (freelancers, consultants, solopreneurs), architect for teams later
+  - interface: hybrid — live dashboard home, slide-in chat panel for NL interaction
+  - pricing: BYOK + $5-10/month platform fee V1; absorbed-cost tier V2
+  - data-ownership: per-tenant isolated DB, downloadable SQLite export, full deletion on close
+  - architecture: intelligence (Claude API) separated from rendering (React templates)
+related:
+  - desktop-app.prd
+  - memory/MEMORY.md
+---
+
+# Software of You — SaaS Platform
+
+**Core pitch:** A hosted web application that delivers the full Software of You experience — relationship intelligence, project tracking, conversation analysis, decision journaling — without requiring a terminal, Claude Code, or any local setup. The same system prompt IP and scoring methodologies that power the local version, delivered through a hybrid dashboard + chat interface accessible from any browser.
+
+**Why SaaS matters:** The local version and desktop app solve for power users who are comfortable with (or willing to learn) a terminal-first workflow. But the majority of the target market — solo freelancers, consultants, agency owners — want to open a browser tab, talk to their data, and see results. No install. No CLI. No SQLite files to manage. The SaaS version removes every technical barrier while preserving the intelligence layer that makes the product valuable.
+
+---
+
+## 1. Problem Statement
+
+### What Local Can't Do
+
+The local version of Software of You is a working product — 48 slash commands, 8 modules (plus user-profile), formula-driven scoring, Google integrations, HTML view generation. It's genuinely useful. But it has a ceiling:
+
+**Distribution friction.** Every new user must: install Claude Code, clone a git repo (or download a zip), understand the plugin system, have a working terminal environment, and maintain their own SQLite database. Each step loses people. The desktop app (Tauri wrapper) lowers this to "install an app and run it," but still requires Claude Code installed locally and a macOS machine.
+
+**No mobile access.** The local version is laptop-only. Checking a contact's relationship status before a meeting on your phone? Not possible. Logging a quick interaction from a taxi? Not possible.
+
+**No background processing.** Syncing Gmail, processing transcripts, running nudge calculations — all of this happens only when Claude Code is actively running. Close your terminal, everything stops. A SaaS version runs background workers 24/7.
+
+**No collaboration path.** Even in the "architect for teams later" framing, local SQLite databases have no multiplayer story. A shared team CRM is impossible without a hosted data layer.
+
+**Update friction.** When the system prompt improves, when scoring formulas change, when new modules ship — local users must pull updates. SaaS users get improvements instantly.
+
+### What SaaS Enables
+
+- **Zero-install onboarding.** Sign up, connect Google, start talking.
+- **Real-time data.** Gmail and Calendar sync continuously in the background.
+- **Cross-device access.** Same data from laptop, phone, tablet.
+- **Instant updates.** New features ship to everyone simultaneously.
+- **Future team collaboration.** Per-tenant isolation now, shared workspaces later.
+
+---
+
+## 2. Core Principles
+
+### Data Ownership Is Non-Negotiable
+
+Users own their data. Period. This is a personal data platform — "personal" means "yours." The SaaS version must match (or exceed) the data sovereignty of the local version:
+
+- **Per-tenant database isolation.** Each user gets their own database. Not row-level isolation with a `tenant_id` column — actual separate databases. This eliminates entire categories of data leakage bugs and makes export/deletion trivial.
+- **Full SQLite export.** Any user can download their complete database as a `.db` file at any time. It's the same schema as the local version. They can take it, run the local plugin, and continue as if the SaaS never existed.
+- **Hard delete on account close.** When a user closes their account, their database is deleted. Not soft-deleted, not archived, not "retained for 30 days." Deleted. Backup snapshots are purged on the same schedule.
+- **No training on user data.** User conversations, contacts, transcripts, journal entries — none of this is used for model training, analytics, or anything beyond serving that specific user.
+
+### The System Prompt Is the Product
+
+Software of You's intelligence comes from three things: (1) the system prompt in CLAUDE.md, (2) the scoring methodologies in the reference files, and (3) the command definitions. These are intellectual property — they encode how to be a personal data assistant, how to score relationships, how to extract commitments from transcripts, how to nudge without nagging.
+
+In the SaaS version, these become server-side configuration that Claude reads on every request. Users never see them (just as local users never need to read CLAUDE.md to use the product). The intelligence is baked in, not bolt-on.
+
+### Separation of Intelligence and Rendering
+
+The local version conflates two things: Claude generates both the data operations (SQL queries, inserts, scoring) AND the HTML views (Tailwind markup, sidebar navigation, chart rendering). This works locally because Claude Code has unlimited output and writes directly to disk.
+
+The SaaS version separates these cleanly:
+
+- **Intelligence layer (Claude):** Processes natural language, decides what data to query/update, runs scoring algorithms, generates coaching insights, extracts commitments from transcripts, composes emails. Returns structured data (JSON), not HTML.
+- **Rendering layer (React):** Takes structured data and renders it into the dashboard, entity pages, project briefs, and all other views. Handles layout, navigation, responsive design, real-time updates. No LLM in the rendering loop.
+
+This separation means: views are instant (no waiting for Claude to write HTML), consistent (same React components every time), and maintainable (frontend engineers can improve the UI without touching prompts).
+
+---
+
+## 3. Architecture
+
+### High-Level System Diagram
+
+```
+┌─────────────────────────────────────────────────────────────────────────┐
+│  Browser (React SPA)                                                     │
+│                                                                          │
+│  ┌───────────────────────────────────────────┐  ┌────────────────────┐  │
+│  │  Dashboard / Views / Entity Pages         │  │  Chat Panel        │  │
+│  │  (React component library)                │  │  (Slide-in drawer) │  │
+│  │                                           │  │                    │  │
+│  │  Rendered from structured data            │  │  NL conversation   │  │
+│  │  Real-time via WebSocket                  │  │  with Claude       │  │
+│  │  No LLM in render path                    │  │                    │  │
+│  └─────────────────────┬─────────────────────┘  └────────┬───────────┘  │
+│                        │ REST / WS                        │ REST         │
+└────────────────────────┼──────────────────────────────────┼──────────────┘
+                         │                                  │
+┌────────────────────────┼──────────────────────────────────┼──────────────┐
+│  API Gateway (auth, rate limiting, tenant routing)                        │
+└────────────────────────┼──────────────────────────────────┼──────────────┘
+                         │                                  │
+          ┌──────────────┴──────┐              ┌────────────┴───────────┐
+          │  Data API            │              │  Intelligence API      │
+          │  (REST endpoints)    │              │  (Chat + tool calls)   │
+          │                      │              │                        │
+          │  CRUD operations     │              │  Claude API w/ tools   │
+          │  View data queries   │              │  System prompt loaded  │
+          │  Aggregations        │              │  from server config    │
+          │                      │              │                        │
+          │  Direct DB access    │              │  Tool calls → Data API │
+          │  No LLM involved     │              │  for DB mutations      │
+          └──────────┬───────────┘              └────────────┬───────────┘
+                     │                                       │
+                     │              ┌────────────────────────┘
+                     │              │
+          ┌──────────┴──────────────┴──────────┐
+          │  Tenant Database Layer               │
+          │                                      │
+          │  Per-tenant SQLite (via Turso/libSQL) │
+          │  Same schema as local version        │
+          │  Isolated — no cross-tenant queries  │
+          └──────────┬───────────────────────────┘
+                     │
+          ┌──────────┴───────────────────────────┐
+          │  Background Workers                   │
+          │                                       │
+          │  Gmail sync (per-tenant, on schedule) │
+          │  Calendar sync                        │
+          │  Transcript processing                │
+          │  Nudge calculations                   │
+          │  Stale relationship alerts             │
+          └───────────────────────────────────────┘
+```
+
+### Component Breakdown
+
+| Component | Technology | Rationale |
+|---|---|---|
+| Frontend | Next.js (React) + Tailwind | Matches existing design language; server components for initial data load |
+| API layer | Next.js API routes or standalone Node/Bun service | Colocated with frontend, or split if scale demands |
+| Database | Turso (libSQL) — per-tenant | SQLite-compatible, per-tenant isolation is native, edge-ready |
+| Intelligence | Anthropic Claude API (Messages API with tool use) | Same model that powers local version |
+| Auth | Clerk or NextAuth.js | Handles email/password, Google OAuth, session management |
+| Background jobs | Inngest or BullMQ + Redis | Event-driven, per-tenant job isolation |
+| Real-time | WebSocket (Pusher/Ably or self-hosted via Socket.io) | Push data changes to open dashboards |
+| Hosting | Vercel (frontend + API) + Fly.io (workers) | Vercel for the web layer, Fly for persistent worker processes |
+| Secrets | Environment variables + encrypted BYOK key storage | User API keys encrypted at rest, never logged |
+
+---
+
+## 4. The Intelligence / Rendering Split
+
+This is the most important architectural decision in the SaaS version. In the local product, Claude does everything — it reads your message, queries the database, generates HTML, writes it to disk, and opens the browser. That's elegant for a CLI tool but doesn't translate to a web app.
+
+### What Claude Handles (Intelligence Layer)
+
+Claude is responsible for anything that requires understanding intent, synthesizing information, or making judgments:
+
+| Capability | Example |
+|---|---|
+| Natural language → structured intent | "How's my relationship with Sarah?" → query contacts, interactions, scores, transcripts for contact_id=7 |
+| Data mutations via tool calls | "Add a contact named Daniel Kim, CTO at Nexus" → INSERT into contacts with structured fields |
+| Scoring and analysis | Relationship depth scores, conversation metrics, project momentum — all using the same formulas from the local scoring methodology files |
+| Commitment extraction | Parse a meeting transcript → extract action items with owners and deadlines |
+| Coaching insights | Analyze conversation patterns → generate SBI+T feedback (from conversation-intelligence methodology) |
+| Email composition | "Draft a follow-up to Sarah about the Q2 proposal" → generate email body using relationship context |
+| Cross-referencing | When asked about a contact, automatically pull in linked projects, recent emails, upcoming meetings, transcript insights |
+| Nudge generation | Identify stale relationships, overdue commitments, at-risk projects → generate prioritized nudge list |
+
+### What React Templates Handle (Rendering Layer)
+
+The frontend renders pre-defined view types from structured JSON data. No LLM in the loop:
+
+| View | Data Shape (from Data API) | Rendering |
+|---|---|---|
+| Dashboard | `{ contacts: [...], projects: [...], recentActivity: [...], nudges: [...], emailStats: {...}, calendarEvents: [...] }` | Card grid, stat tiles, activity feed — same layout as current `dashboard.html` |
+| Entity page (contact) | `{ contact: {...}, interactions: [...], scores: {...}, projects: [...], emails: [...], transcripts: [...], commitments: [...] }` | Full contact dossier — same sections as current entity page reference |
+| Project page | `{ project: {...}, tasks: [...], milestones: [...], momentum: {...}, risk: {...}, client: {...} }` | Project brief with velocity chart, risk assessment, task board |
+| Conversations view | `{ transcripts: [...], metrics: {...}, patterns: {...}, coaching: [...] }` | Transcript list, aggregate metrics, coaching cards |
+| Email hub | `{ threads: [...], responseQueue: [...], contactBreakdown: {...} }` | Thread list, priority queue, contact grouping |
+| Week view | `{ events: [...], attendeeContext: {...}, prepLinks: {...} }` | Calendar grid with enriched attendee data |
+| Network map | `{ nodes: [...], edges: [...], clusters: [...] }` | D3/force-graph visualization of contact network |
+
+### The Boundary
+
+When a user types in the chat panel:
+1. Message hits the Intelligence API
+2. Claude processes with tools (query_contacts, insert_interaction, calculate_score, etc.)
+3. Claude returns a conversational response + any data mutations it made
+4. Data mutations trigger a WebSocket event
+5. The dashboard/views re-query the Data API and update in place
+6. Chat panel shows Claude's conversational response
+
+When a user clicks around the dashboard (no chat):
+1. React components call the Data API directly
+2. Data API queries the tenant database
+3. Components render — no Claude involvement
+4. Zero API cost for browsing your own data
+
+This means **most of the time, using the dashboard is free.** Claude is only invoked when the user asks a question, requests an action, or triggers analysis. Browsing contacts, viewing project status, checking your calendar — all free, all instant.
+
+---
+
+## 5. Data Layer
+
+### Per-Tenant Database Isolation
+
+Every user gets their own database. Not a shared database with a `tenant_id` column — a completely separate database instance.
+
+**Why true isolation (not row-level)?**
+- **Export is trivial.** Download the whole database. It's a SQLite file. No need to filter by tenant_id, no risk of leaking other tenants' data.
+- **Deletion is trivial.** Drop the database. No orphaned rows, no cascade failures.
+- **Performance is isolated.** A user with 10,000 contacts doesn't slow down a user with 50.
+- **Schema flexibility.** Future: per-tenant schema migrations, custom fields, module opt-in at the database level.
+- **Security is structural.** A bug in a query can't leak data across tenants because there's no cross-tenant data to leak.
+
+**Implementation with Turso (libSQL):**
+
+Turso natively supports per-tenant databases ("database per user" is their recommended architecture). Each database is a libSQL instance that speaks the SQLite wire protocol.
+
+```
+Tenant: user_abc123
+Database: soy-user-abc123
+URL: libsql://soy-user-abc123.turso.io
+Auth: per-database token (server-side only)
+
+Tenant: user_def456
+Database: soy-user-def456
+URL: libsql://soy-user-def456.turso.io
+Auth: per-database token (server-side only)
+```
+
+**On user signup:**
+1. Create a new Turso database (`soy-user-{id}`)
+2. Run all migrations (same `001_core_schema.sql` through `013_user_profiles.sql`)
+3. Store the database URL + auth token in the platform database (encrypted)
+4. User's database is ready for first interaction
+
+**Schema compatibility:** The SaaS version uses the exact same table schemas as the local version. Every migration file in `data/migrations/` runs identically. This means:
+- Local → SaaS migration is a database import
+- SaaS → local migration is a database export
+- Scoring queries are identical
+- Command logic is identical
+
+### Platform Database (Separate from Tenant Data)
+
+A single shared database manages platform-level concerns:
+
+```sql
+-- Platform DB (not per-tenant)
+CREATE TABLE users (
+    id TEXT PRIMARY KEY,             -- auth provider ID
+    email TEXT UNIQUE NOT NULL,
+    name TEXT,
+    plan TEXT NOT NULL DEFAULT 'byok',
+    tenant_db_url TEXT NOT NULL,     -- Turso database URL
+    tenant_db_token TEXT NOT NULL,   -- encrypted auth token
+    anthropic_api_key TEXT,          -- encrypted, NULL if absorbed plan
+    google_refresh_token TEXT,       -- encrypted, per-user Google OAuth
+    created_at TIMESTAMP DEFAULT NOW(),
+    last_active_at TIMESTAMP
+);
+
+CREATE TABLE user_settings (
+    user_id TEXT REFERENCES users(id),
+    key TEXT NOT NULL,
+    value TEXT,
+    PRIMARY KEY (user_id, key)
+);
+
+CREATE TABLE sync_schedules (
+    user_id TEXT REFERENCES users(id),
+    sync_type TEXT NOT NULL,         -- 'gmail', 'calendar', 'transcripts'
+    last_synced_at TIMESTAMP,
+    next_sync_at TIMESTAMP,
+    status TEXT DEFAULT 'idle',      -- 'idle', 'running', 'failed'
+    error_message TEXT,
+    PRIMARY KEY (user_id, sync_type)
+);
+```
+
+### Export and Portability
+
+**SQLite export (one click):**
+1. User clicks "Export my data" in settings
+2. Backend snapshots their Turso database to a SQLite file
+3. File is served as a download: `software-of-you-export-2026-02-24.db`
+4. This file is identical to what the local version produces — same tables, same schema, same data
+5. User can open it with `sqlite3`, use it with the local plugin, or import it into another SaaS account
+
+**JSON export (for portability):**
+- Each table is also exportable as JSON (contacts.json, projects.json, etc.)
+- Useful for importing into other tools or for programmatic access
+
+**Account deletion:**
+1. User requests deletion in settings
+2. 7-day grace period (can cancel)
+3. After grace period: tenant database is dropped, platform DB row is deleted, encrypted keys are purged, Google OAuth tokens are revoked
+4. Confirmation email sent
+
+---
+
+## 6. Real-Time Pipeline
+
+### The Problem with Request-Response
+
+The local version is entirely synchronous — user types a command, Claude runs it, output appears. The SaaS version can't work this way because:
+
+- Gmail sync happens in the background (new emails arrive while you're looking at the dashboard)
+- Another device might make changes (phone adds a note, laptop should see it)
+- Long-running operations (transcript analysis, bulk import) shouldn't block the UI
+- Nudge calculations run on a schedule, not on demand
+
+### Event-Driven Architecture
+
+```
+┌──────────────┐     ┌──────────────┐     ┌──────────────────┐
+│  Data change  │────▶│  Event bus   │────▶│  WebSocket push  │
+│  (any source) │     │  (per-tenant)│     │  to open clients │
+└──────────────┘     └──────────────┘     └──────────────────┘
+                            │
+                            ▼
+                     ┌──────────────┐
+                     │  View cache  │
+                     │  invalidation│
+                     └──────────────┘
+```
+
+**Event sources:**
+- Chat interaction (Claude modifies data via tool call)
+- Background sync (Gmail worker inserts new emails)
+- Scheduled job (nudge calculator updates follow-up priorities)
+- Direct API call (frontend creates a quick note)
+
+**Event types:**
+```typescript
+type DataEvent = {
+    tenantId: string;
+    entityType: 'contact' | 'project' | 'email' | 'interaction' | 'commitment' | 'transcript' | 'note' | 'decision' | 'journal';
+    entityId: number;
+    action: 'created' | 'updated' | 'deleted';
+    timestamp: string;
+    source: 'chat' | 'sync' | 'scheduled' | 'direct';
+};
+```
+
+**WebSocket delivery:**
+- Each authenticated user establishes a WebSocket connection on page load
+- Connection is scoped to their tenant ID
+- When a `DataEvent` fires for their tenant, the event is pushed to all their open tabs/devices
+- Frontend React components subscribe to relevant entity types and re-query the Data API on changes
+
+### Sync Pipeline
+
+```
+Gmail API ──────────────────────────────────────────▶ Tenant DB
+  │                                                      │
+  │  Worker fetches new emails                           │  Emails table updated
+  │  every 5 minutes (configurable)                      │
+  │                                                      ▼
+  │                                              Event: email.created
+  │                                                      │
+  │                                                      ▼
+  │                                              WebSocket push
+  │                                                      │
+  │                                                      ▼
+  │                                              Dashboard updates
+  │                                              Email hub refreshes
+  └─────────────────────────────────────────────────────────
+```
+
+Same pattern for Calendar sync and transcript scanning.
+
+---
+
+## 7. Backend API
+
+### Slash Commands as Tool Definitions
+
+The local version has 48 slash commands defined in `commands/*.md`. In the SaaS version, these become **tool definitions** that Claude can call during a chat interaction.
+
+**Local (slash command):**
+```
+User types: /contact add Sarah Chen, VP Engineering at Acme
+→ Claude reads contact.md command definition
+→ Claude generates and runs SQL INSERT
+→ Claude responds conversationally
+```
+
+**SaaS (tool call):**
+```
+User types in chat: "Add Sarah Chen, VP Engineering at Acme"
+→ Message sent to Intelligence API with system prompt + tools
+→ Claude calls tool: create_contact({ name: "Sarah Chen", title: "VP Engineering", company: "Acme" })
+→ Tool executor runs validated INSERT against tenant DB
+→ Claude receives result, responds conversationally
+→ DataEvent fires, dashboard updates via WebSocket
+```
+
+### Tool Definitions
+
+Each slash command maps to one or more tools. Claude sees these as tool definitions in its API call:
+
+```typescript
+// Derived from commands/contact.md
+const contactTools = [
+    {
+        name: "create_contact",
+        description: "Add a new contact to the CRM",
+        input_schema: {
+            type: "object",
+            properties: {
+                name: { type: "string", description: "Full name" },
+                email: { type: "string" },
+                phone: { type: "string" },
+                company: { type: "string" },
+                title: { type: "string" },
+                relationship_type: { type: "string", enum: ["client", "colleague", "vendor", "personal", "other"] },
+                notes: { type: "string" }
+            },
+            required: ["name"]
+        }
+    },
+    {
+        name: "search_contacts",
+        description: "Search contacts by name, company, or any field",
+        input_schema: {
+            type: "object",
+            properties: {
+                query: { type: "string" },
+                filters: {
+                    type: "object",
+                    properties: {
+                        company: { type: "string" },
+                        relationship_type: { type: "string" },
+                        tag: { type: "string" }
+                    }
+                }
+            },
+            required: ["query"]
+        }
+    },
+    // ... update_contact, delete_contact, etc.
+];
+```
+
+**Full tool catalog (mapped from existing commands):**
+
+| Tool Category | Tools | Source Command(s) |
+|---|---|---|
+| Contacts | `create_contact`, `update_contact`, `search_contacts`, `list_contacts`, `get_contact` | `/contact` |
+| Interactions | `log_interaction`, `list_interactions` | `/contact` (interaction logging) |
+| Projects | `create_project`, `update_project`, `create_task`, `update_task`, `create_milestone` | `/project` |
+| Email | `search_emails`, `compose_email`, `get_thread` | `/gmail`, `/email` |
+| Calendar | `list_events`, `create_event`, `get_event` | `/calendar` |
+| Transcripts | `list_transcripts`, `get_transcript`, `analyze_transcript` | `/sync-transcripts`, `/import-call` |
+| Commitments | `list_commitments`, `update_commitment` | `/commitments` |
+| Decisions | `log_decision`, `list_decisions`, `update_decision_outcome` | `/decision` |
+| Journal | `create_journal_entry`, `list_journal_entries` | `/journal` |
+| Notes | `create_note`, `list_notes`, `pin_note` | `/note` |
+| Tags | `create_tag`, `apply_tag`, `list_tags` | `/tag` |
+| Follow-ups | `create_follow_up`, `list_follow_ups`, `complete_follow_up` | `/follow-up` |
+| Nudges | `get_nudges` | `/nudges` |
+| Scoring | `get_relationship_score`, `get_project_momentum`, `get_conversation_metrics` | Scoring methodology files |
+| Views | `get_dashboard_data`, `get_entity_data`, `get_project_data` | Data queries for rendering |
+| Import | `import_csv`, `import_transcript` | `/import`, `/import-call` |
+| Search | `search_all` | `/search` |
+| Profile | `get_user_profile`, `update_user_profile` | `/soul` |
+
+### Tool Execution Layer
+
+Tools don't run arbitrary SQL. Each tool maps to a validated, parameterized operation:
+
+```typescript
+// Tool executor — runs against tenant DB
+async function executeContactCreate(tenantDb: Database, params: ContactCreateParams): Promise<ToolResult> {
+    // Validate
+    if (!params.name?.trim()) throw new ToolError("Name is required");
+
+    // Insert
+    const result = await tenantDb.execute({
+        sql: `INSERT INTO contacts (name, email, phone, company, title, relationship_type, notes, status, created_at, updated_at)
+              VALUES (?, ?, ?, ?, ?, ?, ?, 'active', datetime('now'), datetime('now'))`,
+        args: [params.name, params.email, params.phone, params.company, params.title, params.relationship_type, params.notes]
+    });
+
+    // Log activity
+    await tenantDb.execute({
+        sql: `INSERT INTO activity_log (entity_type, entity_id, action, details, created_at)
+              VALUES ('contact', ?, 'created', ?, datetime('now'))`,
+        args: [result.lastInsertRowid, `Contact created: ${params.name}`]
+    });
+
+    // Emit event
+    emitDataEvent({ entityType: 'contact', entityId: result.lastInsertRowid, action: 'created' });
+
+    return { success: true, contact_id: result.lastInsertRowid, message: `Created contact: ${params.name}` };
+}
+```
+
+**Key constraints:**
+- No raw SQL execution — every tool is a pre-defined operation
+- All parameters are validated before execution
+- All mutations log to `activity_log` (same as local version)
+- All mutations emit `DataEvent` for real-time propagation
+- Tool executor connects to the correct tenant database based on authenticated user
+
+---
+
+## 8. Frontend
+
+### Hybrid Dashboard + Chat Interface
+
+The core UX insight: most of the time, users want to *see* their data (dashboard), not *talk* to it (chat). But when they need to do something complex — add a contact with context, analyze a transcript, ask a cross-referencing question — natural language is dramatically faster than clicking through forms.
+
+The interface puts the dashboard front and center, with a chat panel that slides in from the right when needed.
+
+```
+┌─────────────────────────────────────────────────────────────────────────┐
+│  ┌────────┐                                                    [💬 Chat]│
+│  │ Sidebar │  Dashboard                                                 │
+│  │         │  ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────┐    │
+│  │ People  │  │ Contacts │ │ Activity │ │ Projects │ │ Calendar │    │
+│  │  Sarah  │  │    13    │ │  Today 7 │ │  4 actv  │ │ 3 events │    │
+│  │  Daniel │  └──────────┘ └──────────┘ └──────────┘ └──────────┘    │
+│  │  (more) │                                                           │
+│  │         │  ┌─────────────────────────┐ ┌────────────────────────┐   │
+│  │ Projects│  │ Nudges                  │ │ Recent Activity        │   │
+│  │  Acme Q2│  │ Sarah — 2 weeks silent  │ │ Email from Daniel      │   │
+│  │  Rebrand│  │ Commitment overdue: ... │ │ Journal entry logged   │   │
+│  │         │  └─────────────────────────┘ │ Meeting: Acme review   │   │
+│  │ Comms   │                              └────────────────────────┘   │
+│  │ Intel   │                                                           │
+│  │ Tools   │                                                           │
+│  └────────┘                                                            │
+└─────────────────────────────────────────────────────────────────────────┘
+```
+
+**With chat panel open:**
+
+```
+┌─────────────────────────────────────────────────────────────────────────┐
+│  ┌────────┐  Dashboard (compressed)           │ Chat                    │
+│  │Sidebar │  ┌────────┐ ┌────────┐           │                         │
+│  │(collapd│  │Contacts│ │Activity│           │ You: How's my           │
+│  │on mob) │  │   13   │ │ Today 7│           │ relationship with       │
+│  │        │  └────────┘ └────────┘           │ Sarah?                  │
+│  │        │                                   │                         │
+│  │        │  ┌─────────────────────┐          │ SoY: Based on 8        │
+│  │        │  │ Nudges              │          │ interactions over 3     │
+│  │        │  │ Sarah — 2 wks...    │          │ months, your            │
+│  │        │  └─────────────────────┘          │ relationship with       │
+│  │        │                                   │ Sarah is strong but     │
+│  │        │                                   │ cooling — last contact  │
+│  │        │                                   │ was 14 days ago...      │
+│  │        │                                   │                         │
+│  │        │                                   │ [Send a message]        │
+│  └────────┘                                   └─────────────────────────┘
+└─────────────────────────────────────────────────────────────────────────┘
+```
+
+### Navigation (Sidebar)
+
+The existing sidebar navigation convention carries over directly:
+
+- **Sections:** People, Projects, Comms, Intelligence, Tools
+- Collapsible sections, entity pages listed by name
+- Active item highlighted, section auto-expanded
+- Badges for counts (contacts, unread emails, pending nudges)
+- Mobile: hamburger toggle, slides as overlay
+
+Reference: `skills/dashboard-generation/references/navigation-patterns.md` — this becomes the React component spec.
+
+### React Component Library
+
+Views from the local version map to React components:
+
+| Local HTML View | React Component | Data Source |
+|---|---|---|
+| `dashboard.html` | `<Dashboard />` | `GET /api/dashboard` |
+| `entity-{name}.html` | `<EntityPage contactId={id} />` | `GET /api/contacts/:id/full` |
+| `project-{name}.html` | `<ProjectPage projectId={id} />` | `GET /api/projects/:id/full` |
+| `contacts.html` | `<ContactsIndex />` | `GET /api/contacts` |
+| `email-hub.html` | `<EmailHub />` | `GET /api/emails` |
+| `conversations-view.html` | `<ConversationsView />` | `GET /api/transcripts` |
+| `week-view.html` | `<WeekView />` | `GET /api/calendar/week` |
+| `network-map.html` | `<NetworkMap />` | `GET /api/network` |
+| `decision-journal-view.html` | `<DecisionJournal />` | `GET /api/decisions` |
+| `journal-view.html` | `<JournalView />` | `GET /api/journal` |
+| `notes-view.html` | `<NotesView />` | `GET /api/notes` |
+| `nudges-view.html` | `<NudgesView />` | `GET /api/nudges` |
+| `timeline.html` | `<Timeline />` | `GET /api/activity` |
+| `search-hub.html` | `<SearchHub />` | `GET /api/search?q=...` |
+| `weekly-review.html` | `<WeeklyReview />` | `GET /api/weekly-review` |
+| `transcript-{id}.html` | `<TranscriptDetail transcriptId={id} />` | `GET /api/transcripts/:id` |
+
+### Design System
+
+Carried over from local:
+- **Tailwind CSS** — same utility classes, same color palette (zinc/slate, white background)
+- **Lucide icons** — same icon set
+- **Inter font** — same typography
+- **Card-based layout** — same visual pattern
+- **Stat grids** — same number presentation
+
+New for SaaS:
+- **Responsive layouts** — mobile-first (local version is desktop-only)
+- **Loading states** — skeleton screens while data loads (local version writes complete HTML)
+- **Empty states** — components handle zero-data gracefully (same principle as local, now in React)
+- **Real-time indicators** — subtle animations when data updates via WebSocket
+- **Chat panel** — new component, slide-in drawer from right
+
+---
+
+## 9. Auth and Multi-Tenancy
+
+### User Authentication
+
+**Provider:** Clerk (or NextAuth.js for more control)
+
+**Methods:**
+- Email + password (primary)
+- Google OAuth (secondary — also enables Gmail/Calendar integration in one flow)
+- Magic link (optional, low-friction alternative)
+
+**Session management:**
+- JWT tokens, short-lived (15 min) with refresh tokens
+- Sessions stored server-side for revocation capability
+- "Remember me" = longer refresh token expiry (30 days)
+
+### BYOK (Bring Your Own Key) Management
+
+V1 launches with BYOK — users provide their own Anthropic API key. This is a deliberate choice:
+
+**Why BYOK first:**
+- Zero marginal cost per user for AI features
+- Users control their own spend and rate limits
+- Simpler launch — no usage metering, no billing per API call
+- Users who want SoY are likely already Claude users (or want to be)
+
+**Key storage:**
+- API key is encrypted at rest (AES-256-GCM) with a per-user encryption key derived from a platform secret + user ID
+- Key is decrypted only in memory, only when making an API call
+- Never logged, never included in error reports
+- Key validation on entry: make a lightweight Claude API call to verify it works
+
+**Key entry flow:**
+1. During onboarding (or in settings later)
+2. User pastes their Anthropic API key
+3. Frontend sends to backend over HTTPS
+4. Backend validates (test API call)
+5. Backend encrypts and stores in platform DB
+6. Frontend shows green checkmark: "Claude is connected"
+
+**If key is invalid or exhausted:**
+- Chat panel shows: "Your Anthropic API key returned an error. Check your key in Settings."
+- Dashboard continues to work (no Claude needed for data browsing)
+- Background sync continues (no Claude needed for Gmail/Calendar)
+
+### Google OAuth (Per-Tenant)
+
+Each user connects their own Google account, same as the local version. The OAuth flow is identical — same scopes (Gmail read/send, Calendar read/write), same consent screen.
+
+**Difference from local:** In the local version, the OAuth tokens are stored in `~/.local/share/software-of-you/google_token.json`. In SaaS, they're stored in the platform database (encrypted), and the refresh flow is handled server-side by the sync workers.
+
+**Scopes requested:**
+- `gmail.readonly` (V1 — read-only sync)
+- `gmail.send` (for email composition)
+- `calendar.readonly` (V1)
+- `calendar.events` (for event creation)
+- `https://www.googleapis.com/auth/documents.readonly` (for Gemini transcript access)
+
+**Token refresh:** Handled by background workers. If a refresh fails (token revoked), the user sees a banner: "Google connection lost. Reconnect in Settings."
+
+---
+
+## 9.5. Conversation History
+
+The local version has no conversation history — each Claude Code session is ephemeral. The SaaS version must persist conversations because users expect to return to their chat.
+
+### Schema (Per-Tenant)
+
+```sql
+-- Added to tenant DB (new migration)
+CREATE TABLE chat_conversations (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    title TEXT,                          -- auto-generated from first message, or user-set
+    created_at TEXT NOT NULL DEFAULT (datetime('now')),
+    last_message_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
+
+CREATE TABLE chat_messages (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    conversation_id INTEGER NOT NULL REFERENCES chat_conversations(id),
+    role TEXT NOT NULL,                  -- 'user' or 'assistant'
+    content TEXT NOT NULL,               -- message text
+    tool_calls TEXT,                     -- JSON array of tool calls made (for replay/debugging)
+    token_count_input INTEGER,           -- tokens consumed (for cost tracking)
+    token_count_output INTEGER,
+    created_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
+
+CREATE INDEX idx_chat_messages_conversation ON chat_messages(conversation_id, created_at);
+```
+
+### Context Window Management
+
+Chat conversations accumulate tokens. Strategy for keeping Claude's context window manageable:
+
+- **Rolling window:** Send the last N messages (default: last 20 messages or ~8K tokens of history) as conversation context
+- **System prompt is always first:** ~2K tokens of system instructions + tool definitions are prepended to every call
+- **Summarization at boundary:** When a conversation exceeds 50 messages, background-summarize older messages into a 500-token summary prepended as context. User still sees full history in the UI.
+- **New conversation button:** Users can explicitly start a fresh conversation (like ChatGPT's "New chat")
+- **Auto-titling:** After the first 2 exchanges, Claude generates a conversation title (e.g., "Adding contacts from Acme meeting")
+
+### Storage
+
+Conversations live in the tenant database (same as all other user data). They're included in SQLite exports and deleted with the account. No separate conversation store needed — Turso handles the volume.
+
+---
+
+## 9.6. Error Handling and Resilience
+
+### Claude API Failures
+
+| Failure Mode | User Experience | System Behavior |
+|---|---|---|
+| API key invalid (401) | Banner: "Your Anthropic API key is invalid. Update it in Settings." Chat disabled. | Dashboard continues working (no Claude needed) |
+| API key rate-limited (429) | Chat shows: "Rate limit reached. Try again in X seconds." | Retry with exponential backoff (max 3 retries) |
+| API overloaded (529) | Chat shows: "Claude is busy. Your message is queued." | Queue message, retry in 30s/60s/120s |
+| API timeout (>30s) | Chat shows: "Response is taking longer than expected..." with cancel button | Abort after 60s, show partial response if any streamed |
+| Tool call succeeds, response cut off | Data mutation committed. Chat shows: "Action completed but response was interrupted. [Data was saved successfully.]" | Tool results are committed immediately; response is best-effort |
+| Partial tool failure (1 of N tools fails) | Chat shows Claude's response explaining what succeeded and what failed | Successful tool calls are committed; failed ones are rolled back individually |
+
+**Key principle:** Data mutations (tool calls) are committed independently of Claude's response. If Claude inserts a contact but then the response stream fails, the contact still exists. The user's data is never lost due to a response-layer failure.
+
+### Background Sync Failures
+
+| Failure Mode | User Experience | System Behavior |
+|---|---|---|
+| Gmail API quota exceeded | Settings shows: "Gmail sync paused — quota limit reached. Resumes automatically." | Exponential backoff on sync interval (5min → 15min → 1hr) |
+| Google token expired + refresh fails | Banner: "Google connection lost. Reconnect in Settings." | Stop syncing; preserve all cached data; mark sync_schedules.status = 'failed' |
+| Turso database unreachable | Full-page error: "We're having trouble reaching your data. Retrying..." | Retry with backoff; if down >5 min, show status page link |
+| Worker crashes | Invisible to user | Worker auto-restarts via process supervisor; missed syncs catch up on next run |
+
+### Google API Quota Management
+
+Gmail API has per-project quotas (~250 queries/second for the project, ~250 queries/100 seconds per user). At scale:
+
+- **Staggered syncing:** Don't sync all users at the same wall-clock time. Distribute sync times evenly across the interval (user_id hash mod interval).
+- **Adaptive intervals:** If a user has low email volume (< 5 emails/day), reduce sync frequency to every 15 minutes. High-volume users stay at 5 minutes.
+- **Incremental sync:** Use Gmail's `historyId` to fetch only new changes since last sync, not re-fetch all messages.
+- **Batch requests:** Combine multiple Gmail API calls into batch HTTP requests (Gmail supports up to 100 requests per batch).
+
+---
+
+## 9.7. Tool Selection Strategy
+
+Sending all ~40 tool definitions in every Claude API call is wasteful (~3K tokens of tool definitions) and may degrade tool selection accuracy.
+
+### Context-Aware Tool Subsetting
+
+Tools are grouped into categories. The system sends only relevant categories based on conversation context:
+
+| User Context | Tool Categories Sent | Approximate Tool Count |
+|---|---|---|
+| General chat (default) | Core (contacts, projects, search) + profile | ~12 tools |
+| Email-related query | Core + email + follow-ups | ~15 tools |
+| Transcript analysis | Core + transcripts + commitments + scoring | ~15 tools |
+| Project discussion | Core + projects + tasks + milestones | ~12 tools |
+| Journal/notes/decisions | Core + journal + notes + decisions | ~14 tools |
+| Explicit: "show me everything" | All tools | ~40 tools |
+
+### Implementation
+
+A lightweight classifier (keyword + entity mention detection, no LLM needed) runs on the user's message before the Claude API call:
+
+```typescript
+function selectToolSubset(message: string, recentContext: string[]): ToolCategory[] {
+    const categories: ToolCategory[] = ['core']; // always included
+
+    if (/email|gmail|inbox|send|reply|thread/i.test(message)) categories.push('email');
+    if (/transcript|call|meeting|recording/i.test(message)) categories.push('transcripts', 'commitments');
+    if (/project|task|milestone|sprint/i.test(message)) categories.push('projects');
+    if (/journal|entry|mood|reflect/i.test(message)) categories.push('journal');
+    if (/note|jot|pin/i.test(message)) categories.push('notes');
+    if (/decision|decide|option|rationale/i.test(message)) categories.push('decisions');
+    if (/score|relationship|health|momentum/i.test(message)) categories.push('scoring');
+    // ... etc.
+
+    // If nothing specific detected, include all (safe fallback)
+    if (categories.length === 1) return ALL_CATEGORIES;
+
+    return categories;
+}
+```
+
+**Fallback:** If the classifier isn't confident, send all tools. Better to over-include than to miss a needed tool. Optimize for recall over precision.
+
+---
+
+## 9.8. Privacy and Compliance
+
+### Data Classification
+
+| Data Type | PII? | Third-Party PII? | Regulatory Concern |
+|---|---|---|---|
+| User profile (name, email) | Yes | No | Standard user account data |
+| Contacts (names, emails, titles) | No | **Yes** — contacts are third parties | GDPR Art. 6: legitimate interest basis |
+| Emails (synced from Gmail) | Yes | **Yes** — sender/recipient data | GDPR, email content privacy |
+| Transcripts | Yes | **Yes** — meeting participants | GDPR, potential recording consent issues |
+| Journal entries | Yes | Possibly (mentions contacts) | Personal diary — high sensitivity |
+| Decisions | Yes | Possibly | Business context |
+
+### GDPR Approach
+
+**Lawful basis:** Legitimate interest (Art. 6(1)(f)) for processing contact data. The user has a legitimate business interest in managing their professional relationships. Third-party contacts are stored in the same way a traditional CRM stores them.
+
+**User rights:**
+- **Access:** SQLite export provides complete data access
+- **Erasure:** Account deletion removes all data (including third-party contact data)
+- **Portability:** SQLite + JSON export
+- **Rectification:** Users can edit any data through the interface
+
+**Third-party data (contacts):**
+- Privacy policy must disclose that the platform stores contact information provided by users
+- No profiling or automated decision-making about third-party contacts
+- Contact data is never shared with other users or third parties
+- If a third party requests erasure of their data from a user's CRM, the platform facilitates this (support process, not automated — same as Salesforce, HubSpot, etc.)
+
+**Data processing:**
+- User data is sent to Anthropic's Claude API for processing (chat interactions)
+- Anthropic's data retention policy (no training on API data) is a dependency — link to their terms in our privacy policy
+- Google API data is subject to Google's Limited Use requirements
+
+### Content Moderation (Abuse Prevention)
+
+**Email composition guardrails:**
+- Rate limit: max 50 emails/day per user via the compose tool
+- Claude's system prompt includes instruction: "Never compose spam, phishing, or bulk unsolicited messages"
+- Email composition tool requires explicit user confirmation before sending (tool returns draft, user clicks Send)
+- Flagging: if a user's email send rate spikes abnormally, flag for manual review
+
+**General abuse prevention:**
+- API key validation prevents using stolen keys (keys are validated on entry)
+- Rate limits on all tool endpoints (per-user, per-minute)
+- Free tier caps prevent trial-abuse patterns
+- Account suspension capability for ToS violations
+
+---
+
+## 10. What Carries Over from Local
+
+The SaaS version is a new delivery mechanism for the same product intelligence. The vast majority of the IP transfers directly:
+
+### System Prompt (CLAUDE.md)
+
+The system prompt — currently ~400 lines / ~4K tokens of instructions covering behavior, data integrity, scoring, cross-referencing, onboarding, and style — becomes the system message in every Claude API call. The SaaS version will trim sections irrelevant to web delivery (file system operations, HTML generation instructions), reducing it to ~2K tokens. Adapted for SaaS context:
+
+**Carries over verbatim:**
+- Core behavior rules (be the interface, log activity, update timestamps, cross-reference)
+- Data integrity rules (never fabricate, NULL over fiction, show your work, ground every claim)
+- First-run onboarding flow (personality questions, profile collection)
+- Style guide (concise, direct, markdown tables, human-readable dates)
+- Module awareness (check installed modules, cross-module features)
+
+**Adapted:**
+- Database access: `sqlite3` commands → tool calls against the Data API
+- HTML generation: removed (React handles rendering)
+- File system operations: removed (no local filesystem in SaaS)
+- Auto-sync: removed from system prompt (handled by background workers)
+
+### Scoring Methodologies
+
+Both scoring methodology files transfer verbatim — they're pure formulas over SQL data:
+
+- **Conversation Intelligence** (`scoring-methodology.md`): relationship depth, trajectory, sentiment, follow-through, dominance ratio, coaching thresholds, pattern alerts
+- **Project Tracker** (`project-methodology.md`): momentum (velocity formula), risk (threshold table), action prioritization, client relationship temperature, stale activity thresholds
+
+These become reference documents loaded into Claude's context when relevant tools are called (e.g., when `get_relationship_score` or `get_project_momentum` is invoked).
+
+### Database Schema
+
+All 13 migration files run identically on Turso/libSQL. Every table, every index, every constraint is the same:
+
+- 27 tables (contacts, projects, tasks, emails, calendar_events, transcripts, commitments, decisions, journal_entries, standalone_notes, etc.)
+- All existing data relationships and foreign keys
+- All existing indexes (including the performance indexes from migration 012)
+
+### Command Logic
+
+The 48 slash commands become tool definitions + tool executors. The *logic* — what fields to require, how to validate, what to cross-reference — carries over. The *form factor* changes (CLI command → API tool call).
+
+---
+
+## 11. What Changes
+
+### Rendering
+
+| Local | SaaS |
+|---|---|
+| Claude generates HTML, writes to disk | React components render from JSON data |
+| Tailwind via CDN in each HTML file | Tailwind compiled into the React app |
+| Static files opened with `open` command | SPA with client-side routing |
+| New page = new file in output/ | New view = new route in the React app |
+| Sidebar generated per-page from SQL | Sidebar is a persistent React component, queries once |
+
+### Data Sync
+
+| Local | SaaS |
+|---|---|
+| Sync runs when Claude Code is active | Background workers run 24/7 |
+| Checks freshness on each view generation | Workers poll on schedule (5 min Gmail, 15 min Calendar) |
+| Token stored in local file | Token stored in platform DB (encrypted) |
+| No sync when terminal is closed | Always syncing |
+
+### Data Location
+
+| Local | SaaS |
+|---|---|
+| `~/.local/share/software-of-you/soy.db` | Turso database: `libsql://soy-user-{id}.turso.io` |
+| User has direct SQLite access | User accesses via API (export for direct access) |
+| Backups in `~/.local/share/software-of-you/backups/` | Turso handles replication; user-triggered exports for backups |
+
+### Authentication
+
+| Local | SaaS |
+|---|---|
+| No auth (local machine = trusted) | Email/password + session tokens |
+| No API key needed (Claude Code handles it) | BYOK Anthropic API key |
+| Google OAuth tokens stored locally | Google OAuth tokens in platform DB |
+
+### Intelligence Invocation
+
+| Local | SaaS |
+|---|---|
+| Every interaction goes through Claude Code | Dashboard browsing = no Claude; chat = Claude |
+| Claude sees raw SQL results | Claude sees structured tool results |
+| Claude writes HTML directly | Claude returns data; React renders |
+| No API cost visibility | Clear API cost attribution (BYOK makes it the user's bill) |
+
+---
+
+## 12. Migration Path: Local to SaaS
+
+Users of the local version (or desktop app) can migrate to SaaS by importing their database:
+
+### Import Flow
+
+1. User creates SaaS account, completes onboarding
+2. Settings → "Import from local" → file upload
+3. User uploads their `soy.db` file (from `~/.local/share/software-of-you/`)
+4. Backend validates the file:
+   - Is it a valid SQLite database?
+   - Does it have the expected tables? (check for `contacts`, `modules`, `soy_meta`)
+   - Schema version check (from migrations applied)
+5. If schema is older: run missing migrations to bring it current
+6. Import all data into their fresh Turso database:
+   - Copy all table contents
+   - Preserve IDs and timestamps
+   - Preserve `activity_log` history
+   - Preserve `user_profile` data
+7. Post-import verification:
+   - Contact count matches
+   - Project count matches
+   - Show summary: "Imported 13 contacts, 4 projects, 127 emails, 8 transcripts"
+8. Google OAuth: user must re-authorize (tokens can't be migrated — they're bound to the OAuth client ID)
+
+### Bidirectional Portability
+
+The migration works both ways:
+- **Local → SaaS:** Upload `.db` file
+- **SaaS → Local:** Download `.db` file, place in `~/.local/share/software-of-you/`, run bootstrap
+
+This ensures no lock-in. Users can switch freely between local and SaaS, or use both (though data won't auto-sync between them — that's a future feature).
+
+---
+
+## 13. Pricing Model
+
+### V1: BYOK + Platform Fee
+
+| Component | Price | What It Covers |
+|---|---|---|
+| Platform fee | $7/month (or $60/year) | Hosting, background sync, real-time dashboard, data storage, all modules |
+| Claude API | User's own cost (BYOK) | Natural language interactions, analysis, scoring, email composition |
+
+**Why this model:**
+- Platform fee covers infrastructure costs (Turso, Vercel, worker compute, Google API quotas)
+- BYOK means zero marginal AI cost for the platform — sustainable from day one
+- Users who want Software of You are knowledge workers who likely already use or are willing to pay for Claude
+- Typical user's Claude API spend for SoY usage: $5-15/month — estimated basis: ~20 chat interactions/week at ~2K input tokens (system prompt + tools + context) + ~500 output tokens each = ~50K tokens/week ≈ 200K tokens/month; plus transcript analysis (~5K tokens per transcript, ~4/month) = ~220K total tokens/month ≈ $5-8 at Sonnet pricing, $12-18 at Opus
+
+**API cost transparency:**
+- Settings page shows estimated API usage (tokens consumed this month)
+- Each chat interaction shows token count in a subtle footer
+- "Your Anthropic dashboard has detailed cost breakdowns" link
+
+### Free Tier (Lead Generation)
+
+| Feature | Free | Paid |
+|---|---|---|
+| Contacts | Up to 10 | Unlimited |
+| Chat interactions | 20/month (user's API key) | Unlimited |
+| Gmail/Calendar sync | Manual only | Background auto-sync |
+| Modules | CRM + Projects only | All 8 modules |
+| Export | JSON only | SQLite + JSON |
+| Data retention | Unlimited (user's data) | Unlimited |
+
+Free tier requires BYOK (user's own API key). The 20 interaction limit is platform-enforced (not by API key limits) — this gates the intelligence layer, not data access. Users can still browse their dashboard, view contacts, and access all non-AI features without limit. The cap exists to keep free-tier infrastructure costs predictable (each chat interaction triggers tool execution, event emission, and WebSocket push — these cost the platform regardless of who pays for Claude).
+
+### V2 Path: Absorbed-Cost Tier
+
+Future pricing tier where the platform absorbs Claude API costs:
+
+| Tier | Price | API Costs |
+|---|---|---|
+| BYOK (V1 default) | $7/month | User pays Anthropic directly |
+| Pro (V2) | $29/month | Platform absorbs API costs (up to a usage cap) |
+| Team (V3) | $29/user/month | Shared workspaces, team CRM, absorbed API |
+
+The Pro tier would use Anthropic's batch API where possible (for background scoring, scheduled analysis) to reduce costs, and real-time API for chat interactions.
+
+**Transition:** Existing BYOK users keep their tier. Pro is additive, not a replacement.
+
+### Infrastructure Cost Model (200 Users, Month 6 Target)
+
+| Service | Per-User/Month | 200 Users | Notes |
+|---|---|---|---|
+| Turso (per-tenant DB) | ~$0.50 | $100 | Scaler plan: 500 DBs included at $29/mo + $0.10/M rows read. Most users are lightweight. |
+| Vercel (Pro) | fixed | $20 | Pro plan covers the web layer; function invocations well within limits at 200 users |
+| Fly.io (workers) | fixed | $30-50 | 1-2 worker machines for background sync; shared across all tenants |
+| Redis (Upstash) | ~$0.10 | $20 | Job queue for BullMQ/Inngest; serverless pricing |
+| WebSocket (Pusher) | ~$0.05 | $10 | Starter plan; 200 concurrent connections |
+| Clerk (auth) | $0.02/MAU | $4 | Free tier covers first 10K MAU; Pro at $0.02/MAU beyond |
+| Domain + misc | fixed | $15 | DNS, email, monitoring |
+| **Total** | | **~$200-250/mo** | |
+
+**Revenue at 200 paid users:** $1,400/month (at $7/mo each)
+**Gross margin:** ~82% ($1,150 contribution margin)
+**Breakeven:** ~35 paid users ($245/mo revenue covers ~$200/mo fixed costs)
+
+Cost scales sub-linearly because Turso, Vercel, and Fly have high included tiers before per-unit pricing kicks in. The critical threshold is ~500 databases on Turso's Scaler plan — beyond that, upgrade to their Scale plan or optimize by batching low-activity tenants.
+
+---
+
+## 14. Development Phases
+
+> **Timeline note:** Week labels are targets assuming full-time focused effort. For a solo developer with other commitments, multiply by 1.5-2x. The phases are sequenced correctly regardless of actual calendar time.
+
+### Phase 1: Foundation (Weeks 1-3)
+
+**Goal:** Authenticated users can chat with Claude about their data on a live web app.
+
+- [ ] Next.js project scaffold with Tailwind + Lucide + Inter
+- [ ] Auth setup (Clerk or NextAuth)
+- [ ] Turso integration — per-tenant database creation on signup
+- [ ] Run all 13 migrations on new tenant databases
+- [ ] BYOK key entry, encryption, validation
+- [ ] Intelligence API: Claude Messages API with system prompt + basic tools
+- [ ] Core tools: `create_contact`, `search_contacts`, `list_contacts`, `get_contact`
+- [ ] Chat panel UI (full-screen for now, not slide-in)
+- [ ] Basic conversation history (stored per-tenant)
+
+**Milestone:** Sign up, enter API key, chat: "Add Sarah Chen from Acme" — contact is created in your tenant DB.
+
+### Phase 2: Dashboard + Views (Weeks 4-6)
+
+**Goal:** The dashboard is the home screen. Views render from Data API, not from Claude.
+
+- [ ] Data API endpoints for all major views (dashboard, contacts, projects)
+- [ ] React component library: Dashboard, EntityPage, ProjectPage, ContactsIndex
+- [ ] Sidebar navigation component (from `navigation-patterns.md`)
+- [ ] Hybrid layout: dashboard as home, chat panel slides in from right
+- [ ] Loading states, empty states, error states
+- [ ] Responsive design (mobile-first)
+
+**Milestone:** Log in, see your dashboard with contacts and projects. Click a contact → see their entity page. Open chat → ask a question → get an answer.
+
+### Phase 3: Google Integration + Sync (Weeks 7-9)
+
+**Goal:** Background sync keeps data fresh without user intervention.
+
+- [ ] Google OAuth flow (per-user, server-side token storage)
+- [ ] Gmail sync worker (background, every 5 minutes)
+- [ ] Calendar sync worker (background, every 15 minutes)
+- [ ] Transcript scanning (from Gemini emails)
+- [ ] Email hub, week view, and conversations view components
+- [ ] WebSocket setup — push data changes to open clients
+- [ ] Sync status indicators in the UI
+
+**Milestone:** Connect Google. Emails and calendar events appear on dashboard automatically. New emails arrive in real-time.
+
+### Phase 4: Full Module Parity (Weeks 10-12)
+
+**Goal:** Every module and scoring system from the local version works in SaaS.
+
+- [ ] Remaining tools: decisions, journal, notes, tags, follow-ups, commitments, nudges
+- [ ] Remaining views: DecisionJournal, JournalView, NotesView, NudgesView, Timeline, SearchHub, WeeklyReview, NetworkMap
+- [ ] Scoring engine: relationship scores, project momentum, conversation metrics (same formulas as methodology files)
+- [ ] Transcript analysis tool (commitment extraction, coaching insights)
+- [ ] Import flow: CSV import, transcript import, local SQLite database import
+- [ ] Export flow: SQLite download, JSON export
+- [ ] Email composition (via Gmail API)
+
+**Milestone:** Full feature parity with local version. Every slash command has a tool equivalent. Every view has a React component.
+
+### Phase 5: Polish + Launch (Weeks 13-14)
+
+**Goal:** Production-ready for public launch.
+
+- [ ] Free tier implementation (contact limits, interaction caps)
+- [ ] Stripe integration for paid subscriptions
+- [ ] Onboarding flow refinement (welcome screen, profile collection, first-contact guidance — matching local flow)
+- [ ] Account settings (profile, API key management, Google connection, data export, account deletion)
+- [ ] Error handling, rate limiting, abuse prevention
+- [ ] Performance optimization (Turso edge replicas, CDN for static assets)
+- [ ] Landing page updates (softwareof.you)
+- [ ] Documentation / help system
+
+**Milestone:** Public launch. Users can sign up, connect Google, interact via chat and dashboard, and pay $7/month.
+
+---
+
+## 15. Success Metrics
+
+### Activation
+
+| Metric | Target | Measurement |
+|---|---|---|
+| Signup → API key entered | >70% | Within first session |
+| API key entered → first chat message | >85% | Within 5 minutes |
+| First chat → first contact created | >60% | Within first session |
+| Google connected | >50% | Within first week |
+
+### Engagement
+
+| Metric | Target | Measurement |
+|---|---|---|
+| Weekly active users (WAU) | >40% of signups | At least 1 session per week |
+| Dashboard views per session | >3 | Average across active users |
+| Chat interactions per week | 15-25 per active user | Mean, excluding outliers |
+| Data actions per week | >10 per active user | Contact adds, notes, journal entries, etc. |
+
+### Retention
+
+| Metric | Target | Measurement |
+|---|---|---|
+| 7-day retention | >60% | Users active on day 7 after signup |
+| 30-day retention | >40% | Users active on day 30 |
+| Free → paid conversion | >15% | Within 30 days of signup |
+| Monthly churn (paid) | <5% | Paid users who cancel |
+
+### Revenue
+
+| Metric | Target (Month 6) | Notes |
+|---|---|---|
+| Paying users | 200+ | At $7/month = $1,400 MRR |
+| MRR | $1,400+ | Excludes users' own Claude API costs |
+| ARPU | $7 (BYOK) | Rises to ~$20 when Pro tier launches |
+
+### Technical
+
+| Metric | Target | Measurement |
+|---|---|---|
+| Chat response time (p50) | <3 seconds | Time from message send to first response token |
+| Dashboard load time (p50) | <1 second | Time to interactive |
+| Background sync latency | <5 minutes | Time from new email → visible in dashboard |
+| Uptime | 99.5%+ | Monthly |
+| Data export completion | <30 seconds | Time to generate downloadable SQLite file |
+
+---
+
+## Appendix A: Risk Register
+
+| Risk | Likelihood | Impact | Mitigation |
+|---|---|---|---|
+| Anthropic API pricing changes | Medium | High | BYOK insulates platform; absorbed-cost tier uses batch API pricing |
+| Claude model regression on structured tool use | Low | High | Pin model version; test suite validates tool call accuracy |
+| Turso per-database costs scale unexpectedly | Low | Medium | Monitor per-user DB cost; batch small tenants if needed |
+| Google OAuth consent screen rejection (new app) | Medium | Medium | Apply early; provide complete privacy policy and terms |
+| Users resist BYOK (too much friction) | Medium | Medium | Make key entry extremely clear; provide free trial interactions; V2 absorbed tier |
+| Low conversion from free to paid | Medium | Medium | Ensure free tier demonstrates value; nag-free upgrade prompts |
+
+## Appendix B: Security Considerations
+
+- **API key storage:** AES-256-GCM encryption at rest, decrypted only in memory during API calls
+- **Tenant isolation:** Separate database instances, no cross-tenant queries possible at the database level
+- **Auth:** JWT with short expiry (15 min), server-side session validation, CSRF protection
+- **Google tokens:** Encrypted at rest, refresh handled server-side, revoked on account deletion
+- **Data in transit:** TLS everywhere (HTTPS, WSS for WebSocket)
+- **Rate limiting:** Per-user rate limits on chat interactions and API calls
+- **Input validation:** All tool parameters validated before execution; no raw SQL injection surface
+- **Audit log:** All data mutations logged in `activity_log` (per-tenant) — same as local version
+- **SOC 2:** Not required for V1 launch but architecture should not preclude future compliance
+
+## Appendix C: Local Version Compatibility Matrix
+
+| Feature | Local | Desktop | SaaS |
+|---|---|---|---|
+| CRM (contacts, interactions, relationships) | Yes | Yes | Yes |
+| Project Tracker (projects, tasks, milestones) | Yes | Yes | Yes |
+| Gmail sync | Manual (when CLI active) | Manual (when app open) | Background (24/7) |
+| Calendar sync | Manual | Manual | Background |
+| Conversation Intelligence | Yes | Yes | Yes |
+| Decision Log | Yes | Yes | Yes |
+| Journal | Yes | Yes | Yes |
+| Notes | Yes | Yes | Yes |
+| HTML views | Generated to disk | Auto-preview in app | React components |
+| Mobile access | No | No | Yes |
+| Offline access | Full (SQLite local) | Full | No (web-dependent) |
+| Data location | User's machine | User's machine | Turso cloud (exportable) |
+| Claude runtime | Claude Code CLI | Claude Code CLI | Anthropic Messages API |
+| Cost | Claude Code subscription | Claude Code subscription | $7/month + BYOK API costs |
+
+---
+
+## Source
+
+PRD authored 2026-02-24 via conversation with Claude Opus 4.6.
+Architecture decisions preserved in session context.

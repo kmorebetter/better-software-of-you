@@ -19,6 +19,7 @@ Read these files first:
 - `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/dashboard-generation/references/template-base.html` — HTML skeleton
 - `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/dashboard-generation/references/component-patterns.md` — component snippets
 - `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/dashboard-generation/references/navigation-patterns.md` — sidebar patterns
+- `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/dashboard-generation/references/delight-patterns.md` — micro-interactions and delight
 
 ## Step 2: Gather Data
 
@@ -387,7 +388,7 @@ The dashboard must adapt intelligently based on installed modules:
 - Lucide icons: `users` contacts, `folder`/`folder-open` projects, `check-square` tasks, `clock` follow-ups, `activity` timeline, `calendar` events, `mail` emails, `arrow-up-right` outbound, `arrow-down-left` inbound, `star` starred, `alert-circle` overdue
 - All data static in HTML — no JavaScript data fetching
 - Responsive: `grid grid-cols-1 lg:grid-cols-2 gap-6`
-- The only JS: Lucide icon initialization (`lucide.createIcons()`)
+- JS: Lucide icons + delight layer from template-base.html (countups, scroll reveals, card stagger)
 
 ### Contact Name Linking
 

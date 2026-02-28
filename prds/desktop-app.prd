@@ -1,0 +1,819 @@
+---
+title: Software of You — Desktop App (Tauri)
+type: spec
+tags: [product, desktop, tauri, rust, terminal, prd]
+created: 2026-02-24
+last_touched: 2026-02-24
+status: ready-to-build
+decisions:
+  - icon: owner will create — SoY face glyph in Figma
+  - app-name: "SoY" dock label, "Software of You" full name
+  - bundling: plugin bundled inside app, extracted to ~/.local/share on first run
+  - windows: out of scope, macOS only
+related:
+  - idea.prd
+  - memory/MEMORY.md
+---
+
+# Software of You Desktop App
+
+**Core pitch:** A native macOS (and eventually Windows/Linux) desktop app that wraps Claude Code in a polished shell — embedded terminal on the left, live HTML preview panel on the right. No logic is migrated. No intelligence is rewritten. The app is a launcher and display layer; Claude Code + the existing plugin system does all the work.
+
+**Why this matters:** Right now, using Software of You requires the user to be comfortable in a terminal, know how to launch Claude Code, and mentally juggle between the terminal and a browser for HTML views. The desktop app removes all three friction points. Same product, dramatically lower barrier to entry.
+
+---
+
+## Problem Statement
+
+Software of You is already built. The SQLite database, the 47+ commands, the HTML view generation, the module system, the scoring, the Google integrations — all of it works. The experience gap is purely at the surface layer:
+
+1. **Terminal intimidation.** Many target users (freelancers, solopreneurs) are not terminal-native. "Open Terminal, cd into a directory, run `claude`" has real drop-off.
+2. **Context switching.** Every `/dashboard` or `/entity-page` opens a new browser tab. Users lose the conversational thread.
+3. **No app identity.** There's no dock icon, no app switcher entry, no "it's a real app" moment. This matters for perceived legitimacy and daily habit formation.
+
+The desktop app solves all three without touching a single line of existing application logic.
+
+---
+
+## Goals
+
+- Wrap the existing Claude Code + SoY plugin experience in a native macOS app
+- Embedded terminal on the left, auto-refreshing HTML preview on the right
+- Zero migration of existing logic (bash, Python, SQL, CLAUDE.md, commands, skills)
+- First-run onboarding that handles environment setup automatically
+- Distributable as a signed `.dmg` — user drags to Applications, launches, works
+
+## Non-Goals (V1)
+
+- Replacing Claude Code with a custom AI runtime — Claude Code IS the runtime, always
+- Building a traditional form-based UI — the terminal IS the interface
+- Windows or Linux support — macOS only
+- Custom theming, plugin marketplace, or settings UI beyond essentials
+- Mac App Store distribution (PTY requires entitlements that complicate MAS sandboxing)
+- Syncing or cloud backup of the SQLite database
+
+---
+
+## Architecture Overview
+
+```
+┌─────────────────────────────────────────────────────────┐
+│  Software of You.app  (Tauri shell)                     │
+│                                                         │
+│  ┌──────────────────────┐  ┌──────────────────────────┐ │
+│  │   Terminal Panel     │  │    Preview Panel         │ │
+│  │   (xterm.js)         │  │    (WebView)             │ │
+│  │                      │  │                          │ │
+│  │  PTY ─── claude CLI  │  │  Watches output/ dir     │ │
+│  │  with CLAUDE_PLUGIN  │  │  Auto-refreshes on new   │ │
+│  │  _ROOT set, cwd=     │  │  HTML file creation      │ │
+│  │  project dir         │  │                          │ │
+│  │                      │  │  Nav: list of recent     │ │
+│  │  Full color ANSI,    │  │  generated views         │ │
+│  │  interactive mode,   │  │                          │ │
+│  │  all slash commands  │  │                          │ │
+│  └──────────────────────┘  └──────────────────────────┘ │
+│                                                         │
+│  Native chrome: dock icon, menu bar, system             │
+│  notifications, keyboard shortcuts                      │
+└─────────────────────────────────────────────────────────┘
+```
+
+### Key Technical Insight: PTY, Not Pipe
+
+Claude Code detects whether stdout is a real terminal. If it's a pipe, it drops colors, disables interactive mode, and the experience degrades significantly. The solution is a **PTY (pseudo-terminal)** — it gives Claude Code the illusion of running in a real terminal, so all interactive features work exactly as they do in a native terminal session. This is the same mechanism VS Code uses for its integrated terminal.
+
+### Data Flow
+
+```
+User types in xterm.js
+  → Tauri IPC event → Rust backend
+    → writes to PTY master stdin
+      → Claude Code CLI receives keystrokes
+        → Claude Code writes response to PTY stdout
+          → Rust backend reads PTY master stdout
+            → Tauri IPC event → xterm.js renders output
+
+Claude Code generates HTML to output/
+  → Rust file watcher (notify crate) detects new file
+    → Tauri IPC event → Preview Panel WebView
+      → WebView loads the new HTML file
+        → Preview auto-refreshes, no user action needed
+```
+
+---
+
+## Component Specifications
+
+### 1. PTY + Terminal (Core)
+
+**Rust crate:** `portable-pty` (cross-platform PTY, used by Alacritty and Zellij)
+
+**Responsibilities:**
+- Spawn a PTY with correct size (cols × rows matching xterm.js viewport)
+- Launch `claude` CLI as the child process inside the PTY
+- Set environment variables before spawn:
+  - `CLAUDE_PLUGIN_ROOT` → project directory (from app config)
+  - `HOME` → user home directory
+  - `PATH` → inherit from shell (critical: `claude` must be findable)
+  - `TERM=xterm-256color` (tells Claude Code it's in a real terminal)
+- Set working directory to project root
+- Stream PTY stdout → Tauri event `pty-output` → xterm.js
+- Receive Tauri event `pty-input` ← xterm.js → write to PTY stdin
+- Handle PTY resize events when terminal panel is resized
+- Detect child process exit (Claude Code crash or user `exit`) and offer restart
+
+**Startup sequence:**
+```
+1. Read project path from app config
+2. Verify `claude` is in PATH (run `which claude`)
+3. Open PTY with initial size 220×50
+4. Set env vars
+5. Spawn `claude` inside PTY
+6. Begin streaming stdout → frontend
+```
+
+**Implementation sketch:**
+```rust
+use portable_pty::{CommandBuilder, PtySize, native_pty_system};
+
+pub fn spawn_claude(project_path: &str, path_env: &str) -> Result<PtyPair> {
+    let pty_system = native_pty_system();
+    let pair = pty_system.openpty(PtySize {
+        rows: 50, cols: 220,
+        pixel_width: 0, pixel_height: 0,
+    })?;
+
+    let mut cmd = CommandBuilder::new("claude");
+    cmd.env("CLAUDE_PLUGIN_ROOT", project_path);
+    cmd.env("TERM", "xterm-256color");
+    cmd.env("PATH", path_env);
+    cmd.cwd(project_path);
+
+    pair.slave.spawn_command(cmd)?;
+    Ok(pair)
+}
+```
+
+---
+
+### 2. Terminal Frontend (xterm.js)
+
+**Library:** `@xterm/xterm` v5.x with addons:
+- `@xterm/addon-webgl` — GPU-accelerated rendering (dramatically better than canvas)
+- `@xterm/addon-fit` — auto-resize terminal to fill container
+- `@xterm/addon-web-links` — makes URLs in output clickable
+
+**Responsibilities:**
+- Render terminal output with full ANSI color support
+- Send keystrokes to Rust backend via Tauri `invoke`
+- Handle resize events: recalculate cols/rows → send to Rust → resize PTY
+- Paste support (Cmd+V)
+- Scroll history (keep last 10,000 lines)
+- Font: `JetBrains Mono` or `SF Mono` — monospaced, renders ANSI box-drawing chars correctly
+
+**Terminal panel proportions:**
+- Default: 60% of window width
+- Minimum: 400px wide
+- Resizable via a drag handle (future v1.1)
+
+**Implementation sketch:**
+```javascript
+import { Terminal } from '@xterm/xterm';
+import { WebglAddon } from '@xterm/addon-webgl';
+import { FitAddon } from '@xterm/addon-fit';
+import { invoke, listen } from '@tauri-apps/api';
+
+const term = new Terminal({
+  fontFamily: '"JetBrains Mono", "SF Mono", monospace',
+  fontSize: 13,
+  lineHeight: 1.4,
+  theme: {
+    background: '#0f1117',
+    foreground: '#e2e8f0',
+    cursor: '#f97316',    // orange cursor, SoY brand
+  },
+  scrollback: 10000,
+  convertEol: true,
+});
+
+const fitAddon = new FitAddon();
+term.loadAddon(fitAddon);
+term.loadAddon(new WebglAddon());
+
+term.open(document.getElementById('terminal'));
+fitAddon.fit();
+
+// PTY output → terminal
+await listen('pty-output', (event) => {
+  term.write(event.payload);
+});
+
+// Keystrokes → PTY
+term.onData((data) => {
+  invoke('pty_write', { data });
+});
+
+// Resize → PTY
+const resizeObserver = new ResizeObserver(() => {
+  fitAddon.fit();
+  invoke('pty_resize', { cols: term.cols, rows: term.rows });
+});
+resizeObserver.observe(document.getElementById('terminal'));
+```
+
+---
+
+### 3. File Watcher
+
+**Rust crate:** `notify` v6.x (uses FSEvents on macOS — native, efficient, no polling)
+
+**Watches:** `~/.local/share/software-of-you/output/` (the real output directory, not the symlink — watcher handles symlink resolution at startup)
+
+**Behavior:**
+- On `EventKind::Create` or `EventKind::Modify` for any `.html` file:
+  - Extract filename
+  - Emit Tauri event `new-view` with `{ path: String, name: String, timestamp: u64 }`
+- Maintain an in-memory list of the last 20 generated views (most recent first)
+- Emit `view-list-updated` event whenever the list changes
+
+**Implementation sketch:**
+```rust
+use notify::{Config, EventKind, RecommendedWatcher, RecursiveMode, Watcher};
+
+pub fn start_watcher(output_dir: &str, app_handle: AppHandle) {
+    let (tx, rx) = channel();
+    let mut watcher = RecommendedWatcher::new(tx, Config::default()).unwrap();
+
+    watcher.watch(Path::new(output_dir), RecursiveMode::NonRecursive).unwrap();
+
+    std::thread::spawn(move || {
+        for event in rx {
+            if let Ok(event) = event {
+                if matches!(event.kind, EventKind::Create(_) | EventKind::Modify(_)) {
+                    for path in event.paths {
+                        if path.extension().map_or(false, |e| e == "html") {
+                            app_handle.emit("new-view", &path.to_string_lossy()).ok();
+                        }
+                    }
+                }
+            }
+        }
+    });
+
+    std::mem::forget(watcher); // keep alive for app lifetime
+}
+```
+
+---
+
+### 4. Preview Panel
+
+**Technology:** Tauri WebView (WKWebView on macOS) loaded with a lightweight HTML shell
+
+**Responsibilities:**
+- Listen for `new-view` events → load the HTML file via `file://` URL
+- Render the Software of You generated HTML views at native resolution
+- Show a "recents" drawer: list of last 20 generated views, click to load
+- Empty state: branded placeholder when no views have been generated yet
+
+**The preview panel IS NOT a browser.** It doesn't have a URL bar, back/forward, or bookmarks. It's a display surface for SoY-generated content only.
+
+**Panel proportions:**
+- Default: 40% of window width
+- Minimum: 300px wide
+
+**Preview panel header (minimal):**
+```
+[← ←] [→ →]  dashboard.html — 2 minutes ago    [⊞ Recents ▾]
+```
+- Back/forward through view history (in-session only)
+- Filename + relative timestamp of current view
+- Recents dropdown: last 20 views, sorted by time descending
+
+**Recents drawer item format:**
+```
+dashboard.html          just now
+entity-sarah-chen.html  4 min ago
+project-acme-q1.html    12 min ago
+```
+
+**Implementation sketch (frontend):**
+```javascript
+await listen('new-view', (event) => {
+  const path = event.payload;
+  const webview = document.getElementById('preview-frame');
+
+  // Tauri asset protocol for local file access
+  webview.src = convertFileSrc(path);
+
+  // Add to recents list
+  addToRecents({ path, name: basename(path), timestamp: Date.now() });
+});
+```
+
+---
+
+### 5. App Configuration
+
+**Config file location (macOS):** `~/Library/Application Support/software-of-you/config.json`
+
+**Schema:**
+```json
+{
+  "project_path": "/Users/kerry/Projects/better-software-of-you",
+  "output_path": "/Users/kerry/.local/share/software-of-you/output",
+  "claude_path": "/usr/local/bin/claude",
+  "theme": "dark",
+  "window": {
+    "width": 1400,
+    "height": 900,
+    "x": null,
+    "y": null,
+    "terminal_width_pct": 60
+  },
+  "onboarding_complete": true,
+  "version": "1.0.0"
+}
+```
+
+**On every launch:**
+1. Read config
+2. Validate `project_path` exists
+3. Validate `claude_path` exists and is executable
+4. If either fails → trigger first-run setup, not silent failure
+
+---
+
+### 6. Plugin Bundling
+
+The SoY plugin ships **inside the app bundle**. On first launch, the app extracts it to the user's data directory. The user never downloads a separate zip or touches a git repo.
+
+**Bundle location (inside .app):**
+```
+Software of You.app/
+└── Contents/
+    └── Resources/
+        └── plugin/          ← entire better-software-of-you repo contents
+            ├── CLAUDE.md
+            ├── commands/
+            ├── skills/
+            ├── shared/
+            ├── data/migrations/
+            └── ...
+```
+
+Tauri includes arbitrary files in `Resources/` via `tauri.conf.json`:
+```json
+"bundle": {
+  "resources": ["plugin/**/*"]
+}
+```
+
+**First-run extraction:**
+```rust
+// src-tauri/src/setup.rs
+pub fn extract_plugin_if_needed(app: &AppHandle) -> Result<PathBuf> {
+    let dest = dirs::data_dir()
+        .unwrap()
+        .join("software-of-you/plugin");
+
+    if dest.exists() {
+        return Ok(dest); // already extracted, skip
+    }
+
+    // Copy from app bundle Resources/plugin/ → dest
+    let src = app.path().resource_dir()?.join("plugin");
+    copy_dir_recursive(&src, &dest)?;
+
+    // Run bootstrap to initialize DB
+    std::process::Command::new("bash")
+        .arg(dest.join("shared/bootstrap.sh"))
+        .env("CLAUDE_PLUGIN_ROOT", &dest)
+        .output()?;
+
+    Ok(dest)
+}
+```
+
+**`CLAUDE_PLUGIN_ROOT` is always set to the extracted path**, never into the `.app` bundle (which is read-only after signing).
+
+**Update behavior:** When the user updates the app, the new version ships a newer plugin. On launch, the app compares a version file (`plugin/VERSION`) between the bundle and the extracted copy. If the bundle is newer, it overwrites the extracted copy, then re-runs `bootstrap.sh` (idempotent — safe to run on any version).
+
+```rust
+pub fn update_plugin_if_needed(app: &AppHandle, dest: &Path) -> Result<()> {
+    let bundle_version = read_version(app.path().resource_dir()?.join("plugin/VERSION"))?;
+    let installed_version = read_version(dest.join("VERSION")).unwrap_or_default();
+
+    if bundle_version > installed_version {
+        copy_dir_recursive(&src, dest)?;
+        run_bootstrap(dest)?;
+    }
+    Ok(())
+}
+```
+
+**Developer override:** Settings → "Use custom plugin path" → file picker. Stores an override path in config. When set, `CLAUDE_PLUGIN_ROOT` points to the custom path instead of the extracted bundle. This lets developers point at their live checkout without interference from the bundled copy.
+
+```json
+// config.json — when developer override is active
+{
+  "plugin_path_override": "/Users/kerry/Projects/better-software-of-you",
+  ...
+}
+```
+
+**Onboarding impact:** With bundling, the onboarding wizard drops from 4 steps to 2:
+1. Detect (or ask for) `claude` CLI location
+2. Done — plugin is already extracted, bootstrap already ran
+
+No "where is your Software of You folder?" step exists.
+
+---
+
+### 7. Native Chrome
+
+**Dock icon:** Custom icon — the SoY face glyph from the welcome message, stylized for macOS icon guidelines (1024×1024, rounded corners, no transparency)
+
+**Menu bar:**
+```
+Software of You
+  About Software of You
+  ──────────────
+  Settings...          ⌘,
+  ──────────────
+  Quit                 ⌘Q
+
+View
+  Reload Preview       ⌘R
+  Clear Terminal       ⌘K
+  ──────────────
+  Toggle Preview Panel ⌘\
+  Zoom In              ⌘+
+  Zoom Out             ⌘-
+  Reset Zoom           ⌘0
+
+Window
+  Minimize             ⌘M
+  Zoom
+  ──────────────
+  Bring All to Front
+```
+
+**System notifications:** When Claude Code generates a new view (detected by the file watcher), show a macOS notification:
+```
+Software of You
+dashboard.html is ready — click to view
+```
+Clicking the notification brings the app to foreground and loads that view in the preview panel.
+
+**Keyboard shortcuts:**
+| Shortcut | Action |
+|---|---|
+| `⌘,` | Open settings |
+| `⌘K` | Clear terminal |
+| `⌘R` | Reload current preview |
+| `⌘\` | Toggle preview panel |
+| `⌘+` / `⌘-` | Font size up/down in terminal |
+| `⌘0` | Reset terminal font size |
+| `⌘W` | (disabled — don't accidentally close the app) |
+
+---
+
+## First-Run Onboarding
+
+First run = config file doesn't exist, or `onboarding_complete` is false.
+
+**Step 1: Welcome screen**
+```
+┌──────────────────────────────────────────────┐
+│                                              │
+│           ╭──────────╮                       │
+│           │  ◠    ◠  │                       │
+│           │    ◡◡    │                       │
+│           ╰────┬┬────╯                       │
+│               ╱╲╱╲                           │
+│                                              │
+│     S O F T W A R E  of  Y O U             │
+│     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━           │
+│                                              │
+│     Welcome to your personal data platform. │
+│                                              │
+│     Let's get you set up.                   │
+│                                              │
+│              [ Get Started ]                 │
+└──────────────────────────────────────────────┘
+```
+
+**Step 2: Locate Claude Code**
+- App runs `which claude` to auto-detect from PATH
+- If found: show path with green checkmark, auto-advance to Step 3
+- If not found: show instructions with link to `claude.ai/download`; user can also browse to the binary manually
+
+**Step 3: Extract & Verify (automated — no user input)**
+- App extracts bundled plugin to `~/.local/share/software-of-you/plugin/`
+- Runs `shared/bootstrap.sh` — shows output in a mini inline terminal view
+- Waits for `ready|` prefix in bootstrap output
+- If successful: green banner "Everything's ready"
+- If failed: shows bootstrap error output + mailto link for support
+
+**Step 4: Launch**
+- Write config, set `onboarding_complete: true`
+- Transition to main app window
+- Terminal launches with Claude Code already running
+- CLAUDE.md first-run onboarding message appears in terminal naturally
+
+> No "where is your project folder?" step — the plugin is bundled. User never touches a zip, a git repo, or a file path.
+
+---
+
+## Window Layout
+
+```
+┌────────────────────────────────────────────────────────────────────────┐
+│  [─] [□] [✕]   Software of You                              ⚙         │
+├────────────────────────────────────────────────────────────────────────┤
+│                              │                                          │
+│                              │   ┌─────────────────────────────────┐   │
+│   $ claude                   │   │  ▶  dashboard.html  just now    │   │
+│   ▶ Software of You loaded   │   │─────────────────────────────────│   │
+│   ▶ 12 contacts, 4 projects  │   │                                 │   │
+│                              │   │   [Preview of generated HTML    │   │
+│   > /dashboard               │   │    renders here at native       │   │
+│                              │   │    resolution with full CSS     │   │
+│   ✓ Syncing Gmail... done    │   │    and Tailwind rendering]      │   │
+│   ✓ Calendar fresh           │   │                                 │   │
+│   ✓ Writing dashboard.html   │   │                                 │   │
+│                              │   │                                 │   │
+│   Dashboard ready.           │   │                                 │   │
+│                              │   │                                 │   │
+│   > _                        │   │                                 │   │
+│                              │   │                                 │   │
+│                              │   └─────────────────────────────────┘   │
+│                              │   [ ⊞ 3 recent views ]                  │
+│                              │                                          │
+├──────────────────────────────┼──────────────────────────────────────────┤
+│  ● claude   PTY 220×48       │  dashboard.html — 0.3s ago              │
+└────────────────────────────────────────────────────────────────────────┘
+```
+
+**Status bar (bottom):**
+- Left: PTY process status (green dot = running, red = exited), PTY dimensions
+- Right: Current preview filename + age
+- Clicking PTY status: restart Claude Code (with confirmation dialog)
+
+---
+
+## Build & Distribution
+
+### Tech Stack
+
+| Layer | Choice | Rationale |
+|---|---|---|
+| App shell | Tauri 2.x | Rust backend, native WebView, ~5MB binary, no Electron overhead |
+| Terminal render | `@xterm/xterm` 5.x | Industry standard, used by VS Code; full ANSI + interactive mode |
+| PTY | `portable-pty` 0.8.x | Cross-platform, handles macOS/Linux/Windows PTY APIs |
+| File watching | `notify` 6.x | Uses FSEvents on macOS (native, not polling) |
+| Frontend | Vanilla HTML/CSS/JS | No framework needed — complexity is minimal, Rust does the heavy lifting |
+| Build | `cargo tauri build` | Single command, handles code signing pipeline |
+
+### Build Prerequisites
+
+```bash
+# Install Rust
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+
+# Install Node.js (for xterm.js and build tooling)
+brew install node
+
+# Install Tauri CLI
+cargo install tauri-cli
+
+# Apple Developer account required for code signing + notarization
+# Set in environment:
+# APPLE_CERTIFICATE=<base64 cert>
+# APPLE_CERTIFICATE_PASSWORD=<password>
+# APPLE_ID=<apple id>
+# APPLE_PASSWORD=<app-specific password>
+# APPLE_TEAM_ID=<team id>
+```
+
+### Project Structure
+
+```
+software-of-you-desktop/
+├── plugin/                 # ← copy of better-software-of-you repo
+│   ├── CLAUDE.md           #   bundled into .app Resources at build time
+│   ├── commands/           #   extracted to ~/.local/share/... on first run
+│   ├── skills/
+│   ├── shared/
+│   ├── data/migrations/
+│   └── VERSION             # semver string, used for update detection
+├── src-tauri/
+│   ├── Cargo.toml          # portable-pty, notify, tauri, dirs deps
+│   ├── src/
+│   │   ├── main.rs         # Tauri app entry, window setup
+│   │   ├── pty.rs          # PTY spawn, read/write, resize
+│   │   ├── watcher.rs      # File watcher, view list management
+│   │   ├── config.rs       # Config read/write, first-run detection
+│   │   └── setup.rs        # Plugin extraction, bootstrap runner, update check
+│   ├── tauri.conf.json     # App metadata, window config, permissions
+│   └── icons/              # SoY face glyph icons (owner-created, all sizes)
+├── src/
+│   ├── index.html          # Main app shell
+│   ├── terminal.js         # xterm.js setup and IPC
+│   ├── preview.js          # Preview panel, recents, file loading
+│   ├── onboarding.js       # First-run wizard (2 steps now, not 4)
+│   └── styles.css          # App chrome styles (not terminal — that's xterm)
+└── package.json            # xterm deps, build scripts
+```
+
+**Build note:** The `plugin/` directory is a snapshot of the `better-software-of-you` repo at release time. A build script (`scripts/sync-plugin.sh`) copies from the main repo into `plugin/` and bumps `VERSION` before each release. This keeps the two repos decoupled — the desktop app repo doesn't need to be a git submodule or monorepo.
+
+### `tauri.conf.json` (key settings)
+
+Dock label is "SoY" (fits cleanly), full name "Software of You" appears in title bar, Spotlight, and About dialog.
+
+```json
+{
+  "productName": "SoY",
+  "version": "1.0.0",
+  "identifier": "you.softwareof.app",
+  "bundle": {
+    "active": true,
+    "targets": ["dmg", "app"],
+    "icon": ["icons/icon.icns"],   // owner-created: SoY face glyph in Figma → exported as .icns
+    "macOS": {
+      "minimumSystemVersion": "13.0",
+      "signingIdentity": null,
+      "providerShortName": null,
+      "entitlements": "./entitlements.plist",
+      "infoPlist": {
+        "CFBundleDisplayName": "Software of You",  // full name in Spotlight + About
+        "CFBundleName": "SoY"                      // short name in dock
+      }
+    }
+  },
+  "app": {
+    "withGlobalTauri": false,
+    "windows": [{
+      "title": "Software of You",
+      "width": 1400,
+      "height": 900,
+      "minWidth": 900,
+      "minHeight": 600,
+      "resizable": true,
+      "fullscreenable": true
+    }]
+  },
+  "security": {
+    "csp": "default-src 'self'; script-src 'self' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: asset: https://asset.localhost; connect-src ipc: http://ipc.localhost"
+  }
+}
+```
+
+**Entitlements (`entitlements.plist`)** — required for PTY:
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" ...>
+<plist version="1.0">
+<dict>
+  <key>com.apple.security.app-sandbox</key>
+  <false/>    <!-- PTY requires disabling sandbox — this rules out Mac App Store -->
+  <key>com.apple.security.network.client</key>
+  <true/>
+</dict>
+</plist>
+```
+
+**Note:** App sandbox must be disabled for PTY access. This means MAS distribution is not viable. Direct download + notarization is the correct distribution path.
+
+### Release Pipeline
+
+```bash
+# Build universal binary (Apple Silicon + Intel)
+cargo tauri build --target universal-apple-darwin
+
+# Output: src-tauri/target/universal-apple-darwin/release/bundle/
+#   └── dmg/Software of You_1.0.0_universal.dmg
+#   └── macos/Software of You.app
+
+# Notarization happens automatically during build if Apple credentials are set
+# Users can open .dmg, drag to Applications, and launch immediately
+```
+
+### Distribution
+
+- Hosted on the `softwareof.you` landing site as a direct download
+- Version: `1.0.0` follows `idea.prd` product versioning
+- Update mechanism V1: "New version available — download at softwareof.you" notification (no auto-update in V1; add Tauri updater plugin in V2)
+- Price: bundled with base product purchase (not a separate SKU). Buying Software of You gets you both the CLI plugin and the desktop app.
+
+---
+
+## Edge Cases & Error Handling
+
+| Scenario | Behavior |
+|---|---|
+| `claude` exits unexpectedly | Status bar turns red, "Claude Code crashed. Restart?" button appears |
+| User types `exit` in terminal | Same as above — offer restart rather than closing the app |
+| Output directory doesn't exist | File watcher logs a warning, preview panel shows empty state. Does not crash. Directory is created by bootstrap anyway. |
+| Preview HTML references external CDNs (Tailwind, Lucide) | WKWebView has full network access — CDN assets load normally |
+| Preview HTML uses `file://` paths for assets | Use Tauri's `asset://` protocol + asset scope configuration |
+| Window too narrow to show both panels | Hide preview panel automatically below 900px width; show toggle button |
+| First run: `claude` not in PATH after install | Show specific error: "Claude Code was installed but the shell PATH doesn't include it yet. Restart your Mac and try again." |
+| Config file corrupted / invalid JSON | Delete and re-run onboarding. Log error to `~/Library/Logs/Software of You/` |
+| Multiple SoY project clones on machine | First-run setup asks which one to use; stores the chosen path in config |
+
+---
+
+## Success Metrics (V1)
+
+| Metric | Target |
+|---|---|
+| First-run completion rate | >85% of users who launch the app complete onboarding |
+| Time-to-first-command | <2 minutes from first launch to first successful Claude response |
+| Support tickets about terminal setup | Zero (the terminal setup problem is the whole point of the app) |
+| Binary size | <25MB app bundle |
+| Launch time | <2 seconds from click to terminal ready |
+| User report: "it feels like a real app" | Qualitative, from first 10 users |
+
+---
+
+## Development Phases
+
+### Phase 1: Core Shell (Weekend 1)
+- [ ] Tauri project scaffold
+- [ ] PTY spawning with correct env vars
+- [ ] xterm.js rendering PTY output
+- [ ] Keyboard input routing terminal → PTY
+- [ ] PTY resize on window resize
+- [ ] Split-panel layout (60/40, no drag handle yet)
+- [ ] Hardcoded project path (no config UI yet)
+
+**Milestone:** Type in terminal, see Claude Code running, full color ANSI output
+
+### Phase 2: Preview Panel (Weekend 2)
+- [ ] `notify` file watcher on output directory
+- [ ] Preview WebView in right panel
+- [ ] Auto-load on new HTML file creation
+- [ ] Recents list (last 10 views)
+- [ ] Empty state for preview panel
+
+**Milestone:** Type `/dashboard`, watch preview panel update automatically
+
+### Phase 3: Native Polish (Weekend 3)
+- [ ] App config (read/write `~/Library/Application Support/`)
+- [ ] Window state persistence (size, position, panel ratio)
+- [ ] First-run onboarding wizard (2 steps: find claude → extract+verify)
+- [ ] Plugin extraction + bootstrap runner (`setup.rs`)
+- [ ] Plugin version check + auto-update on launch
+- [ ] Developer path override in Settings
+- [ ] Menu bar with keyboard shortcuts
+- [ ] Dock icon (SoY face glyph — owner-created)
+- [ ] System notifications on new view generation
+- [ ] Status bar (PTY status, current view)
+
+**Milestone:** Full onboarding flow; app feels like a real macOS app
+
+### Phase 4: Distribution (Weekend 4)
+- [ ] Code signing setup (Apple Developer account)
+- [ ] Notarization pipeline
+- [ ] `.dmg` build
+- [ ] Update check (manual, not auto — just a notification with a URL)
+- [ ] Landing page download link + SHA256 checksum
+
+**Milestone:** Ship `Software of You 1.0.0.dmg` — friend can download and run it
+
+---
+
+## Future Work (Not V1)
+
+- **Drag handle** between terminal and preview panels
+- **Tauri updater plugin** for auto-updates (V1.1)
+- **Windows support** — `portable-pty` works on Windows; main unknown is shell environment setup and PATH resolution
+- **Multi-window** — open multiple entity pages simultaneously
+- **Print/export** — right-click in preview panel → "Export as PDF"
+- **Deep links** — `softwareof://entity/sarah-chen` opens that entity page in preview
+- **Spotlight integration** — index contacts and projects for Spotlight search
+- **Menu bar mini-app** — optional tray icon mode with quick contact lookup
+
+---
+
+## Decisions Log
+
+All major questions resolved before build started.
+
+| Question | Decision |
+|---|---|
+| Icon design | Owner will create — SoY face glyph vectorized in Figma, exported as `.icns` |
+| App name | Dock label: **SoY**. Full name: **Software of You** everywhere else (title bar, Spotlight, About) |
+| Plugin bundling | **Bundle it.** Plugin ships inside `.app`, extracted to `~/.local/share/software-of-you/plugin/` on first run. Developer path override available in Settings. |
+| Windows support | **Out of scope.** macOS only, permanently. |
+
+---
+
+## Source
+
+PRD authored 2026-02-24 via conversation with Claude Sonnet 4.6.
+Architecture discussion preserved in session context.

@@ -27,8 +27,9 @@ All views share a consistent visual language:
 
 ## References
 
-- `references/template-base.html` — the HTML skeleton every view should start from
+- `references/template-base.html` — the HTML skeleton every view should start from (includes delight CSS/JS)
 - `references/component-patterns.md` — reusable snippets for stat cards, tables, timelines, badges
+- `references/delight-patterns.md` — micro-interactions, animations, copy personality, and empty state patterns
 
 ## View Types
 

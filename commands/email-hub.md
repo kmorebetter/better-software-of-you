@@ -22,6 +22,7 @@ If the value is NULL or older than 15 minutes, run the Gmail sync silently befor
 Read these design references in parallel:
 - `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/dashboard-generation/references/template-base.html` — HTML skeleton
 - `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/dashboard-generation/references/navigation-patterns.md` — sidebar patterns
+- `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/dashboard-generation/references/delight-patterns.md` — micro-interactions and delight
 
 At the same time, gather data from `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/data/soy.db`:
 
@@ -210,7 +211,7 @@ Show top contacts by email volume (from the top-contacts query). Each contact sh
 - Needs Response card: `border-l-4 border-amber-400 bg-amber-50/30`
 - Responsive: main content + sidebar stack on mobile via `grid-cols-1 lg:grid-cols-3`
 - All data static in HTML — no JavaScript data fetching
-- The only JS: Lucide icon initialization (`lucide.createIcons()`)
+- JS: Lucide icons + delight layer from template-base.html (countups, scroll reveals, card stagger)
 - Contact name linking: check `generated_views` results — if an entity page exists for a contact, wrap the name in `<a href="filename" class="font-medium text-blue-600 hover:text-blue-800 hover:underline">`. Otherwise render as plain text.
 
 ## Step 3: Write HTML
