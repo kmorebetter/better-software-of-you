@@ -4,6 +4,8 @@
 Finds emails from gemini-notes@google.com, extracts Google Doc links,
 fetches full doc content, and stores raw transcripts for later analysis.
 
+Supports multiple Google accounts — iterates all active accounts.
+
 Usage:
     python3 sync_transcripts.py scan      # Find new Gemini emails → fetch docs → store
     python3 sync_transcripts.py pending   # List unanalyzed transcripts
@@ -15,6 +17,7 @@ import json
 import os
 import re
 import sqlite3
+import subprocess
 import sys
 import urllib.error
 import urllib.parse
@@ -37,16 +40,14 @@ DOC_LINK_RE = re.compile(r"https://docs\.google\.com/document/d/([a-zA-Z0-9_-]+)
 # ── Helpers ──────────────────────────────────────────────────────────────
 
 
-def _get_token():
+def _get_token(email=None):
     """Get a valid OAuth token via google_auth.py."""
     auth_script = os.path.join(PLUGIN_ROOT, "shared", "google_auth.py")
-    import subprocess
+    cmd = [sys.executable, auth_script, "token"]
+    if email:
+        cmd.append(email)
 
-    result = subprocess.run(
-        [sys.executable, auth_script, "token"],
-        capture_output=True,
-        text=True,
-    )
+    result = subprocess.run(cmd, capture_output=True, text=True)
     if result.returncode != 0:
         return None
     token = result.stdout.strip()
@@ -54,6 +55,19 @@ def _get_token():
     if token.startswith("{"):
         return None
     return token
+
+
+def _get_active_accounts():
+    """Get list of active Google accounts from DB."""
+    try:
+        conn = _get_db()
+        rows = conn.execute(
+            "SELECT email FROM google_accounts WHERE status = 'active' ORDER BY is_primary DESC"
+        ).fetchall()
+        conn.close()
+        return [r["email"] for r in rows]
+    except sqlite3.OperationalError:
+        return []
 
 
 def _api_get(url, token):
@@ -154,17 +168,14 @@ def _find_calendar_event(conn, meeting_date_str):
     return row["id"] if row else None
 
 
-# ── Commands ─────────────────────────────────────────────────────────────
+# ── Core Scan Logic ──────────────────────────────────────────────────────
 
 
-def cmd_scan():
-    """Find new Gemini emails, fetch Google Docs, store raw transcripts."""
-    token = _get_token()
-    if not token:
-        print(json.dumps({"error": "Not authenticated. Run /google-setup first."}))
-        sys.exit(1)
+def _scan_with_token(token, conn):
+    """Scan for Gemini emails and fetch transcripts using a specific token.
 
-    conn = _get_db()
+    Returns (imported_list, errors_list).
+    """
     imported = []
     errors = []
 
@@ -179,9 +190,7 @@ def cmd_scan():
     ).fetchall()
 
     if not gemini_emails:
-        print(json.dumps({"imported": 0, "transcripts": [], "errors": []}))
-        conn.close()
-        return
+        return imported, errors
 
     for email in gemini_emails:
         email_id = email["id"]
@@ -215,15 +224,8 @@ def cmd_scan():
                 doc = _api_get(f"{DOCS_API}/{doc_id}", token)
             except urllib.error.HTTPError as e:
                 if e.code == 403:
-                    print(json.dumps({
-                        "needs_reauth": True,
-                        "error": "Google Docs scope not authorized. Re-run /google-setup to grant access.",
-                        "imported": len(imported),
-                        "transcripts": imported,
-                        "errors": errors,
-                    }))
-                    conn.close()
-                    return
+                    # Return early with needs_reauth signal
+                    return imported, [{"needs_reauth": True, "error": "Google Docs scope not authorized."}]
                 raise
 
             raw_text = _extract_doc_text(doc)
@@ -279,8 +281,67 @@ def cmd_scan():
             errors.append({"email_id": email_id, "error": str(e)})
             conn.rollback()
 
+    return imported, errors
+
+
+# ── Commands ─────────────────────────────────────────────────────────────
+
+
+def cmd_scan():
+    """Find new Gemini emails, fetch Google Docs, store raw transcripts.
+
+    Iterates all active Google accounts. Falls back to single token
+    if no accounts are registered.
+    """
+    conn = _get_db()
+    all_imported = []
+    all_errors = []
+    needs_reauth = False
+
+    accounts = _get_active_accounts()
+
+    if accounts:
+        for acct_email in accounts:
+            token = _get_token(email=acct_email)
+            if not token:
+                all_errors.append({"account": acct_email, "error": "Could not get token"})
+                continue
+
+            imported, errors = _scan_with_token(token, conn)
+            all_imported.extend(imported)
+
+            # Check for needs_reauth signal
+            for err in errors:
+                if isinstance(err, dict) and err.get("needs_reauth"):
+                    needs_reauth = True
+            all_errors.extend(errors)
+    else:
+        # Fall back to single token
+        token = _get_token()
+        if not token:
+            print(json.dumps({"error": "Not authenticated. Run /google-setup first."}))
+            conn.close()
+            sys.exit(1)
+
+        imported, errors = _scan_with_token(token, conn)
+        all_imported.extend(imported)
+        for err in errors:
+            if isinstance(err, dict) and err.get("needs_reauth"):
+                needs_reauth = True
+        all_errors.extend(errors)
+
+    # Update scan timestamp
+    conn.execute(
+        "INSERT OR REPLACE INTO soy_meta (key, value, updated_at) VALUES ('transcripts_last_scanned', datetime('now'), datetime('now'))"
+    )
+    conn.commit()
     conn.close()
-    print(json.dumps({"imported": len(imported), "transcripts": imported, "errors": errors}))
+
+    result = {"imported": len(all_imported), "transcripts": all_imported, "errors": all_errors}
+    if needs_reauth:
+        result["needs_reauth"] = True
+        result["error"] = "Google Docs scope not authorized. Re-run /google-setup to grant access."
+    print(json.dumps(result))
 
 
 def cmd_pending():

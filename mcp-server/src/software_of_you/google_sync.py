@@ -2,6 +2,8 @@
 
 Uses only stdlib (urllib) — no google-api-python-client needed.
 Syncs data into the shared SQLite database.
+
+Supports multiple Google accounts via account_email parameter.
 """
 
 import base64
@@ -14,7 +16,11 @@ import urllib.request
 from datetime import datetime, timedelta
 
 from software_of_you.db import execute, execute_many, execute_write
-from software_of_you.google_auth import get_valid_token
+from software_of_you.google_auth import (
+    get_valid_token,
+    list_accounts,
+    migrate_legacy_token,
+)
 
 GMAIL_API = "https://gmail.googleapis.com/gmail/v1/users/me"
 CALENDAR_API = "https://www.googleapis.com/calendar/v3"
@@ -40,13 +46,34 @@ def _get_user_email(token: str) -> str | None:
         return None
 
 
-def sync_gmail(token: str | None = None) -> dict:
-    """Sync recent emails from Gmail."""
-    token = token or get_valid_token()
+def _lookup_account_id(account_email: str | None) -> int | None:
+    """Look up the account_id for an email from google_accounts table."""
+    if not account_email:
+        return None
+    try:
+        rows = execute(
+            "SELECT id FROM google_accounts WHERE email = ?", (account_email,)
+        )
+        return rows[0]["id"] if rows else None
+    except Exception:
+        return None
+
+
+def sync_gmail(token: str | None = None, account_email: str | None = None) -> dict:
+    """Sync recent emails from Gmail.
+
+    Args:
+        token: OAuth access token (fetched automatically if not provided)
+        account_email: Email of the Google account being synced.
+            Used for direction detection (avoids extra API call) and account_id linkage.
+    """
+    token = token or get_valid_token(email=account_email)
     if not token:
         return {"error": "Not authenticated with Google."}
 
-    user_email = _get_user_email(token)
+    # Use account_email for direction detection if available, otherwise call userinfo
+    user_email = account_email or _get_user_email(token)
+    account_id = _lookup_account_id(account_email)
     synced = 0
 
     try:
@@ -59,7 +86,7 @@ def sync_gmail(token: str | None = None) -> dict:
         for msg_ref in messages:
             msg_id = msg_ref["id"]
 
-            # Check if already synced
+            # Check if already synced (dedup by gmail_id)
             existing = execute("SELECT id FROM emails WHERE gmail_id = ?", (msg_id,))
             if existing:
                 continue
@@ -111,36 +138,47 @@ def sync_gmail(token: str | None = None) -> dict:
             statements.append((
                 """INSERT OR IGNORE INTO emails
                    (gmail_id, thread_id, contact_id, direction, from_address, to_addresses,
-                    subject, snippet, labels, is_read, is_starred, received_at, from_name)
-                   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+                    subject, snippet, labels, is_read, is_starred, received_at, from_name, account_id)
+                   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
                 (msg_id, thread_id, contact_id, direction, from_email, to_addr,
                  subject, snippet, labels, 1 if is_read else 0, 1 if is_starred else 0,
-                 received_at, from_name),
+                 received_at, from_name, account_id),
             ))
             synced += 1
 
         if statements:
             execute_many(statements)
 
-        # Update sync timestamp
-        execute_many([(
-            "INSERT OR REPLACE INTO soy_meta (key, value, updated_at) VALUES ('gmail_last_synced', datetime('now'), datetime('now'))",
-            (),
-        )])
+        # Update sync timestamps — per-account and global
+        ts_statements = [
+            ("INSERT OR REPLACE INTO soy_meta (key, value, updated_at) VALUES ('gmail_last_synced', datetime('now'), datetime('now'))", ()),
+        ]
+        if account_email:
+            ts_statements.append((
+                "INSERT OR REPLACE INTO soy_meta (key, value, updated_at) VALUES (?, datetime('now'), datetime('now'))",
+                (f"gmail_last_synced:{account_email}",),
+            ))
+        execute_many(ts_statements)
 
-        return {"synced": synced, "total_checked": len(messages)}
+        return {"synced": synced, "total_checked": len(messages), "account": account_email}
 
     except urllib.error.URLError as e:
         print(f"Gmail sync failed: {e}", file=sys.stderr)
         return {"error": str(e), "synced": synced}
 
 
-def sync_calendar(token: str | None = None) -> dict:
-    """Sync calendar events (next 14 days + last 7 days)."""
-    token = token or get_valid_token()
+def sync_calendar(token: str | None = None, account_email: str | None = None) -> dict:
+    """Sync calendar events (next 14 days + last 7 days).
+
+    Args:
+        token: OAuth access token (fetched automatically if not provided)
+        account_email: Email of the Google account being synced.
+    """
+    token = token or get_valid_token(email=account_email)
     if not token:
         return {"error": "Not authenticated with Google."}
 
+    account_id = _lookup_account_id(account_email)
     synced = 0
     now = datetime.now()
     time_min = (now - timedelta(days=7)).isoformat() + "Z"
@@ -192,29 +230,36 @@ def sync_calendar(token: str | None = None) -> dict:
             statements.append((
                 """INSERT INTO calendar_events
                    (google_event_id, title, description, location, start_time, end_time,
-                    all_day, status, attendees, contact_ids)
-                   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    all_day, status, attendees, contact_ids, account_id)
+                   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                    ON CONFLICT(google_event_id) DO UPDATE SET
                      title=excluded.title, description=excluded.description,
                      location=excluded.location, start_time=excluded.start_time,
                      end_time=excluded.end_time, status=excluded.status,
                      attendees=excluded.attendees, contact_ids=excluded.contact_ids,
+                     account_id=COALESCE(excluded.account_id, calendar_events.account_id),
                      synced_at=datetime('now')""",
                 (event_id, title, description or None, location or None,
                  start_time, end_time, 1 if all_day else 0, status,
-                 attendees, contact_ids_str),
+                 attendees, contact_ids_str, account_id),
             ))
             synced += 1
 
         if statements:
             execute_many(statements)
 
-        execute_many([(
-            "INSERT OR REPLACE INTO soy_meta (key, value, updated_at) VALUES ('calendar_last_synced', datetime('now'), datetime('now'))",
-            (),
-        )])
+        # Update sync timestamps
+        ts_statements = [
+            ("INSERT OR REPLACE INTO soy_meta (key, value, updated_at) VALUES ('calendar_last_synced', datetime('now'), datetime('now'))", ()),
+        ]
+        if account_email:
+            ts_statements.append((
+                "INSERT OR REPLACE INTO soy_meta (key, value, updated_at) VALUES (?, datetime('now'), datetime('now'))",
+                (f"calendar_last_synced:{account_email}",),
+            ))
+        execute_many(ts_statements)
 
-        return {"synced": synced, "total_events": len(events)}
+        return {"synced": synced, "total_events": len(events), "account": account_email}
 
     except urllib.error.URLError as e:
         print(f"Calendar sync failed: {e}", file=sys.stderr)
@@ -277,9 +322,9 @@ def _parse_meeting_date(subject: str) -> str:
     return None
 
 
-def sync_transcripts(token: str | None = None) -> dict:
+def sync_transcripts(token: str | None = None, account_email: str | None = None) -> dict:
     """Scan for new Gemini meeting transcripts and fetch Google Docs."""
-    token = token or get_valid_token()
+    token = token or get_valid_token(email=account_email)
     if not token:
         return {"error": "Not authenticated with Google."}
 
@@ -395,24 +440,82 @@ def sync_transcripts(token: str | None = None) -> dict:
             (),
         )])
 
-        return {"imported": imported, "errors": errors}
+        return {"imported": imported, "errors": errors, "account": account_email}
 
     except urllib.error.URLError as e:
         print(f"Transcript sync failed: {e}", file=sys.stderr)
         return {"error": str(e), "imported": imported}
 
 
-def sync_service(service: str) -> dict:
-    """Sync a specific service. Used by auto-sync."""
-    token = get_valid_token()
+def sync_all_accounts() -> dict:
+    """Sync Gmail, Calendar, and Transcripts for all connected Google accounts.
+
+    Falls back to legacy single-token behavior if no accounts are registered.
+    """
+    # Auto-migrate legacy token if present
+    migrate_legacy_token()
+
+    accounts = list_accounts()
+    results = {}
+
+    if accounts:
+        active_accounts = [a for a in accounts if a["status"] == "active"]
+        for acct in active_accounts:
+            acct_email = acct["email"]
+            token = get_valid_token(email=acct_email)
+            if not token:
+                results[acct_email] = {"error": "Could not get valid token"}
+                continue
+
+            acct_results = {}
+            for name, fn in [("gmail", sync_gmail), ("calendar", sync_calendar), ("transcripts", sync_transcripts)]:
+                try:
+                    acct_results[name] = fn(token=token, account_email=acct_email)
+                except Exception as e:
+                    acct_results[name] = {"error": str(e)}
+
+            # Update last_synced_at on the account
+            try:
+                execute_write(
+                    "UPDATE google_accounts SET last_synced_at = datetime('now') WHERE email = ?",
+                    (acct_email,),
+                )
+            except Exception:
+                pass
+
+            results[acct_email] = acct_results
+    else:
+        # Fall back to legacy single-token behavior
+        token = get_valid_token()
+        if not token:
+            return {"status": "skipped", "reason": "Google not connected"}
+
+        legacy_results = {}
+        for name, fn in [("gmail", sync_gmail), ("calendar", sync_calendar), ("transcripts", sync_transcripts)]:
+            try:
+                legacy_results[name] = fn(token)
+            except Exception as e:
+                legacy_results[name] = {"error": str(e)}
+        results["legacy"] = legacy_results
+
+    return {"status": "ok", "accounts_synced": len(results), "results": results}
+
+
+def sync_service(service: str, account_email: str | None = None) -> dict:
+    """Sync a specific service. Used by auto-sync.
+
+    If account_email is provided, syncs only that account.
+    Otherwise uses default token resolution.
+    """
+    token = get_valid_token(email=account_email)
     if not token:
         return {"error": "Not authenticated."}
 
     if service == "gmail":
-        return sync_gmail(token)
+        return sync_gmail(token, account_email=account_email)
     elif service == "calendar":
-        return sync_calendar(token)
+        return sync_calendar(token, account_email=account_email)
     elif service == "transcripts":
-        return sync_transcripts(token)
+        return sync_transcripts(token, account_email=account_email)
     else:
         return {"error": f"Unknown service: {service}"}

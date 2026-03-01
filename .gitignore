@@ -5,6 +5,8 @@ data/soy.db-shm
 output/*.html
 config/google_token.json
 config/google_credentials.json
+tokens/
+data/tokens/
 .DS_Store
 client_secret_*.json
 __pycache__/

@@ -65,22 +65,10 @@ import json, os, sys
 plugin_root = os.environ["CLAUDE_PLUGIN_ROOT"]
 sys.path.insert(0, os.path.join(plugin_root, "mcp-server", "src"))
 
-from software_of_you.google_auth import get_valid_token
-from software_of_you.google_sync import sync_gmail, sync_calendar, sync_transcripts
+from software_of_you.google_sync import sync_all_accounts
 
-token = get_valid_token()
-if not token:
-    print(json.dumps({"status": "skipped", "reason": "Google not connected"}))
-    sys.exit(0)
-
-results = {}
-for name, fn in [("gmail", sync_gmail), ("calendar", sync_calendar), ("transcripts", sync_transcripts)]:
-    try:
-        results[name] = fn(token)
-    except Exception as e:
-        results[name] = {"error": str(e)}
-
-print(json.dumps({"status": "ok", "results": results}))
+result = sync_all_accounts()
+print(json.dumps(result))
 ' 2>&1) || true
 
 if [[ -z "${sync_result}" ]]; then

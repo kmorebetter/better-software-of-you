@@ -23,6 +23,7 @@ OUTPUT_LINK="$PLUGIN_ROOT/output"
 
 # Create directories
 mkdir -p "$DATA_HOME"
+mkdir -p "$DATA_HOME/tokens"
 mkdir -p "$OUTPUT_REAL"
 mkdir -p "$PLUGIN_ROOT/data"
 mkdir -p "$PLUGIN_ROOT/config"

@@ -30,6 +30,19 @@
 -- Module registry
 -- modules(name TEXT PK, version TEXT, installed_at TEXT, enabled INTEGER)
 
+-- Google Accounts (multi-account support)
+-- google_accounts(id INTEGER PK, email TEXT NOT NULL UNIQUE, label TEXT NOT NULL,
+--   display_name TEXT, token_file TEXT NOT NULL,
+--   is_primary INTEGER NOT NULL DEFAULT 0,
+--   connected_at TEXT DEFAULT datetime('now'),
+--   last_synced_at TEXT,
+--   status TEXT ['active','disconnected','error'])
+-- Tokens stored in ~/.local/share/software-of-you/tokens/<email>.json
+
+-- User profile
+-- user_profile(category TEXT, key TEXT, value TEXT, source TEXT, updated_at TEXT)
+--   PK: (category, key)
+
 
 -- === CRM MODULE ===
 
@@ -75,3 +88,26 @@
 --   name TEXT, description TEXT, target_date TEXT, completed_date TEXT,
 --   status TEXT ['pending','completed','missed'],
 --   created_at TEXT)
+
+
+-- === GMAIL MODULE ===
+
+-- Emails
+-- emails(id INTEGER PK, gmail_id TEXT UNIQUE, thread_id TEXT,
+--   contact_id INTEGER FK→contacts, direction TEXT ['inbound','outbound'],
+--   from_address TEXT, from_name TEXT, to_addresses TEXT,
+--   subject TEXT, snippet TEXT, labels TEXT,
+--   is_read INTEGER, is_starred INTEGER,
+--   received_at TEXT, created_at TEXT,
+--   account_id INTEGER FK→google_accounts)  -- NULL = pre-multi-account
+
+
+-- === CALENDAR MODULE ===
+
+-- Calendar Events
+-- calendar_events(id INTEGER PK, google_event_id TEXT UNIQUE,
+--   title TEXT, description TEXT, location TEXT,
+--   start_time TEXT, end_time TEXT, all_day INTEGER,
+--   status TEXT, attendees TEXT (JSON), contact_ids TEXT (JSON),
+--   project_id INTEGER FK→projects, synced_at TEXT,
+--   account_id INTEGER FK→google_accounts)  -- NULL = pre-multi-account
