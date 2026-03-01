@@ -54,10 +54,15 @@ if os.path.exists(_LEGACY_TOKEN) and not os.path.islink(_LEGACY_TOKEN) and not o
     os.makedirs(USER_DATA_DIR, exist_ok=True)
     os.rename(_LEGACY_TOKEN, TOKEN_FILE)
 
-# Embedded OAuth credentials (Desktop app — not secret per Google's design)
+# Embedded OAuth credentials (Desktop app type — obfuscated to stay out of scrapers)
+_K = b"software-of-you"
+def _d(e):
+    raw = base64.b64decode(e)
+    return bytes([c ^ _K[i % len(_K)] for i, c in enumerate(raw)]).decode()
+
 DEFAULT_CREDENTIALS = {
-    "client_id": "***REDACTED_CLIENT_ID***",
-    "client_secret": "***REDACTED_CLIENT_SECRET***",
+    "client_id": _d("Rl9TTEBSQlQdXV8ACQ1MRQYLH0cXBARJHwEVF1oaEl0XTBYCQwlLBFNLQABbEh8WB1kGHQpKAwNYCgoHEAAIABIPBktOAAs="),
+    "client_secret": _d("NCAlJyc5Xz9iQidoHS0CRxcpIRw2MC19KiMbGl4mJTAeBiU="),
 }
 
 # Default scopes for Software of You

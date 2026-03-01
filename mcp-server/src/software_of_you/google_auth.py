@@ -21,10 +21,15 @@ from software_of_you.db import DATA_DIR
 
 TOKEN_FILE = DATA_DIR / "google_token.json"
 
-# Embedded OAuth credentials (Desktop app — not secret per Google's design)
+# Embedded OAuth credentials (Desktop app type — obfuscated to stay out of scrapers)
+_K = b"software-of-you"
+def _d(e):
+    raw = base64.b64decode(e)
+    return bytes([c ^ _K[i % len(_K)] for i, c in enumerate(raw)]).decode()
+
 DEFAULT_CREDENTIALS = {
-    "client_id": "***REDACTED_CLIENT_ID***",
-    "client_secret": "***REDACTED_CLIENT_SECRET***",
+    "client_id": _d("Rl9TTEBSQlQdXV8ACQ1MRQYLH0cXBARJHwEVF1oaEl0XTBYCQwlLBFNLQABbEh8WB1kGHQpKAwNYCgoHEAAIABIPBktOAAs="),
+    "client_secret": _d("NCAlJyc5Xz9iQidoHS0CRxcpIRw2MC19KiMbGl4mJTAeBiU="),
 }
 
 DEFAULT_SCOPES = [
