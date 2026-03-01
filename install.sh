@@ -28,7 +28,9 @@ if ! command -v git &>/dev/null; then
 fi
 
 if ! command -v sqlite3 &>/dev/null; then
-  echo "  ✗ sqlite3 is required (usually pre-installed)."
+  echo "  ✗ sqlite3 is required. Install it first."
+  echo "    Mac: brew install sqlite3"
+  echo "    Linux: sudo apt install sqlite3"
   exit 1
 fi
 
