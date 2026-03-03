@@ -190,6 +190,18 @@ def _get(project_id):
         "SELECT * FROM milestones WHERE project_id = ? ORDER BY target_date ASC NULLS LAST",
         (project_id,),
     )
+    decisions = execute(
+        "SELECT * FROM decisions WHERE project_id = ? ORDER BY decided_at DESC",
+        (project_id,),
+    )
+    notes = execute(
+        "SELECT * FROM standalone_notes WHERE linked_projects LIKE ?",
+        (f'%{project_id}%',),
+    )
+    analysis_items = execute(
+        "SELECT * FROM project_analysis_items WHERE project_id = ? AND status != 'dismissed'",
+        (project_id,),
+    )
 
     task_stats = {"todo": 0, "in_progress": 0, "done": 0, "blocked": 0}
     for t in tasks:
@@ -201,13 +213,17 @@ def _get(project_id):
         "result": rows_to_dicts(project)[0],
         "tasks": rows_to_dicts(tasks),
         "milestones": rows_to_dicts(milestones),
+        "decisions": rows_to_dicts(decisions),
+        "notes": rows_to_dicts(notes),
+        "analysis_items": rows_to_dicts(analysis_items),
         "task_stats": task_stats,
         "_context": {
             "suggestions": [
                 "Show task breakdown with status indicators",
                 "Highlight overdue tasks and milestones",
+                "Review decisions and architecture notes",
             ],
-            "presentation": "Show project overview with inline task checklist.",
+            "presentation": "Show project overview with tasks, decisions, notes, and analysis items.",
         },
     }
 

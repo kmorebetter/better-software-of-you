@@ -75,6 +75,26 @@ ORDER BY created_at DESC LIMIT 20;
 SELECT t.name, t.color FROM tags t
 JOIN entity_tags et ON et.tag_id = t.id
 WHERE et.entity_type = 'project' AND et.entity_id = ?;
+
+-- Decisions for this project
+SELECT id, title, decision, context, rationale, status, decided_at
+FROM decisions WHERE project_id = ?
+ORDER BY decided_at DESC;
+
+-- Standalone notes linked to this project (architecture notes, Claude prompts, etc.)
+SELECT id, title, content, tags, created_at
+FROM standalone_notes WHERE linked_projects LIKE '%' || ? || '%'
+ORDER BY created_at DESC;
+
+-- Open/non-dismissed analysis items
+SELECT id, category, title, description, priority, status, grounded_in
+FROM project_analysis_items WHERE project_id = ? AND status != 'dismissed'
+ORDER BY CASE priority WHEN 'critical' THEN 1 WHEN 'high' THEN 2 WHEN 'medium' THEN 3 ELSE 4 END;
+
+-- PM conversation summaries
+SELECT id, title, summary, source, message_count, occurred_at
+FROM pm_conversations WHERE project_id = ?
+ORDER BY occurred_at DESC;
 ```
 
 ### If CRM module installed (and client exists):
@@ -223,11 +243,13 @@ Two-column grid (lg:grid-cols-3)
 │   ├── Project Status card (narrative)
 │   ├── Client Relationship card (if client exists)
 │   ├── Task Checklist (grouped by status: in_progress first, then todo, then blocked, then done collapsed)
+│   ├── Decisions Timeline card (if decisions exist — chronological list with status badges)
 │   └── Email Thread card (if emails exist — expanded per-message view, same style as entity page)
 └── Right column
     ├── Milestones timeline (checkmarks for completed, circles for upcoming, red for overdue)
     ├── Risk Assessment card (with risk level badge)
     ├── What's Next card (prioritized action items)
+    ├── Architecture Notes card (if any standalone_notes tagged "architecture" exist — topic + detail)
     └── Upcoming Events card (if calendar data)
 
 Activity Timeline (full width — recent project activity with icons)
@@ -245,7 +267,7 @@ Footer
 - Risk level badge: emerald for low, amber for medium, red for high
 - Task checklist: checkmarks (`text-emerald-500`) for done, squares (`text-blue-500`) for in-progress, circles (`text-zinc-300`) for todo, alert triangles (`text-red-500`) for blocked
 - Client name linked to entity page: check `generated_views` for the contact, link if exists
-- All data static in HTML — no JavaScript data fetching
+- Initial render is static HTML; JS live-update layer takes over after first fetch (see Step 5b)
 - JS: Lucide icons + delight layer from template-base.html (countups, scroll reveals, card stagger)
 - Responsive: sidebar stacks below on mobile via `grid-cols-1 lg:grid-cols-3`
 
@@ -256,12 +278,49 @@ Footer
 - **Highlight what matters now.** Overdue tasks and missed milestones should be visually prominent with red/amber accents.
 - **Tasks are scannable.** Group by status with clear visual differentiation. Done tasks can be collapsed or shown at reduced opacity.
 - **Milestones tell a timeline story.** Show them vertically with a connecting line, completed ones checked off, upcoming ones open.
+- **Decisions Timeline** (conditional — only if decisions exist). Show as a chronological list with status badges (decided=emerald, revisit=amber, open=blue). Each entry: title, decision text, decided_at date. Use a vertical timeline layout similar to milestones.
+- **Architecture Notes** (conditional — only if standalone_notes with tag "architecture" exist). Show as compact cards with topic as header and detail text below. Useful as a quick reference for developers.
+
+## Step 5b: Add Live Update Layer
+
+The generated HTML must include dynamic container IDs and polling JS so the page auto-updates when data changes (e.g., dev Claude marks a task done via MCP).
+
+### Dynamic Container IDs
+
+The following elements MUST have these attributes/IDs so JS can target them:
+
+| Element | Attribute | Purpose |
+|---------|-----------|---------|
+| `<main>` | `data-project-id="{id}"` | JS reads project ID for API calls |
+| Progress bar section | `id="progress-section"` | Re-rendered on update |
+| Task count pill number | `id="stat-tasks-count"` | Updated via textContent |
+| Decisions count pill number | `id="stat-decisions-count"` | Updated via textContent |
+| Task checklist content | `id="task-checklist"` | Re-rendered on update |
+| Decisions timeline content | `id="decisions-timeline"` | Re-rendered on update |
+| Activity timeline content | `id="activity-timeline"` | Re-rendered on update |
+
+### Static Sections (NOT live-updated)
+
+These stay as Claude-generated static HTML — they're narrative synthesis that ages slowly:
+- Project header (name, badges, description), Project Status card, Client Relationship card
+- Risk Assessment card, What's Next card, Architecture Notes card, Milestones timeline
+
+### Polling JS
+
+Add at the end of `<script>`, after delight initialization:
+
+1. **Fetch on load + every 3 seconds** — `setInterval(fetchProject, 3000)` hitting `GET /api/projects/{id}`
+2. **Hash-based diffing** — compare `JSON.stringify(data)` to skip re-render when nothing changed (prevents DOM churn, preserves scroll)
+3. **Render functions** — `renderTasks(tasks)`, `renderProgressBar(stats)`, `renderStatPills(stats, decisions)`, `renderDecisions(decisions)`, `renderActivity(activity)`, then call `lucide.createIcons()`
+4. **Click-to-toggle** — clicking a todo/in_progress task sends `PATCH /api/tasks/{id}` with `{"status":"done"}`; clicking a done task sends `{"status":"todo"}`. Re-fetch immediately after
+5. **Server offline handling** — fetch catch block is a no-op (shows last known data)
+6. **Delight preservation** — `delight-card` class stays on parent wrappers (not replaced by JS). Progress bar uses `transition-all duration-500` for smooth width changes. `initCountups()` runs once on load; after that, stat numbers update via `textContent` only
 
 ## Step 6: Add Navigation
 
 Include the sidebar from `navigation-patterns.md` with this project highlighted in the Projects section. The Projects section auto-expands with this project's `.sidebar-entity` having the `active` class.
 
-## Step 7: Write, Register, and Open
+## Step 7: Write and Register
 
 Generate a filename slug from the project name (lowercase, hyphens for spaces).
 
@@ -276,6 +335,8 @@ ON CONFLICT(filename) DO UPDATE SET
   updated_at = datetime('now');
 ```
 
-Open with: `open "${CLAUDE_PLUGIN_ROOT:-$(pwd)}/output/project-{slug}.html"`
+## Step 8: Open and Confirm
+
+Open with: `bash "${CLAUDE_PLUGIN_ROOT:-$(pwd)}/shared/open_page.sh" project-{slug}.html`
 
 Tell the user: "Project page for **{project name}** opened." Then briefly summarize what's on it — e.g., "Shows 12/18 tasks complete, client relationship context with Sarah, 2 overdue tasks flagged as risks, and 4 prioritized next actions."

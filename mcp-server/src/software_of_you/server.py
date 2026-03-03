@@ -88,6 +88,8 @@ def create_server() -> FastMCP:
     from software_of_you.tools.email_tool import register as register_email
     from software_of_you.tools.calendar_tool import register as register_calendar
     from software_of_you.tools.views import register as register_views
+    from software_of_you.tools.dev_log import register as register_dev_log
+    from software_of_you.tools.session_debrief import register as register_session_debrief
 
     register_contacts(server)
     register_interactions(server)
@@ -103,5 +105,7 @@ def create_server() -> FastMCP:
     register_email(server)
     register_calendar(server)
     register_views(server)
+    register_dev_log(server)
+    register_session_debrief(server)
 
     return server
