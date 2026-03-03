@@ -66,6 +66,7 @@ Then suggest:
 - **"Port 8089 already in use"** → another process is using that port. Ask the user to close it or wait a moment.
 - **"Token exchange failed"** → try running `/google-setup` again. If it keeps failing, the OAuth app may need its consent screen published in Google Cloud Console.
 - **"Access denied"** → the user didn't click Allow. Ask them to try again.
+- **"Refresh token revoked" / `needs_reauth`** → the account's refresh token was revoked (password change, manual revocation, etc.). Run `/google-setup` to re-authenticate.
 
 ## Scope Upgrade (Google Docs access)
 
@@ -73,7 +74,10 @@ If the user gets a 403 error when fetching Google Docs (e.g., from `/sync-transc
 
 Tell the user: "I need read access to Google Docs for transcript fetching. Re-running the sign-in flow will add this permission."
 
-Then run the full auth flow from Step 2 above. The `prompt=consent` parameter forces Google to re-show the consent screen with all scopes, including the new Docs scope.
+Then run the auth flow with `--force-consent` to force the consent screen (needed to grant new scopes and get a fresh refresh token):
+```
+python3 "${CLAUDE_PLUGIN_ROOT:-$(pwd)}/shared/google_auth.py" auth --force-consent
+```
 
 ## Revoking Access
 

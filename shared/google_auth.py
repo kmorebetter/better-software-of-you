@@ -13,7 +13,7 @@ Usage:
     python3 google_auth.py auth --scopes gmail.readonly,gmail.send,calendar.readonly,calendar.events
 
     # Get a valid access token (refreshes if expired)
-    python3 google_auth.py token [email]
+    python3 google_auth.py token [email_or_account_id]
 
     # List connected accounts
     python3 google_auth.py accounts
@@ -172,15 +172,23 @@ def load_token(email=None):
 
 
 def save_token(token_data, email=None):
-    """Save token to disk. If email given, save to tokens/ dir."""
+    """Save token to disk. If email given, save to tokens/ dir.
+
+    Sets restrictive file permissions (owner-only read/write) per Google
+    OAuth best practices for token storage security.
+    """
     if email:
-        os.makedirs(TOKENS_DIR, exist_ok=True)
+        os.makedirs(TOKENS_DIR, mode=0o700, exist_ok=True)
+        os.chmod(TOKENS_DIR, 0o700)  # makedirs won't fix existing dir perms
         path = _token_path_for(email)
     else:
-        os.makedirs(os.path.dirname(LEGACY_TOKEN_FILE), exist_ok=True)
+        parent = os.path.dirname(LEGACY_TOKEN_FILE)
+        os.makedirs(parent, mode=0o700, exist_ok=True)
+        os.chmod(parent, 0o700)
         path = LEGACY_TOKEN_FILE
     token_data["saved_at"] = int(time.time())
-    with open(path, "w") as f:
+    fd = os.open(path, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600)
+    with os.fdopen(fd, "w") as f:
         json.dump(token_data, f, indent=2)
 
 
@@ -195,7 +203,12 @@ def is_token_expired(token_data):
 
 
 def refresh_access_token(token_data, credentials, email=None):
-    """Use refresh token to get a new access token."""
+    """Use refresh token to get a new access token.
+
+    Handles token revocation gracefully — if Google rejects the refresh
+    token (invalid_grant), marks the account as needing re-auth rather
+    than silently failing.
+    """
     refresh_token = token_data.get("refresh_token")
     if not refresh_token:
         return None
@@ -215,8 +228,36 @@ def refresh_access_token(token_data, credentials, email=None):
         new_data["refresh_token"] = refresh_token
         save_token(new_data, email=email)
         return new_data
+    except urllib.error.HTTPError as e:
+        try:
+            body = e.read().decode()
+        except Exception:
+            body = ""
+        if "invalid_grant" in body:
+            # Refresh token revoked or expired — need full re-auth
+            acct_label = email or "this account"
+            print(json.dumps({
+                "error": f"Refresh token revoked for {acct_label}. Run /google-setup to re-authenticate.",
+                "needs_reauth": True,
+                "email": email,
+            }), file=sys.stderr)
+            # Mark account as errored in DB (status CHECK allows 'error')
+            if email:
+                try:
+                    conn = _get_db()
+                    conn.execute(
+                        "UPDATE google_accounts SET status = 'error' WHERE email = ?",
+                        (email,),
+                    )
+                    conn.commit()
+                    conn.close()
+                except sqlite3.Error:
+                    pass
+        else:
+            print(json.dumps({"error": f"Token refresh failed: {e}"}), file=sys.stderr)
+        return None
     except urllib.error.URLError as e:
-        print(json.dumps({"error": f"Token refresh failed: {e}"}), file=sys.stderr)
+        print(json.dumps({"error": f"Token refresh failed (network): {e}"}), file=sys.stderr)
         return None
 
 
@@ -421,17 +462,25 @@ class OAuthCallbackHandler(BaseHTTPRequestHandler):
             self.send_response(400)
             self.send_header("Content-type", "text/html")
             self.end_headers()
-            self.wfile.write(f"<html><body>Auth failed: {params['error'][0]}</body></html>".encode())
+            import html
+            safe_error = html.escape(params['error'][0])
+            self.wfile.write(f"<html><body>Auth failed: {safe_error}</body></html>".encode())
 
     def log_message(self, format, *args):
         pass  # Suppress server logs
 
 
-def run_auth_flow(scopes=None):
+def run_auth_flow(scopes=None, force_consent=False):
     """Run the full OAuth authorization flow.
 
     After getting the token, auto-detects the account email,
     saves to per-account path, and registers in the DB.
+
+    Args:
+        scopes: OAuth scopes to request. Defaults to DEFAULT_SCOPES.
+        force_consent: If True, forces the consent screen (needed for scope
+            upgrades to get a new refresh token). Otherwise uses
+            select_account for a cleaner re-auth experience.
     """
     credentials = load_credentials()
 
@@ -445,13 +494,15 @@ def run_auth_flow(scopes=None):
     ).rstrip(b"=").decode()
 
     # Build authorization URL
+    # Use "consent" only when upgrading scopes (forces new refresh token).
+    # Otherwise "select_account" gives a clean experience for verified apps.
     auth_params = {
         "client_id": credentials["client_id"],
         "redirect_uri": REDIRECT_URI,
         "response_type": "code",
         "scope": " ".join(scopes),
         "access_type": "offline",
-        "prompt": "consent",
+        "prompt": "consent" if force_consent else "select_account",
         "code_challenge": code_challenge,
         "code_challenge_method": "S256",
     }
@@ -498,6 +549,12 @@ def run_auth_flow(scopes=None):
         email, display_name = _get_user_email(access_token) if access_token else (None, None)
 
         if email:
+            # Preserve existing refresh token if Google didn't return one
+            # (happens with prompt=select_account on re-auth)
+            if "refresh_token" not in token_data:
+                existing = load_token(email=email)
+                if existing and "refresh_token" in existing:
+                    token_data["refresh_token"] = existing["refresh_token"]
             save_token(token_data, email=email)
             token_file = _email_to_filename(email)
             acct_info = register_account(email, display_name, token_file)
@@ -628,6 +685,35 @@ def revoke_token(email=None):
         print(json.dumps({"message": "Google access revoked. Token removed."}))
 
 
+def _resolve_account(identifier):
+    """Resolve an account identifier to an email address.
+
+    Accepts: email address, numeric account ID, or None (returns None for
+    default resolution in get_valid_token).
+    """
+    if identifier is None:
+        return None
+    # If it looks like an email, return as-is
+    if "@" in identifier:
+        return identifier
+    # Try as numeric account ID
+    try:
+        acct_id = int(identifier)
+    except ValueError:
+        return identifier  # Not a number, treat as email
+    try:
+        conn = _get_db()
+        row = conn.execute(
+            "SELECT email FROM google_accounts WHERE id = ?", (acct_id,)
+        ).fetchone()
+        conn.close()
+        if row:
+            return row["email"]
+    except sqlite3.OperationalError:
+        pass
+    return identifier
+
+
 def main():
     if len(sys.argv) < 2:
         print(json.dumps({"error": "Usage: google_auth.py [auth|token|status|revoke|accounts]"}))
@@ -637,16 +723,19 @@ def main():
 
     if command == "auth":
         scopes = None
-        if len(sys.argv) > 3 and sys.argv[2] == "--scopes":
-            scope_names = sys.argv[3].split(",")
+        force_consent = "--force-consent" in sys.argv
+        remaining = [a for a in sys.argv[2:] if a != "--force-consent"]
+        if len(remaining) >= 2 and remaining[0] == "--scopes":
+            scope_names = remaining[1].split(",")
             scopes = [
                 f"https://www.googleapis.com/auth/{s}" if not s.startswith("https://") else s
                 for s in scope_names
             ]
-        run_auth_flow(scopes)
+        run_auth_flow(scopes, force_consent=force_consent)
 
     elif command == "token":
-        email = sys.argv[2] if len(sys.argv) > 2 else None
+        identifier = sys.argv[2] if len(sys.argv) > 2 else None
+        email = _resolve_account(identifier)
         token = get_valid_token(email=email)
         if token:
             print(token)
@@ -661,7 +750,8 @@ def main():
         cmd_accounts()
 
     elif command == "revoke":
-        email = sys.argv[2] if len(sys.argv) > 2 else None
+        identifier = sys.argv[2] if len(sys.argv) > 2 else None
+        email = _resolve_account(identifier)
         revoke_token(email=email)
 
     else:
