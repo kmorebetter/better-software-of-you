@@ -231,7 +231,7 @@ ON CONFLICT(filename) DO UPDATE SET updated_at = datetime('now');
 Open the file:
 
 ```
-open "${CLAUDE_PLUGIN_ROOT:-$(pwd)}/output/email-hub.html"
+bash "${CLAUDE_PLUGIN_ROOT:-$(pwd)}/shared/open_page.sh" email-hub.html
 ```
 
 Tell the user: "Email Hub opened. X threads, Y unread, Z need a response."

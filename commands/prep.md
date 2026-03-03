@@ -451,6 +451,6 @@ INSERT INTO activity_log (entity_type, entity_id, action, details, created_at)
 VALUES ('calendar_event', ?, 'prep_generated', 'Generated meeting prep brief for: {event title}', datetime('now'));
 ```
 
-Open with: `open "${CLAUDE_PLUGIN_ROOT:-$(pwd)}/output/prep-{slug}.html"`
+Open with: `bash "${CLAUDE_PLUGIN_ROOT:-$(pwd)}/shared/open_page.sh" prep-{slug}.html`
 
 Tell the user: "Prep brief for **{event title}** opened." Then briefly summarize what's on it — e.g., "Shows 2 attendees, 3 open commitments, talking points from your last call, and an unanswered email thread."

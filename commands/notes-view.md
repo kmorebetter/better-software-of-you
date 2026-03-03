@@ -372,6 +372,6 @@ VALUES ('module_view', 'module', NULL, 'Notes', 'notes.html')
 ON CONFLICT(filename) DO UPDATE SET updated_at = datetime('now');
 ```
 
-Open: `open "${CLAUDE_PLUGIN_ROOT:-$(pwd)}/output/notes.html"`
+Open: `bash "${CLAUDE_PLUGIN_ROOT:-$(pwd)}/shared/open_page.sh" notes.html`
 
 Tell user: "Notes view opened. X notes total, Y pinned." Then briefly mention top tags or most referenced contacts if data exists.

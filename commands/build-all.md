@@ -233,7 +233,7 @@ Generate the dashboard LAST so it can link to all the pages generated above:
 
 After everything is generated, open the dashboard:
 ```
-open "${CLAUDE_PLUGIN_ROOT:-$(pwd)}/output/dashboard.html"
+bash "${CLAUDE_PLUGIN_ROOT:-$(pwd)}/shared/open_page.sh" dashboard.html
 ```
 
 ## Step 7: Report

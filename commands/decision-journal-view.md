@@ -255,6 +255,6 @@ VALUES ('module_view', 'module', NULL, 'Decision Journal', 'decision-journal.htm
 ON CONFLICT(filename) DO UPDATE SET updated_at = datetime('now');
 ```
 
-Open with: `open "${CLAUDE_PLUGIN_ROOT:-$(pwd)}/output/decision-journal.html"`
+Open with: `bash "${CLAUDE_PLUGIN_ROOT:-$(pwd)}/shared/open_page.sh" decision-journal.html`
 
 Tell the user: "Decision Journal opened." Then briefly summarize what's shown — e.g., "Shows 12 decisions: 5 validated, 2 regretted, 3 need review. Grouped by month from February 2026 back to October 2025."

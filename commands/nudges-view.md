@@ -316,6 +316,6 @@ VALUES ('module_view', 'module', NULL, 'Nudges', 'nudges.html')
 ON CONFLICT(filename) DO UPDATE SET updated_at = datetime('now');
 ```
 
-Open with: `open "${CLAUDE_PLUGIN_ROOT:-$(pwd)}/output/nudges.html"`
+Open with: `bash "${CLAUDE_PLUGIN_ROOT:-$(pwd)}/shared/open_page.sh" nudges.html`
 
 Tell the user: "Nudges view opened." Then summarize: "X urgent, Y upcoming, Z worth a look." or "All clear — nothing needs your attention."

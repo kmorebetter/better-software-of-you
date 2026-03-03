@@ -232,8 +232,23 @@ When generating HTML dashboards or views:
 - Use Lucide icons via CDN
 - Use Inter font from Google Fonts
 - Clean, minimal design — white background, zinc/slate color palette, card-based layout
-- Open the file with `open <filepath>` after writing
 - Refer to the `skills/dashboard-generation/` skill for design system reference
+
+## Opening Pages
+
+**Always use `open_page.sh` to open generated HTML pages** — never use `open` directly. This routes pages through the SoY server, which injects the sidebar navigation into every page.
+
+```bash
+bash "${CLAUDE_PLUGIN_ROOT:-$(pwd)}/shared/open_page.sh" <filename>
+```
+
+The script auto-starts the server if it's not running, then opens the page at `http://localhost:8787/pages/<filename>`.
+
+**Variants:**
+- No arguments → opens the hub: `bash "${CLAUDE_PLUGIN_ROOT:-$(pwd)}/shared/open_page.sh"`
+- Audition board → routes to `/auditions`: `bash "${CLAUDE_PLUGIN_ROOT:-$(pwd)}/shared/open_page.sh" audition-board.html`
+- Shared/client-safe pages → routes to `/share/`: `bash "${CLAUDE_PLUGIN_ROOT:-$(pwd)}/shared/open_page.sh" --share <filename>`
+- Falls back to direct file open if the server can't start
 
 ## Style
 

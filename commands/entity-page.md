@@ -386,6 +386,6 @@ ON CONFLICT(filename) DO UPDATE SET
   updated_at = datetime('now');
 ```
 
-Open with: `open "${CLAUDE_PLUGIN_ROOT:-$(pwd)}/output/contact-{slug}.html"`
+Open with: `bash "${CLAUDE_PLUGIN_ROOT:-$(pwd)}/shared/open_page.sh" contact-{slug}.html`
 
 Tell the user: "Contact page for **{contact name}** opened." Then briefly summarize what's on it — e.g., "Shows relationship context from Vahid's intro, 6-email thread, upcoming discovery call, and 5 prep questions."

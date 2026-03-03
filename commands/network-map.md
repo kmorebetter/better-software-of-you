@@ -390,6 +390,6 @@ VALUES ('network_map', NULL, NULL, 'Network Map', 'network-map.html')
 ON CONFLICT(filename) DO UPDATE SET updated_at = datetime('now');
 ```
 
-Open with: `open "${CLAUDE_PLUGIN_ROOT:-$(pwd)}/output/network-map.html"`
+Open with: `bash "${CLAUDE_PLUGIN_ROOT:-$(pwd)}/shared/open_page.sh" network-map.html`
 
 Tell the user: "Network map opened. X contacts, Y connections. Hover to explore, click to open entity pages, drag to rearrange."

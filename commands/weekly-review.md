@@ -386,6 +386,6 @@ VALUES ('module_view', 'module', NULL, 'Weekly Review', 'weekly-review.html')
 ON CONFLICT(filename) DO UPDATE SET updated_at = datetime('now');
 ```
 
-Open with: `open "${CLAUDE_PLUGIN_ROOT:-$(pwd)}/output/weekly-review.html"`
+Open with: `bash "${CLAUDE_PLUGIN_ROOT:-$(pwd)}/shared/open_page.sh" weekly-review.html`
 
 Tell the user: "Weekly review opened." Then briefly summarize highlights — e.g., "Touched 5 contacts, attended 3 meetings, completed 4 tasks. 2 follow-ups due next week."

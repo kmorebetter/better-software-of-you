@@ -248,6 +248,6 @@ VALUES ('module_view', 'module', NULL, 'Conversations', 'conversations.html')
 ON CONFLICT(filename) DO UPDATE SET updated_at = datetime('now');
 ```
 
-Open with: `open "${CLAUDE_PLUGIN_ROOT:-$(pwd)}/output/conversations.html"`
+Open with: `bash "${CLAUDE_PLUGIN_ROOT:-$(pwd)}/shared/open_page.sh" conversations.html`
 
 Tell the user: "Conversations view opened." Then briefly summarize what's on it — e.g., "Shows 5 transcripts, 3 open commitments (2 yours), and relationship health for 4 contacts."

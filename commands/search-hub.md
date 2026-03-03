@@ -549,6 +549,6 @@ VALUES ('module_view', 'module', NULL, 'Search', 'search.html')
 ON CONFLICT(filename) DO UPDATE SET updated_at = datetime('now');
 ```
 
-Open with: `open "${CLAUDE_PLUGIN_ROOT:-$(pwd)}/output/search.html"`
+Open with: `bash "${CLAUDE_PLUGIN_ROOT:-$(pwd)}/shared/open_page.sh" search.html`
 
 Tell the user: "Search hub opened. Indexed X contacts, Y emails, Z projects across all modules."

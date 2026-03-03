@@ -415,6 +415,6 @@ VALUES ('dashboard', NULL, NULL, 'Dashboard', 'dashboard.html')
 ON CONFLICT(filename) DO UPDATE SET updated_at = datetime('now');
 ```
 
-Run: `open "${CLAUDE_PLUGIN_ROOT:-$(pwd)}/output/dashboard.html"`
+Run: `bash "${CLAUDE_PLUGIN_ROOT:-$(pwd)}/shared/open_page.sh" dashboard.html`
 
 Tell the user: "Dashboard updated and opened."

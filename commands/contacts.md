@@ -258,7 +258,7 @@ ON CONFLICT(filename) DO UPDATE SET updated_at = datetime('now');
 ```
 
 ```bash
-open "${CLAUDE_PLUGIN_ROOT:-$(pwd)}/output/contacts.html"
+bash "${CLAUDE_PLUGIN_ROOT:-$(pwd)}/shared/open_page.sh" contacts.html
 ```
 
 Tell the user: "Your contacts index is ready — N contacts, sortable and filterable. Use the search bar, filter by company or tag, or group by relationship depth."

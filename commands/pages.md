@@ -16,7 +16,7 @@ WHERE entity_name LIKE '%$ARGUMENTS%' OR filename LIKE '%$ARGUMENTS%'
 ORDER BY updated_at DESC LIMIT 1;
 ```
 
-- If found, open it: `open "${CLAUDE_PLUGIN_ROOT:-$(pwd)}/output/{filename}"`
+- If found, open it: `bash "${CLAUDE_PLUGIN_ROOT:-$(pwd)}/shared/open_page.sh" {filename}`
 - If not found, say "No page found matching '$ARGUMENTS'." and show all available pages (fall through to the no-arguments flow below).
 
 If **no arguments**, list all available pages.

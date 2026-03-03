@@ -248,6 +248,6 @@ ON CONFLICT(filename) DO UPDATE SET
   updated_at = datetime('now');
 ```
 
-Open with: `open "${CLAUDE_PLUGIN_ROOT:-$(pwd)}/output/transcript-{slug}.html"`
+Open with: `bash "${CLAUDE_PLUGIN_ROOT:-$(pwd)}/shared/open_page.sh" transcript-{slug}.html`
 
 Tell the user: "Transcript page for **{title}** opened." Then briefly summarize what's on it — e.g., "Shows speaker metrics (you 62%, them 38%), 3 pain points, 5 commitments, and coaching insights on question technique."

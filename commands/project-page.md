@@ -276,6 +276,6 @@ ON CONFLICT(filename) DO UPDATE SET
   updated_at = datetime('now');
 ```
 
-Open with: `open "${CLAUDE_PLUGIN_ROOT:-$(pwd)}/output/project-{slug}.html"`
+Open with: `bash "${CLAUDE_PLUGIN_ROOT:-$(pwd)}/shared/open_page.sh" project-{slug}.html`
 
 Tell the user: "Project page for **{project name}** opened." Then briefly summarize what's on it — e.g., "Shows 12/18 tasks complete, client relationship context with Sarah, 2 overdue tasks flagged as risks, and 4 prioritized next actions."

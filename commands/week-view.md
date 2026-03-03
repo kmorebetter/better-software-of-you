@@ -315,6 +315,6 @@ VALUES ('module_view', 'module', NULL, 'Week View', 'week-view.html')
 ON CONFLICT(filename) DO UPDATE SET updated_at = datetime('now');
 ```
 
-Open: `open "${CLAUDE_PLUGIN_ROOT:-$(pwd)}/output/week-view.html"`
+Open: `bash "${CLAUDE_PLUGIN_ROOT:-$(pwd)}/shared/open_page.sh" week-view.html`
 
 Tell user: "Week view opened. X events this week, Y hours of meetings."

@@ -470,6 +470,6 @@ VALUES ('module_view', 'module', NULL, 'Journal', 'journal.html')
 ON CONFLICT(filename) DO UPDATE SET updated_at = datetime('now');
 ```
 
-Open: `open "${CLAUDE_PLUGIN_ROOT:-$(pwd)}/output/journal.html"`
+Open: `bash "${CLAUDE_PLUGIN_ROOT:-$(pwd)}/shared/open_page.sh" journal.html`
 
 Tell user: "Journal view opened. X entries over Y days, Z day streak." Then briefly mention trends if data exists (e.g., "Average energy 3.2, most common mood: focused.").
