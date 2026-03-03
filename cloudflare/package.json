@@ -1,0 +1,11 @@
+{
+  "name": "soy-shared",
+  "private": true,
+  "devDependencies": {
+    "wrangler": "^3.0.0"
+  },
+  "scripts": {
+    "deploy": "wrangler pages deploy ./dist",
+    "dev": "wrangler pages dev ./dist"
+  }
+}
