@@ -2,6 +2,23 @@
 
 Every generated page in Software of You includes a **persistent left sidebar** that lists all pages — module views and individual entity pages — so every page is one click away. The sidebar is the SAME on every page; only the active state changes.
 
+## Table of Contents
+
+- [Navigation Data Queries](#navigation-data-queries)
+- [Sidebar Structure](#sidebar-structure)
+- [Sidebar Variants (Active States)](#sidebar-variants-active-states)
+- [Section-to-View Mapping](#section-to-view-mapping)
+- [Entity Page Listing Rules](#entity-page-listing-rules)
+- [Rules](#rules)
+- [Required JavaScript](#required-javascript-include-in-every-pages-script-block)
+- [Tip Card Content](#tip-card-content)
+- [Contact Name Linking](#contact-name-linking)
+- [Page Layout Wrapper](#page-layout-wrapper)
+- [Pre-Computed Sidebar Data (Build Context)](#pre-computed-sidebar-data-build-context)
+- [Page Footer](#page-footer)
+
+---
+
 ## Navigation Data Queries
 
 Before generating ANY HTML page, run these queries to populate the sidebar:

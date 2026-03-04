@@ -1,7 +1,6 @@
 ---
 name: project-tracker
 description: Use when generating project pages, project briefs, or assessing project health. This skill provides the scoring methodology for momentum, risk, action prioritization, and client relationship temperature.
-version: 1.0.0
 ---
 
 # Project Tracker

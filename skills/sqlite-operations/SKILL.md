@@ -1,7 +1,6 @@
 ---
 name: sqlite-operations
 description: Use when performing any database read or write operation in Software of You. This skill provides the current schema, query patterns, and conventions for interacting with the SQLite database.
-version: 1.0.0
 ---
 
 # SQLite Operations

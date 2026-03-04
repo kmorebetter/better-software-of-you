@@ -1,7 +1,6 @@
 ---
 name: conversation-intelligence
 description: Use when processing meeting transcripts, analyzing conversations, extracting commitments, or generating communication coaching insights. This skill provides parsing patterns, coaching guidelines, and the relationship scoring algorithm.
-version: 1.0.0
 ---
 
 # Conversation Intelligence

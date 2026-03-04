@@ -1,7 +1,6 @@
 ---
 name: module-system
 description: Use when checking which modules are installed, resolving cross-module features, or handling module-aware queries. This skill explains how modules discover each other and activate enhanced features.
-version: 1.0.0
 ---
 
 # Module System

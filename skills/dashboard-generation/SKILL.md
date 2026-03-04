@@ -1,7 +1,6 @@
 ---
 name: dashboard-generation
 description: Use when generating any HTML dashboard or view for Software of You. Provides the design system, base template, and component patterns for consistent visual output across all modules.
-version: 1.0.0
 ---
 
 # Dashboard & View Generation
@@ -30,6 +29,7 @@ All views share a consistent visual language:
 - `references/template-base.html` — the HTML skeleton every view should start from (includes delight CSS/JS)
 - `references/component-patterns.md` — reusable snippets for stat cards, tables, timelines, badges
 - `references/delight-patterns.md` — micro-interactions, animations, copy personality, and empty state patterns
+- `references/shared-html-patterns.md` — cross-command patterns: header cards, stat pills, filter tabs, left-border cards, empty states, avatar/icon patterns, color/icon reference table, footer, nav badge query, view registration SQL
 
 ## View Types
 
