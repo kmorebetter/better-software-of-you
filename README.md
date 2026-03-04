@@ -1,71 +1,90 @@
 # Software of You
 
-Your AI-powered personal platform. Contacts, projects, and more — all local, all yours.
+**Your personal CRM, project tracker, email client, and meeting analyst — powered by Claude, stored on your machine, owned by you.**
 
-**You're already paying for AI. Stop paying for everything else.**
+You're already paying for AI. Stop paying for everything else.
 
-Software of You runs inside Claude Code as a plugin. Your Claude subscription is the runtime. No servers, no API keys, no monthly fees. Your data stays on your machine.
+Software of You is a personal data platform that runs inside [Claude Code](https://docs.anthropic.com/en/docs/claude-code). No servers. No API keys. No monthly fees beyond your existing Claude subscription. Just talk to it — it handles the rest.
+
+---
+
+## Why This Exists
+
+Every freelancer, consultant, and small operator runs the same stack: a CRM they half-use, a project tool they resent, a calendar they forget to check, and meeting notes scattered across five apps. You're paying $50–200/month for tools that don't talk to each other.
+
+Software of You replaces all of that with a single AI-powered interface. You talk. It remembers. It connects the dots between your contacts, projects, emails, calendar, and conversations — automatically.
+
+**The key insight:** Claude is already good enough to be the interface. You don't need dashboards, forms, or dropdown menus. You need an assistant that understands your data and acts on it.
+
+---
+
+## What It Does
+
+### Contacts & Relationships
+Track everyone you work with. Log interactions, set follow-ups, get AI-generated relationship summaries. Know exactly where things stand before every meeting.
+
+### Projects & Tasks
+Create projects, assign tasks, set milestones. Get AI-generated status reports and project briefs that pull in client context, email history, and meeting notes automatically.
+
+### Gmail Integration
+Search, triage, and compose emails without leaving the terminal. Emails auto-link to contacts. Multi-account support — your work and personal inboxes in one place.
+
+### Google Calendar
+See today's schedule, this week's events, find free time. Events link to contacts and projects so you always have context.
+
+### Conversation Intelligence
+Import any meeting transcript — Fathom, Otter, Zoom, Gemini, or raw text. Software of You extracts commitments, calculates talk ratios, scores communication patterns, and generates coaching insights grounded in specific moments from your calls.
+
+### Decision Journal
+Log decisions with context, options considered, and rationale. Track outcomes over time. Build a searchable record of how and why you made every important call.
+
+### Daily Journal
+Write morning pages, track mood and energy, and get automatic cross-references to contacts, projects, and events mentioned in your entries.
+
+### Notes
+Standalone notes with #hashtag tagging, pinning, and automatic entity linking. Write a note mentioning "Sarah" and it links to her contact page.
+
+### Smart Nudges
+Never let things slip. Software of You surfaces overdue commitments, cold contacts, stale projects, and upcoming deadlines — all ranked by urgency.
+
+### Generated Views
+Every module produces beautiful, self-contained HTML pages — dashboards, contact briefs, project pages, conversation analyses, weekly reviews, and more. All generated on demand, all cross-linked.
+
+---
+
+## Cross-Module Intelligence
+
+This is where it gets interesting. Modules don't just coexist — they enhance each other:
+
+- **Contact pages** pull in email threads, meeting transcripts, project history, and commitment status
+- **Project briefs** include client relationship context and interaction timelines
+- **Email threads** link to contacts and surface in relationship summaries
+- **Calendar events** connect to contacts via attendees and appear in meeting prep
+- **Search** spans everything — contacts, emails, transcripts, notes, decisions
+- **Nudges** aggregate across all modules into a single attention feed
+
+The more you use it, the more connected everything becomes.
+
+---
 
 ## Setup
 
-1. Download and unzip the `software-of-you` folder
-2. Open Claude Code in the folder:
-   ```
-   cd software-of-you
-   claude
-   ```
-3. That's it. The system initializes automatically on first run.
+```bash
+git clone https://github.com/kmorebetter/better-software-of-you.git
+cd better-software-of-you
+claude
+```
 
-Type `/help-soy` to see available commands, or just start talking:
+That's it. The system initializes automatically on first run — creates the database, runs migrations, and walks you through onboarding.
 
-> "Add a contact for Jane Smith, she works at Acme Corp as a designer"
+To connect Gmail and Calendar:
+```
+/google-setup
+```
 
-> "Create a project called Website Redesign for Jane"
+Type `/help-soy` to see all commands, or just start talking naturally.
 
-> "Show me my dashboard"
-
-## What's Included
-
-### Contacts & CRM
-- Add, edit, search, and manage contacts
-- Log interactions (calls, emails, meetings)
-- Track follow-ups with due dates
-- AI relationship summaries
-- AI follow-up message drafting
-
-### Project Tracker
-- Create and manage projects with status tracking
-- Task management with priorities and assignments
-- Milestone tracking with target dates
-- AI project brief generation
-- AI status reports
-
-### Gmail
-- View, search, and triage your inbox
-- Compose and send emails (always shows draft, always confirms)
-- AI email summaries and prioritization
-- Emails auto-link to contacts
-
-### Google Calendar
-- View today's schedule, this week's events
-- Create events with attendees linked to contacts
-- Check availability and find free time
-- Events auto-link to contacts and projects
-
-### Conversation Intelligence
-- Import meeting transcripts (paste or file — Fathom, Otter, Zoom, anything)
-- Extract commitments — what you owe others, what they owe you
-- Communication metrics — talk ratio, questions, interruptions
-- AI coaching grounded in specific moments from your calls
-- Relationship scoring and trajectory tracking over time
-
-### Cross-Module Intelligence
-Modules enhance each other automatically:
-- Contact summaries include project history, email threads, and meeting history
-- Project briefs include client context, interaction history, and scheduled meetings
-- Email threads link to contacts and projects
-- Calendar events link to contacts via attendees
-- Search spans all data across all modules
+---
 
 ## Commands
 
@@ -78,41 +97,60 @@ Modules enhance each other automatically:
 | `/project-brief` | AI project brief with full context |
 | `/project-status` | Quick project status check |
 | `/dashboard` | Generate a visual HTML dashboard |
-| `/view` | Generate specialized module views |
-| `/import` | Import data — paste text, CSV, file path, anything |
-| `/search` | Natural language search across all data |
-| `/note` | Add a note to any contact or project |
-| `/tag` | Create and manage tags |
-| `/log` | View your activity timeline |
-| `/import-call` | Import a meeting transcript |
+| `/entity-page` | Deep-dive page for any contact |
+| `/project-page` | Deep-dive page for any project |
+| `/gmail` | View, search, and triage your inbox |
+| `/email` | Compose and send emails |
+| `/calendar` | View and create calendar events |
+| `/import-call` | Import a meeting transcript for analysis |
 | `/commitments` | View and manage commitments from conversations |
-| `/communication-review` | Your communication patterns and coaching |
-| `/relationship-pulse` | Deep relationship view with conversation history |
-| `/gmail` | View, search, and triage your Gmail inbox |
-| `/email` | Compose and send emails (always confirms first) |
-| `/calendar` | View and create Google Calendar events |
+| `/decision` | Log, view, and track decisions |
+| `/journal` | Write daily journal entries |
+| `/note` | Add standalone notes with auto cross-referencing |
+| `/nudges` | See what needs your attention |
+| `/search` | Natural language search across all data |
+| `/morning` | Daily morning check-in routine |
+| `/weekly-review` | Your week at a glance |
+| `/build-all` | Regenerate all HTML views |
 | `/google-setup` | Connect your Google account |
-| `/status` | System overview |
-| `/setup` | First-run setup (runs automatically) |
-| `/add-module` | Install a new module |
-| `/help-soy` | Full help |
+| `/help-soy` | Full command reference |
 
-Or just ask naturally — Software of You understands context.
+Or skip the commands entirely — just describe what you want in plain English.
+
+---
 
 ## Your Data
 
-All data lives in `data/soy.db` — a single SQLite file on your machine. No cloud sync, no third-party servers. Back it up however you back up your files.
+All data lives in `~/.local/share/software-of-you/` — a single SQLite database on your machine. No cloud sync. No third-party servers. No telemetry. Back it up however you back up your files.
 
-## Adding Modules
+The database survives repo updates and re-clones. Your data is yours.
 
-New modules can be added with `/add-module`. Each module is a folder containing a manifest, database migration, and command files. Drop it in, and the system detects it automatically on next session start.
+---
 
 ## Requirements
 
-- Claude Code (CLI or Desktop app)
+- [Claude Code](https://docs.anthropic.com/en/docs/claude-code) (CLI)
 - Claude Pro, Max, or Team subscription
-- macOS, Linux, or Windows with Python 3 available
+- macOS or Linux (Windows support planned)
+- Python 3 (for Google integrations)
+- SQLite3
 
-## The Auto-Improvement Hook
+---
 
-Every time Anthropic updates the Claude model, your apps get smarter automatically. You don't update anything. The intelligence layer improves for free.
+## The Model Upgrade Loop
+
+Every time Anthropic ships a better Claude model, Software of You gets smarter — automatically. Better summaries, sharper analysis, more natural conversations. You don't update anything. The intelligence layer improves for free.
+
+This is the advantage of building on an AI runtime instead of traditional software. The app you use today is the worst version it'll ever be.
+
+---
+
+## Philosophy
+
+Software of You is built on a simple belief: **your personal data is your most valuable asset, and you shouldn't need 10 SaaS subscriptions to make sense of it.**
+
+One database. One interface. Everything connected. All local.
+
+---
+
+Built by [@kmorebetter](https://github.com/kmorebetter) · Powered by [Claude](https://claude.ai)
