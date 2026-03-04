@@ -45,6 +45,19 @@ Always read before generating assessments:
 3. Cross-reference: contacts ↔ projects (via client_id), contacts ↔ interactions, contacts ↔ follow-ups, projects ↔ tasks
 4. Present findings as insights grounded in data, not vibes
 
+## Computed Views
+
+Use pre-computed views for relationship analysis:
+
+- `v_contact_health` — interaction counts, days silent, relationship depth/trajectory, open commitments, next meeting
+- `v_commitment_status` — open/overdue commitments with owner, urgency tier, days overdue
+- `v_project_health` — per-project: task counts, completion %, overdue tasks, days to target
+- `v_email_response_queue` — inbound emails needing reply with urgency
+- `v_nudge_items` — unified nudge feed across contacts, projects, commitments
+- `v_discovery_candidates` — frequent emailers not in CRM
+
+Don't manually calculate `days_silent`, `open_commitments`, or `relationship_trajectory` — query the views. See `skills/sqlite-operations/references/schema.sql` for definitions.
+
 ## Defined Thresholds
 
 ### "Not talked to in a while"

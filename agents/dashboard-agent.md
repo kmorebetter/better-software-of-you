@@ -34,3 +34,18 @@ You generate self-contained HTML files for Software of You dashboards and views.
 Check `SELECT name FROM modules WHERE enabled = 1;` before querying module tables.
 Only include dashboard sections for installed modules.
 Adapt the layout grid based on how many sections there are.
+
+## Computed Views
+
+Use pre-computed views instead of ad-hoc JOINs when available:
+
+- `v_contact_health` — email counts, interaction counts, days silent, relationship depth/trajectory, open commitments, next meeting
+- `v_commitment_status` — all open/overdue commitments with owner name, source call, days overdue, urgency tier
+- `v_nudge_items` — unified nudge feed across all entity types, pre-computed days and context
+- `v_nudge_summary` — count per urgency tier (urgent/soon/awareness)
+- `v_project_health` — task counts, completion %, overdue tasks, days to target, milestones
+- `v_meeting_prep` — per-event: time context, minutes until, duration, project info
+- `v_email_response_queue` — inbound emails needing reply with age and urgency
+- `v_discovery_candidates` — frequent emailers not in CRM with relevance scores
+
+See `skills/sqlite-operations/references/schema.sql` for definitions. Query views directly — don't re-derive their columns.

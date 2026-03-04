@@ -30,6 +30,17 @@ Location: `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/data/soy.db`
 
 **Every computed value follows scoring-methodology.md. Insufficient data = NULL. No exceptions.**
 
+## Computed Views
+
+Use pre-computed views instead of ad-hoc JOINs. Most relevant to this agent:
+
+- `v_contact_health` — email counts, interaction counts, days silent, relationship depth/trajectory, open commitments
+- `v_commitment_status` — open/overdue commitments with owner, source call, urgency tier
+- `v_nudge_items` — unified nudge feed across all entity types
+- `v_relationship_scores` — relationship depth, trajectory, meeting frequency, follow-through metrics
+
+See `skills/sqlite-operations/references/schema.sql` for full view definitions.
+
 ## Transcript Parsing
 
 Handle any format. Common patterns:
