@@ -362,7 +362,7 @@ def _render_dashboard(open_after: bool) -> dict:
 
     # Google connected?
     from software_of_you.db import DATA_DIR
-    ctx["google_connected"] = (DATA_DIR / "google_token.json").exists()
+    ctx["google_connected"] = (DATA_DIR / "google_token.json").exists() or (DATA_DIR / "tokens").is_dir()
 
     # Render
     html = template.render(**ctx)

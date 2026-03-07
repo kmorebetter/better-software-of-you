@@ -140,7 +140,7 @@ def _status():
 
     # Google status
     token_path = DATA_DIR / "google_token.json"
-    google_connected = token_path.exists()
+    google_connected = token_path.exists() or (DATA_DIR / "tokens").is_dir()
 
     # Onboarding stage
     onboarding = _compute_onboarding_stage(stats, google_connected)

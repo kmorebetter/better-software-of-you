@@ -233,7 +233,8 @@ def cmd_status() -> int:
 
     # Google connection
     token_path = DATA_DIR / "google_token.json"
-    print(f"  Google:      {'connected' if token_path.exists() else 'not connected'}")
+    google_ok = token_path.exists() or (DATA_DIR / "tokens").is_dir()
+    print(f"  Google:      {'connected' if google_ok else 'not connected'}")
 
     return 0
 

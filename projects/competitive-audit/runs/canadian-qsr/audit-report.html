@@ -1,0 +1,664 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Competitive Landscape: Canadian QSR</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: { 'inter': ['Inter', 'sans-serif'] },
+          colors: {
+            brand: {
+              tims: '#C8102E',
+              mcd: '#FFC72C',
+              aw: '#FF6600',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body { font-family: 'Inter', sans-serif; }
+    .gradient-tims { background: linear-gradient(135deg, #C8102E 0%, #8B0000 100%); }
+    .gradient-mcd { background: linear-gradient(135deg, #FFC72C 0%, #DA291C 100%); }
+    .gradient-aw { background: linear-gradient(135deg, #FF6600 0%, #CC5200 100%); }
+    .section-divider { height: 2px; background: linear-gradient(90deg, transparent, #3f3f46, transparent); }
+    .tension-card { border-left: 4px solid; }
+    .quote-mark { font-size: 4rem; line-height: 1; opacity: 0.15; font-family: Georgia, serif; }
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .animate-in { animation: fadeInUp 0.6s ease-out forwards; }
+  </style>
+</head>
+<body class="bg-zinc-950 text-zinc-300 min-h-screen">
+
+  <!-- Header -->
+  <header class="border-b border-zinc-800">
+    <div class="max-w-6xl mx-auto px-6 py-8">
+      <div class="flex items-start justify-between">
+        <div>
+          <p class="text-xs font-medium tracking-[0.3em] uppercase text-zinc-500 mb-3">Competitive Landscape Analysis</p>
+          <h1 class="text-4xl md:text-5xl font-bold text-white tracking-tight">Canadian QSR</h1>
+          <p class="text-zinc-500 mt-2 text-sm">Tim Hortons &middot; McDonald's Canada &middot; A&W Canada</p>
+        </div>
+        <div class="text-right">
+          <p class="text-xs text-zinc-600 font-mono">March 7, 2026</p>
+          <p class="text-xs text-zinc-700 mt-1">v1.0</p>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Navigation -->
+  <nav class="border-b border-zinc-800/50 sticky top-0 bg-zinc-950/90 backdrop-blur-sm z-50">
+    <div class="max-w-6xl mx-auto px-6 py-3 flex gap-6 text-xs font-medium text-zinc-500 overflow-x-auto">
+      <a href="#category" class="hover:text-white transition-colors whitespace-nowrap">Category Overview</a>
+      <a href="#brands" class="hover:text-white transition-colors whitespace-nowrap">Brand Profiles</a>
+      <a href="#landscape" class="hover:text-white transition-colors whitespace-nowrap">Positioning Landscape</a>
+      <a href="#opportunities" class="hover:text-white transition-colors whitespace-nowrap">Strategic Opportunities</a>
+      <a href="#watchlist" class="hover:text-white transition-colors whitespace-nowrap">Watch List</a>
+    </div>
+  </nav>
+
+  <main class="max-w-6xl mx-auto px-6">
+
+    <!-- ============================================ -->
+    <!-- SECTION 1: CATEGORY OVERVIEW                 -->
+    <!-- ============================================ -->
+    <section id="category" class="py-16">
+      <div class="flex items-center gap-3 mb-8">
+        <div class="w-8 h-8 rounded-full bg-zinc-800 flex items-center justify-center">
+          <span class="text-white text-sm font-bold">1</span>
+        </div>
+        <h2 class="text-2xl font-bold text-white">Category Overview</h2>
+      </div>
+
+      <div class="grid md:grid-cols-3 gap-6 mb-10">
+        <div class="bg-zinc-900 border border-zinc-800 rounded-xl p-6">
+          <p class="text-xs font-medium tracking-widest uppercase text-emerald-400 mb-2">Market Signal</p>
+          <p class="text-2xl font-bold text-white">+2.8%</p>
+          <p class="text-sm text-zinc-500 mt-1">Tim Hortons Canada same-store sales growth (Q4 2025), outperforming industry by ~2 points</p>
+        </div>
+        <div class="bg-zinc-900 border border-zinc-800 rounded-xl p-6">
+          <p class="text-xs font-medium tracking-widest uppercase text-amber-400 mb-2">Price War</p>
+          <p class="text-2xl font-bold text-white">$5 McValue</p>
+          <p class="text-sm text-zinc-500 mt-1">McDonald's Canada froze value pricing for a full year in Jan 2026, forcing category-wide response</p>
+        </div>
+        <div class="bg-zinc-900 border border-zinc-800 rounded-xl p-6">
+          <p class="text-xs font-medium tracking-widest uppercase text-orange-400 mb-2">Challenger Surge</p>
+          <p class="text-2xl font-bold text-white">+53%</p>
+          <p class="text-sm text-zinc-500 mt-1">A&W Canada profit growth in 2025, defying economic headwinds with 26 new restaurants</p>
+        </div>
+      </div>
+
+      <div class="bg-zinc-900/50 border border-zinc-800 rounded-xl p-8 space-y-5 text-base leading-relaxed">
+        <p>
+          Canadian QSR in 2026 is a category in tension between <span class="text-white font-medium">ritual and reinvention</span>. The incumbents are all growing -- Tim Hortons posted its 19th consecutive quarter of positive comp growth, McDonald's Canada saw its fastest U.S. sales pace in two years, and A&W's profit surged 53% -- but they are growing in fundamentally different directions. The category is expanding while the playbooks are diverging, which means the competitive dynamics are getting more interesting, not less.
+        </p>
+        <p>
+          The cultural moment is defined by a cost-of-living squeeze meeting a demand for <span class="text-white font-medium">meaning beyond the transaction</span>. McDonald's Canada triggered a price war in January 2026 by freezing value pricing for a full year, forcing the entire category to respond on price. But consumers are simultaneously rewarding brands that give them identity -- Tim Hortons' Roll Up the Rim comeback generated 1.3M views on a single Facebook post, and A&W's Super Bowl spot reframed its entire brand around ingredient integrity. Price is table stakes. Identity is the battlefield.
+        </p>
+        <p>
+          <span class="text-white font-semibold">The macro tension:</span> Every brand in Canadian QSR claims to be "authentically Canadian" while deploying increasingly globalized operational playbooks. Tim Hortons is owned by a Brazilian holding company (RBI/3G Capital) expanding into Texas and India. McDonald's is an American franchisor executing a global "Accelerating the Arches" strategy. A&W Canada is the only genuinely Canadian-owned operator -- yet it is the one that has to explain what its name even stands for. The gap between who these brands <em>are</em> and who they <em>say</em> they are is where the strategic opportunity lives.
+        </p>
+      </div>
+
+      <!-- Macro Tension Callout -->
+      <div class="mt-8 bg-zinc-900 border-l-4 border-violet-500 rounded-r-xl p-6">
+        <p class="text-xs font-medium tracking-widest uppercase text-violet-400 mb-2">The Central Tension</p>
+        <p class="text-lg text-white font-medium">
+          "Authentically Canadian" is the most crowded positioning in the category -- and the brand with the strongest claim to it is the one least able to articulate it.
+        </p>
+      </div>
+    </section>
+
+    <div class="section-divider"></div>
+
+    <!-- ============================================ -->
+    <!-- SECTION 2: BRAND POSITIONING MAP             -->
+    <!-- ============================================ -->
+    <section id="brands" class="py-16">
+      <div class="flex items-center gap-3 mb-10">
+        <div class="w-8 h-8 rounded-full bg-zinc-800 flex items-center justify-center">
+          <span class="text-white text-sm font-bold">2</span>
+        </div>
+        <h2 class="text-2xl font-bold text-white">Brand Positioning Map</h2>
+      </div>
+
+      <!-- TIM HORTONS -->
+      <div class="mb-12">
+        <div class="gradient-tims rounded-t-xl p-6">
+          <div class="flex items-center justify-between">
+            <div>
+              <h3 class="text-2xl font-bold text-white">Tim Hortons</h3>
+              <p class="text-red-100 text-sm mt-1">The Habit Machine</p>
+            </div>
+            <div class="text-right">
+              <p class="text-xs text-red-200 font-mono">RBI / 3G Capital</p>
+              <p class="text-xs text-red-200">~4,000 locations in Canada</p>
+            </div>
+          </div>
+        </div>
+        <div class="bg-zinc-900 border border-zinc-800 border-t-0 rounded-b-xl">
+          <div class="grid md:grid-cols-2 gap-0 divide-y md:divide-y-0 md:divide-x divide-zinc-800">
+            <!-- Left column -->
+            <div class="p-6 space-y-6">
+              <div>
+                <p class="text-xs font-medium tracking-widest uppercase text-red-400 mb-2">Inferred Positioning</p>
+                <p class="text-white font-medium text-lg leading-snug">"We are the daily Canadian ritual you don't have to think about."</p>
+                <p class="text-sm text-zinc-500 mt-2">Not "we make great coffee." Not "we're innovative." Their positioning is about <em>effortlessness</em> and <em>belonging</em>. The strategy is built around habit, not hype -- and that's by design. Their own strategists frame it as winning "the national imagination and the local routine" simultaneously.</p>
+              </div>
+              <div>
+                <p class="text-xs font-medium tracking-widest uppercase text-zinc-500 mb-2">Target Audience</p>
+                <p class="text-sm text-zinc-300">
+                  <span class="text-white font-medium">Who they say:</span> "Everyday Canadians" -- families, commuters, hockey parents.<br>
+                  <span class="text-white font-medium">Who they're really talking to:</span> Lower-to-middle income Canadians whose daily routines are built around convenience and familiarity. The 5M+ monthly app users skew toward habitual buyers, not explorers. The Tims Mastercard (earn points on groceries, gas, transit) reveals the real target: people for whom $5 matters.
+                </p>
+              </div>
+              <div>
+                <p class="text-xs font-medium tracking-widest uppercase text-zinc-500 mb-2">Tone & Personality</p>
+                <p class="text-sm text-zinc-300">Warm, familiar, unambitious on purpose. The brand speaks like a neighbor, not a marketer. Campaigns lean heavily on community ("Smile Cookie raised $22.6M in 2025"), nostalgia (Roll Up the Rim comeback), and national pride (Team Canada partnerships). The tone is "we've always been here" -- which is both the strength and the risk.</p>
+              </div>
+            </div>
+            <!-- Right column -->
+            <div class="p-6 space-y-6">
+              <div>
+                <p class="text-xs font-medium tracking-widest uppercase text-zinc-500 mb-2">Key Moves 2025-2026</p>
+                <div class="space-y-2">
+                  <div class="flex items-start gap-2">
+                    <span class="text-red-400 mt-0.5 shrink-0">&bull;</span>
+                    <p class="text-sm text-zinc-300"><span class="text-white">Roll Up the Rim restored to physical cups</span> (Feb 2026) -- bringing back the tactile ritual after digital-only backlash. "We heard you, Canada" framing is telling: it admits the brand lost touch.</p>
+                  </div>
+                  <div class="flex items-start gap-2">
+                    <span class="text-red-400 mt-0.5 shrink-0">&bull;</span>
+                    <p class="text-sm text-zinc-300"><span class="text-white">Beverage diversification</span> -- cold drinks now ~40% of beverage sales. Protein Lattes (20g protein) signal a move toward functional beverages.</p>
+                  </div>
+                  <div class="flex items-start gap-2">
+                    <span class="text-red-400 mt-0.5 shrink-0">&bull;</span>
+                    <p class="text-sm text-zinc-300"><span class="text-white">Western Canada expansion</span> -- RBI targeting "underpenetrated regions" with 5% footprint growth by 2028.</p>
+                  </div>
+                  <div class="flex items-start gap-2">
+                    <span class="text-red-400 mt-0.5 shrink-0">&bull;</span>
+                    <p class="text-sm text-zinc-300"><span class="text-white">Tims Mastercard</span> embedded in-app, earning 15 pts/$1 at Tims, 5 pts/$1 on everyday spend -- turning the brand into a payments platform.</p>
+                  </div>
+                </div>
+              </div>
+              <div class="grid grid-cols-2 gap-4">
+                <div class="bg-zinc-800/50 rounded-lg p-4">
+                  <p class="text-xs font-medium tracking-widest uppercase text-emerald-400 mb-2">Strength</p>
+                  <p class="text-sm text-white font-medium">Unassailable habitual frequency</p>
+                  <p class="text-xs text-zinc-500 mt-1">5M+ monthly active app users. 19 consecutive quarters of positive comp growth. The "habit engine" (loyalty + payments + daily routine) is the deepest moat in Canadian QSR. Nobody else has wired payments into coffee this tightly.</p>
+                </div>
+                <div class="bg-zinc-800/50 rounded-lg p-4">
+                  <p class="text-xs font-medium tracking-widest uppercase text-rose-400 mb-2">Vulnerability</p>
+                  <p class="text-sm text-white font-medium">Cultural credibility gap</p>
+                  <p class="text-xs text-zinc-500 mt-1">A Brazilian-owned company claiming "Everyday Canada" while expanding to Texas and India. The app location-tracking class-action settlement damaged trust. "Rebuilding trust" (their own words at the 60th anniversary) is an admission the moat has cracks. And younger Canadians may not feel the hockey/doughnut nostalgia the brand depends on.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- McDONALD'S CANADA -->
+      <div class="mb-12">
+        <div class="gradient-mcd rounded-t-xl p-6">
+          <div class="flex items-center justify-between">
+            <div>
+              <h3 class="text-2xl font-bold text-zinc-900">McDonald's Canada</h3>
+              <p class="text-yellow-900 text-sm mt-1">The Culture Machine</p>
+            </div>
+            <div class="text-right">
+              <p class="text-xs text-yellow-900 font-mono">McDonald's Corp (NYSE: MCD)</p>
+              <p class="text-xs text-yellow-900">~1,400 locations in Canada</p>
+            </div>
+          </div>
+        </div>
+        <div class="bg-zinc-900 border border-zinc-800 border-t-0 rounded-b-xl">
+          <div class="grid md:grid-cols-2 gap-0 divide-y md:divide-y-0 md:divide-x divide-zinc-800">
+            <div class="p-6 space-y-6">
+              <div>
+                <p class="text-xs font-medium tracking-widest uppercase text-amber-400 mb-2">Inferred Positioning</p>
+                <p class="text-white font-medium text-lg leading-snug">"We don't just show up at Canadian culture -- we embed ourselves inside it."</p>
+                <p class="text-sm text-zinc-500 mt-2">McDonald's Canada has evolved from "affordable American fast food" to a brand that aggressively inserts itself into Canadian sports and entertainment culture. The Raptors partnership, the NHL Star Sticks Meal, the Shania Twain collaboration, the Drake "Afters Meal" -- every move is about being <em>inside</em> the culture, not sponsoring it. Their agency (Cossette) explicitly frames this: campaigns should feel like they come "from inside Raptors culture."</p>
+              </div>
+              <div>
+                <p class="text-xs font-medium tracking-widest uppercase text-zinc-500 mb-2">Target Audience</p>
+                <p class="text-sm text-zinc-300">
+                  <span class="text-white font-medium">Who they say:</span> "Everyone" -- families, workers, late-night diners.<br>
+                  <span class="text-white font-medium">Who they're really talking to:</span> Urban Canadians aged 18-35 who identify through sports fandom and pop culture. The Raptors partnership was chosen over the Maple Leafs because "Raptors fans were more aligned with McDonald's target demographic." The celebrity meal strategy (Drake, Shania Twain, NHL stars) reveals a brand chasing cultural currency with younger demos while keeping families through Happy Meals.
+                </p>
+              </div>
+              <div>
+                <p class="text-xs font-medium tracking-widest uppercase text-zinc-500 mb-2">Tone & Personality</p>
+                <p class="text-sm text-zinc-300">Culturally fluent, meme-native, willing to play. Their social media is "powered by memes and milkshakes." They do TikTok dance challenges, Cardi B collaborations, and '90s nostalgia campaigns. The Canadian arm has more personality than the global brand -- Cossette has earned 8 Effie nominations for effectiveness, not just craft. The tone is "we're already at the party" vs. Tim Hortons' "we are the party."</p>
+              </div>
+            </div>
+            <div class="p-6 space-y-6">
+              <div>
+                <p class="text-xs font-medium tracking-widest uppercase text-zinc-500 mb-2">Key Moves 2025-2026</p>
+                <div class="space-y-2">
+                  <div class="flex items-start gap-2">
+                    <span class="text-amber-400 mt-0.5 shrink-0">&bull;</span>
+                    <p class="text-sm text-zinc-300"><span class="text-white">Price war trigger</span> (Jan 2026) -- froze value pricing for a full year with the $5 McValue Meal, "forcing rivals to respond." Music-driven campaign repositioned value without reducing it to price-point advertising.</p>
+                  </div>
+                  <div class="flex items-start gap-2">
+                    <span class="text-amber-400 mt-0.5 shrink-0">&bull;</span>
+                    <p class="text-sm text-zinc-300"><span class="text-white">Sports culture saturation</span> -- Raptors Chicken Nacho Poutine (Ontario-only LTO), NHL Star Sticks Meal (Mar 2026), "The Showdown" with McDavid & Matthews, the '95 McFlurry with a custom hip-hop EP.</p>
+                  </div>
+                  <div class="flex items-start gap-2">
+                    <span class="text-amber-400 mt-0.5 shrink-0">&bull;</span>
+                    <p class="text-sm text-zinc-300"><span class="text-white">Celebrity meal pipeline</span> -- Shania Twain "Shania's Sides" (Aug 2025), Drake "Afters Meal" (Feb 2026). Canadian celebrities, not American imports.</p>
+                  </div>
+                  <div class="flex items-start gap-2">
+                    <span class="text-amber-400 mt-0.5 shrink-0">&bull;</span>
+                    <p class="text-sm text-zinc-300"><span class="text-white">Summer ritual ownership</span> -- Summer Drink Days (16th season) explicitly positioned as "the unofficial kickoff of summer." Marketing director: "whenever Canadians think 'summer drinks,' they think of McDonald's."</p>
+                  </div>
+                </div>
+              </div>
+              <div class="grid grid-cols-2 gap-4">
+                <div class="bg-zinc-800/50 rounded-lg p-4">
+                  <p class="text-xs font-medium tracking-widest uppercase text-emerald-400 mb-2">Strength</p>
+                  <p class="text-sm text-white font-medium">Cultural insertion machine</p>
+                  <p class="text-xs text-zinc-500 mt-1">No other QSR brand in Canada operates across hockey, basketball, hip-hop, country music, and poutine culture simultaneously. Cossette's creative execution is best-in-class (8 Effie noms). Regional LTOs create geographic scarcity. The brand is producing culture, not just buying sponsorships.</p>
+                </div>
+                <div class="bg-zinc-800/50 rounded-lg p-4">
+                  <p class="text-xs font-medium tracking-widest uppercase text-rose-400 mb-2">Vulnerability</p>
+                  <p class="text-sm text-white font-medium">Authenticity paradox</p>
+                  <p class="text-xs text-zinc-500 mt-1">ACSI customer satisfaction score of 69 (neutral). 33% of survey respondents disliked the burgers. All the cultural fluency in the world can't paper over a product quality gap. A&W's "good food makes good food" positioning is a direct attack on McDonald's weakest flank. And the "we're fans too" rhetoric rings hollow from the world's largest fast-food corporation.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- A&W CANADA -->
+      <div class="mb-12">
+        <div class="gradient-aw rounded-t-xl p-6">
+          <div class="flex items-center justify-between">
+            <div>
+              <h3 class="text-2xl font-bold text-white">A&W Canada</h3>
+              <p class="text-orange-100 text-sm mt-1">The Integrity Play</p>
+            </div>
+            <div class="text-right">
+              <p class="text-xs text-orange-200 font-mono">A&W Food Services of Canada Inc. (TSX: AW.UN)</p>
+              <p class="text-xs text-orange-200">~1,100 locations in Canada</p>
+            </div>
+          </div>
+        </div>
+        <div class="bg-zinc-900 border border-zinc-800 border-t-0 rounded-b-xl">
+          <div class="grid md:grid-cols-2 gap-0 divide-y md:divide-y-0 md:divide-x divide-zinc-800">
+            <div class="p-6 space-y-6">
+              <div>
+                <p class="text-xs font-medium tracking-widest uppercase text-orange-400 mb-2">Inferred Positioning</p>
+                <p class="text-white font-medium text-lg leading-snug">"We're the fast food you don't have to feel bad about."</p>
+                <p class="text-sm text-zinc-500 mt-2">A&W has staked the most differentiated position in Canadian QSR: ingredient integrity as brand identity. "Good food makes good food" and "Stands for What's Good" are not slogans about taste -- they're about <em>trust</em>. While Tim Hortons sells ritual and McDonald's sells culture, A&W sells the permission to eat fast food without guilt. Grass-fed beef, no hormones or steroids, real cheddar -- the ingredient story IS the brand story.</p>
+              </div>
+              <div>
+                <p class="text-xs font-medium tracking-widest uppercase text-zinc-500 mb-2">Target Audience</p>
+                <p class="text-sm text-zinc-300">
+                  <span class="text-white font-medium">Who they say:</span> "Burger lovers" who care about what goes into their food.<br>
+                  <span class="text-white font-medium">Who they're really talking to:</span> The "quality-conscious compromise" segment -- Canadians who want fast food but tell themselves they deserve better. The grass-fed beef messaging gives these consumers a rationalization narrative. The Teen Burger nostalgia hooks older millennials; the ingredient transparency hooks younger ones. The Super Bowl media buy signals ambition beyond the base.
+                </p>
+              </div>
+              <div>
+                <p class="text-xs font-medium tracking-widest uppercase text-zinc-500 mb-2">Tone & Personality</p>
+                <p class="text-sm text-zinc-300">Confident, slightly irreverent, willing to punch up. The "Stands for What's Good" campaign from Rethink has real swagger -- "A&Www yeah," "A&Wesome" on custom neon signage. They spoofed a McDonald's CEO video to promote the Teen Burger. That's the tone of a brand that knows it's the underdog and uses it. VP of Marketing Tom Newitt: "We're returning our focus to what we do best: burgers and taste." Direct. No filler.</p>
+              </div>
+            </div>
+            <div class="p-6 space-y-6">
+              <div>
+                <p class="text-xs font-medium tracking-widest uppercase text-zinc-500 mb-2">Key Moves 2025-2026</p>
+                <div class="space-y-2">
+                  <div class="flex items-start gap-2">
+                    <span class="text-orange-400 mt-0.5 shrink-0">&bull;</span>
+                    <p class="text-sm text-zinc-300"><span class="text-white">"Stands for What's Good" rebrand</span> (Jan 2026) -- complete visual identity refresh with Rethink. Super Bowl primetime spot. Reframed the A&W acronym as shorthand for brand values, not founders' names.</p>
+                  </div>
+                  <div class="flex items-start gap-2">
+                    <span class="text-orange-400 mt-0.5 shrink-0">&bull;</span>
+                    <p class="text-sm text-zinc-300"><span class="text-white">McDonald's CEO spoof</span> -- directly attacked McDonald's by spoofing a Chris Kempczinski video to promote the Teen Burger. Challenger brand behavior at its most aggressive.</p>
+                  </div>
+                  <div class="flex items-start gap-2">
+                    <span class="text-orange-400 mt-0.5 shrink-0">&bull;</span>
+                    <p class="text-sm text-zinc-300"><span class="text-white">Aggressive expansion</span> -- 26 new restaurants in 2025, focused on Ontario and Quebec. Reduced cost of new restaurant openings. "2nd largest QSR burger chain and 3rd largest restaurant brand in Canada."</p>
+                  </div>
+                  <div class="flex items-start gap-2">
+                    <span class="text-orange-400 mt-0.5 shrink-0">&bull;</span>
+                    <p class="text-sm text-zinc-300"><span class="text-white">Profit surge</span> -- 53% profit growth in 2025, "record growth thanks to a key acquisition, new stores, and a focus on value."</p>
+                  </div>
+                </div>
+              </div>
+              <div class="grid grid-cols-2 gap-4">
+                <div class="bg-zinc-800/50 rounded-lg p-4">
+                  <p class="text-xs font-medium tracking-widest uppercase text-emerald-400 mb-2">Strength</p>
+                  <p class="text-sm text-white font-medium">Only real ingredient story in the category</p>
+                  <p class="text-xs text-zinc-500 mt-1">Grass-fed beef, no hormones/steroids, real cheddar. A&W is the only major Canadian QSR with a credible "better food" platform. This isn't a marketing angle -- it's supply chain differentiation. And with Rethink (creative partner since 2000), the brand has 25+ years of consistent strategic direction. That kind of agency continuity is rare and valuable.</p>
+                </div>
+                <div class="bg-zinc-800/50 rounded-lg p-4">
+                  <p class="text-xs font-medium tracking-widest uppercase text-rose-400 mb-2">Vulnerability</p>
+                  <p class="text-sm text-white font-medium">One-dimensional brand story</p>
+                  <p class="text-xs text-zinc-500 mt-1">The ingredient story is powerful but narrow. A&W has no cultural tentpoles equivalent to Roll Up the Rim or Summer Drink Days. No celebrity partnerships. No sports culture plays. They're a burger brand in a beverage-led market -- Tim Hortons drives 40% of volume through cold drinks. If the "better ingredients" narrative gets commoditized (and it will), what's left?</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div class="section-divider"></div>
+
+    <!-- ============================================ -->
+    <!-- SECTION 3: POSITIONING LANDSCAPE             -->
+    <!-- ============================================ -->
+    <section id="landscape" class="py-16">
+      <div class="flex items-center gap-3 mb-10">
+        <div class="w-8 h-8 rounded-full bg-zinc-800 flex items-center justify-center">
+          <span class="text-white text-sm font-bold">3</span>
+        </div>
+        <h2 class="text-2xl font-bold text-white">Positioning Landscape</h2>
+      </div>
+
+      <!-- 2x2 Map -->
+      <div class="bg-zinc-900 border border-zinc-800 rounded-xl p-8 mb-10">
+        <p class="text-xs font-medium tracking-widest uppercase text-zinc-500 mb-6">Positioning Grid</p>
+        <div class="relative w-full" style="max-width: 700px; margin: 0 auto;">
+          <!-- Axes -->
+          <div class="relative border border-zinc-700 rounded-lg" style="height: 420px;">
+            <!-- Axis labels -->
+            <p class="absolute -top-6 left-1/2 -translate-x-1/2 text-xs text-zinc-500 font-medium tracking-wide">CULTURAL EMBEDDEDNESS</p>
+            <p class="absolute -bottom-6 left-1/2 -translate-x-1/2 text-xs text-zinc-500 font-medium tracking-wide">FUNCTIONAL / TRANSACTIONAL</p>
+            <p class="absolute top-1/2 -left-2 -translate-y-1/2 -rotate-90 text-xs text-zinc-500 font-medium tracking-wide whitespace-nowrap">PRICE / VALUE</p>
+            <p class="absolute top-1/2 -right-2 -translate-y-1/2 rotate-90 text-xs text-zinc-500 font-medium tracking-wide whitespace-nowrap">QUALITY / INTEGRITY</p>
+
+            <!-- Crosshairs -->
+            <div class="absolute top-0 bottom-0 left-1/2 w-px bg-zinc-800"></div>
+            <div class="absolute left-0 right-0 top-1/2 h-px bg-zinc-800"></div>
+
+            <!-- Tim Hortons - top left (cultural + value) -->
+            <div class="absolute" style="top: 18%; left: 25%; transform: translate(-50%, -50%);">
+              <div class="bg-brand-tims text-white text-xs font-bold px-3 py-2 rounded-lg shadow-lg shadow-red-900/30 whitespace-nowrap">
+                Tim Hortons
+              </div>
+              <p class="text-[10px] text-zinc-500 mt-1 text-center max-w-[120px]">Ritual + Habit<br>Everyday routine</p>
+            </div>
+
+            <!-- McDonald's - top center-left (cultural + slightly value) -->
+            <div class="absolute" style="top: 22%; left: 52%; transform: translate(-50%, -50%);">
+              <div class="bg-brand-mcd text-zinc-900 text-xs font-bold px-3 py-2 rounded-lg shadow-lg shadow-yellow-900/30 whitespace-nowrap">
+                McDonald's Canada
+              </div>
+              <p class="text-[10px] text-zinc-500 mt-1 text-center max-w-[120px]">Culture + Fandom<br>Sports & celebrity</p>
+            </div>
+
+            <!-- A&W - bottom right (functional + quality) -->
+            <div class="absolute" style="top: 60%; left: 72%; transform: translate(-50%, -50%);">
+              <div class="bg-brand-aw text-white text-xs font-bold px-3 py-2 rounded-lg shadow-lg shadow-orange-900/30 whitespace-nowrap">
+                A&W Canada
+              </div>
+              <p class="text-[10px] text-zinc-500 mt-1 text-center max-w-[120px]">Ingredients + Integrity<br>Burger-first</p>
+            </div>
+
+            <!-- White space markers -->
+            <div class="absolute" style="top: 25%; left: 80%; transform: translate(-50%, -50%);">
+              <div class="border border-dashed border-violet-500/40 text-violet-400 text-[10px] font-medium px-2 py-1 rounded whitespace-nowrap">
+                WHITE SPACE
+              </div>
+              <p class="text-[9px] text-violet-400/60 mt-0.5 text-center">Cultural + Quality</p>
+            </div>
+            <div class="absolute" style="top: 72%; left: 30%; transform: translate(-50%, -50%);">
+              <div class="border border-dashed border-violet-500/40 text-violet-400 text-[10px] font-medium px-2 py-1 rounded whitespace-nowrap">
+                WHITE SPACE
+              </div>
+              <p class="text-[9px] text-violet-400/60 mt-0.5 text-center">Functional + Value</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Analysis Cards -->
+      <div class="grid md:grid-cols-3 gap-6">
+        <div class="bg-zinc-900 border border-zinc-800 rounded-xl p-6">
+          <p class="text-xs font-medium tracking-widest uppercase text-cyan-400 mb-3">Where They Cluster</p>
+          <p class="text-sm text-zinc-300 leading-relaxed">
+            Tim Hortons and McDonald's Canada are converging on <span class="text-white font-medium">"Canadian culture as brand moat"</span> -- but from different angles. Tims owns the nostalgic, communal, hockey-parent version. McDonald's is building the younger, urban, sports-fan-as-identity version. Both are fighting for the same emotional real estate: <em>"this brand is part of my Canadian life."</em> The danger for both is that the claim is becoming generic. When everyone is "authentically Canadian," nobody is.
+          </p>
+        </div>
+        <div class="bg-zinc-900 border border-zinc-800 rounded-xl p-6">
+          <p class="text-xs font-medium tracking-widest uppercase text-cyan-400 mb-3">White Space</p>
+          <p class="text-sm text-zinc-300 leading-relaxed">
+            <span class="text-white font-medium">Cultural credibility + ingredient integrity</span> is the unmapped quadrant. A&W has the ingredient story but no cultural tentpoles. Tim Hortons has the cultural tentpoles but no ingredient story (Protein Lattes are functional, not integrity-driven). McDonald's has neither -- the $5 McValue Meal is a value play, not a quality play. The brand that fuses <em>what's in the food</em> with <em>what the food means</em> owns the next positioning.
+          </p>
+        </div>
+        <div class="bg-zinc-900 border border-zinc-800 rounded-xl p-6">
+          <p class="text-xs font-medium tracking-widest uppercase text-cyan-400 mb-3">Emerging Tensions</p>
+          <p class="text-sm text-zinc-300 leading-relaxed">
+            <span class="text-white font-medium">1. Value vs. values.</span> McDonald's triggered a price war while A&W is investing in ingredient quality. Can you win on both? Neither has tried.<br><br>
+            <span class="text-white font-medium">2. Nostalgia vs. relevance.</span> Tim Hortons brought back physical cups for Roll Up. McDonald's is doing '90s hip-hop EPs. Both are mining the past. Who's building the future?<br><br>
+            <span class="text-white font-medium">3. National vs. regional.</span> McDonald's Ontario-only Raptors poutine outperforms national campaigns on cultural resonance. That's a threat to Tim Hortons' "coast to coast" story.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <div class="section-divider"></div>
+
+    <!-- ============================================ -->
+    <!-- SECTION 4: STRATEGIC OPPORTUNITIES           -->
+    <!-- ============================================ -->
+    <section id="opportunities" class="py-16">
+      <div class="flex items-center gap-3 mb-4">
+        <div class="w-8 h-8 rounded-full bg-zinc-800 flex items-center justify-center">
+          <span class="text-white text-sm font-bold">4</span>
+        </div>
+        <h2 class="text-2xl font-bold text-white">Strategic Opportunities</h2>
+      </div>
+      <p class="text-zinc-500 text-sm mb-10 ml-11">Five tensions that represent positioning opportunities for a challenger or an incumbent willing to move.</p>
+
+      <!-- Opportunity 1 -->
+      <div class="tension-card border-violet-500 bg-zinc-900 rounded-r-xl p-6 mb-6">
+        <div class="flex items-start gap-4">
+          <span class="text-3xl font-black text-violet-500/30 leading-none">01</span>
+          <div class="space-y-3 flex-1">
+            <h3 class="text-lg font-semibold text-white">The Integrity Gap</h3>
+            <p class="text-sm text-violet-300 font-medium">
+              While Tim Hortons talks about "back to basics" and McDonald's talks about "100% Canadian-raised chicken," nobody has made ingredient transparency a <em>cultural</em> story -- not just a product label.
+            </p>
+            <p class="text-sm text-zinc-400 leading-relaxed">
+              A&W owns the ingredient claim but presents it functionally ("grass-fed beef, real cheddar"). Tim Hortons' "freshly cracked eggs" and "new dark roast" are quality signals, but they're operational improvements, not brand narratives. McDonald's leans on "100% Canadian-raised" sourcing claims but wraps them in sports campaigns, not food campaigns. The opportunity: make ingredient integrity <em>emotionally resonant</em>, not just informationally correct. Chipotle did this in the US with "Food with Integrity." No Canadian QSR has attempted the equivalent. A&W is closest, but their current campaign ("Stands for What's Good") is about brand identity, not food storytelling.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Opportunity 2 -->
+      <div class="tension-card border-emerald-500 bg-zinc-900 rounded-r-xl p-6 mb-6">
+        <div class="flex items-start gap-4">
+          <span class="text-3xl font-black text-emerald-500/30 leading-none">02</span>
+          <div class="space-y-3 flex-1">
+            <h3 class="text-lg font-semibold text-white">The Regional Authenticity Play</h3>
+            <p class="text-sm text-emerald-300 font-medium">
+              While Tim Hortons pursues a homogeneous "coast to coast" Canadian identity, McDonald's Canada is proving that hyper-regional campaigns generate disproportionate cultural resonance.
+            </p>
+            <p class="text-sm text-zinc-400 leading-relaxed">
+              McDonald's Ontario-only Raptors poutine, the Calgary Stampede campaign that "blended into Stampede culture instead of looking like typical sponsorship," and the Drake meal as a Toronto-specific play all demonstrate that <em>geographic scarcity amplifies cultural relevance</em>. Tim Hortons' model is built on national consistency -- same Roll Up, same Smile Cookie, same Camp Day everywhere. That's a strength at scale but a vulnerability against a competitor willing to make each region feel uniquely seen. The opportunity for any brand: build a "confederation model" of QSR marketing where regional cultural specificity replaces national generality. Canada isn't one culture. It's several. The brand that acknowledges this first wins.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Opportunity 3 -->
+      <div class="tension-card border-amber-500 bg-zinc-900 rounded-r-xl p-6 mb-6">
+        <div class="flex items-start gap-4">
+          <span class="text-3xl font-black text-amber-500/30 leading-none">03</span>
+          <div class="space-y-3 flex-1">
+            <h3 class="text-lg font-semibold text-white">The Beverage Vacuum</h3>
+            <p class="text-sm text-amber-300 font-medium">
+              While Tim Hortons dominates coffee and McDonald's is building Summer Drink Days into a seasonal ritual, nobody owns the "better beverage" position -- functional, clean-label, or craft.
+            </p>
+            <p class="text-sm text-zinc-400 leading-relaxed">
+              Tim Hortons' cold drinks are 40% of beverage sales and growing. Their Protein Lattes (20g protein) are a functional play. McDonald's McCafe competes on convenience. But neither brand's beverage story has the ingredient credibility that A&W brings to burgers. A&W, meanwhile, has root beer heritage but hasn't extended its "good food" story to beverages in any visible way. The opportunity: a "clean-label beverage" positioning within QSR -- no artificial sweeteners, real ingredients, transparent sourcing -- that captures the consumer who buys from specialty coffee shops but still eats at QSRs. This is the same consumer paying $7 for an oat milk latte; they'd pay $4 for a credibly "better" iced coffee at a drive-through.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Opportunity 4 -->
+      <div class="tension-card border-rose-500 bg-zinc-900 rounded-r-xl p-6 mb-6">
+        <div class="flex items-start gap-4">
+          <span class="text-3xl font-black text-rose-500/30 leading-none">04</span>
+          <div class="space-y-3 flex-1">
+            <h3 class="text-lg font-semibold text-white">The Ownership Paradox</h3>
+            <p class="text-sm text-rose-300 font-medium">
+              While Tim Hortons and McDonald's both claim "Canadian" positioning, A&W Canada is the only publicly-traded, Canadian-owned QSR brand of scale -- and barely mentions it.
+            </p>
+            <p class="text-sm text-zinc-400 leading-relaxed">
+              This is the most underexploited positioning asset in the category. Tim Hortons is owned by RBI (3G Capital, a Brazilian PE firm). McDonald's is a U.S. corporation. A&W Canada has been independently Canadian-owned and operated since 1972 -- completely separate from the American A&W brand. Yet A&W's current campaign focuses on what the letters "stand for," not who owns them. In an era of Buy Canadian sentiment and economic nationalism, actual Canadian ownership is a tangible differentiator. Tim Hortons has built an empire on the <em>feeling</em> of being Canadian. A&W has the <em>fact</em>. The brand that weaponizes provenance -- not just in ingredients but in corporate structure -- introduces a credibility standard the others literally cannot match.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Opportunity 5 -->
+      <div class="tension-card border-sky-500 bg-zinc-900 rounded-r-xl p-6 mb-6">
+        <div class="flex items-start gap-4">
+          <span class="text-3xl font-black text-sky-500/30 leading-none">05</span>
+          <div class="space-y-3 flex-1">
+            <h3 class="text-lg font-semibold text-white">The Ritual Deficit</h3>
+            <p class="text-sm text-sky-300 font-medium">
+              While Tim Hortons and McDonald's both have recurring seasonal activations that drive habit, A&W has zero equivalent tentpole moments -- leaving it invisible in the calendar.
+            </p>
+            <p class="text-sm text-zinc-400 leading-relaxed">
+              Tim Hortons has Roll Up the Rim (Feb-Mar), Smile Cookie (spring), and Camp Day (summer). McDonald's has Summer Drink Days (16 years running), Summer Treat Days, and rolling sports-moment LTOs. A&W has... a Super Bowl ad and good quarterly earnings. The data shows that tentpole activations compound: Tim Hortons' "predictable moments customers anticipate" reduce re-education costs and create anticipation cycles. McDonald's Rebecca Smart describes building "sustained top-of-mind awareness" through seasonal repetition. A&W's 53% profit growth is impressive but operationally driven. The brand with the strongest product story in the category has no recurring cultural moment that consumers can anchor to. Building even one would transform their trajectory.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div class="section-divider"></div>
+
+    <!-- ============================================ -->
+    <!-- SECTION 5: WATCH LIST                        -->
+    <!-- ============================================ -->
+    <section id="watchlist" class="py-16">
+      <div class="flex items-center gap-3 mb-10">
+        <div class="w-8 h-8 rounded-full bg-zinc-800 flex items-center justify-center">
+          <span class="text-white text-sm font-bold">5</span>
+        </div>
+        <h2 class="text-2xl font-bold text-white">Watch List</h2>
+      </div>
+      <p class="text-zinc-500 text-sm mb-8">Signals to monitor over the next 6 months that could reshape the competitive landscape.</p>
+
+      <div class="grid md:grid-cols-2 gap-6">
+        <div class="bg-zinc-900 border border-zinc-800 rounded-xl p-6">
+          <div class="flex items-center gap-2 mb-3">
+            <div class="w-2 h-2 rounded-full bg-red-400"></div>
+            <p class="text-xs font-medium tracking-widest uppercase text-red-400">High Priority</p>
+          </div>
+          <h4 class="text-white font-semibold mb-2">McDonald's Canada price freeze fallout</h4>
+          <p class="text-sm text-zinc-400">The Jan 2026 value pricing freeze "forced rivals to respond and sent ripple effects through restaurants, processors." Watch for Tim Hortons' and A&W's counter-moves on pricing. If A&W matches on price, it undermines the premium ingredient story. If it doesn't, it risks volume loss in a cost-of-living squeeze. This is a category-defining decision for the challenger brand.</p>
+        </div>
+
+        <div class="bg-zinc-900 border border-zinc-800 rounded-xl p-6">
+          <div class="flex items-center gap-2 mb-3">
+            <div class="w-2 h-2 rounded-full bg-red-400"></div>
+            <p class="text-xs font-medium tracking-widest uppercase text-red-400">High Priority</p>
+          </div>
+          <h4 class="text-white font-semibold mb-2">A&W's Ontario/Quebec expansion velocity</h4>
+          <p class="text-sm text-zinc-400">A&W opened 26 new restaurants in 2025, focused on Ontario and Quebec -- Tim Hortons' heartland. With reduced opening costs and 53% profit growth funding expansion, A&W is making a territorial play. Watch same-store sales in markets where A&W is new and Tim Hortons is dominant. If A&W can grow <em>same-store</em> in these markets, the ingredient positioning is converting against the habit engine.</p>
+        </div>
+
+        <div class="bg-zinc-900 border border-zinc-800 rounded-xl p-6">
+          <div class="flex items-center gap-2 mb-3">
+            <div class="w-2 h-2 rounded-full bg-amber-400"></div>
+            <p class="text-xs font-medium tracking-widest uppercase text-amber-400">Medium Priority</p>
+          </div>
+          <h4 class="text-white font-semibold mb-2">Tim Hortons' cold beverage ceiling</h4>
+          <p class="text-sm text-zinc-400">Cold drinks at 40% of beverage mix and rising. The question: is there a ceiling? If cold exceeds 50%, Tim Hortons becomes a cold-beverage company that also sells coffee and doughnuts -- a fundamentally different brand proposition. Watch how the Protein Lattes perform and whether functional beverages cannibalize or complement the core coffee business. This determines whether Tims can credibly compete with specialty coffee shops or remains locked in the QSR tier.</p>
+        </div>
+
+        <div class="bg-zinc-900 border border-zinc-800 rounded-xl p-6">
+          <div class="flex items-center gap-2 mb-3">
+            <div class="w-2 h-2 rounded-full bg-amber-400"></div>
+            <p class="text-xs font-medium tracking-widest uppercase text-amber-400">Medium Priority</p>
+          </div>
+          <h4 class="text-white font-semibold mb-2">McDonald's celebrity meal fatigue signal</h4>
+          <p class="text-sm text-zinc-400">Shania Twain (Aug 2025), Drake (Feb 2026), NHL Stars (Mar 2026) -- three celebrity collaborations in seven months. The cultural insertion strategy only works if each activation feels native, not manufactured. Watch social engagement rates on each successive partnership. Declining engagement = cultural fatigue. The Raptors poutine works because it's <em>regional and sport-native</em>. The Drake meal works because it's <em>Toronto-native</em>. If the next celebrity is a generic national play, the spell breaks.</p>
+        </div>
+
+        <div class="bg-zinc-900 border border-zinc-800 rounded-xl p-6">
+          <div class="flex items-center gap-2 mb-3">
+            <div class="w-2 h-2 rounded-full bg-zinc-500"></div>
+            <p class="text-xs font-medium tracking-widest uppercase text-zinc-500">Emerging Signal</p>
+          </div>
+          <h4 class="text-white font-semibold mb-2">Tim Hortons international expansion as brand risk</h4>
+          <p class="text-sm text-zinc-400">Tim Hortons expanding to Texas ($30M investment, 1,000 jobs) and India (40 to 120 stores). Watch whether international expansion stories erode the "Everyday Canada" positioning domestically. When your entire brand equity is built on being Canadian and you're opening in San Antonio, the identity story gets complicated. If a competitor weaponizes this ("we never left Canada"), it's a significant vulnerability.</p>
+        </div>
+
+        <div class="bg-zinc-900 border border-zinc-800 rounded-xl p-6">
+          <div class="flex items-center gap-2 mb-3">
+            <div class="w-2 h-2 rounded-full bg-zinc-500"></div>
+            <p class="text-xs font-medium tracking-widest uppercase text-zinc-500">Emerging Signal</p>
+          </div>
+          <h4 class="text-white font-semibold mb-2">A&W's agency continuity as competitive advantage</h4>
+          <p class="text-sm text-zinc-400">Rethink has been A&W's creative partner since 2000 -- 25+ years of strategic continuity. In a category where McDonald's and Tim Hortons cycle through campaigns rapidly, A&W's consistent brand-building with a single agency may compound in ways that aren't visible yet. Watch whether "Stands for What's Good" becomes an enduring platform or gets replaced. If it sticks, A&W's positioning deepens. If it doesn't, the challenger loses its only strategic anchor.</p>
+        </div>
+      </div>
+    </section>
+
+    <div class="section-divider"></div>
+
+    <!-- ============================================ -->
+    <!-- BOTTOM LINE                                  -->
+    <!-- ============================================ -->
+    <section class="py-16">
+      <div class="bg-zinc-900 border border-zinc-800 rounded-xl p-8">
+        <p class="text-xs font-medium tracking-widest uppercase text-zinc-500 mb-4">The Bottom Line</p>
+        <div class="space-y-4">
+          <p class="text-lg text-white font-medium leading-relaxed">
+            Canadian QSR's competitive landscape is structured around three incompatible brand propositions: <span class="text-brand-tims">habitual ritual</span>, <span class="text-brand-mcd">cultural insertion</span>, and <span class="text-orange-400">ingredient integrity</span>. Each brand is winning in its lane. None has figured out how to own two lanes simultaneously.
+          </p>
+          <p class="text-base text-zinc-400 leading-relaxed">
+            The biggest strategic opportunity in this category is not about better campaigns or lower prices. It's about the gap between what these brands <em>claim</em> and what they <em>are</em>. Tim Hortons claims Canada but is owned by Brazil. McDonald's claims fandom but has a 69 satisfaction score. A&W claims quality but has no cultural presence. The brand that closes its own say-do gap first -- and exposes its competitors' -- will define the next era of Canadian QSR.
+          </p>
+          <p class="text-base text-zinc-400 leading-relaxed">
+            If we were advising a challenger entering this market, or an incumbent ready to make a bold move, the single most actionable insight is this: <span class="text-white font-medium">ingredient integrity + cultural ritual is the unmapped territory</span>. A&W has half the story. Tim Hortons has the other half. Nobody has both. Whoever gets there first builds the only moat that matters: a brand people choose because of what's in the cup <em>and</em> what the cup means.
+          </p>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="border-t border-zinc-800 mt-8">
+    <div class="max-w-6xl mx-auto px-6 py-8">
+      <div class="flex flex-col md:flex-row items-center justify-between gap-4">
+        <div>
+          <p class="text-xs text-zinc-600">
+            This competitive audit was generated by an AI-powered research and analysis tool as a demonstration of automated strategic intelligence capabilities.
+          </p>
+          <p class="text-xs text-zinc-700 mt-1">
+            Data sourced from public search results and published content as of March 7, 2026. All claims grounded in cited source material.
+          </p>
+        </div>
+        <p class="text-xs text-zinc-700 font-mono shrink-0">v1.0 / 2026-03-07</p>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    lucide.createIcons();
+  </script>
+</body>
+</html>
