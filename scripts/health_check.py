@@ -331,11 +331,10 @@ def check_sync_freshness(conn):
         else:
             try:
                 synced = datetime.fromisoformat(row["value"].replace("Z", "+00:00"))
-                # Handle naive datetimes from SQLite
-                if synced.tzinfo is None:
-                    now = datetime.now()
-                else:
-                    now = datetime.now(timezone.utc)
+                # SQLite stores naive UTC timestamps — compare with naive UTC
+                if synced.tzinfo is not None:
+                    synced = synced.replace(tzinfo=None)
+                now = datetime.now(timezone.utc).replace(tzinfo=None)
                 age_minutes = (now - synced).total_seconds() / 60
                 is_stale = age_minutes > SYNC_STALE_MINUTES
                 results["services"][service] = {
@@ -494,43 +493,52 @@ def generate_health_dashboard(all_results):
 
 def run_patrol(fix=False, dashboard=False, as_json=False):
     """Run all health checks. Returns combined results."""
+    quiet = as_json  # Suppress status lines when outputting JSON
+
+    def log(msg, **kwargs):
+        if not quiet:
+            print(msg, **kwargs)
+
     # Ensure DB and migration exist
     bootstrap = PROJECT_ROOT / "shared" / "bootstrap.sh"
     subprocess.run(["bash", str(bootstrap)], capture_output=True)
 
     conn = get_db()
     if not conn:
-        print("CRITICAL: Database not found at", DB_PATH)
+        if as_json:
+            print(json.dumps({"overall": "failed", "error": "Database not found"}))
+        else:
+            print("CRITICAL: Database not found at", DB_PATH)
         return {"overall": "failed", "error": "Database not found"}
 
     results = {}
 
-    print("Running health checks...")
+    log("Running health checks...")
 
     # 1. Database
-    print("  [1/5] Database integrity...", end=" ", flush=True)
+    log("  [1/5] Database integrity...", end=" ", flush=True)
     results["database"] = check_database(conn, fix=fix)
-    print(results["database"]["status"])
+    log(results["database"]["status"])
 
     # 2. OAuth
-    print("  [2/5] OAuth tokens...", end=" ", flush=True)
+    log("  [2/5] OAuth tokens...", end=" ", flush=True)
     results["oauth"] = check_oauth(conn, fix=fix)
-    print(results["oauth"]["status"])
+    log(results["oauth"]["status"])
 
     # 3. HTML views
-    print("  [3/5] HTML views...", end=" ", flush=True)
+    log("  [3/5] HTML views...", end=" ", flush=True)
     results["html_views"] = check_html_views(conn, fix=fix)
-    print(results["html_views"]["status"])
+    log(results["html_views"]["status"])
 
     # 4. Backups
-    print("  [4/5] Backups...", end=" ", flush=True)
+    log("  [4/5] Backups...", end=" ", flush=True)
     results["backups"] = check_backups(conn, fix=fix)
-    print(results["backups"]["status"])
+    log(results["backups"]["status"])
 
     # 5. Sync freshness
-    print("  [5/5] Sync freshness...", end=" ", flush=True)
+    log("  [5/5] Sync freshness...", end=" ", flush=True)
     results["sync_freshness"] = check_sync_freshness(conn)
-    print(results["sync_freshness"]["status"])
+    log(results["sync_freshness"]["status"])
 
     # Overall status
     statuses = [r["status"] for r in results.values()]
@@ -546,11 +554,11 @@ def run_patrol(fix=False, dashboard=False, as_json=False):
     for data in results.values():
         all_repairs.extend(data.get("repairs", []))
 
-    print(f"\nOverall: {overall}" + (f" ({len(all_repairs)} auto-repairs)" if all_repairs else ""))
+    log(f"\nOverall: {overall}" + (f" ({len(all_repairs)} auto-repairs)" if all_repairs else ""))
 
     if dashboard or fix:
         path = generate_health_dashboard(results)
-        print(f"Dashboard: {path}")
+        log(f"Dashboard: {path}")
 
     conn.close()
 
