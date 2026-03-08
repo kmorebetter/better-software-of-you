@@ -1,4 +1,4 @@
--- Telegram Bot Module
+-- Telegram Bot Module (superseded by 027_local_telegram.sql)
 -- Tracks items synced from the Telegram bot's D1 backlog into local SoY.
 
 CREATE TABLE IF NOT EXISTS telegram_synced_items (
