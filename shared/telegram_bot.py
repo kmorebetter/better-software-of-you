@@ -642,8 +642,9 @@ You're running locally on {owner_name}'s machine, with direct access to all SoY 
     # ── Dev Sessions ──
 
     def _resolve_project_for_dev(self, text):
-        """Resolve a project name from /dev args using progressive prefix matching.
+        """Resolve a project name from /dev args.
 
+        Supports: numeric ID, slug (hyphens), partial name, progressive prefix.
         Returns (project_id, project_name, workspace_path, instruction) or raises ValueError.
         """
         with self._db() as conn:
@@ -654,43 +655,86 @@ You're running locally on {owner_name}'s machine, with direct access to all SoY 
         if not projects:
             raise ValueError("No active projects found.")
 
-        # Try progressive prefix matching: "grow" then "grow app" etc.
         words = text.split()
+
+        # 1. Numeric ID: /dev 8 <instruction>
+        if words[0].isdigit():
+            pid = int(words[0])
+            matched = next((p for p in projects if p["id"] == pid), None)
+            if matched:
+                instruction = " ".join(words[1:]).strip()
+                if not instruction:
+                    raise ValueError("No instruction provided. Usage: /dev <id> <instruction>")
+                return self._validate_project_workspace(matched, instruction)
+            raise ValueError(f"No active project with ID {pid}.")
+
+        # 2. Progressive prefix matching (with de-slugging)
         matched = None
         instruction_start = 0
 
         for i in range(1, len(words) + 1):
             prefix = " ".join(words[:i]).lower()
-            candidates = [p for p in projects if p["name"].lower().startswith(prefix)
-                          or prefix in p["name"].lower()]
+            deslugged = prefix.replace("-", " ")
+            candidates = self._match_projects(projects, prefix, deslugged)
             if len(candidates) == 1:
                 matched = candidates[0]
                 instruction_start = i
             elif len(candidates) == 0:
                 break
 
-        if not matched:
-            # Try matching just the first word
-            first = words[0].lower()
-            candidates = [p for p in projects if first in p["name"].lower()]
-            if len(candidates) == 1:
-                matched = candidates[0]
-                instruction_start = 1
-            else:
-                names = ", ".join(p["name"] for p in projects)
-                raise ValueError(f"Couldn't resolve project. Active projects: {names}")
+        if matched:
+            instruction = " ".join(words[instruction_start:]).strip()
+            if not instruction:
+                raise ValueError("No instruction provided. Usage: /dev <project> <instruction>")
+            return self._validate_project_workspace(matched, instruction)
 
-        instruction = " ".join(words[instruction_start:]).strip()
-        if not instruction:
-            raise ValueError("No instruction provided. Usage: /dev <project> <instruction>")
+        # 3. Fallback: first word only
+        first = words[0].lower()
+        deslugged = first.replace("-", " ")
+        candidates = self._match_projects(projects, first, deslugged)
+        if len(candidates) == 1:
+            instruction = " ".join(words[1:]).strip()
+            if not instruction:
+                raise ValueError("No instruction provided. Usage: /dev <project> <instruction>")
+            return self._validate_project_workspace(candidates[0], instruction)
 
+        # 4. Ambiguous or no match — show candidates with IDs
+        if len(candidates) > 1:
+            listing = "\n".join(f"• `{p['id']}` — {p['name']}" for p in candidates)
+            raise ValueError(
+                f"Multiple matches:\n{listing}\n\n"
+                "Use the project ID: `/dev <id> <instruction>`")
+
+        listing = "\n".join(f"• `{p['id']}` — {p['name']}" for p in projects)
+        raise ValueError(f"No matching project.\n\n{listing}")
+
+    @staticmethod
+    def _match_projects(projects, prefix, deslugged=None):
+        """Match projects by name prefix, substring, or workspace directory name."""
+        if deslugged is None:
+            deslugged = prefix
+        seen = set()
+        result = []
+        for p in projects:
+            name = p["name"].lower()
+            dirname = os.path.basename(p["workspace_path"] or "").lower()
+            if (name.startswith(prefix) or prefix in name
+                    or name.startswith(deslugged) or deslugged in name
+                    or dirname == prefix or dirname == prefix.replace(" ", "-")):
+                if p["id"] not in seen:
+                    seen.add(p["id"])
+                    result.append(p)
+        return result
+
+    @staticmethod
+    def _validate_project_workspace(matched, instruction):
+        """Validate workspace exists. Returns (id, name, workspace, instruction)."""
         workspace = matched["workspace_path"]
         if not workspace:
             raise ValueError(f"No workspace path set for {matched['name']}. Set one with /project first.")
         workspace = os.path.expanduser(workspace)
         if not os.path.isdir(workspace):
             raise ValueError(f"Workspace not found: {workspace}")
-
         return matched["id"], matched["name"], workspace, instruction
 
     @staticmethod
@@ -1844,7 +1888,7 @@ You're running locally on {owner_name}'s machine, with direct access to all SoY 
         if cmd == "/status":
             with self._db() as conn:
                 projects = conn.execute(
-                    "SELECT p.name, p.status, c.name as client, "
+                    "SELECT p.id, p.name, p.status, c.name as client, "
                     "(SELECT COUNT(*) FROM tasks t WHERE t.project_id = p.id AND t.status != 'done') as open_tasks, "
                     "(SELECT COUNT(*) FROM tasks t WHERE t.project_id = p.id AND t.status = 'done') as done_tasks, "
                     "(SELECT COUNT(*) FROM tasks t WHERE t.project_id = p.id AND t.status != 'done' "
@@ -1867,7 +1911,7 @@ You're running locally on {owner_name}'s machine, with direct access to all SoY 
                 overdue_tag = f" ({p['overdue']} overdue)" if p["overdue"] else ""
                 client_tag = f"\n  Client: {p['client']}" if p["client"] else ""
                 text += (
-                    f"*{p['name']}* ({p['status']})\n"
+                    f"`{p['id']}` *{p['name']}* ({p['status']})\n"
                     f"  {p['open_tasks']} open, {p['done_tasks']} done{overdue_tag}{client_tag}\n\n"
                 )
             self.send_message(chat_id, text.strip())
@@ -2450,7 +2494,7 @@ You're running locally on {owner_name}'s machine, with direct access to all SoY 
         """Guide the user to the /dev command."""
         with self._db() as conn:
             projects = conn.execute(
-                "SELECT name, workspace_path FROM projects "
+                "SELECT id, name, workspace_path FROM projects "
                 "WHERE status IN ('active', 'planning') AND workspace_path IS NOT NULL "
                 "ORDER BY name"
             ).fetchall()
@@ -2461,30 +2505,12 @@ You're running locally on {owner_name}'s machine, with direct access to all SoY 
                 "Add a workspace path to a project first.")
             return
 
-        # Build project list with short aliases (disambiguate duplicates)
-        articles = {"the", "a", "an"}
-        aliases = {}
-        for p in projects:
-            name_words = p["name"].lower().split()
-            content_words = [w for w in name_words if w not in articles] or name_words
-            alias = content_words[0]
-            aliases.setdefault(alias, []).append((p, content_words))
-
-        lines = []
-        for alias, entries in aliases.items():
-            if len(entries) == 1:
-                lines.append((entries[0][0]["name"], alias))
-            else:
-                for p, words in entries:
-                    longer = "-".join(words[:2]) if len(words) > 1 else words[0]
-                    lines.append((p["name"], longer))
-
-        lines.sort(key=lambda x: x[0])
-        lines = [f"• *{name}* → `{alias}`" for name, alias in lines]
+        lines = [f"• `{p['id']}` — {p['name']}" for p in projects]
 
         self.send_message(chat_id,
             "Use /dev to start a dev session:\n"
-            "`/dev <project> <instruction>`\n\n"
+            "`/dev <project> <instruction>`\n"
+            "`/dev <id> <instruction>`\n\n"
             f"*Projects:*\n" + "\n".join(lines) + "\n\n"
             "Example:\n`/dev grow Fix the nav bug on mobile`")
 
