@@ -877,6 +877,39 @@ You're running locally on {owner_name}'s machine, with direct access to all SoY 
                 self.send_message(chat_id,
                     f"GitHub repo kept. *{project_name}* stays in SoY (workspace cleared).")
 
+        elif action == "dirty_workspace":
+            choice = text.strip().lower()
+            workspace = conf["workspace"]
+            if choice == "commit":
+                result = subprocess.run(
+                    ["git", "add", "-A"],
+                    capture_output=True, text=True, cwd=workspace, timeout=10,
+                )
+                result = subprocess.run(
+                    ["git", "commit", "-m", "WIP: commit uncommitted changes via Telegram"],
+                    capture_output=True, text=True, cwd=workspace, timeout=10,
+                )
+                if result.returncode != 0:
+                    self.send_message(chat_id, f"❌ Commit failed: {result.stderr.strip()[:300]}")
+                    return
+                self.send_message(chat_id, "✅ Changes committed.")
+            elif choice == "stash":
+                result = subprocess.run(
+                    ["git", "stash", "push", "-m", "soy-bot: stashed before dev session"],
+                    capture_output=True, text=True, cwd=workspace, timeout=10,
+                )
+                if result.returncode != 0:
+                    self.send_message(chat_id, f"❌ Stash failed: {result.stderr.strip()[:300]}")
+                    return
+                self.send_message(chat_id, "📦 Changes stashed.")
+            else:
+                self.send_message(chat_id, "Cancelled.")
+                return
+            # Proceed with dev session
+            self._launch_dev_session(
+                conf["project_id"], conf["project_name"], workspace,
+                conf["instruction"], chat_id, conf["model"])
+
     def _handle_delete_project(self, args, chat_id):
         """Handle /delete — delete a project with multi-step confirmation."""
         if not args:
@@ -1311,6 +1344,23 @@ You're running locally on {owner_name}'s machine, with direct access to all SoY 
                 f"`cd {workspace} && git remote add origin git@github.com:YOUR_USER/{repo_name}.git`")
             return False
 
+    def _launch_dev_session(self, project_id, project_name, workspace, instruction, chat_id, model=DEFAULT_MODEL, timeout=None):
+        """Validate, spawn, and notify for a dev session. Used by /dev and confirmation handlers."""
+        try:
+            session_id, branch_name = self._spawn_dev_session(
+                project_id, project_name, workspace, instruction, chat_id, model, timeout)
+        except ValueError as e:
+            self.send_message(chat_id, f"❌ {e}")
+            return
+        self.send_message(chat_id,
+            f"🔧 *Dev session started* (`{session_id}`)\n\n"
+            f"*Project:* {project_name}\n"
+            f"*Branch:* `{branch_name}`\n"
+            f"*Model:* {model}\n"
+            f"*Instruction:* {instruction}\n\n"
+            "I'll message you when it's done. "
+            "A preview deploy will follow automatically.")
+
     def _spawn_dev_session(self, project_id, project_name, workspace, instruction, chat_id, model=DEFAULT_MODEL, timeout=None):
         """Spawn a background claude -p session for dev work on an isolated branch."""
         session_id = uuid.uuid4().hex[:8]
@@ -1324,16 +1374,14 @@ You're running locally on {owner_name}'s machine, with direct access to all SoY 
             )
         self.workspace_locks.add(workspace)
 
-        # Ensure workspace is clean, then create isolated branch
+        # Workspace must be clean before branching — caller handles dirty state
         try:
             porcelain = subprocess.run(
                 ["git", "status", "--porcelain", "-uno"],
                 capture_output=True, text=True, cwd=workspace, timeout=5,
             )
             if porcelain.stdout.strip():
-                raise ValueError(
-                    "Workspace has uncommitted changes. Commit or stash them first."
-                )
+                raise ValueError("Workspace has uncommitted changes.")
 
             subprocess.run(
                 ["git", "checkout", "main"],
@@ -2029,21 +2077,28 @@ You're running locally on {owner_name}'s machine, with direct access to all SoY 
             if not self._ensure_git_remote(workspace, project_name, chat_id):
                 return True
 
-            try:
-                session_id, branch_name = self._spawn_dev_session(
-                    project_id, project_name, workspace, instruction, chat_id, model)
-            except ValueError as e:
-                self.send_message(chat_id, f"❌ {e}")
+            # Check for dirty workspace — prompt user before proceeding
+            dirty = subprocess.run(
+                ["git", "status", "--porcelain", "-uno"],
+                capture_output=True, text=True, cwd=workspace, timeout=5,
+            ).stdout.strip()
+            if dirty:
+                self.send_message(chat_id,
+                    f"⚠️ *{project_name}* has uncommitted changes:\n"
+                    f"```\n{dirty[:500]}\n```\n\n"
+                    "Reply *commit* to commit them first, *stash* to stash, or *cancel*.")
+                self.pending_confirmations[chat_id] = {
+                    "action": "dirty_workspace",
+                    "project_id": project_id,
+                    "project_name": project_name,
+                    "workspace": workspace,
+                    "instruction": instruction,
+                    "model": model,
+                    "expires_at": time.time() + CONFIRMATION_TIMEOUT,
+                }
                 return True
 
-            self.send_message(chat_id,
-                f"🔧 *Dev session started* (`{session_id}`)\n\n"
-                f"*Project:* {project_name}\n"
-                f"*Branch:* `{branch_name}`\n"
-                f"*Model:* {model}\n"
-                f"*Instruction:* {instruction}\n\n"
-                "I'll message you when it's done. "
-                "A preview deploy will follow automatically.")
+            self._launch_dev_session(project_id, project_name, workspace, instruction, chat_id, model)
             return True
 
         if cmd == "/sessions":
