@@ -5,18 +5,9 @@ allowed-tools: ["Bash", "Read", "AskUserQuestion"]
 
 # Telegram Bot Setup
 
-Connect a Telegram bot so you can interact with SoY from your phone — capture tasks, notes, and chat about projects while away from your computer.
+Connect a Telegram bot so you can interact with SoY from your phone — capture tasks, notes, and chat about your projects while away from your computer. The bot runs locally using `claude -p` (requires Claude Code CLI with active subscription).
 
-## Step 1: Check Prerequisites
-
-Verify Cloudflare is configured:
-```bash
-sqlite3 "${CLAUDE_PLUGIN_ROOT:-$(pwd)}/data/soy.db" "SELECT key, value FROM soy_meta WHERE key IN ('cf_account_id', 'cf_pages_project')"
-```
-
-If missing, tell the user they need to set up Cloudflare Pages first.
-
-## Step 2: Check if Already Configured
+## Step 1: Check if Already Configured
 
 ```bash
 sqlite3 "${CLAUDE_PLUGIN_ROOT:-$(pwd)}/data/soy.db" "SELECT key, value FROM soy_meta WHERE key LIKE 'telegram_%'"
@@ -24,9 +15,9 @@ sqlite3 "${CLAUDE_PLUGIN_ROOT:-$(pwd)}/data/soy.db" "SELECT key, value FROM soy_
 
 If `telegram_bot_username` exists, show current status and ask if they want to reconfigure.
 
-## Step 3: Collect Credentials
+## Step 2: Collect Credentials
 
-Use `AskUserQuestion` to guide the user through three things they need:
+Use `AskUserQuestion` to guide the user through two things they need:
 
 **Q1** (header: "Bot Token"):
 "Create a Telegram bot via @BotFather and paste the token here. Steps:
@@ -40,39 +31,44 @@ Use `AskUserQuestion` to guide the user through three things they need:
 2. Send it any message
 3. It replies with your numeric ID — paste it here"
 
-**Q3** (header: "Anthropic Key"):
-"Paste your Anthropic API key (starts with `sk-ant-`). Create one at console.anthropic.com if needed."
-
 Ask these sequentially since each requires the user to do something.
 
-## Step 4: Run Setup
+## Step 3: Run Setup
 
-Once all three values are collected:
+Once both values are collected:
 
 ```bash
-python3 "${CLAUDE_PLUGIN_ROOT:-$(pwd)}/shared/setup_telegram.py" setup "<bot_token>" "<owner_id>" "<anthropic_key>"
+python3 "${CLAUDE_PLUGIN_ROOT:-$(pwd)}/shared/setup_telegram.py" setup "<bot_token>" "<owner_id>"
 ```
 
 Parse the JSON output.
+
+## Step 4: Verify Telegram Tables
+
+Bootstrap handles migrations automatically, so just verify the tables exist:
+
+```bash
+sqlite3 "${CLAUDE_PLUGIN_ROOT:-$(pwd)}/data/soy.db" ".tables" | grep telegram
+```
+
+Expected output should include `telegram_bot_sessions`, `telegram_conversations`, `telegram_dev_sessions`, etc.
+
+If tables are missing, re-run bootstrap:
+```bash
+bash "${CLAUDE_PLUGIN_ROOT:-$(pwd)}/shared/bootstrap.sh"
+```
 
 ## Step 5: Report Results
 
 If successful, tell the user:
 
-"Your Telegram bot is live! **@{bot_username}** is ready.
+"Your Telegram bot is ready! **@{bot_username}** is configured for local mode.
 
-Open Telegram, find your bot, and send it a message — try something like:
-- "Add a task: review the homepage layout"
-- "What projects am I working on?"
-- /status
+To start the bot, run `/telegram start` — or in a terminal:
+```
+python3 shared/telegram_bot.py
+```
 
-Your context will sync automatically. Run `/telegram sync` anytime to force a fresh sync."
+Tip: run it in a tmux session so it stays alive when you close the terminal."
 
 If any step failed, report the specific error and which steps succeeded.
-
-## Step 6: Run Migration
-
-Make sure the local migration is applied:
-```bash
-sqlite3 "${CLAUDE_PLUGIN_ROOT:-$(pwd)}/data/soy.db" < "${CLAUDE_PLUGIN_ROOT:-$(pwd)}/data/migrations/025_telegram_bot.sql"
-```

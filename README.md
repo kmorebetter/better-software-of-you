@@ -67,6 +67,62 @@ Modules enhance each other automatically:
 - Calendar events link to contacts via attendees
 - Search spans all data across all modules
 
+### Telegram Bot (AFK Access)
+Interact with SoY from your phone — capture tasks, notes, and run dev sessions while away from your computer. The bot runs locally via long-polling (no webhooks, no server).
+
+**Prerequisites:**
+- Claude Code CLI (`claude`) in PATH with active subscription
+- Telegram account + bot token from @BotFather
+- `git` and `gh` CLI (for dev sessions)
+- `vercel` CLI (optional, for preview deploys)
+
+**Setup:**
+```
+/telegram-setup
+```
+
+**Starting the bot:**
+```bash
+python3 shared/telegram_bot.py
+```
+Tip: run in a tmux session so it stays alive when you close the terminal.
+
+**Commands:**
+
+| Command | What it does |
+|---------|-------------|
+| `/start` | Welcome message + command list |
+| `/status` | Project overview with task counts |
+| `/tasks` | Open tasks (optionally filter by project) |
+| `/notes` | Recent notes |
+| `/new` | Create a new project from scratch |
+| `/delete` | Delete a project with multi-step confirmation |
+| `/dev` | Spawn an autonomous dev session on a project |
+| `/sessions` | List recent dev sessions |
+| `/session` | View full output of a session |
+| `/approve` | Merge a session's branch into main |
+| `/reject` | Discard a session's branch |
+| `/kill` | Kill a running session |
+| `/debug` | Bot diagnostics |
+| `/errors` | Recent error log |
+| `/stop` | Shut down the bot |
+
+Or just send natural language — the bot uses Claude to answer questions about your projects, capture tasks, and log notes.
+
+**Security model:**
+- Owner-only: only your Telegram user ID can interact with the bot
+- Isolated branches: dev sessions work on `dev/<slug>-<uuid>` branches, never main
+- Review gate: changes require explicit `/approve` before merging
+- Timeouts: sessions auto-terminate after 10-20 minutes
+- Concurrent limits: max 3 active sessions
+- Local-only: bot runs on your machine, no data leaves your network
+
+**Troubleshooting:**
+- *Bot not responding:* check `python3 shared/telegram_bot.py` is running, verify token with `/debug`
+- *"Not authorized":* your Telegram user ID must match `TELEGRAM_OWNER_ID` in `.env`
+- *Dev session hangs:* use `/kill <id>` to terminate, check `/errors` for details
+- *Preview deploy fails:* ensure `vercel` CLI is installed and linked to your account
+
 ## Commands
 
 | Command | What it does |
@@ -92,6 +148,8 @@ Modules enhance each other automatically:
 | `/email` | Compose and send emails (always confirms first) |
 | `/calendar` | View and create Google Calendar events |
 | `/google-setup` | Connect your Google account |
+| `/telegram-setup` | Set up the Telegram bot for AFK access |
+| `/telegram` | Manage the Telegram bot (start, stop, status) |
 | `/status` | System overview |
 | `/setup` | First-run setup (runs automatically) |
 | `/add-module` | Install a new module |
