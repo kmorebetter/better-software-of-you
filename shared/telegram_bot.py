@@ -165,7 +165,6 @@ class TelegramBot:
         result = self._api("sendMessage", payload)
         if not result.get("ok"):
             # Retry without Markdown
-            payload["parse_mode"] = None
             del payload["parse_mode"]
             self._api("sendMessage", payload)
 
@@ -213,7 +212,7 @@ class TelegramBot:
 
     @contextlib.contextmanager
     def _db(self):
-        """Context manager for database connections. Auto-closes on exit."""
+        """Context manager for database connections. Rolls back on exception, always closes."""
         conn = sqlite3.connect(DB_PATH)
         conn.row_factory = sqlite3.Row
         conn.execute("PRAGMA foreign_keys=ON")
@@ -764,7 +763,7 @@ You're running locally on {owner_name}'s machine, with direct access to all SoY 
     def _scaffold_project(self, slug, display_name, workspace):
         """Create minimal project files in the workspace."""
         gitignore = "node_modules/\n.vercel/\n.env\n.DS_Store\n"
-        with open(os.path.join(workspace, ".gitignore"), "w") as f:
+        with open(os.path.join(workspace, ".gitignore"), "w", encoding="utf-8") as f:
             f.write(gitignore)
 
         index_html = (
@@ -776,14 +775,14 @@ You're running locally on {owner_name}'s machine, with direct access to all SoY 
             f"  <h1>{display_name}</h1>\n"
             "</body>\n</html>\n"
         )
-        with open(os.path.join(workspace, "index.html"), "w") as f:
+        with open(os.path.join(workspace, "index.html"), "w", encoding="utf-8") as f:
             f.write(index_html)
 
         package_json = json.dumps(
             {"name": slug, "version": "0.0.1", "private": True},
             indent=2,
         ) + "\n"
-        with open(os.path.join(workspace, "package.json"), "w") as f:
+        with open(os.path.join(workspace, "package.json"), "w", encoding="utf-8") as f:
             f.write(package_json)
 
         claude_md = (
@@ -791,7 +790,7 @@ You're running locally on {owner_name}'s machine, with direct access to all SoY 
             "IMPORTANT: Never push to main without explicit instruction. "
             "Commit on your branch only.\n"
         )
-        with open(os.path.join(workspace, "CLAUDE.md"), "w") as f:
+        with open(os.path.join(workspace, "CLAUDE.md"), "w", encoding="utf-8") as f:
             f.write(claude_md)
 
     def _cleanup_failed_project(self, project_id):
@@ -2095,12 +2094,15 @@ You're running locally on {owner_name}'s machine, with direct access to all SoY 
                 self.send_message(chat_id, "*Usage:* /kill <id>")
                 return True
 
-            # Find in active sessions
-            matched_sid = None
-            for sid in self.active_dev_sessions:
-                if sid.startswith(session_arg):
-                    matched_sid = sid
-                    break
+            # Find in active sessions by prefix
+            matches = [sid for sid in self.active_dev_sessions if sid.startswith(session_arg)]
+            if len(matches) > 1:
+                ids = ", ".join(f"`{s}`" for s in matches)
+                self.send_message(chat_id,
+                    f"Ambiguous prefix — matches {len(matches)} active sessions: {ids}\n"
+                    "Use more characters to narrow it down.")
+                return True
+            matched_sid = matches[0] if matches else None
 
             if not matched_sid:
                 # Check DB — session might exist but already finished

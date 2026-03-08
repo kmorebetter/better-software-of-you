@@ -111,7 +111,7 @@ Or just send natural language — the bot uses Claude to answer questions about 
 
 **Security model:**
 - Owner-only: only your Telegram user ID can interact with the bot
-- Isolated branches: dev sessions work on `dev/<slug>-<uuid>` branches, never main
+- Isolated branches: dev sessions work on `dev/<session-id>` branches, never main
 - Review gate: changes require explicit `/approve` before merging
 - Timeouts: sessions auto-terminate after 10-20 minutes
 - Concurrent limits: max 3 active sessions
