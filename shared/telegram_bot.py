@@ -77,7 +77,7 @@ CONFIRMATION_TIMEOUT = 120  # seconds
 
 # Workspace & files
 DEV_BRANCH_PREFIX = "dev/"
-WORKSPACE_BASE = "~/wkspaces"
+WORKSPACE_BASE = os.environ.get("SOY_WORKSPACE_ROOT", "~/wkspaces")
 INBOX_PROJECT_NAME = "Telegram Inbox"
 ERROR_LOG_MAX = 50
 TEMP_FILE_MAX_AGE = 86400  # 24 hours
@@ -219,6 +219,9 @@ class TelegramBot:
         conn.execute("PRAGMA foreign_keys=ON")
         try:
             yield conn
+        except Exception:
+            conn.rollback()
+            raise
         finally:
             conn.close()
 
@@ -235,11 +238,17 @@ class TelegramBot:
 
     @staticmethod
     def _find_session_by_prefix(conn, prefix):
-        """Find a dev session by ID prefix. Returns Row or None."""
-        return conn.execute(
+        """Find a dev session by ID prefix. Returns (Row, None) or (None, error_msg)."""
+        rows = conn.execute(
             "SELECT * FROM telegram_dev_sessions WHERE SUBSTR(session_id, 1, ?) = ?",
             (len(prefix), prefix),
-        ).fetchone()
+        ).fetchall()
+        if len(rows) == 1:
+            return rows[0], None
+        if len(rows) > 1:
+            ids = ", ".join(f"`{r['session_id']}`" for r in rows)
+            return None, f"Ambiguous prefix — matches {len(rows)} sessions: {ids}\nUse more characters to narrow it down."
+        return None, None
 
     @staticmethod
     def _format_duration(seconds):
@@ -380,6 +389,16 @@ class TelegramBot:
         # Project names for fuzzy matching reference
         project_names = [p["name"] for p in projects]
 
+        # New user section if no data exists yet
+        new_user_section = ""
+        if not projects and not contacts:
+            new_user_section = """
+## New User
+This user just set up the bot and has no projects or contacts yet.
+Be encouraging and suggest /new to create their first project.
+Keep it simple — don't overwhelm with features.
+"""
+
         return f"""You are the Telegram interface for Software of You — {owner_name}'s personal data platform.
 
 You're running locally on {owner_name}'s machine, with direct access to all SoY data.
@@ -395,7 +414,7 @@ You're running locally on {owner_name}'s machine, with direct access to all SoY 
 
 ## Known Project Names (for matching)
 {json.dumps(project_names)}
-
+{new_user_section}
 ## Behavior
 - Keep responses concise — this is Telegram on mobile.
 - When the user mentions a task or TODO, capture it by including a marker line in your response:
@@ -1092,6 +1111,12 @@ You're running locally on {owner_name}'s machine, with direct access to all SoY 
             self.send_message(chat_id, "❌ `gh` CLI not found. Install it: https://cli.github.com")
             return
 
+        # Warn about optional vercel CLI (non-blocking)
+        if not shutil.which("vercel"):
+            self.send_message(chat_id,
+                "⚠️ `vercel` CLI not found — preview deploys will be skipped.\n"
+                "Install it: `npm i -g vercel`")
+
         self.send_message(chat_id,
             f"⚙️ Creating *{display_name}*...\n"
             f"Workspace: `{workspace}`")
@@ -1335,6 +1360,16 @@ You're running locally on {owner_name}'s machine, with direct access to all SoY 
 
         clean_env = {k: v for k, v in os.environ.items() if k != "CLAUDECODE"}
 
+        # --dangerously-skip-permissions is required because dev sessions run
+        # autonomously in the background with no interactive terminal to approve
+        # tool calls. This is safe here because:
+        #   1. Owner-only gate: only TELEGRAM_OWNER_ID can trigger sessions
+        #   2. Isolated branches: all work happens on dev/<slug>-<uuid> branches
+        #   3. Workspace locks: only one session per workspace at a time
+        #   4. Timeouts: DEV_SESSION_TIMEOUT / NEW_PROJECT_TIMEOUT kill runaways
+        #   5. Concurrent limit: max DEV_SESSION_MAX_ACTIVE sessions
+        #   6. CLAUDE.md guardrails: project-level instructions constrain behavior
+        #   7. Review gate: changes require explicit /approve before merging to main
         process = subprocess.Popen(
             [
                 "claude", "-p",
@@ -1766,27 +1801,45 @@ You're running locally on {owner_name}'s machine, with direct access to all SoY 
                 owner_row = conn.execute(
                     "SELECT value FROM user_profile WHERE category = 'identity' AND key = 'name'"
                 ).fetchone()
+                project_count = conn.execute(
+                    "SELECT COUNT(*) as cnt FROM projects WHERE status IN ('active', 'planning')"
+                ).fetchone()["cnt"]
             name = owner_row["value"] if owner_row else "there"
-            self.send_message(chat_id,
-                f"Hey {name}!\n\n"
-                "SoY Telegram is live — running locally with full database access.\n\n"
-                "Text me tasks, ideas, or questions about your projects.\n\n"
-                "*Commands:*\n"
-                "/status — project overview + task counts\n"
-                "/tasks — open tasks (optionally filter by project)\n"
-                "/notes — recent notes\n"
-                "/new — create a new project from scratch\n"
-                "/delete — delete a project and clean up\n"
-                "/dev — spawn a remote dev session\n"
-                "/sessions — list recent dev sessions\n"
-                "/session — view session output\n"
-                "/approve — merge a session's branch to main\n"
-                "/reject — discard a session's branch\n"
-                "/kill — kill a running session\n"
-                "/debug — bot diagnostics\n"
-                "/errors — recent error log\n"
-                "/stop — shut down the bot"
-            )
+
+            if project_count == 0:
+                # Simplified welcome for new users
+                self.send_message(chat_id,
+                    f"Hey {name}!\n\n"
+                    "SoY Telegram is live — running locally with full database access.\n\n"
+                    "Text me tasks, ideas, or questions. Here's how to get started:\n\n"
+                    "/new — create a new project from scratch\n"
+                    "/status — project overview + task counts\n"
+                    "/debug — bot diagnostics\n\n"
+                    "*Example:*\n"
+                    "`/new client-site Build a landing page with hero section`\n\n"
+                    "_Send /start again later for all commands._"
+                )
+            else:
+                self.send_message(chat_id,
+                    f"Hey {name}!\n\n"
+                    "SoY Telegram is live — running locally with full database access.\n\n"
+                    "Text me tasks, ideas, or questions about your projects.\n\n"
+                    "*Commands:*\n"
+                    "/status — project overview + task counts\n"
+                    "/tasks — open tasks (optionally filter by project)\n"
+                    "/notes — recent notes\n"
+                    "/new — create a new project from scratch\n"
+                    "/delete — delete a project and clean up\n"
+                    "/dev — spawn a remote dev session\n"
+                    "/sessions — list recent dev sessions\n"
+                    "/session — view session output\n"
+                    "/approve — merge a session's branch to main\n"
+                    "/reject — discard a session's branch\n"
+                    "/kill — kill a running session\n"
+                    "/debug — bot diagnostics\n"
+                    "/errors — recent error log\n"
+                    "/stop — shut down the bot"
+                )
             return True
 
         if cmd == "/status":
@@ -1802,7 +1855,12 @@ You're running locally on {owner_name}'s machine, with direct access to all SoY 
                 ).fetchall()
 
             if not projects:
-                self.send_message(chat_id, "No active projects.")
+                self.send_message(chat_id,
+                    "No active projects.\n\n"
+                    "Create one with /new:\n"
+                    "`/new <slug> <instruction>`\n\n"
+                    "*Example:*\n"
+                    "`/new client-site Build a landing page with hero section`")
                 return True
 
             text = "*SoY Status*\n\n"
@@ -1986,10 +2044,10 @@ You're running locally on {owner_name}'s machine, with direct access to all SoY 
                 return True
 
             with self._db() as conn:
-                row = self._find_session_by_prefix(conn, session_arg)
+                row, err = self._find_session_by_prefix(conn, session_arg)
 
             if not row:
-                self.send_message(chat_id, f"No session found matching `{session_arg}`.")
+                self.send_message(chat_id, err or f"No session found matching `{session_arg}`.")
                 return True
 
             icon = STATUS_ICONS.get(row["status"], "❓")
@@ -2047,17 +2105,13 @@ You're running locally on {owner_name}'s machine, with direct access to all SoY 
             if not matched_sid:
                 # Check DB — session might exist but already finished
                 with self._db() as conn:
-                    row = conn.execute(
-                        "SELECT session_id, status, project_name FROM telegram_dev_sessions "
-                        "WHERE SUBSTR(session_id, 1, ?) = ?",
-                        (len(session_arg), session_arg),
-                    ).fetchone()
+                    row, err = self._find_session_by_prefix(conn, session_arg)
                 if row:
                     self.send_message(chat_id,
                         f"Session `{row['session_id']}` ({row['project_name']}) "
                         f"already {row['status']} — nothing to kill.")
                 else:
-                    self.send_message(chat_id, f"No session found matching `{session_arg}`.")
+                    self.send_message(chat_id, err or f"No session found matching `{session_arg}`.")
                 return True
 
             info = self.active_dev_sessions.pop(matched_sid)
@@ -2205,10 +2259,10 @@ You're running locally on {owner_name}'s machine, with direct access to all SoY 
             return
 
         with self._db() as conn:
-            row = self._find_session_by_prefix(conn, session_arg)
+            row, err = self._find_session_by_prefix(conn, session_arg)
 
             if not row:
-                self.send_message(chat_id, f"No session found matching `{session_arg}`.")
+                self.send_message(chat_id, err or f"No session found matching `{session_arg}`.")
                 return
 
             if not row["branch_name"]:
@@ -2310,10 +2364,10 @@ You're running locally on {owner_name}'s machine, with direct access to all SoY 
             return
 
         with self._db() as conn:
-            row = self._find_session_by_prefix(conn, session_arg)
+            row, err = self._find_session_by_prefix(conn, session_arg)
 
             if not row:
-                self.send_message(chat_id, f"No session found matching `{session_arg}`.")
+                self.send_message(chat_id, err or f"No session found matching `{session_arg}`.")
                 return
 
             if not row["branch_name"]:
