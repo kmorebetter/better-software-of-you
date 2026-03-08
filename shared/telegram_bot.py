@@ -46,30 +46,44 @@ if os.path.exists(ENV_PATH):
             line = line.strip()
             if line and not line.startswith("#") and "=" in line:
                 k, v = line.split("=", 1)
-                os.environ.setdefault(k.strip(), v.strip())
+                v = v.strip()
+                # Strip surrounding quotes (single or double)
+                if len(v) >= 2 and v[0] == v[-1] and v[0] in ('"', "'"):
+                    v = v[1:-1]
+                os.environ.setdefault(k.strip(), v)
 
 BOT_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN", "")
 OWNER_ID = os.environ.get("TELEGRAM_OWNER_ID", "")
+
+# ── Constants ──
+
+# Telegram
 POLL_TIMEOUT = 30
 MAX_MESSAGE_LEN = 4096
-SESSION_TIMEOUT_HOURS = 4
+ALLOWED_CALLBACK_ACTIONS = {"approve", "reject"}
+
+# Claude
+DEFAULT_MODEL = "sonnet"
+ALLOWED_MODELS = {"sonnet", "opus", "haiku"}
 CLAUDE_TIMEOUT = 120
+
+# Sessions & timeouts
+SESSION_TIMEOUT_HOURS = 4
 DEV_SESSION_TIMEOUT = 600  # 10 minutes
 NEW_PROJECT_TIMEOUT = 1200  # 20 minutes
 DEV_SESSION_MAX_ACTIVE = 3
 DEPLOY_TIMEOUT = 180  # 3 minutes
-ALLOWED_MODELS = {"sonnet", "opus", "haiku"}
-
-# ── Constants ──
-DEFAULT_MODEL = "sonnet"
-INBOX_PROJECT_NAME = "Telegram Inbox"
-DEV_BRANCH_PREFIX = "dev/"
 CONFIRMATION_TIMEOUT = 120  # seconds
+
+# Workspace & files
+DEV_BRANCH_PREFIX = "dev/"
 WORKSPACE_BASE = "~/wkspaces"
+INBOX_PROJECT_NAME = "Telegram Inbox"
 ERROR_LOG_MAX = 50
 TEMP_FILE_MAX_AGE = 86400  # 24 hours
 TASK_DISPLAY_LIMIT = 30
 
+# Icons
 STATUS_ICONS = {
     "running": "🔄", "completed": "✅", "failed": "❌",
     "timeout": "⏰", "killed": "💀",
@@ -197,16 +211,12 @@ class TelegramBot:
 
     # ── Database ──
 
-    def _get_db(self):
-        conn = sqlite3.connect(DB_PATH)
-        conn.row_factory = sqlite3.Row
-        conn.execute("PRAGMA foreign_keys=ON")
-        return conn
-
     @contextlib.contextmanager
     def _db(self):
         """Context manager for database connections. Auto-closes on exit."""
-        conn = self._get_db()
+        conn = sqlite3.connect(DB_PATH)
+        conn.row_factory = sqlite3.Row
+        conn.execute("PRAGMA foreign_keys=ON")
         try:
             yield conn
         finally:
@@ -989,7 +999,7 @@ You're running locally on {owner_name}'s machine, with direct access to all SoY 
                 "repo_name": repo_name,
                 "project_id": project_id,
                 "project_name": project_name,
-                "expires_at": time.time() + 120,
+                "expires_at": time.time() + CONFIRMATION_TIMEOUT,
             }
 
         self.send_message(chat_id, "\n".join(lines))
@@ -997,6 +1007,7 @@ You're running locally on {owner_name}'s machine, with direct access to all SoY 
     def _delete_project_db_records(self, project_id):
         """Remove all DB records for a project."""
         with self._db() as conn:
+            conn.execute("DELETE FROM tasks WHERE project_id = ?", (project_id,))
             conn.execute("DELETE FROM telegram_dev_sessions WHERE project_id = ?", (project_id,))
             conn.execute("DELETE FROM activity_log WHERE entity_type = 'project' AND entity_id = ?", (project_id,))
             conn.execute("DELETE FROM projects WHERE id = ?", (project_id,))
@@ -2432,6 +2443,15 @@ You're running locally on {owner_name}'s machine, with direct access to all SoY 
             print("Error: TELEGRAM_OWNER_ID not set. Run /telegram-setup first.")
             sys.exit(1)
 
+        # Check required dependencies
+        if not shutil.which("claude"):
+            print("Error: `claude` CLI not found in PATH.")
+            print("Install Claude Code: https://docs.anthropic.com/en/docs/claude-code")
+            sys.exit(1)
+        if not shutil.which("git"):
+            print("Error: `git` not found in PATH (required for dev sessions).")
+            sys.exit(1)
+
         # Validate token
         me = self._api("getMe")
         if not me.get("ok"):
@@ -2493,7 +2513,48 @@ You're running locally on {owner_name}'s machine, with direct access to all SoY 
                 self._log_error(f"Poll loop error: {e}")
                 time.sleep(5)
 
+        # Clean up active processes on exit (Ctrl-C or SIGTERM)
+        self._shutdown_active_processes()
         print("Bot stopped.")
+
+    def _shutdown_active_processes(self):
+        """Kill active dev sessions and deploys, update DB. Called on exit."""
+        if not self.active_dev_sessions and not self.active_deploys:
+            return
+        with self._db() as conn:
+            for sid, info in self.active_dev_sessions.items():
+                try:
+                    info["process"].kill()
+                    info["process"].wait(timeout=5)
+                except Exception:
+                    pass
+                try:
+                    info["stdout_file"].close()
+                except Exception:
+                    pass
+                conn.execute(
+                    "UPDATE telegram_dev_sessions SET status = 'killed', "
+                    "completed_at = datetime('now') WHERE session_id = ?",
+                    (sid,),
+                )
+            for sid, info in self.active_deploys.items():
+                try:
+                    info["process"].kill()
+                    info["process"].wait(timeout=5)
+                except Exception:
+                    pass
+                try:
+                    info["stdout_file"].close()
+                except Exception:
+                    pass
+                conn.execute(
+                    "UPDATE telegram_dev_sessions SET deploy_status = 'deploy_failed', "
+                    "deploy_pid = NULL WHERE session_id = ?",
+                    (sid,),
+                )
+            conn.commit()
+        self.active_dev_sessions.clear()
+        self.active_deploys.clear()
 
     def _process_update(self, update):
         """Process a single Telegram update."""
@@ -2509,7 +2570,8 @@ You're running locally on {owner_name}'s machine, with direct access to all SoY 
             # Route callback data as a slash command (e.g. "approve:abc123" → "/approve abc123")
             if ":" in data:
                 action, arg = data.split(":", 1)
-                self._handle_slash(f"/{action} {arg}", chat_id)
+                if action in ALLOWED_CALLBACK_ACTIONS:
+                    self._handle_slash(f"/{action} {arg}", chat_id)
             return
 
         message = update.get("message")
