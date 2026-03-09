@@ -1,0 +1,1361 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Infrastructure — Jon & Drew</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700;0,9..144,800;0,9..144,900;1,9..144,400;1,9..144,500&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #08080c;
+    --bg-subtle: #0e0e14;
+    --surface: rgba(255,255,255,0.03);
+    --border: rgba(255,255,255,0.07);
+    --text: #e8e4db;
+    --text-mid: #9a9589;
+    --text-dim: #5a564e;
+    --gold: #c9a84c;
+    --gold-dim: rgba(201,168,76,0.15);
+    --red: #c45c4a;
+    --red-dim: rgba(196,92,74,0.12);
+    --green: #5aab7b;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Outfit', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    overflow: hidden;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* Subtle noise texture overlay */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    opacity: 0.025;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    background-size: 256px 256px;
+    pointer-events: none;
+    z-index: 100;
+  }
+
+  .serif { font-family: 'Fraunces', serif; }
+
+  /* ─── Slides ─── */
+  .slide {
+    display: none;
+    width: 100vw;
+    height: 100vh;
+    padding: 8vh 8vw;
+    flex-direction: column;
+    justify-content: center;
+    position: relative;
+  }
+  .slide.active {
+    display: flex;
+  }
+
+  /* Staggered element entrance */
+  .slide.active .reveal {
+    animation: revealUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+  .slide.active .reveal:nth-child(1) { animation-delay: 0.05s; }
+  .slide.active .reveal:nth-child(2) { animation-delay: 0.12s; }
+  .slide.active .reveal:nth-child(3) { animation-delay: 0.19s; }
+  .slide.active .reveal:nth-child(4) { animation-delay: 0.26s; }
+  .slide.active .reveal:nth-child(5) { animation-delay: 0.33s; }
+  .slide.active .reveal:nth-child(6) { animation-delay: 0.40s; }
+  .slide.active .reveal:nth-child(7) { animation-delay: 0.47s; }
+  .slide.active .reveal:nth-child(8) { animation-delay: 0.54s; }
+
+  @keyframes revealUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* Slide wipe transition */
+  .slide.entering {
+    display: flex;
+    animation: slideWipe 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+
+  @keyframes slideWipe {
+    from { clip-path: inset(0 100% 0 0); }
+    to { clip-path: inset(0 0 0 0); }
+  }
+
+  /* ─── Progress ─── */
+  .progress-track {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: var(--border);
+    z-index: 50;
+  }
+  .progress-fill {
+    height: 100%;
+    background: var(--gold);
+    transition: width 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .slide-counter {
+    position: fixed;
+    bottom: 3vh;
+    right: 4vw;
+    font-size: 0.75rem;
+    color: var(--text-dim);
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0.05em;
+    z-index: 50;
+  }
+
+  /* ─── Typography ─── */
+  .headline-xl {
+    font-family: 'Fraunces', serif;
+    font-size: clamp(3.5rem, 7vw, 6.5rem);
+    font-weight: 800;
+    line-height: 1.05;
+    letter-spacing: -0.03em;
+    font-variation-settings: 'opsz' 144;
+  }
+
+  .headline-lg {
+    font-family: 'Fraunces', serif;
+    font-size: clamp(2.5rem, 5vw, 4.5rem);
+    font-weight: 700;
+    line-height: 1.1;
+    letter-spacing: -0.025em;
+    font-variation-settings: 'opsz' 72;
+  }
+
+  .headline-md {
+    font-family: 'Fraunces', serif;
+    font-size: clamp(1.8rem, 3.5vw, 3rem);
+    font-weight: 600;
+    line-height: 1.15;
+    letter-spacing: -0.02em;
+    font-variation-settings: 'opsz' 48;
+  }
+
+  .body-lg {
+    font-size: 1.25rem;
+    line-height: 1.6;
+    color: var(--text-mid);
+    font-weight: 300;
+  }
+
+  .body-md {
+    font-size: 1rem;
+    line-height: 1.6;
+    color: var(--text-mid);
+    font-weight: 300;
+  }
+
+  .label {
+    font-size: 0.7rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    font-weight: 600;
+    color: var(--text-dim);
+  }
+
+  .gold { color: var(--gold); }
+  .red { color: var(--red); }
+  .green { color: var(--green); }
+  .dim { color: var(--text-dim); }
+  .mid { color: var(--text-mid); }
+
+  /* ─── Layout ─── */
+  .rule {
+    width: 100%;
+    height: 1px;
+    background: var(--border);
+  }
+
+  .rule-gold {
+    width: 60px;
+    height: 2px;
+    background: var(--gold);
+  }
+
+  .rule-v {
+    width: 1px;
+    background: var(--border);
+    align-self: stretch;
+  }
+
+  .grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4vw;
+  }
+
+  .grid-3 {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 3vw;
+  }
+
+  .grid-2x2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2px;
+  }
+
+  .cell {
+    background: var(--surface);
+    padding: 2.5rem;
+    position: relative;
+  }
+
+  .cell-bordered {
+    border: 1px solid var(--border);
+    padding: 2rem 2.5rem;
+  }
+
+  /* ─── Decorative numbers ─── */
+  .deco-num {
+    font-family: 'Fraunces', serif;
+    font-size: 7rem;
+    font-weight: 900;
+    line-height: 1;
+    color: rgba(255,255,255,0.04);
+    font-variation-settings: 'opsz' 144;
+    position: absolute;
+    top: -0.15em;
+    right: 0.1em;
+  }
+
+  /* ─── Key hint ─── */
+  .key-hint {
+    position: fixed;
+    bottom: 3vh;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 0.65rem;
+    color: var(--text-dim);
+    z-index: 50;
+    transition: opacity 0.5s;
+    letter-spacing: 0.05em;
+  }
+
+  /* ─── Chart ─── */
+  .gap-chart { max-width: 720px; margin: 0 auto; }
+  .gap-chart svg { width: 100%; height: auto; }
+
+  /* ─── Wall items ─── */
+  .wall-item {
+    padding: 2rem 0;
+    border-bottom: 1px solid var(--red-dim);
+  }
+  .wall-item:last-child { border-bottom: none; }
+
+  /* ─── Capability row ─── */
+  .cap-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 2rem;
+    padding: 1.4rem 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .cap-row:last-child { border-bottom: none; }
+  .cap-num {
+    font-family: 'Fraunces', serif;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--gold);
+    min-width: 1.5rem;
+    padding-top: 0.1rem;
+  }
+
+  /* ─── Hive grid items ─── */
+  .hive-item {
+    padding: 1.5rem 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .hive-item:last-child { border-bottom: none; }
+  .hive-item h4 {
+    font-family: 'Outfit', sans-serif;
+    font-weight: 500;
+    font-size: 0.95rem;
+    margin-bottom: 0.35rem;
+  }
+  .hive-item p {
+    font-size: 0.85rem;
+    color: var(--text-dim);
+    line-height: 1.5;
+    font-weight: 300;
+  }
+</style>
+</head>
+<body>
+
+<div class="progress-track"><div class="progress-fill" id="progress"></div></div>
+<div class="slide-counter" id="slideNum"></div>
+<div class="key-hint" id="keyHint">&#8592; &#8594;&ensp;to navigate</div>
+
+
+<!-- ════════════════════════════════════════════════════════════════ -->
+<!-- SLIDE 1 — Opening -->
+<!-- ════════════════════════════════════════════════════════════════ -->
+<div class="slide active" id="s1">
+  <div style="max-width: 900px;">
+    <div class="label reveal" style="margin-bottom: 3rem; color: var(--gold);">March 2026</div>
+    <h1 class="headline-xl reveal">
+      How your business runs<br>differently next week<span class="gold">.</span>
+    </h1>
+    <div class="rule-gold reveal" style="margin: 3rem 0 2rem;"></div>
+    <p class="body-lg reveal" style="max-width: 560px;">
+      AI employees connected to your systems, running on your data, delivering finished work — while your team does the thinking only they can do.
+    </p>
+  </div>
+</div>
+
+
+<!-- ════════════════════════════════════════════════════════════════ -->
+<!-- SLIDE 2 — Three Takeaways -->
+<!-- ════════════════════════════════════════════════════════════════ -->
+<div class="slide" id="s2">
+  <div style="max-width: 800px; margin: 0 auto; width: 100%;">
+    <h2 class="headline-lg reveal" style="margin-bottom: 3.5rem;">
+      Three things<br>to walk away with<span class="gold">.</span>
+    </h2>
+
+    <div class="reveal" style="border-top: 1px solid var(--border);">
+      <div class="cap-row">
+        <span class="cap-num">01</span>
+        <div>
+          <h3 style="font-weight: 600; margin-bottom: 0.3rem; font-size: 1.15rem;">PhDs and worker bees.</h3>
+          <p class="body-md">An army of thinkers and an army of doers. Deploy as many as you need, simultaneously.</p>
+        </div>
+      </div>
+      <div class="cap-row">
+        <span class="cap-num">02</span>
+        <div>
+          <h3 style="font-weight: 600; margin-bottom: 0.3rem; font-size: 1.15rem;">10&times;, not replacement.</h3>
+          <p class="body-md">Same people, ten times the output. The output shifts to the higher-leverage work that clients pay for.</p>
+        </div>
+      </div>
+      <div class="cap-row">
+        <span class="cap-num">03</span>
+        <div>
+          <h3 style="font-weight: 600; margin-bottom: 0.3rem; font-size: 1.15rem;">The gap compounds daily.</h3>
+          <p class="body-md">Every workflow you build stacks. Six months from now, the distance is uncatchable.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ════════════════════════════════════════════════════════════════ -->
+<!-- SLIDE 3 — PhDs + Worker Bees -->
+<!-- ════════════════════════════════════════════════════════════════ -->
+<div class="slide" id="s3">
+  <div style="max-width: 1100px; width: 100%; margin: 0 auto;">
+    <h2 class="headline-lg reveal" style="text-align: center; margin-bottom: 1rem;">
+      Endless employees<span class="gold">.</span><br>Unlimited intelligence<span class="gold">.</span><br>For pennies<span class="gold">.</span>
+    </h2>
+    <p class="body-md reveal" style="text-align: center; margin-bottom: 4rem;">
+      Deploy as many as you need. On as many problems as you need. Simultaneously.
+    </p>
+
+    <div class="grid-2 reveal" style="align-items: start;">
+      <!-- PhDs -->
+      <div style="padding-right: 3vw; border-right: 1px solid var(--border);">
+        <div class="label" style="color: var(--gold); margin-bottom: 1.5rem;">The Thinkers</div>
+        <h3 class="serif" style="font-size: 2rem; font-weight: 700; margin-bottom: 1rem; font-variation-settings: 'opsz' 72;">
+          An army of PhDs
+        </h3>
+        <p class="body-md" style="margin-bottom: 2rem;">
+          Researchers smarter than almost anyone on almost any subject. Strategy, compliance, architecture, competitive analysis — at depth that takes your best people days.
+        </p>
+        <p class="serif gold" style="font-size: 1.5rem; font-weight: 600; font-variation-settings: 'opsz' 48;">They think.</p>
+      </div>
+
+      <!-- Worker Bees -->
+      <div style="padding-left: 3vw;">
+        <div class="label" style="color: var(--gold); margin-bottom: 1.5rem;">The Doers</div>
+        <h3 class="serif" style="font-size: 2rem; font-weight: 700; margin-bottom: 1rem; font-variation-settings: 'opsz' 72;">
+          An army of worker bees
+        </h3>
+        <p class="body-md" style="margin-bottom: 2rem;">
+          They research. Pull data. Cross-reference. Build reports. Check compliance docs. Draft the brief. Come back with finished work product.
+        </p>
+        <p class="serif gold" style="font-size: 1.5rem; font-weight: 600; font-variation-settings: 'opsz' 48;">They do.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ════════════════════════════════════════════════════════════════ -->
+<!-- SLIDE 4 — It's All Chat -->
+<!-- ════════════════════════════════════════════════════════════════ -->
+<div class="slide" id="s4">
+  <div style="max-width: 1000px; width: 100%; margin: 0 auto; text-align: center;">
+    <h2 class="headline-lg reveal" style="margin-bottom: 1rem;">
+      The interface never changes<span class="gold">.</span>
+    </h2>
+    <p class="body-lg reveal" style="margin-bottom: 5rem; max-width: 600px; margin-left: auto; margin-right: auto;">
+      You are never writing code. You are never learning a new tool. You are having a conversation.
+    </p>
+
+    <div class="grid-3 reveal" style="border-top: 1px solid var(--border); padding-top: 2.5rem;">
+      <div style="text-align: center;">
+        <div class="label" style="margin-bottom: 1rem;">The starting point</div>
+        <h3 style="font-weight: 500; font-size: 1.2rem; margin-bottom: 1rem; color: var(--text-mid);">Desktop</h3>
+        <div style="margin-bottom: 1.2rem; border-radius: 8px; overflow: hidden; border: 1px solid var(--border); box-shadow: 0 4px 24px rgba(0,0,0,0.4);">
+          <img src="claude-desktop.png" alt="Claude Desktop" style="width: 100%; display: block;">
+        </div>
+        <p class="serif gold" style="font-size: 2rem; font-weight: 700; font-variation-settings: 'opsz' 72;">Chat.</p>
+      </div>
+      <div style="text-align: center; border-left: 1px solid var(--border); border-right: 1px solid var(--border); padding: 0 2vw;">
+        <div class="label" style="margin-bottom: 1rem;">Training wheels on</div>
+        <h3 style="font-weight: 500; font-size: 1.2rem; margin-bottom: 1rem; color: var(--text-mid);">Cowork</h3>
+        <div style="margin-bottom: 1.2rem; border-radius: 8px; overflow: hidden; border: 1px solid var(--border); box-shadow: 0 4px 24px rgba(0,0,0,0.4);">
+          <img src="claude-cowork.png" alt="Claude Cowork" style="width: 100%; display: block;">
+        </div>
+        <p class="serif gold" style="font-size: 2rem; font-weight: 700; font-variation-settings: 'opsz' 72;">Chat.</p>
+      </div>
+      <div style="text-align: center;">
+        <div class="label" style="margin-bottom: 1rem;">Training wheels off</div>
+        <h3 style="font-weight: 500; font-size: 1.2rem; margin-bottom: 1rem; color: var(--text-mid);">Code</h3>
+        <div style="margin-bottom: 1.2rem; border-radius: 8px; overflow: hidden; border: 1px solid var(--border); box-shadow: 0 4px 24px rgba(0,0,0,0.4);">
+          <img src="claude-code.png" alt="Claude Code" style="width: 100%; display: block;">
+        </div>
+        <p class="serif gold" style="font-size: 2rem; font-weight: 700; font-variation-settings: 'opsz' 72;">Chat.</p>
+      </div>
+    </div>
+
+    <p class="body-md reveal" style="margin-top: 3.5rem;">
+      Plain English, in any permutation. The only thing that changes is<br>how much you connect and how many bees you deploy.
+    </p>
+  </div>
+</div>
+
+
+<!-- ════════════════════════════════════════════════════════════════ -->
+<!-- SLIDE 5 — Brain in a Box -->
+<!-- ════════════════════════════════════════════════════════════════ -->
+<div class="slide" id="s5">
+  <div style="max-width: 1000px; width: 100%; margin: 0 auto;">
+    <div class="label reveal" style="margin-bottom: 2rem;">Step 1</div>
+    <h2 class="headline-lg reveal" style="margin-bottom: 1rem;">
+      Claude<span class="gold">:</span> the brain in a box<span class="gold">.</span>
+    </h2>
+    <p class="body-lg reveal" style="max-width: 620px; margin-bottom: 4rem;">
+      One PhD. One conversation. The intelligence is real. But it is just a conversation partner.
+    </p>
+
+    <div class="grid-3 reveal" style="border-top: 1px solid var(--border); padding-top: 2.5rem; align-items: start;">
+      <div style="padding-right: 2vw; border-right: 1px solid var(--border);">
+        <div class="label" style="color: var(--red); margin-bottom: 1.5rem;">No memory</div>
+        <p class="body-md" style="margin-bottom: 1.5rem;">
+          Every chat starts from zero. It doesn't know who you are.
+        </p>
+      </div>
+      <div style="padding: 0 2vw; border-right: 1px solid var(--border);">
+        <div class="label" style="color: var(--red); margin-bottom: 1.5rem;">No context</div>
+        <p class="body-md" style="margin-bottom: 1.5rem;">
+          Can't reach your files, your data, your systems. Only what you paste.
+        </p>
+      </div>
+      <div style="padding-left: 2vw;">
+        <div class="label" style="color: var(--red); margin-bottom: 1.5rem;">No hands</div>
+        <p class="body-md" style="margin-bottom: 1.5rem;">
+          Can't open email, pull a report, update a ticket, or build anything.
+        </p>
+      </div>
+    </div>
+
+    <p class="reveal" style="margin-top: 2.5rem; color: var(--text-dim); font-size: 1rem; font-style: italic;">
+      A PhD with no desk, no files, and no hands. This is where most people stop.
+    </p>
+  </div>
+</div>
+
+
+<!-- ════════════════════════════════════════════════════════════════ -->
+<!-- SLIDE 6 — Cowork + Code -->
+<!-- ════════════════════════════════════════════════════════════════ -->
+<div class="slide" id="s6">
+  <div style="max-width: 1000px; width: 100%; margin: 0 auto;">
+    <div class="label reveal" style="margin-bottom: 2rem;">Step 2</div>
+    <h2 class="headline-lg reveal" style="margin-bottom: 1rem;">
+      Claude Cowork<span class="gold">.</span> Claude Code<span class="gold">.</span>
+    </h2>
+    <p class="body-lg reveal" style="max-width: 620px; margin-bottom: 4rem;">
+      Same chat. Same plain English. But now those PhDs and worker bees can connect to anything, anywhere — and do things with what they find.
+    </p>
+
+    <div class="grid-2 reveal" style="border-top: 1px solid var(--border); padding-top: 2.5rem; align-items: start;">
+      <div style="padding-right: 3vw; border-right: 1px solid var(--border);">
+        <div class="label" style="color: var(--gold); margin-bottom: 1.5rem;">Cowork</div>
+        <p class="body-md" style="margin-bottom: 1.5rem;">
+          It sees your screen, reads your documents, clicks buttons, fills forms, extracts data. You describe a task, it does the task.
+        </p>
+        <p style="color: var(--text-dim); font-size: 0.9rem; font-style: italic;">One bee, one task. Guided by you.</p>
+      </div>
+      <div style="padding-left: 3vw;">
+        <div class="label" style="color: var(--gold); margin-bottom: 1.5rem;">Code</div>
+        <p class="body-md" style="margin-bottom: 1.5rem;">
+          No limits on what it reaches, how many it deploys, or what it builds. You describe what you want. It plans, coordinates, and delivers finished work.
+        </p>
+        <p style="color: var(--text-dim); font-size: 0.9rem; font-style: italic;">Many bees, many tasks. Autonomous.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ════════════════════════════════════════════════════════════════ -->
+<!-- SLIDE 8 — Four Capabilities -->
+<!-- ════════════════════════════════════════════════════════════════ -->
+<div class="slide" id="s8">
+  <div style="max-width: 1000px; width: 100%; margin: 0 auto;">
+    <h2 class="headline-lg reveal" style="margin-bottom: 3rem;">
+      Five capabilities that matter<span class="gold">.</span>
+    </h2>
+
+    <div class="grid-2x2 reveal">
+      <div class="cell" style="border-right: 1px solid var(--border); border-bottom: 1px solid var(--border);">
+        <div class="label gold" style="margin-bottom: 1rem;">01</div>
+        <h3 class="serif" style="font-size: 1.4rem; font-weight: 600; margin-bottom: 0.75rem; font-variation-settings: 'opsz' 48;">Connect to everything.</h3>
+        <p class="body-md">Gmail, Calendar, Slack, CRM, ticketing systems, databases, shared drives. You describe what you want connected. No middleware. No dev team.</p>
+      </div>
+      <div class="cell" style="border-bottom: 1px solid var(--border);">
+        <div class="label gold" style="margin-bottom: 1rem;">02</div>
+        <h3 class="serif" style="font-size: 1.4rem; font-weight: 600; margin-bottom: 0.75rem; font-variation-settings: 'opsz' 48;">Make sense of unstructured data.</h3>
+        <p class="body-md">Call transcripts, email threads, PDFs, Slack history, meeting notes. It reads, cross-references, and extracts what matters — without you organizing anything first.</p>
+      </div>
+      <div class="cell" style="border-right: 1px solid var(--border);">
+        <div class="label gold" style="margin-bottom: 1rem;">03</div>
+        <h3 class="serif" style="font-size: 1.4rem; font-weight: 600; margin-bottom: 0.75rem; font-variation-settings: 'opsz' 48;">Output into anything.</h3>
+        <p class="body-md">Reports, dashboards, briefs, spreadsheets, email drafts, database entries. PhD-level synthesis, polished and ready to act on.</p>
+      </div>
+      <div class="cell">
+        <div class="label gold" style="margin-bottom: 1rem;">04</div>
+        <h3 class="serif" style="font-size: 1.4rem; font-weight: 600; margin-bottom: 0.75rem; font-variation-settings: 'opsz' 48;">Runs without you.</h3>
+        <p class="body-md">Skills. Scheduled tasks. Monitoring loops. Remote and voice. It works whether you are at your desk or not.</p>
+      </div>
+    </div>
+
+    <!-- Cross-cutting capability -->
+    <div class="reveal" style="margin-top: 2px; background: var(--gold-dim); padding: 2rem 2.5rem; display: flex; align-items: center; gap: 2.5rem;">
+      <div class="label gold" style="min-width: 1.5rem;">05</div>
+      <div>
+        <h3 class="serif" style="font-size: 1.4rem; font-weight: 600; margin-bottom: 0.5rem; font-variation-settings: 'opsz' 48;">Across it all — context and memory.</h3>
+        <p class="body-md">It knows your clients, projects, history, decisions. Cross-referenced. Compounding. Not a generic AI — your AI, with your context.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ════════════════════════════════════════════════════════════════ -->
+<!-- SLIDE 9 — Runs Without You (Expanded) -->
+<!-- ════════════════════════════════════════════════════════════════ -->
+<div class="slide" id="s9">
+  <div style="max-width: 1000px; width: 100%; margin: 0 auto;">
+    <h2 class="headline-lg reveal" style="margin-bottom: 0.75rem;">
+      It doesn't need you there<span class="gold">.</span>
+    </h2>
+    <p class="body-lg reveal" style="margin-bottom: 2.5rem;">From &ldquo;a tool I use&rdquo; to &ldquo;infrastructure that runs.&rdquo;</p>
+
+    <div class="grid-2 reveal" style="align-items: start;">
+      <div style="padding-right: 3vw; border-right: 1px solid var(--border);">
+        <div style="padding-bottom: 1.8rem; margin-bottom: 1.8rem; border-bottom: 1px solid var(--border);">
+          <div class="label gold" style="margin-bottom: 0.75rem;">Skills &amp; Plugins</div>
+          <p class="body-md">Teach a routine once. Anyone deploys it with one command. Competitive audits, compliance checks, meeting prep — institutional playbooks that execute themselves.</p>
+        </div>
+        <div>
+          <div class="label gold" style="margin-bottom: 0.75rem;">Scheduled Tasks</div>
+          <p class="body-md">Bees on a clock. &ldquo;Every Monday at 7am, pull last week&rsquo;s data and draft a summary.&rdquo; Set it once. It runs every week. Nobody remembers to do it.</p>
+        </div>
+      </div>
+
+      <div style="padding-left: 3vw;">
+        <div style="padding-bottom: 1.8rem; margin-bottom: 1.8rem; border-bottom: 1px solid var(--border);">
+          <div class="label gold" style="margin-bottom: 0.75rem;">Monitoring Loops</div>
+          <p class="body-md">Bees that watch. Check feeds, pricing pages, CVE databases — every 10 minutes. Continuous monitoring without continuous attention.</p>
+        </div>
+        <div>
+          <div class="label gold" style="margin-bottom: 0.75rem;">Remote &amp; Voice</div>
+          <p class="body-md">Talk to it from your phone, your car, by voice. &ldquo;Flag any incidents from overnight&rdquo; while you make coffee. Not chained to a laptop.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ════════════════════════════════════════════════════════════════ -->
+<!-- SLIDE — What 10× Actually Looks Like -->
+<!-- ════════════════════════════════════════════════════════════════ -->
+<div class="slide" id="s-10x">
+  <div style="max-width: 1100px; width: 100%; margin: 0 auto;">
+    <h2 class="headline-lg reveal" style="margin-bottom: 0.5rem;">
+      What 10&times; actually looks like<span class="gold">.</span>
+    </h2>
+    <p class="body-md reveal" style="margin-bottom: 3rem;">Same people. Same roles. Radically different output.</p>
+
+    <div class="reveal" style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 2px;">
+
+      <!-- TIER 1 -->
+      <div style="background: var(--surface); padding: 2rem 2rem 1.5rem;">
+        <div class="label" style="color: var(--text-dim); margin-bottom: 0.4rem;">Week 1</div>
+        <h3 class="serif gold" style="font-size: 1.3rem; font-weight: 600; margin-bottom: 1.5rem; font-variation-settings: 'opsz' 48;">Minutes back.</h3>
+
+        <div style="display: flex; flex-direction: column; gap: 1.2rem;">
+          <div>
+            <p style="font-weight: 500; font-size: 1rem; margin-bottom: 0.2rem;">Creative brief from a call transcript</p>
+            <p style="font-size: 0.95rem; color: var(--text-mid);">1.5 hours <span class="gold">&rarr;</span> 10 min</p>
+          </div>
+          <div>
+            <p style="font-weight: 500; font-size: 1rem; margin-bottom: 0.2rem;">Incident postmortem write-up</p>
+            <p style="font-size: 0.95rem; color: var(--text-mid);">2 hours <span class="gold">&rarr;</span> 15 min</p>
+          </div>
+          <div>
+            <p style="font-weight: 500; font-size: 1rem; margin-bottom: 0.2rem;">Vendor proposal comparison matrix</p>
+            <p style="font-size: 0.95rem; color: var(--text-mid);">4 hours <span class="gold">&rarr;</span> 20 min</p>
+          </div>
+          <div>
+            <p style="font-weight: 500; font-size: 1rem; margin-bottom: 0.2rem;">Client status email from project tracker</p>
+            <p style="font-size: 0.95rem; color: var(--text-mid);">45 min per client <span class="gold">&rarr;</span> 5 min</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- TIER 2 -->
+      <div style="background: var(--surface); padding: 2rem 2rem 1.5rem;">
+        <div class="label" style="color: var(--text-dim); margin-bottom: 0.4rem;">Month 1</div>
+        <h3 class="serif gold" style="font-size: 1.3rem; font-weight: 600; margin-bottom: 1.5rem; font-variation-settings: 'opsz' 48;">Hours back.</h3>
+
+        <div style="display: flex; flex-direction: column; gap: 1.2rem;">
+          <div>
+            <p style="font-weight: 500; font-size: 1rem; margin-bottom: 0.2rem;">Full competitive audit</p>
+            <p style="font-size: 0.95rem; color: var(--text-mid);">5 days <span class="gold">&rarr;</span> 4 hours</p>
+          </div>
+          <div>
+            <p style="font-weight: 500; font-size: 1rem; margin-bottom: 0.2rem;">Compliance gap analysis against framework</p>
+            <p style="font-size: 0.95rem; color: var(--text-mid);">3 weeks <span class="gold">&rarr;</span> 2 days</p>
+          </div>
+          <div>
+            <p style="font-weight: 500; font-size: 1rem; margin-bottom: 0.2rem;">Pre-pitch client intelligence dossier</p>
+            <p style="font-size: 0.95rem; color: var(--text-mid);">1 day <span class="gold">&rarr;</span> 1 hour</p>
+          </div>
+          <div>
+            <p style="font-weight: 500; font-size: 1rem; margin-bottom: 0.2rem;">Incident correlation across log sources</p>
+            <p style="font-size: 0.95rem; color: var(--text-mid);">4 hours <span class="gold">&rarr;</span> 20 min</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- TIER 3 -->
+      <div style="background: var(--gold-dim); padding: 2rem 2rem 1.5rem;">
+        <div class="label" style="color: var(--text-dim); margin-bottom: 0.4rem;">Quarter 1</div>
+        <h3 class="serif gold" style="font-size: 1.3rem; font-weight: 600; margin-bottom: 1.5rem; font-variation-settings: 'opsz' 48;">Days back. Systems running.</h3>
+
+        <div style="display: flex; flex-direction: column; gap: 1.2rem;">
+          <div>
+            <p style="font-weight: 500; font-size: 1rem; margin-bottom: 0.2rem;">Continuous competitive intelligence</p>
+            <p style="font-size: 0.95rem; color: var(--text-mid);">Quarterly manual <span class="gold">&rarr;</span> always on</p>
+          </div>
+          <div>
+            <p style="font-weight: 500; font-size: 1rem; margin-bottom: 0.2rem;">Automated threat intel briefing</p>
+            <p style="font-size: 0.95rem; color: var(--text-mid);">1–2 hrs/day analyst time <span class="gold">&rarr;</span> zero</p>
+          </div>
+          <div>
+            <p style="font-weight: 500; font-size: 1rem; margin-bottom: 0.2rem;">Compliance continuous monitoring</p>
+            <p style="font-size: 0.95rem; color: var(--text-mid);">Annual panic <span class="gold">&rarr;</span> always audit-ready</p>
+          </div>
+          <div>
+            <p style="font-weight: 500; font-size: 1rem; margin-bottom: 0.2rem;">Campaign-to-results learning loop</p>
+            <p style="font-size: 0.95rem; color: var(--text-mid);">No systematic learning <span class="gold">&rarr;</span> compounding</p>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <p class="body-md reveal" style="margin-top: 2rem; text-align: center; font-style: italic; color: var(--text-dim);">
+      Each tier funds the next through saved time and demonstrated value.
+    </p>
+  </div>
+</div>
+
+
+<!-- ════════════════════════════════════════════════════════════════ -->
+<!-- SLIDE — Jon: Competitive Auditing -->
+<!-- ════════════════════════════════════════════════════════════════ -->
+<div class="slide" id="s-jon-competitive">
+  <div style="max-width: 1000px; width: 100%; margin: 0 auto;">
+    <div class="label reveal" style="margin-bottom: 2rem; color: var(--gold);">Jon &mdash; Competitive Intelligence</div>
+    <h2 class="headline-lg reveal" style="margin-bottom: 1rem;">
+      Never be surprised by<br>a competitor again<span class="gold">.</span>
+    </h2>
+    <p class="body-lg reveal" style="max-width: 600px; margin-bottom: 3.5rem;">
+      Not a quarterly report. A living system that watches, learns, and briefs your strategists before they even ask.
+    </p>
+
+    <div class="grid-2 reveal" style="align-items: start;">
+      <div style="padding-right: 3vw; border-right: 1px solid var(--border);">
+        <div class="label red" style="margin-bottom: 1.5rem;">Today</div>
+        <div style="display: flex; flex-direction: column; gap: 1.2rem;">
+          <p class="body-md">A strategist spends <strong style="color: var(--text);">5 days</strong> researching 5–6 competitors manually.</p>
+          <p class="body-md">Pull websites. Screenshot ads. Scan social. Read press. Catalogue campaigns. Write the report.</p>
+          <p class="body-md">By the time it&rsquo;s presented, it&rsquo;s already stale.</p>
+          <p class="body-md">Nobody tracks competitors between reviews. You find out what they did <em>after</em> the client tells you.</p>
+        </div>
+      </div>
+
+      <div style="padding-left: 3vw;">
+        <div class="label green" style="margin-bottom: 1.5rem;">With AI infrastructure</div>
+        <div style="display: flex; flex-direction: column; gap: 1.2rem;">
+          <p class="body-md">Teach the audit once as a <strong style="color: var(--text);">skill</strong>. Run it against any competitor set, any category, any market. Same command.</p>
+          <p class="body-md">Scrape websites, ad libraries, social feeds, job postings, press releases. Analyze positioning, messaging, campaign themes.</p>
+          <p class="body-md">Schedule it. <strong style="color: var(--text);">Monday morning</strong>, your team gets a digest: <em>&ldquo;Competitor X shifted from value to premium. Launched 3 new campaigns targeting 25–34. Posted 2 data analytics jobs.&rdquo;</em></p>
+          <p class="body-md"><strong style="color: var(--gold);">5 days &rarr; 4 hours. Then it runs itself, every week, forever.</strong></p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ════════════════════════════════════════════════════════════════ -->
+<!-- SLIDE — Jon: RFP Engine -->
+<!-- ════════════════════════════════════════════════════════════════ -->
+<div class="slide" id="s-jon-rfp">
+  <div style="max-width: 1000px; width: 100%; margin: 0 auto;">
+    <div class="label reveal" style="margin-bottom: 2rem; color: var(--gold);">Jon &mdash; Pitch &amp; RFP</div>
+    <h2 class="headline-lg reveal" style="margin-bottom: 1rem;">
+      Every pitch makes<br>the next one better<span class="gold">.</span>
+    </h2>
+    <p class="body-lg reveal" style="max-width: 620px; margin-bottom: 3.5rem;">
+      Not a template. Institutional memory that compounds with every RFP you win — or lose.
+    </p>
+
+    <div class="reveal" style="border-top: 1px solid var(--border);">
+      <div class="cap-row">
+        <span class="cap-num">01</span>
+        <div>
+          <h3 style="font-weight: 600; margin-bottom: 0.3rem; font-size: 1.05rem;">Build the knowledge base</h3>
+          <p class="body-md">Past RFP responses, case studies, capability statements, team bios, pricing models, win/loss records and why. All indexed, all searchable.</p>
+        </div>
+      </div>
+      <div class="cap-row">
+        <span class="cap-num">02</span>
+        <div>
+          <h3 style="font-weight: 600; margin-bottom: 0.3rem; font-size: 1.05rem;">New RFP drops in</h3>
+          <p class="body-md">Claude reads the full brief. Maps requirements to FUSE capabilities. Pulls the 3 most relevant case studies. Drafts tailored responses section by section. Flags gaps where new content is needed.</p>
+        </div>
+      </div>
+      <div class="cap-row">
+        <span class="cap-num">03</span>
+        <div>
+          <h3 style="font-weight: 600; margin-bottom: 0.3rem; font-size: 1.05rem;">The system learns</h3>
+          <p class="body-md">Win or lose, feed the result back. Over time: which positioning works for CPG vs QSR vs financial. Which case studies resonate. What the winning formula looks like, by category.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="reveal" style="margin-top: 2rem; padding: 1.5rem 2rem; background: var(--gold-dim); border-radius: 0;">
+      <p style="font-size: 0.95rem; margin-bottom: 0.8rem;"><strong style="color: var(--gold);">3–5 days of assembly &rarr; first draft in 2 hours.</strong> <span class="mid">A junior strategist on their first RFP has the institutional knowledge of every pitch FUSE has ever run.</span></p>
+      <p style="font-size: 0.9rem; font-style: italic; color: var(--text-mid);">One of my favourite things to turn on — a custom pitch crafted from previous pitches and the transcript of the call you just got off. Ready in ten minutes.</p>
+    </div>
+  </div>
+</div>
+
+
+<!-- ════════════════════════════════════════════════════════════════ -->
+<!-- SLIDE — Jon: Media Performance -->
+<!-- ════════════════════════════════════════════════════════════════ -->
+<div class="slide" id="s-jon-media">
+  <div style="max-width: 1000px; width: 100%; margin: 0 auto;">
+    <div class="label reveal" style="margin-bottom: 2rem; color: var(--gold);">Jon &mdash; Media Reporting</div>
+    <h2 class="headline-lg reveal" style="margin-bottom: 1rem;">
+      More time analyzing<span class="gold">,</span><br>less time assembling<span class="gold">.</span>
+    </h2>
+    <p class="body-lg reveal" style="max-width: 620px; margin-bottom: 3.5rem;">
+      Your media team spends more time pulling data than reading it. Flip that ratio.
+    </p>
+
+    <div class="grid-2 reveal" style="align-items: start;">
+      <div style="padding-right: 3vw; border-right: 1px solid var(--border);">
+        <div class="label red" style="margin-bottom: 1.5rem;">The bottleneck</div>
+        <div style="display: flex; flex-direction: column; gap: 1.2rem;">
+          <p class="body-md">Meta Ads, Google Ads, DV360, programmatic platforms, client-specific tools. <strong style="color: var(--text);">Every client is a different combination.</strong></p>
+          <p class="body-md">Someone exports from 4–6 platforms. Normalizes the data. Builds pivot tables. Writes the insights. Makes the deck.</p>
+          <p class="body-md"><strong style="color: var(--red);">1–2 days per client, per month.</strong> Multiply by your client count.</p>
+        </div>
+      </div>
+
+      <div style="padding-left: 3vw;">
+        <div class="label green" style="margin-bottom: 1.5rem;">The flip</div>
+        <div style="display: flex; flex-direction: column; gap: 1.2rem;">
+          <p class="body-md"><strong style="color: var(--text);">API-connected platforms:</strong> scheduled pull, auto-normalized, report drafts itself Monday morning.</p>
+          <p class="body-md"><strong style="color: var(--text);">Manual-export platforms:</strong> drop the CSV. Claude normalizes, cross-references, identifies what&rsquo;s working and what&rsquo;s not, writes the narrative.</p>
+          <p class="body-md">Your media planners spend their time on <strong style="color: var(--gold);">strategy and recommendations</strong> — not assembly.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="reveal" style="margin-top: 2.5rem; padding: 1.5rem 2rem; background: var(--surface); border-left: 2px solid var(--gold);">
+      <p style="font-size: 0.9rem; color: var(--text-mid);">
+        <strong style="color: var(--text);">Next step:</strong> 90 minutes with your media lead. We map every data source, identify what&rsquo;s automatable, and build version one for your highest-volume client.
+      </p>
+    </div>
+  </div>
+</div>
+
+
+<!-- ════════════════════════════════════════════════════════════════ -->
+<!-- SLIDE — Software of You -->
+<!-- ════════════════════════════════════════════════════════════════ -->
+<div class="slide" id="s-soy">
+  <div style="max-width: 1000px; width: 100%; margin: 0 auto;">
+    <div class="label reveal" style="margin-bottom: 2rem; color: var(--gold);">What I built for myself</div>
+    <h2 class="headline-lg reveal" style="margin-bottom: 1rem;">
+      Software of You<span class="gold">.</span>
+    </h2>
+    <p class="body-lg reveal" style="max-width: 620px; margin-bottom: 3rem;">
+      My personal AI infrastructure. CRM, communication intelligence, project tracking, decision journal — all connected, all running on my data, all controlled through conversation.
+    </p>
+
+    <div class="reveal" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 2px; margin-bottom: 2.5rem;">
+      <div class="cell" style="border-right: 1px solid var(--border); border-bottom: 1px solid var(--border);">
+        <div class="label gold" style="margin-bottom: 0.75rem;">Relationships</div>
+        <p style="font-size: 0.85rem; color: var(--text-dim); line-height: 1.5;">Every contact, every interaction, every email — cross-referenced automatically. It knows who I talked to, what we discussed, and what I committed to.</p>
+      </div>
+      <div class="cell" style="border-right: 1px solid var(--border); border-bottom: 1px solid var(--border);">
+        <div class="label gold" style="margin-bottom: 0.75rem;">Communication Intelligence</div>
+        <p style="font-size: 0.85rem; color: var(--text-dim); line-height: 1.5;">Call transcripts analyzed for talk ratios, commitments, coaching insights. Gmail and Calendar synced and linked to contacts. Nothing falls through.</p>
+      </div>
+      <div class="cell" style="border-bottom: 1px solid var(--border);">
+        <div class="label gold" style="margin-bottom: 0.75rem;">Autonomous Operations</div>
+        <p style="font-size: 0.85rem; color: var(--text-dim); line-height: 1.5;">Scheduled syncs, health monitoring, auto-generated briefings. Morning routine, meeting prep, nudges — it runs whether I&rsquo;m there or not.</p>
+      </div>
+      <div class="cell" style="border-right: 1px solid var(--border);">
+        <div class="label gold" style="margin-bottom: 0.75rem;">Projects &amp; Decisions</div>
+        <p style="font-size: 0.85rem; color: var(--text-dim); line-height: 1.5;">Task tracking, milestones, decision journals with outcomes. Cross-linked to contacts and conversations. Full institutional memory.</p>
+      </div>
+      <div class="cell" style="border-right: 1px solid var(--border);">
+        <div class="label gold" style="margin-bottom: 0.75rem;">Natural Language Interface</div>
+        <p style="font-size: 0.85rem; color: var(--text-dim); line-height: 1.5;">No screens to learn. No dashboards to check. I talk to it. &ldquo;Who haven&rsquo;t I spoken to in two weeks?&rdquo; &ldquo;Prep me for my 2pm.&rdquo; It just works.</p>
+      </div>
+      <div class="cell" style="background: var(--gold-dim);">
+        <div class="label gold" style="margin-bottom: 0.75rem;">Compounding Context</div>
+        <p style="font-size: 0.85rem; color: var(--text-dim); line-height: 1.5;">Every interaction makes it smarter. Relationship depth, communication patterns, project history — context that compounds over months, not resets every session.</p>
+      </div>
+    </div>
+
+    <div class="reveal" style="padding: 1.5rem 2rem; background: var(--gold-dim);">
+      <p style="font-size: 0.95rem;"><strong style="color: var(--gold);">I don&rsquo;t just sell this. I live in it.</strong> <span class="mid">This is what AI infrastructure looks like when it&rsquo;s built, running, and compounding. Everything I&rsquo;m proposing to you — I&rsquo;ve already built for myself.</span></p>
+    </div>
+  </div>
+</div>
+
+
+<!-- ════════════════════════════════════════════════════════════════ -->
+<!-- SLIDE — Research & Listening Agents -->
+<!-- ════════════════════════════════════════════════════════════════ -->
+<div class="slide" id="s-research-agents">
+  <div style="max-width: 1000px; width: 100%; margin: 0 auto;">
+    <div class="label reveal" style="margin-bottom: 2rem; color: var(--gold);">What this looks like in practice</div>
+    <h2 class="headline-lg reveal" style="margin-bottom: 1rem;">
+      Research and listening agents<span class="gold">.</span>
+    </h2>
+    <p class="body-lg reveal" style="max-width: 620px; margin-bottom: 3rem;">
+      Deploy multiple researchers across every source that matters. They come back with a unified intelligence picture.
+    </p>
+
+    <div class="reveal" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 2px; margin-bottom: 2.5rem;">
+      <div class="cell" style="border-right: 1px solid var(--border); border-bottom: 1px solid var(--border);">
+        <div class="label gold" style="margin-bottom: 0.75rem;">Reddit &amp; Forums</div>
+        <p style="font-size: 0.85rem; color: var(--text-dim); line-height: 1.5;">What real users are saying. Complaints, comparisons, migration stories. Unfiltered signal.</p>
+      </div>
+      <div class="cell" style="border-right: 1px solid var(--border); border-bottom: 1px solid var(--border);">
+        <div class="label gold" style="margin-bottom: 0.75rem;">Review Sites</div>
+        <p style="font-size: 0.85rem; color: var(--text-dim); line-height: 1.5;">G2, Capterra, TrustRadius. Sentiment analysis, feature gaps, competitive positioning from buyers.</p>
+      </div>
+      <div class="cell" style="border-bottom: 1px solid var(--border);">
+        <div class="label gold" style="margin-bottom: 0.75rem;">SEO &amp; Search</div>
+        <p style="font-size: 0.85rem; color: var(--text-dim); line-height: 1.5;">What people are searching for. Keyword gaps, content opportunities, competitive share of voice.</p>
+      </div>
+      <div class="cell" style="border-right: 1px solid var(--border);">
+        <div class="label gold" style="margin-bottom: 0.75rem;">Market Data</div>
+        <p style="font-size: 0.85rem; color: var(--text-dim); line-height: 1.5;">Pricing, market share, industry reports. Competitive tier benchmarking and monetization signals.</p>
+      </div>
+      <div class="cell" style="border-right: 1px solid var(--border);">
+        <div class="label gold" style="margin-bottom: 0.75rem;">YouTube &amp; Video</div>
+        <p style="font-size: 0.85rem; color: var(--text-dim); line-height: 1.5;">Content analysis, comment sentiment, thought leadership positioning across the category.</p>
+      </div>
+      <div class="cell" style="background: var(--gold-dim);">
+        <div class="label gold" style="margin-bottom: 0.75rem;">Synthesis</div>
+        <p style="font-size: 0.85rem; color: var(--text-dim); line-height: 1.5;">Cross-reference everything. Surface patterns no single source reveals. Deliver one unified brief.</p>
+      </div>
+    </div>
+
+    <div class="grid-2 reveal" style="align-items: start; border-top: 1px solid var(--border); padding-top: 2rem;">
+      <div style="padding-right: 3vw; border-right: 1px solid var(--border);">
+        <div class="label" style="color: var(--text-mid); margin-bottom: 1rem;">I built this for a real client</div>
+        <p class="body-md">Deployed 6 research agents across 10 competitors in email marketing. Reddit listening, review analysis, SEO audits, pricing benchmarks, market data, business intelligence. <strong style="color: var(--text);">Months of analyst work. Done in days.</strong></p>
+        <a href="pb-dashboard.html" target="_blank" style="display: inline-block; margin-top: 1.2rem; font-size: 0.85rem; color: var(--gold); text-decoration: none; border: 1px solid var(--gold); padding: 0.5rem 1.2rem; border-radius: 4px; transition: background 0.2s, color 0.2s;" onmouseover="this.style.background='var(--gold)';this.style.color='var(--bg)'" onmouseout="this.style.background='transparent';this.style.color='var(--gold)'">View live dashboard &rarr;</a>
+      </div>
+      <div style="padding-left: 3vw;">
+        <div class="label" style="color: var(--text-mid); margin-bottom: 1rem;">What makes it different</div>
+        <p class="body-md">These aren&rsquo;t dashboards you check. They&rsquo;re agents you deploy. <strong style="color: var(--text);">Tell them what to look at, they go look, they come back with findings.</strong> Run them once or schedule them to listen continuously.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ════════════════════════════════════════════════════════════════ -->
+<!-- SLIDE — This Weekend -->
+<!-- ════════════════════════════════════════════════════════════════ -->
+<div class="slide" id="s-weekend">
+  <div style="max-width: 1000px; width: 100%; margin: 0 auto;">
+    <div class="label reveal" style="margin-bottom: 2rem; color: var(--gold);">One person. One weekend.</div>
+    <h2 class="headline-lg reveal" style="margin-bottom: 1rem;">
+      What I did this weekend<span class="gold">.</span>
+    </h2>
+    <p class="body-lg reveal" style="max-width: 620px; margin-bottom: 2.5rem;">
+      Not a team. Not an agency sprint. Me, with these tools.
+    </p>
+
+    <div class="grid-2 reveal" style="align-items: start; margin-bottom: 0;">
+      <div style="padding-right: 3vw; border-right: 1px solid var(--border);">
+        <div style="display: flex; flex-direction: column; gap: 0;">
+          <div style="padding: 1.1rem 0; border-top: 1px solid var(--border);">
+            <div style="display: flex; align-items: baseline; gap: 1.2rem;">
+              <span class="label gold" style="min-width: 24px;">01</span>
+              <div>
+                <p style="font-size: 0.95rem; font-weight: 600; margin-bottom: 0.25rem;">Repositioned an entire SaaS company</p>
+                <p style="font-size: 0.8rem; color: var(--text-dim); line-height: 1.4;">Competitive research, social listening, thousands of pages assessed. Found the gaps between what customers ask for and how the company talks. New positioning from scratch.</p>
+              </div>
+            </div>
+          </div>
+          <div style="padding: 1.1rem 0; border-top: 1px solid var(--border);">
+            <div style="display: flex; align-items: baseline; gap: 1.2rem;">
+              <span class="label gold" style="min-width: 24px;">02</span>
+              <div>
+                <p style="font-size: 0.95rem; font-weight: 600; margin-bottom: 0.25rem;">80 pieces of finished creative</p>
+                <p style="font-size: 0.8rem; color: var(--text-dim); line-height: 1.4;">20 homepage variants, 20 landing pages, 20 email campaigns, 20 marketing campaigns. Not outlines &mdash; finished work.</p>
+              </div>
+            </div>
+          </div>
+          <div style="padding: 1.1rem 0; border-top: 1px solid var(--border);">
+            <div style="display: flex; align-items: baseline; gap: 1.2rem;">
+              <span class="label gold" style="min-width: 24px;">03</span>
+              <div>
+                <p style="font-size: 0.95rem; font-weight: 600; margin-bottom: 0.25rem;">Rewrote a quarter&rsquo;s OKRs</p>
+                <p style="font-size: 0.8rem; color: var(--text-dim); line-height: 1.4;">Replaced three-week processes with three-hour processes. Generated all plans, materials, and learning guides.</p>
+              </div>
+            </div>
+          </div>
+          <div style="padding: 1.1rem 0; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);">
+            <div style="display: flex; align-items: baseline; gap: 1.2rem;">
+              <span class="label gold" style="min-width: 24px;">04</span>
+              <div>
+                <p style="font-size: 0.95rem; font-weight: 600; margin-bottom: 0.25rem;">This deck + 3 websites + Google Suite</p>
+                <p style="font-size: 0.8rem; color: var(--text-dim); line-height: 1.4;">Crafted the content, Claude Code built the slides. Three other sites launched. Full Google Drive and Docs integration added to my platform.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div style="padding-left: 3vw;">
+        <div style="display: flex; flex-direction: column; gap: 0;">
+          <div style="padding: 1.1rem 0; border-top: 1px solid var(--border);">
+            <div style="display: flex; align-items: baseline; gap: 1.2rem;">
+              <span class="label gold" style="min-width: 24px;">05</span>
+              <div>
+                <p style="font-size: 0.95rem; font-weight: 600; margin-bottom: 0.25rem;">Automated outbound lead engine</p>
+                <p style="font-size: 0.8rem; color: var(--text-dim); line-height: 1.4;">Scrapes Google Maps for businesses without websites. Builds them a site, publishes on Netlify, finds contact info, writes the outreach with the live site attached.</p>
+              </div>
+            </div>
+          </div>
+          <div style="padding: 1.1rem 0; border-top: 1px solid var(--border);">
+            <div style="display: flex; align-items: baseline; gap: 1.2rem;">
+              <span class="label gold" style="min-width: 24px;">06</span>
+              <div>
+                <p style="font-size: 0.95rem; font-weight: 600; margin-bottom: 0.25rem;">Hackathon idea &rarr; working product</p>
+                <p style="font-size: 0.8rem; color: var(--text-dim); line-height: 1.4;">Friday afternoon concept became a functional product pulling real data from their analytics suite and Snowflake. Real-time CX messaging from individual user actions.</p>
+              </div>
+            </div>
+          </div>
+          <div style="padding: 1.1rem 0; border-top: 1px solid var(--border);">
+            <div style="display: flex; align-items: baseline; gap: 1.2rem;">
+              <span class="label gold" style="min-width: 24px;">07</span>
+              <div>
+                <p style="font-size: 0.95rem; font-weight: 600; margin-bottom: 0.25rem;">Full business case for a co-product pitch</p>
+                <p style="font-size: 0.8rem; color: var(--text-dim); line-height: 1.4;">Entire business case for a joint product &mdash; strategy, positioning, financials. Ready to present.</p>
+              </div>
+            </div>
+          </div>
+          <div style="padding: 1.1rem 0; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);">
+            <div style="display: flex; align-items: baseline; gap: 1.2rem;">
+              <span class="label gold" style="min-width: 24px;">08</span>
+              <div>
+                <p style="font-size: 0.95rem; font-weight: 600; margin-bottom: 0.25rem;">8 tools for podcast hosts I&rsquo;ve never met</p>
+                <p style="font-size: 0.8rem; color: var(--text-dim); line-height: 1.4;">Listened Thursday. Built 8 working tools from what they discussed. Sending tomorrow &mdash; &ldquo;I heard you talking about this, so I built it.&rdquo;</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="reveal" style="margin-top: 1.5rem; padding: 1rem 2rem; background: var(--gold-dim);">
+      <p style="font-size: 0.85rem;"><strong style="color: var(--gold);">Also shipping by Tuesday:</strong> <span class="mid">Meta ads analyzer &amp; ad creator, competitor social listening system, OKR &amp; MBR automation, instant sales responder. All for different clients. All from conversations this week.</span></p>
+    </div>
+  </div>
+</div>
+
+
+<!-- ════════════════════════════════════════════════════════════════ -->
+<!-- SLIDE — The Formula -->
+<!-- ════════════════════════════════════════════════════════════════ -->
+<div class="slide" id="s-formula">
+  <div style="max-width: 900px; margin: 0 auto; text-align: center;">
+    <h2 class="headline-lg reveal" style="margin-bottom: 4rem;">
+      When you combine<span class="gold">&hellip;</span>
+    </h2>
+
+    <div class="reveal" style="display: flex; align-items: center; justify-content: center; gap: 2.5vw; flex-wrap: wrap; margin-bottom: 4rem;">
+      <div style="text-align: center; max-width: 200px;">
+        <p class="serif" style="font-size: 1.3rem; font-weight: 600; font-variation-settings: 'opsz' 48; line-height: 1.3;">PhD-level<br>intelligence</p>
+      </div>
+      <span class="serif gold" style="font-size: 2rem; font-weight: 300;">+</span>
+      <div style="text-align: center; max-width: 200px;">
+        <p class="serif" style="font-size: 1.3rem; font-weight: 600; font-variation-settings: 'opsz' 48; line-height: 1.3;">An endless army<br>of workers</p>
+      </div>
+      <span class="serif gold" style="font-size: 2rem; font-weight: 300;">+</span>
+      <div style="text-align: center; max-width: 200px;">
+        <p class="serif" style="font-size: 1.3rem; font-weight: 600; font-variation-settings: 'opsz' 48; line-height: 1.3;">Your context,<br>knowledge &amp; data</p>
+      </div>
+      <span class="serif gold" style="font-size: 2rem; font-weight: 300;">+</span>
+      <div style="text-align: center; max-width: 200px;">
+        <p class="serif" style="font-size: 1.3rem; font-weight: 600; font-variation-settings: 'opsz' 48; line-height: 1.3;">A harness that<br>tells it how to work</p>
+      </div>
+    </div>
+
+    <div class="rule-gold reveal" style="margin: 0 auto 2.5rem; width: 80px;"></div>
+
+    <h2 class="headline-lg reveal">
+      The output is unlike anything<br>you could imagine<span class="gold">.</span>
+    </h2>
+
+    <div class="reveal" style="display: flex; justify-content: center; gap: 4vw; margin-top: 3rem;">
+      <div style="text-align: center;">
+        <p class="serif gold" style="font-size: 1.8rem; font-weight: 700; font-variation-settings: 'opsz' 72;">Speed.</p>
+      </div>
+      <div style="text-align: center;">
+        <p class="serif gold" style="font-size: 1.8rem; font-weight: 700; font-variation-settings: 'opsz' 72;">Quality.</p>
+      </div>
+      <div style="text-align: center;">
+        <p class="serif gold" style="font-size: 1.8rem; font-weight: 700; font-variation-settings: 'opsz' 72;">Reliability.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ════════════════════════════════════════════════════════════════ -->
+<!-- SLIDE 10 — The Compounding Gap -->
+<!-- ════════════════════════════════════════════════════════════════ -->
+<div class="slide" id="s10">
+  <div style="max-width: 950px; margin: 0 auto; width: 100%;">
+    <h2 class="headline-lg reveal" style="margin-bottom: 0.75rem; text-align: center;">
+      The gap compounds daily<span class="gold">.</span>
+    </h2>
+    <p class="body-md reveal" style="margin-bottom: 3rem; text-align: center;">
+      Everything you&rsquo;ve just seen connects. Each piece makes the others stronger.
+    </p>
+
+    <div class="grid-2 reveal" style="align-items: start; margin-bottom: 2.5rem;">
+      <div style="padding-right: 3vw; border-right: 1px solid var(--border);">
+        <div class="gap-chart" style="margin-bottom: 0;">
+          <svg viewBox="0 0 720 280" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <line x1="60" y1="240" x2="680" y2="240" stroke="rgba(255,255,255,0.06)" stroke-width="1"/>
+            <line x1="60" y1="180" x2="680" y2="180" stroke="rgba(255,255,255,0.03)" stroke-width="1"/>
+            <line x1="60" y1="120" x2="680" y2="120" stroke="rgba(255,255,255,0.03)" stroke-width="1"/>
+            <line x1="60" y1="60" x2="680" y2="60" stroke="rgba(255,255,255,0.03)" stroke-width="1"/>
+            <text x="60" y="265" fill="#5a564e" font-size="11" font-family="Outfit" font-weight="300">Today</text>
+            <text x="255" y="265" fill="#5a564e" font-size="11" font-family="Outfit" font-weight="300">Month 1</text>
+            <text x="450" y="265" fill="#5a564e" font-size="11" font-family="Outfit" font-weight="300">Month 3</text>
+            <text x="645" y="265" fill="#5a564e" font-size="11" font-family="Outfit" font-weight="300">Month 6</text>
+            <path d="M60,210 C200,208 400,202 680,195" stroke="#3a3630" stroke-width="1.5" stroke-dasharray="4,6" fill="none"/>
+            <text x="682" y="192" fill="#5a564e" font-size="10" font-family="Outfit" font-style="italic" font-weight="300">everyone else</text>
+            <path d="M60,210 C140,202 240,175 340,135 C440,90 560,45 680,12" stroke="#c9a84c" stroke-width="2.5" fill="none"/>
+            <path d="M60,210 C140,202 240,175 340,135 C440,90 560,45 680,12" stroke="#c9a84c" stroke-width="12" fill="none" opacity="0.08"/>
+            <text x="682" y="10" fill="#c9a84c" font-size="10" font-family="Outfit" font-weight="500">AI infrastructure</text>
+            <line x1="560" y1="55" x2="560" y2="198" stroke="rgba(201,168,76,0.25)" stroke-width="1" stroke-dasharray="3,4"/>
+            <text x="568" y="130" fill="#c9a84c" font-size="11" font-family="Fraunces" font-weight="500" font-style="italic">the gap</text>
+          </svg>
+        </div>
+      </div>
+
+      <div style="padding-left: 3vw;">
+        <div style="display: flex; flex-direction: column; gap: 1.4rem;">
+          <div>
+            <div class="label" style="color: var(--text-dim); margin-bottom: 0.4rem;">Week 1</div>
+            <p class="body-md">One competitive audit runs. One pain point gets fixed. Hours saved immediately.</p>
+          </div>
+          <div>
+            <div class="label" style="color: var(--text-dim); margin-bottom: 0.4rem;">Month 1</div>
+            <p class="body-md">That audit runs itself weekly. RFP drafts pull from a growing knowledge base. Reporting assembles overnight.</p>
+          </div>
+          <div>
+            <div class="label" style="color: var(--text-dim); margin-bottom: 0.4rem;">Month 3</div>
+            <p class="body-md">Competitive intel feeds pitch prep. Call transcripts improve proposals. Each system makes the others smarter.</p>
+          </div>
+          <div>
+            <div class="label gold" style="margin-bottom: 0.4rem;">Month 6</div>
+            <p class="body-md"><strong style="color: var(--text);">It&rsquo;s infrastructure.</strong> Running, learning, compounding — whether anyone&rsquo;s watching or not.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="reveal" style="padding: 1.5rem 2rem; background: var(--gold-dim);">
+      <p style="font-size: 0.95rem;"><strong style="color: var(--gold);">And it&rsquo;s distributable.</strong> <span class="mid">Every skill, every workflow, every piece of institutional knowledge — shared across your entire org, instantly. A new hire on day one has the same capabilities as someone who&rsquo;s been there five years.</span></p>
+    </div>
+  </div>
+</div>
+
+
+<!-- ════════════════════════════════════════════════════════════════ -->
+<!-- SLIDE 10 — The Serious Stuff -->
+<!-- ════════════════════════════════════════════════════════════════ -->
+<div class="slide" id="s13">
+  <div style="max-width: 900px; width: 100%;">
+    <h2 class="headline-lg reveal" style="margin-bottom: 3rem;">The serious stuff<span class="gold">.</span></h2>
+
+    <div class="grid-2 reveal" style="align-items: start;">
+      <div style="padding-right: 3vw; border-right: 1px solid var(--border);">
+        <div class="label" style="margin-bottom: 1.5rem;">Enterprise Controls</div>
+        <div style="display: flex; flex-direction: column; gap: 1rem;">
+          <div style="display: flex; align-items: baseline; gap: 0.75rem;">
+            <span class="green" style="font-size: 0.7rem;">&#9679;</span>
+            <p class="body-md">SSO &amp; SCIM — your IT controls access</p>
+          </div>
+          <div style="display: flex; align-items: baseline; gap: 0.75rem;">
+            <span class="green" style="font-size: 0.7rem;">&#9679;</span>
+            <p class="body-md">Audit logs — every action traced</p>
+          </div>
+          <div style="display: flex; align-items: baseline; gap: 0.75rem;">
+            <span class="green" style="font-size: 0.7rem;">&#9679;</span>
+            <p class="body-md">Custom data retention controls</p>
+          </div>
+          <div style="display: flex; align-items: baseline; gap: 0.75rem;">
+            <span class="green" style="font-size: 0.7rem;">&#9679;</span>
+            <p class="body-md">Compliance API — programmatic monitoring</p>
+          </div>
+          <div style="display: flex; align-items: baseline; gap: 0.75rem;">
+            <span class="green" style="font-size: 0.7rem;">&#9679;</span>
+            <p class="body-md">Google, Slack, Microsoft 365 connectors</p>
+          </div>
+        </div>
+      </div>
+
+      <div style="padding-left: 3vw;">
+        <div class="label" style="margin-bottom: 1.5rem;">What It Costs</div>
+        <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+          <div>
+            <p style="font-size: 0.65rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-dim); margin-bottom: 0.3rem;">Starting point</p>
+            <p style="font-weight: 400;">Team plan — $25/seat/month</p>
+          </div>
+          <div>
+            <p style="font-size: 0.65rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-dim); margin-bottom: 0.3rem;">With Code access</p>
+            <p style="font-weight: 400;">Premium — $100–150/seat/month</p>
+          </div>
+          <div>
+            <p style="font-size: 0.65rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-dim); margin-bottom: 0.3rem;">Full enterprise</p>
+            <p style="font-weight: 400;">Usage-based &middot; Custom pricing</p>
+          </div>
+          <p style="font-size: 0.8rem; color: var(--text-dim); font-style: italic; margin-top: 0.5rem;">Compare to one junior hire.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ════════════════════════════════════════════════════════════════ -->
+<!-- SLIDE — The Software Review -->
+<!-- ════════════════════════════════════════════════════════════════ -->
+<div class="slide" id="s-software-review">
+  <div style="max-width: 1000px; width: 100%; margin: 0 auto;">
+    <div class="label reveal" style="margin-bottom: 2rem; color: var(--gold);">Getting started is easy</div>
+    <h2 class="headline-lg reveal" style="margin-bottom: 1rem;">
+      Three questions<span class="gold">.</span>
+    </h2>
+    <p class="body-lg reveal" style="max-width: 620px; margin-bottom: 3rem;">
+      Start from the outcome. Map backwards to what&rsquo;s slow, what&rsquo;s painful, what&rsquo;s costing time. Three questions:
+    </p>
+
+    <div class="reveal" style="display: flex; flex-direction: column; gap: 0; margin-bottom: 3rem;">
+      <div style="display: flex; align-items: baseline; gap: 2rem; padding: 1.5rem 0; border-top: 1px solid var(--border);">
+        <span class="label gold" style="min-width: 30px;">01</span>
+        <p class="serif" style="font-size: 1.4rem; font-weight: 500; font-variation-settings: 'opsz' 48;">What&rsquo;s something that&rsquo;s blocking you?</p>
+      </div>
+      <div style="display: flex; align-items: baseline; gap: 2rem; padding: 1.5rem 0; border-top: 1px solid var(--border);">
+        <span class="label gold" style="min-width: 30px;">02</span>
+        <p class="serif" style="font-size: 1.4rem; font-weight: 500; font-variation-settings: 'opsz' 48;">What&rsquo;s something you find annoying?</p>
+      </div>
+      <div style="display: flex; align-items: baseline; gap: 2rem; padding: 1.5rem 0; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);">
+        <span class="label gold" style="min-width: 30px;">03</span>
+        <p class="serif" style="font-size: 1.4rem; font-weight: 500; font-variation-settings: 'opsz' 48;">What&rsquo;s something repetitive or boring?</p>
+      </div>
+    </div>
+
+    <div class="grid-2 reveal" style="align-items: start;">
+      <div style="padding-right: 3vw; border-right: 1px solid var(--border);">
+        <div class="label" style="color: var(--text-mid); margin-bottom: 1.5rem;">What gets reviewed</div>
+        <div style="display: flex; flex-direction: column; gap: 1.2rem;">
+          <p class="body-md"><strong style="color: var(--text);">Workflows</strong> — the actual steps people take. The workarounds, the manual steps, the things that are slow or costly.</p>
+          <p class="body-md"><strong style="color: var(--text);">Tools &amp; data</strong> — where information lives, where it&rsquo;s duplicated, where it&rsquo;s missing. What connects and what doesn&rsquo;t.</p>
+        </div>
+      </div>
+
+      <div style="padding-left: 3vw;">
+        <div class="label" style="color: var(--text-mid); margin-bottom: 1.5rem;">How it gets better</div>
+        <div style="display: flex; flex-direction: column; gap: 1.2rem;">
+          <p class="body-md"><strong style="color: var(--text);">A prioritized list</strong> — ranked by impact and effort. &ldquo;Start here, then here, then here.&rdquo;</p>
+          <p class="body-md"><strong style="color: var(--text);">A working version</strong> — not a recommendation. Something built and running before we&rsquo;re done.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="reveal" style="margin-top: 2.5rem; padding: 1.5rem 2rem; background: var(--gold-dim);">
+      <p style="font-size: 0.95rem;"><strong style="color: var(--gold);">Starts from a pain point.</strong> <span class="mid">Rapid fix — within hours — to demonstrate value. Then build from there.</span></p>
+    </div>
+  </div>
+</div>
+
+
+<!-- ════════════════════════════════════════════════════════════════ -->
+<!-- SLIDE 14 — The Ask -->
+<!-- ════════════════════════════════════════════════════════════════ -->
+<div class="slide" id="s14">
+  <div style="max-width: 850px; margin: 0 auto; text-align: center;">
+    <h1 class="headline-xl reveal" style="margin-bottom: 2.5rem;">
+      The only thing you<br>need to bring<span class="gold">.</span>
+    </h1>
+    <p class="body-lg reveal" style="max-width: 580px; margin: 0 auto 4rem;">
+      Something that's frustrating. Or mind-numbing. Or repetitive.<br>That's it. That's the starting point.
+    </p>
+
+    <div class="reveal" style="border-top: 1px solid var(--border); padding-top: 2.5rem; text-align: left; max-width: 700px; margin: 0 auto;">
+      <p class="body-md" style="margin-bottom: 2rem;">I paint the picture of what's possible. I build version one. You run with it.</p>
+      <div class="grid-2" style="gap: 3vw;">
+        <div>
+          <div class="label gold" style="margin-bottom: 1rem;">Jon — Week 1</div>
+          <p class="body-md">Build a competitive intelligence system for one active client. Your strategists feel the difference on the next brief.</p>
+        </div>
+        <div style="padding-left: 3vw; border-left: 1px solid var(--border);">
+          <div class="label green" style="margin-bottom: 1rem;">Drew — Week 1</div>
+          <p class="body-md">Connect it to one operational pain point. Incident summaries, compliance checks, or change review. Hours saved in two weeks.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="reveal" style="margin-top: 5rem;">
+      <div class="rule-gold" style="margin: 0 auto 1.5rem;"></div>
+      <p class="serif" style="font-size: 1.2rem; color: var(--text-mid); font-variation-settings: 'opsz' 36; font-weight: 400;">
+        The gap compounds daily.
+      </p>
+      <p style="color: var(--text-dim); font-size: 0.9rem; margin-top: 0.4rem;">
+        Today is the smallest it will ever be.
+      </p>
+    </div>
+  </div>
+</div>
+
+
+<!-- ════════════════════════════════════════════════════════════════ -->
+<script>
+  const slides = document.querySelectorAll('.slide');
+  let current = 0;
+  let transitioning = false;
+
+  function showSlide(n) {
+    if (transitioning || n === current) return;
+    if (n < 0 || n >= slides.length) return;
+
+    transitioning = true;
+    const prev = slides[current];
+    const next = slides[n];
+
+    // Show next slide with wipe
+    next.classList.add('entering');
+    next.style.display = 'flex';
+
+    setTimeout(() => {
+      prev.classList.remove('active');
+      prev.style.display = 'none';
+      next.classList.remove('entering');
+      next.classList.add('active');
+      current = n;
+      transitioning = false;
+      updateUI();
+    }, 500);
+
+    // Update immediately for responsiveness
+    const pct = ((n + 1) / slides.length) * 100;
+    document.getElementById('progress').style.width = pct + '%';
+    document.getElementById('slideNum').textContent = (n + 1) + ' / ' + slides.length;
+  }
+
+  function updateUI() {
+    const pct = ((current + 1) / slides.length) * 100;
+    document.getElementById('progress').style.width = pct + '%';
+    document.getElementById('slideNum').textContent = (current + 1) + ' / ' + slides.length;
+
+    if (current > 0) {
+      document.getElementById('keyHint').style.opacity = '0';
+    }
+  }
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'ArrowDown') {
+      e.preventDefault();
+      showSlide(current + 1);
+    } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+      e.preventDefault();
+      showSlide(current - 1);
+    } else if (e.key === 'Home') {
+      e.preventDefault();
+      showSlide(0);
+    } else if (e.key === 'End') {
+      e.preventDefault();
+      showSlide(slides.length - 1);
+    }
+  });
+
+  document.addEventListener('click', (e) => {
+    if (e.target.closest('a')) return;
+    if (e.clientX < window.innerWidth / 3) {
+      showSlide(current - 1);
+    } else {
+      showSlide(current + 1);
+    }
+  });
+
+  updateUI();
+</script>
+
+</body>
+</html>

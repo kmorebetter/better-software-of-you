@@ -3,8 +3,8 @@
 
 ## Three Takeaways (weave throughout)
 
-1. **Army of PhDs.** Claude is smarter than almost anyone on almost every subject. Deeper, faster insight on everything.
-2. **Leverage, not software.** AI workflows replace labour. The unlock is infrastructure and scaffolding that does things for you.
+1. **PhDs and worker bees.** You now have access to an army of researchers smarter than almost anyone you could hire — AND an army of worker bees that go do the work. The PhDs think. The bees do. You can deploy as many as you need, simultaneously.
+2. **10x, not replacement.** Same people, ten times the output. Not more work. Not fewer people. The output shifts to the higher-leverage work that clients pay for and that moves your org forward.
 3. **The gap compounds daily.** Every workflow you build stacks. Six months from now, the distance between businesses running on AI infrastructure and everyone else is uncatchable.
 
 
@@ -12,121 +12,132 @@
 
 - Set the frame: this is not a product demo. This is about how your business operates differently starting next week.
 - Quick personal context. You run a real company on this. Not theoretical.
-- State the three takeaways up front so they have a scaffold for everything that follows.
-- Acknowledge where they probably are: both have likely used ChatGPT or Claude casually. That is fine. What they have seen so far is maybe 5% of what is possible.
+
+**Introduce the mental model:**
+- Here is how I want you to think about this. You now have access to two things that have never existed before.
+- First: **an army of PhDs.** Researchers who are smarter than almost anyone on almost any subject. They can think about strategy, category dynamics, network architecture, regulatory compliance, competitive positioning — at a depth that would take your best people days to match. And they work in seconds.
+- Second: **an army of worker bees.** These are not just thinkers. They go do things. They research. They pull data. They cross-reference. They build reports. They check compliance documents against your actual infrastructure. They draft the brief. They file the summary. They come back with finished work product.
+- The PhDs think. The bees do. And here is the key: you can deploy as many as you need, on as many problems as you need, simultaneously.
+- Right now, most people are talking to one PhD in a chat window. That is maybe 5% of what is possible. What I am going to show you today is the other 95% — how you go from one brain in a box to an army that works for your business while you do the work only you can do.
+
+**State the three takeaways** so they have a scaffold for everything that follows.
+
+**One more thing before we dive in — the interface:**
+- You have both used ChatGPT or Claude casually. You know the interface: it is chat. Plain English. You type, it responds.
+- Here is what I want you to know: **the interface never changes.** Everything I am about to show you — from the simplest version to the most powerful — is chat. It is plain English, in any permutation. You are never writing code. You are never learning a new tool. You are having a conversation.
+- Claude Desktop is chat. Cowork is chat. Code is chat. They look a little different, but it is all the same thing: you describe what you want in plain language, and the system goes and does it.
+- The only thing that changes is how much you connect it to, how many bees you deploy, and how much it can do on your behalf.
+
+**Quick proof of concept (before you show any tools):**
+- Before I show you how any of this works, let me show you what it produces.
+- Jon — I sent five AI researchers to analyze the Canadian QSR competitive landscape. Your category. Tim Hortons, McDonald's, A&W, Wendy's, Popeyes. They came back with this. [reveal QSR audit report] That is the kind of category research that would take a junior strategist two days. Five researchers produced it in under ten minutes. I did not supervise them. I described what I wanted and they came back with a finished deliverable.
+- Drew — I sent seven researchers to analyze Beanfield's public security posture and the threat landscape facing Canadian independent fibre providers. They looked at your ASN, your BGP routing, your RPKI deployment, your DNS configuration, your email authentication, your certifications, Salt Typhoon, Bill C-8, the Rogers outage lessons, and how you compare to the incumbents. [reveal security report] That is the kind of assessment a security consulting firm charges $50K for. Seven worker bees. Fifteen minutes.
+- Let that land. Do not rush past it. This is the moment where "interesting technology" becomes "this changes how I think about my operation."
+- Now — let me show you how it works. There are really only two steps.
 
 
-## Act 1: Claude Desktop -- The Intelligence is Real, But This is Not Where Work Happens (5 min)
+## Step 1: Claude Desktop — The Brain in a Box (10 min)
 
-**Takeaway 1. Establish the brain. Then show the walls.**
+**Takeaway 1 in action. Establish the intelligence. Then show the walls.**
 
-- Reframe: stop thinking of it as a chatbot. Think of it as an army of PhDs sitting across the table from you, smarter on nearly every subject than anyone you could hire.
-- One fast live example. Pick something that hits close to home for the room:
-  - For Jon: ask Claude to analyze the strategic tension in a real brief. Or have it do a competitive audit of a brand FUSE is pitching against. The kind of deep category research that would take a junior strategist two days, done in 90 seconds with more nuance than most people would produce.
-  - For Drew: ask Claude about BGP route leak mitigation strategies for a mid-size fibre provider, or how to architect DDoS protection across a multi-metro network. Watch his face when it answers at senior network engineer depth.
-- Let them sit with that for a second. The intelligence is real. It is not a trick.
+- This is where most people start. Claude Desktop. The chat interface. One PhD in a box.
+- You already know the interface. You type in plain English. It responds. Same as any conversation.
+- Do a fast live example to prove the depth is real:
+  - For Jon: ask Claude to analyze a strategic tension in a real brief, or do a quick competitive read on a brand FUSE is pitching against.
+  - For Drew: ask Claude about BGP route leak mitigation for a mid-size fibre provider, or how to architect DDoS protection across a multi-metro network. Watch his face when it answers at senior network engineer depth.
+- Let them sit with it. The intelligence is real. It is not a trick.
 
 **Now show the walls:**
-- But here is the thing. What you just saw is prompting. You typed a question. It gave you an answer. That is an interesting conversation partner. It is not a way to do real work.
-- Desktop has no memory. It does not know who you are. It does not remember the conversation you had yesterday. Every chat starts from zero.
-- Desktop has no meaningful context. You cannot feed it your entire client portfolio, your network architecture, your last six months of campaign data. It knows what you paste into the box. That is it.
-- Desktop cannot do anything. It cannot open your email. It cannot pull a report. It cannot update a ticket. It can only talk.
-- This is where most people stop. They try Desktop, they are impressed for a week, and then it fades because it does not plug into their actual work. It is a PhD with no desk, no files, and no hands.
-- That is the gap. The intelligence is there. What is missing is the ability to act, to remember, and to work inside your systems.
+- But here is the thing. What you just saw is one PhD answering one question. That is an interesting conversation partner. It is not a way to do real work.
+- This PhD has no memory. It does not know who you are. It does not remember yesterday. Every chat starts from zero.
+- It has no context. You cannot feed it your client portfolio, your network architecture, your last six months of campaign data. It knows what you paste into the box.
+- And it has no hands. It cannot open your email, pull a report, update a ticket, or build anything. It can only talk.
+- This is where most people stop. They try it, they are impressed for a week, and then it fades because it does not connect to their actual work. It is a PhD with no desk, no files, and no hands.
+- Remember those reports I showed you? Those did not come from this. Those came from multiple researchers, working in parallel, connected to real data, coordinating, and delivering finished work product.
+- That is the gap. The intelligence is here. What is missing is the ability to connect, to remember, to multiply, and to act inside your systems.
 
-**Bridge:** So what happens when you give that intelligence hands, memory, and connections to everything your business runs on? Let me show you.
-
-
-## Act 2: From Training Wheels to Full Power (35 min)
-
-**The core idea: it is all the same intelligence. The only question is how much control you give it.**
-
-**Takeaways 2 and 3 together. This is the main event.**
+**Bridge:** Step two closes that gap entirely. Same chat interface. Same plain English. But now it reaches into everything.
 
 
-### Cowork -- The Training Wheels (10 min)
+## Step 2: Connect (30 min)
 
-- Start here because it is the most immediately understandable.
-- Cowork is that same PhD intelligence, but now it can see your screen, click buttons, read documents, fill forms, extract data. It acts on your behalf while you do something else.
-- The shift: from "I ask Claude things" to "Claude does my tasks."
-- This is still guided. You point it at a task. It does the task. It is impressive and useful and it will save hours immediately. But you are still the one deciding what to do and when.
+**This is the main event. Takeaways 2 and 3 together.**
 
-**Make it real for them:**
-- Jon: point Cowork at five competitor websites and say "pull their positioning, pricing structure, and key claims into a comparison table." Connections planning input that would take a junior strategist half a day. Done in minutes. Or: "Read these three industry reports, extract the data points relevant to the QSR category, and draft a trends brief I can hand to creative."
-- Drew: point Cowork at vendor datasheets from three equipment suppliers and have it extract every spec into a comparison table. No manual entry. Or have it pull compliance requirements from a regulatory doc and cross-check them against current network documentation.
-- For both their teams: Cowork reading dashboards, pulling numbers, drafting the weekly status report. The operational labour that nobody wants to do but everyone needs done. Their people get to do the actual work they were hired for.
+**The core idea:** same intelligence, same chat interface, same plain English. The only thing that changes is what it is connected to and how many you deploy.
 
-**Now name the limits (same pattern as Desktop):**
-- Cowork is powerful. But it is still one task at a time. You point, it does. It does not know what to do next unless you tell it.
-- It has no persistent memory of your business. It does not know your clients, your network topology, your last quarter's results unless you tell it every time.
-- It cannot connect to your internal systems, build workflows, or create anything that persists after the session ends.
-- Cowork is the training wheels. Same intelligence. Real hands. But limited range of motion.
+There are two versions of this, and they are really just training wheels on and training wheels off:
 
-**Bridge (keep this tight, one sentence):** So what happens when you take the training wheels off?
+### With Training Wheels (Cowork)
 
+- Same PhD intelligence, but now it has hands. It can see your screen, click buttons, read documents, fill forms, extract data. It does tasks on your behalf while you do something else.
+- The shift: from "I ask the PhD questions" to "the bee goes and does my work."
+- Still chat. Still plain English. You describe the task, it does the task.
+- Jon: point it at five competitor websites — "pull their positioning, pricing structure, and key claims into a comparison table." Or: "read these three industry reports, extract the QSR data points, and draft a trends brief I can hand to creative." Half a day of junior strategist work. Done in minutes.
+- Drew: point it at vendor datasheets — "extract every spec into a comparison table." Or have it pull compliance requirements from a regulatory doc and cross-check them against your current network documentation.
+- For both your teams: reading dashboards, pulling numbers, drafting the weekly status report. The operational work nobody wants to do but everyone needs done. This is 10x in action — you are not replacing the person, you are freeing them to do the work they were actually hired for.
+- This is one bee, one task, pointed at what is on your screen. Powerful and immediately useful. But still guided — you are directing every move.
 
-### Code -- Training Wheels Off (25 min)
+### Training Wheels Off (Code)
 
-- Same intelligence. Same fundamental capability. But now there are no guardrails on what it can do.
-- Claude Code is a terminal-based agent. You talk to it in plain English. It builds what you describe. It plans, executes, tests, and iterates.
-- But here is what matters: Code is not about creating software. Nobody in this room needs to become a software company.
+- Same chat. Same plain English. But now there are no limits on what it can reach, how many it deploys, or what it builds.
+- This is how those reports got made. I described what I wanted. The system planned, deployed multiple researchers in parallel, coordinated their work, and delivered finished output. I did not supervise it. I did not write code. I had a conversation.
+- This is not about writing software. Nobody in this room needs to become a software company.
 
-**The reframe (say this directly, especially for Jon):**
-- Code is about creating systems. Systems that pull data from everywhere your business already lives, think about that data at a PhD level, and do something useful with it. Automatically. Without you pointing at anything.
-- The difference: software is a product you ship. A system is infrastructure that runs your operation. Jon does not need to ship software. He needs his strategy department to be faster, deeper, and more rigorous without hiring three more people. Drew does not need another tool. He needs the glue between his existing tools that his team never has bandwidth to build.
+**Four capabilities that matter:**
 
+**1. Pull from anywhere.**
+- The bees are only as good as what they can reach. Right now your business data lives in a dozen places — Gmail, Calendar, Notion, Asana, Slack, your CRM, ticketing systems, internal databases, shared drives.
+- Connected Claude reaches into all of it. You describe what you want connected and it builds the connection. No Zapier. No middleware. No dev team building connectors for six months. You have a conversation, and it wires itself in.
 
-#### Claude Connect -- Your Business, Wired Into One Brain (8 min)
+**2. Context and memory.**
+- This is what separates "interesting tool" from "operating system." Connected Claude remembers. It knows your clients, your projects, your history, your decisions, your email threads. All cross-referenced. All compounding.
+- It is not a generic AI. It is YOUR AI, with YOUR context, building on YOUR history.
+- When you ask it a question, it does not start from zero. It already knows who you are talking about, what the last conversation covered, what commitments were made, and what has changed since.
 
-This is where systems become real.
+**3. Output into anything.**
+- It does not just answer questions. It builds. Reports, dashboards, briefs, summaries, comparison tables, compliance audits, strategic analyses — in whatever format you need. HTML pages, PDFs, spreadsheets, email drafts, Slack messages, database entries.
+- Those two reports I showed you at the top? Those are outputs. The QSR audit is a finished strategic deliverable. The Beanfield assessment is a finished security brief. It pulled data from dozens of sources, synthesized it at PhD level, and delivered polished output — ready to present, ready to act on.
 
-- Position Code as "Claude Connect." The power is not that it writes code. It is that it connects to almost any system that exists and turns it into a data source you can talk to.
-- Gmail, Google Calendar, Notion, Asana, Slack, your CRM, your ticketing system, your internal databases, your file system. All connected. All queryable. All actionable.
-- Remember those three walls from Desktop? No memory, no context, no action. Connect solves all three. It remembers because it is wired into your systems. It has context because it can read everything. It can act because it can reach into any connected tool and do things.
-- Once connected, three things become possible:
-  1. **Talk to it.** Ask questions across all your systems in plain English. "What did Jon email me about last week and is there a related task in Asana?" One question, three systems, instant answer. That is the army of PhDs, but now it has read everything your business knows.
-  2. **Run agents against it.** Set up workflows that monitor, analyze, and act on data across connected systems. Not a one-time script. A living system that watches, thinks, and flags.
-  3. **Run tasks.** Complex, multi-step operations that span multiple tools. Described in English. Executed automatically. Done.
-- This is not integration in the traditional sense. No Zapier. No middleware. No dev team building connectors for six months. You describe what you want connected and Code builds it.
+**4. Runs without you.**
+- Everything I have shown you so far assumes you are sitting at your desk, having a conversation. But it does not need you there.
+- **Skills and plugins.** You teach a bee a routine once — how to run a competitive audit, how to generate a compliance report, how to prep for a Monday meeting. After that, anyone on your team can deploy that same bee with a single command. You are not rebuilding the wheel every time. You are building institutional playbooks that execute themselves.
+- **Scheduled tasks.** Bees that work on a clock. "Every Monday morning at 7am, pull last week's campaign data across all active clients and draft a summary for the partner team." You set it once. It runs every week. Nobody has to remember to do it.
+- **Loops.** Bees that watch. "Check this feed every 10 minutes and tell me if something changes." "Monitor these vendor pages for pricing updates." Continuous monitoring without continuous attention. It is watching while you do something else.
+- **Remote and voice.** You are not chained to a laptop. You can talk to it from your phone, from your car, by voice. "Hey, what is the status on the OLG brief?" on your commute. "Flag any security incidents from overnight" while you are making coffee. The interface is still chat — it is just chat from anywhere.
+- This is the shift from "a tool I use" to "infrastructure that runs." The bees are not waiting for you to type. They are already working.
 
-**Jon angle (Head of Strategy, FUSE Create):**
-- Jon builds strategies for brands like McDonald's, OLG, Molson. Every brief starts with research. Competitive landscape, category trends, audience insights, cultural context. Right now that research lives across a dozen sources and takes days to compile.
+**Make it real for Jon (Head of Strategy, FUSE Create):**
+- Jon builds strategies for brands like McDonald's, OLG, Molson. Every brief starts with research — competitive landscape, category trends, audience insights, cultural context. Right now that research lives across a dozen sources and takes days to compile.
 - Connect Claude to FUSE's internal drive, project management tools, and email. Now imagine: "Pull every insight from the last three OLG briefs, cross-reference with the latest gaming and lottery industry reports, and identify the strategic tensions we have not explored yet." One question. PhD-level synthesis. Minutes, not days.
-- Jon values strategists who do their own digging beyond the brief. Claude Connect is that researcher, available to every strategist on his team, 24/7. It does not replace his people. It makes every one of them deeper.
-- For the agency's growth: FUSE just won Gay Lea, Fujifilm, Metro Toronto Convention Centre, Grenade, Chartwell. Every new client means more strategic workload. Connect means that workload scales without the headcount scaling at the same rate.
-- The system Jon should picture: every Monday morning, Claude reviews the previous week's campaign data across all active clients, flags anything that needs attention, and drafts a strategic summary for the partner team. That is not software. That is a system that thinks about your business while you sleep.
+- Jon values strategists who do their own digging beyond the brief. This is that researcher, available to every strategist on his team, 24/7. It does not replace his people. It makes every one of them deeper.
+- For the agency's growth: FUSE just won Gay Lea, Fujifilm, Metro Toronto Convention Centre, Grenade, Chartwell. Every new client means more strategic workload. This means that workload scales without headcount scaling at the same rate.
+- The system Jon should picture: every Monday morning, it reviews the previous week's campaign data across all active clients, flags anything that needs attention, and drafts a strategic summary for the partner team. That is a scheduled task. Set it once, it runs every week. Nobody assigns it. Nobody forgets.
+- Build a "competitive audit" skill. Now any strategist on the team types one command and gets a full category landscape — same depth, same format, every time. You are not training people to use AI. You are giving them a playbook that runs itself.
 
-**Drew angle (VP Network and Info Security, Beanfield):**
-- Beanfield runs carrier-grade fibre infrastructure across Toronto, Montreal, and expanding into Vancouver and Ottawa. Drew is responsible for securing all of it. Network security, information security, compliance, and enterprise customer SLAs.
-- Connect Claude to network monitoring tools, ticketing systems, incident logs, compliance documentation, and vendor databases. Now Drew can ask: "Show me every open security incident across all metros, ranked by severity, with the relevant compliance implications for our enterprise customers." One question. Real-time answer. No dashboard switching.
-- Build an agent that monitors network telemetry and flags anomalies that match known attack patterns. Not a replacement for his SIEM. An intelligent layer on top of it that reasons about what it sees.
-- Connect git repos, the internal wiki, and change management tools. Every network change gets automatically checked against security policies before it goes live. The kind of systematic review his team knows they should do but does not always have bandwidth for.
-- For Beanfield's growth: they are competing with Rogers, Bell, and Telus as an independent. Every new building, every new metro, every new enterprise customer adds security surface area. Connect means Drew's security posture scales with the network instead of falling behind it.
+**Make it real for Drew (VP Network & Info Security, Beanfield):**
+- Beanfield runs carrier-grade fibre infrastructure across Toronto, Montreal, and expanding into Vancouver and Ottawa. Drew is responsible for securing all of it — network security, information security, compliance, and enterprise customer SLAs.
+- Connect it to network monitoring tools, ticketing systems, incident logs, compliance documentation, and vendor databases. Now Drew asks: "Show me every open security incident across all metros, ranked by severity, with the relevant compliance implications for our enterprise customers." One question. Real-time answer. No dashboard switching.
+- Deploy bees that monitor network telemetry and flag anomalies matching known attack patterns. Not replacing the SIEM. An intelligent layer on top of it that reasons about what it sees.
+- Connect git repos, the internal wiki, change management. Every network change gets automatically checked against security policies before it goes live. The kind of systematic review his team knows they should do but does not always have bandwidth for.
+- Set a loop that checks CVE feeds every hour and cross-references against Beanfield's vendor stack. When something matches, it flags Drew's team before the vendor even sends a bulletin. That is not a SIEM. That is an intelligent layer that understands your infrastructure and thinks about what it sees.
+- Build a "compliance check" skill that any network engineer can run before deploying a change. One command. Automatic policy review. No waiting for security team sign-off on routine changes.
+- Beanfield is competing with Rogers, Bell, and Telus. Every new building, every new metro, every new enterprise customer adds security surface area. It scales with the network. Headcount does not.
 
-
-#### Software of You -- Memory and Context (7 min)
-
-- Show SoY as the flagship example of what Code builds when everything is connected
-- Walk them through the memory layer: Claude remembers your contacts, your projects, your decisions, your journal entries, your email threads. All wired together.
-- The key insight: this is not a generic AI. This is YOUR AI, with YOUR context, compounding on YOUR history.
-- Show how memory surfaces relevant info without you asking. "I did not tell it to pull that up. It knew."
-- SoY is what happens when Claude Connect meets personal infrastructure. Every system you use feeds into a single intelligence layer that knows your business, your relationships, your priorities.
-- This is the moment that changes how they think about AI. It stops being a tool. It becomes an operating system.
-
-**Land it for both of them:**
+**Software of You — the flagship example (5 min):**
+- Show SoY as the proof of what this looks like when everything is connected and compounding.
+- Walk them through the memory layer: it knows your contacts, your projects, your decisions, your journal entries, your email threads. All wired together.
+- Show a moment where it surfaces relevant info without being asked. "I did not tell it to pull that up. It knew."
 - Jon: imagine your AI knows every brief you have written, every campaign result, every client conversation. When you sit down to write a new strategy, it already knows the context. It surfaces the relevant precedent. It flags where a similar approach worked or did not. That is not autocomplete. That is institutional memory that actually works.
 - Drew: imagine your AI knows every incident report, every vendor evaluation, every architecture decision, every compliance review. When a new threat emerges, it already knows your network topology, your current controls, and your gaps. It does not just alert you. It tells you what to do about it, in the context of your specific infrastructure.
 
-
-#### The Compounding Argument (5 min)
-
-- Every connection you make, every workflow you build, every piece of context you add makes the next one easier. The systems layer on each other.
-- Month 1: you connect your first few tools and automate one workflow
-- Month 3: you have a system of systems. Claude knows your business well enough to anticipate what you need.
-- Month 6: your operation runs fundamentally differently than your competitors'.
-- For Jon: the agencies that build this infrastructure now will produce better strategies, faster, with smaller teams. The ones that do not will be competing on headcount while you compete on intelligence. FUSE is already an independent shop punching above its weight. This is how you keep that advantage as you grow.
-- For Drew: the security teams that build this infrastructure now will have better visibility, faster response, and stronger compliance posture. At Beanfield's growth rate, the alternative is hiring at a pace that never catches up to the expanding attack surface.
-- That gap does not close. It widens.
+**The compounding argument (3 min):**
+- Every connection you make, every workflow you build, every piece of context you add — it gets smarter. The systems layer on each other.
+- Month 1: you connect your first few tools and deploy bees on one workflow.
+- Month 3: you have skills your team can deploy with one command, scheduled tasks running every morning, and loops watching things that used to require a person staring at a dashboard. It knows your business well enough to anticipate what you need.
+- Month 6: your operation runs fundamentally differently than your competitors'. Ten times the output, same headcount, and the output is the high-leverage work that compounds. Half of it happens before anyone sits down at their desk.
+- For Jon: the agencies that build this now will produce better strategies, faster, with the same teams. The ones that do not will be competing on headcount while you compete on intelligence. FUSE is already an independent shop punching above its weight. This is how you keep that advantage as you scale.
+- For Drew: the security teams that build this now will have better visibility, faster response, and stronger compliance posture. At Beanfield's growth rate — new metros, new enterprise customers, expanding attack surface — the alternative is hiring at a pace that never catches up. It scales with the network. Headcount does not.
+- That gap does not close. It widens. Every day.
 
 
 ## The Serious Stuff: Security, Data, and What It Costs (5 min)
@@ -170,11 +181,14 @@ This is where systems become real.
 - Recap the three takeaways in one sentence each
 - Be direct: "Here is what working together looks like"
 
+**The entry point:**
+- The only thing you need to bring to the table is something that is frustrating. Or mind-numbing. Or repetitive. That is the starting point.
+- I paint the picture of what is possible. I build version one. You run with it.
+
 **For Jon:**
 - First week: we build a competitive intelligence system for one active client. Connect FUSE's internal docs, plug in web research capability, and give your strategy team a tool that produces category audits and trend briefs on demand. Your strategists feel the difference on the very next brief.
 
 **For Drew:**
-- First week: we connect Claude to one operational pain point. The most likely candidate is the reporting and documentation overhead. Incident summaries, compliance cross-checks, or change review automation. Something his team will feel in hours saved within the first two weeks.
+- First week: we connect it to one operational pain point. The most likely candidate is the reporting and documentation overhead. Incident summaries, compliance cross-checks, or change review automation. Something his team will feel in hours saved within the first two weeks.
 
-- The 48-hour challenge: pick one pain point. We automate it. You feel the difference immediately.
 - If energy is high, pull up Claude Code and let one of them describe a real problem. Start solving it live. That is the mic drop.

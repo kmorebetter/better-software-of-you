@@ -1,0 +1,2254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Practice Better | Competitive Intelligence Suite</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700;9..144,800;9..144,900&display=swap" rel="stylesheet">
+<style>
+/* ═══════════════════════════════════════════════════════════
+   COMPETITIVE INTELLIGENCE SUITE — UNIFIED DESIGN SYSTEM
+   Applied consistently across all dashboards and reports.
+   ═══════════════════════════════════════════════════════════ */
+
+/* ── TOKENS ── */
+:root {
+  --navy: #0c1222;
+  --navy-light: #131b2e;
+  --navy-mid: #1a2540;
+  --amber: #d97706;
+  --amber-light: #f59e0b;
+  --amber-pale: #fef3c7;
+  --amber-glow: rgba(217, 119, 6, 0.12);
+
+  --slate-50: #f8fafc;
+  --slate-100: #f1f5f9;
+  --slate-200: #e2e8f0;
+  --slate-300: #cbd5e1;
+  --slate-400: #94a3b8;
+  --slate-500: #64748b;
+  --slate-600: #475569;
+  --slate-700: #334155;
+  --slate-800: #1e293b;
+
+  --green: #059669;
+  --green-light: #d1fae5;
+  --red: #dc2626;
+  --red-light: #fee2e2;
+  --blue: #2563eb;
+  --blue-light: #dbeafe;
+  --purple: #7c3aed;
+  --purple-light: #ede9fe;
+
+  /* Competitor brand colors (use in comparison reports) */
+  --pb-accent: #4f46e5;
+  --pb-accent-light: #eef2ff;
+  --jane-accent: #0891b2;
+  --jane-accent-light: #ecfeff;
+  --sp-accent: #4f90cd;
+  --sp-accent-light: #eff6ff;
+
+  /* Spacing scale */
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 16px;
+  --space-lg: 24px;
+  --space-xl: 32px;
+  --space-2xl: 48px;
+  --space-3xl: 64px;
+
+  /* Radius */
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-full: 100px;
+}
+
+/* ── RESET ── */
+*, *::before, *::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* ── BASE TYPOGRAPHY ── */
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  background: var(--slate-50);
+  color: var(--slate-800);
+  line-height: 1.6;
+  font-size: 15px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+h1, h2, h3 {
+  font-family: 'Fraunces', Georgia, serif;
+}
+
+h4, h5, h6 {
+  font-family: 'Inter', sans-serif;
+}
+
+a {
+  color: var(--blue);
+  text-decoration: none;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   HEADER — identical across every report
+   ═══════════════════════════════════════════════════════════ */
+.ci-header {
+  background: linear-gradient(135deg, var(--navy) 0%, var(--navy-mid) 100%);
+  color: white;
+  padding: 48px 0 40px;
+  border-bottom: 4px solid var(--amber);
+  position: relative;
+  overflow: hidden;
+}
+
+.ci-header::before {
+  content: '';
+  position: absolute;
+  top: -60%;
+  right: -15%;
+  width: 600px;
+  height: 600px;
+  background: radial-gradient(circle, var(--amber-glow) 0%, transparent 65%);
+  pointer-events: none;
+}
+
+.ci-header-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 var(--space-xl);
+  position: relative;
+  z-index: 1;
+}
+
+/* Suite label — small tag at top of every report */
+.ci-suite-label {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--amber-light);
+  background: var(--amber-glow);
+  border: 1px solid rgba(217, 119, 6, 0.3);
+  padding: 4px 14px;
+  border-radius: var(--radius-full);
+  margin-bottom: var(--space-md);
+}
+
+.ci-header h1 {
+  font-size: 38px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+  margin-bottom: var(--space-xs);
+}
+
+/* For comparison reports: "vs" treatment */
+.ci-header h1 .vs {
+  color: var(--amber-light);
+  font-weight: 300;
+  font-style: italic;
+}
+
+.ci-header .subtitle {
+  font-size: 16px;
+  color: var(--slate-400);
+  font-weight: 400;
+  max-width: 680px;
+}
+
+/* Meta badges in header (date, data sources, confidence, etc.) */
+.ci-header-meta {
+  display: flex;
+  gap: var(--space-md);
+  flex-wrap: wrap;
+  margin-top: var(--space-lg);
+}
+
+.ci-meta-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 14px;
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  font-weight: 500;
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: var(--slate-300);
+}
+
+.ci-meta-badge strong {
+  color: var(--amber-light);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   MAIN CONTAINER
+   ═══════════════════════════════════════════════════════════ */
+.ci-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: var(--space-xl) var(--space-xl) var(--space-3xl);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   SECTION — numbered, consistent across all reports
+   ═══════════════════════════════════════════════════════════ */
+.ci-section {
+  margin-bottom: var(--space-2xl);
+}
+
+.ci-section-header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: var(--space-lg);
+  padding-bottom: 14px;
+  border-bottom: 2px solid var(--slate-200);
+}
+
+.ci-section-num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  background: var(--navy);
+  color: var(--amber-light);
+  font-family: 'Fraunces', serif;
+  font-weight: 700;
+  font-size: 16px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.ci-section-title {
+  font-family: 'Fraunces', Georgia, serif;
+  font-size: 26px;
+  font-weight: 700;
+  color: var(--navy);
+  letter-spacing: -0.01em;
+}
+
+/* Subsection headers */
+.ci-subsection-title {
+  font-family: 'Inter', sans-serif;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--slate-800);
+  margin: var(--space-lg) 0 var(--space-md);
+  padding-bottom: var(--space-sm);
+  border-bottom: 1px solid var(--slate-200);
+}
+
+.ci-subsection-title-sm {
+  font-family: 'Inter', sans-serif;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--slate-700);
+  margin: var(--space-md) 0 var(--space-sm);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   CARDS
+   ═══════════════════════════════════════════════════════════ */
+.ci-card {
+  background: white;
+  border: 1px solid var(--slate-200);
+  border-radius: var(--radius-md);
+  padding: var(--space-lg);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.02);
+}
+
+.ci-card + .ci-card {
+  margin-top: var(--space-md);
+}
+
+.ci-card-header {
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--slate-500);
+  margin-bottom: var(--space-md);
+}
+
+/* Card grid — for KPI / stat grids */
+.ci-card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: var(--space-md);
+  margin-bottom: var(--space-lg);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   STAT CARDS — for KPIs, metrics, headline numbers
+   ═══════════════════════════════════════════════════════════ */
+.ci-stat-card {
+  background: white;
+  border: 1px solid var(--slate-200);
+  border-radius: var(--radius-md);
+  padding: var(--space-lg);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.ci-stat-label {
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--slate-500);
+  margin-bottom: var(--space-xs);
+}
+
+.ci-stat-value {
+  font-family: 'Fraunces', serif;
+  font-size: 32px;
+  font-weight: 800;
+  color: var(--navy);
+  line-height: 1.2;
+}
+
+.ci-stat-value.amber { color: var(--amber); }
+.ci-stat-value.green { color: var(--green); }
+.ci-stat-value.red { color: var(--red); }
+
+.ci-stat-detail {
+  font-size: 13px;
+  color: var(--slate-500);
+  margin-top: var(--space-xs);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   TABLES — consistent everywhere
+   ═══════════════════════════════════════════════════════════ */
+.ci-table-wrap {
+  overflow-x: auto;
+  margin: var(--space-md) 0;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--slate-200);
+}
+
+.ci-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.ci-table thead th {
+  background: var(--navy);
+  color: white;
+  font-weight: 600;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 12px 16px;
+  text-align: left;
+  white-space: nowrap;
+}
+
+.ci-table thead th:first-child {
+  border-radius: var(--radius-md) 0 0 0;
+}
+
+.ci-table thead th:last-child {
+  border-radius: 0 var(--radius-md) 0 0;
+}
+
+.ci-table tbody td {
+  padding: 11px 16px;
+  border-bottom: 1px solid var(--slate-100);
+  vertical-align: top;
+}
+
+.ci-table tbody tr:nth-child(even) {
+  background: var(--slate-50);
+}
+
+.ci-table tbody tr:hover {
+  background: var(--amber-pale);
+}
+
+.ci-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.ci-table tbody tr:last-child td:first-child {
+  border-radius: 0 0 0 var(--radius-md);
+}
+
+.ci-table tbody tr:last-child td:last-child {
+  border-radius: 0 0 var(--radius-md) 0;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   BADGES — status, confidence, priority
+   ═══════════════════════════════════════════════════════════ */
+.ci-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 10px;
+  border-radius: var(--radius-full);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+/* Confidence / status badges */
+.ci-badge-green {
+  background: var(--green-light);
+  color: var(--green);
+}
+
+.ci-badge-amber {
+  background: var(--amber-pale);
+  color: var(--amber);
+}
+
+.ci-badge-red {
+  background: var(--red-light);
+  color: var(--red);
+}
+
+.ci-badge-blue {
+  background: var(--blue-light);
+  color: var(--blue);
+}
+
+.ci-badge-purple {
+  background: var(--purple-light);
+  color: var(--purple);
+}
+
+.ci-badge-slate {
+  background: var(--slate-100);
+  color: var(--slate-600);
+}
+
+/* Priority badges */
+.ci-badge-p0 {
+  background: var(--red-light);
+  color: var(--red);
+}
+
+.ci-badge-p1 {
+  background: var(--amber-pale);
+  color: var(--amber);
+}
+
+.ci-badge-p2 {
+  background: var(--blue-light);
+  color: var(--blue);
+}
+
+/* Winner / checkmark badges (for feature matrices) */
+.ci-win {
+  color: var(--green);
+  font-weight: 700;
+}
+
+.ci-lose {
+  color: var(--slate-400);
+}
+
+.ci-partial {
+  color: var(--amber);
+  font-weight: 600;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   QUOTE BLOCKS — for review quotes, Reddit quotes
+   ═══════════════════════════════════════════════════════════ */
+.ci-quote {
+  border-left: 4px solid var(--amber);
+  padding: var(--space-md) var(--space-lg);
+  margin: var(--space-md) 0;
+  background: white;
+  border-radius: 0 var(--radius-md) var(--radius-md) 0;
+  font-style: italic;
+  color: var(--slate-700);
+  font-size: 14px;
+  line-height: 1.7;
+}
+
+.ci-quote-source {
+  display: block;
+  margin-top: var(--space-sm);
+  font-style: normal;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--slate-500);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   CALLOUT BOXES — warnings, data gaps, key findings
+   ═══════════════════════════════════════════════════════════ */
+.ci-callout {
+  padding: var(--space-md) var(--space-lg);
+  border-radius: var(--radius-md);
+  margin: var(--space-md) 0;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.ci-callout-amber {
+  background: var(--amber-pale);
+  border: 1px solid rgba(217, 119, 6, 0.25);
+  color: #92400e;
+}
+
+.ci-callout-red {
+  background: var(--red-light);
+  border: 1px solid rgba(220, 38, 38, 0.2);
+  color: #991b1b;
+}
+
+.ci-callout-green {
+  background: var(--green-light);
+  border: 1px solid rgba(5, 150, 105, 0.2);
+  color: #065f46;
+}
+
+.ci-callout-blue {
+  background: var(--blue-light);
+  border: 1px solid rgba(37, 99, 235, 0.2);
+  color: #1e40af;
+}
+
+.ci-callout-title {
+  font-weight: 700;
+  margin-bottom: var(--space-xs);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   PROGRESS / BAR CHARTS
+   ═══════════════════════════════════════════════════════════ */
+.ci-bar-wrap {
+  margin: var(--space-sm) 0;
+}
+
+.ci-bar-label {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+  font-weight: 500;
+  margin-bottom: 4px;
+}
+
+.ci-bar-track {
+  height: 10px;
+  background: var(--slate-100);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+}
+
+.ci-bar-fill {
+  height: 100%;
+  border-radius: var(--radius-full);
+  background: var(--amber);
+  transition: width 0.6s ease;
+}
+
+.ci-bar-fill.green { background: var(--green); }
+.ci-bar-fill.red { background: var(--red); }
+.ci-bar-fill.blue { background: var(--blue); }
+.ci-bar-fill.navy { background: var(--navy); }
+
+/* ═══════════════════════════════════════════════════════════
+   TWO-COLUMN / GRID LAYOUTS
+   ═══════════════════════════════════════════════════════════ */
+.ci-grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-lg);
+}
+
+.ci-grid-3 {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-lg);
+}
+
+@media (max-width: 768px) {
+  .ci-grid-2, .ci-grid-3 {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   COMPARISON SIDE-BY-SIDE (for vs reports)
+   ═══════════════════════════════════════════════════════════ */
+.ci-vs-grid {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  gap: var(--space-md);
+  align-items: start;
+}
+
+.ci-vs-divider {
+  width: 2px;
+  background: var(--slate-200);
+  align-self: stretch;
+  margin: 0 var(--space-sm);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   LISTS
+   ═══════════════════════════════════════════════════════════ */
+.ci-list {
+  list-style: none;
+  padding: 0;
+}
+
+.ci-list li {
+  padding: var(--space-sm) 0;
+  border-bottom: 1px solid var(--slate-100);
+  font-size: 14px;
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-sm);
+}
+
+.ci-list li:last-child {
+  border-bottom: none;
+}
+
+.ci-list-bullet {
+  width: 6px;
+  height: 6px;
+  background: var(--amber);
+  border-radius: 50%;
+  flex-shrink: 0;
+  margin-top: 8px;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   TABLE OF CONTENTS
+   ═══════════════════════════════════════════════════════════ */
+.ci-toc ol {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 2px 24px;
+  counter-reset: toc;
+}
+
+.ci-toc ol li {
+  counter-increment: toc;
+}
+
+.ci-toc ol li a {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: 6px;
+  color: var(--navy);
+  font-size: 14px;
+  font-weight: 500;
+  transition: background 0.15s;
+}
+
+.ci-toc ol li a::before {
+  content: counter(toc);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 26px;
+  height: 26px;
+  background: var(--slate-100);
+  color: var(--slate-600);
+  border-radius: 50%;
+  font-size: 12px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.ci-toc ol li a:hover {
+  background: var(--amber-glow);
+}
+
+.ci-toc ol li a:hover::before {
+  background: var(--amber);
+  color: white;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   FOOTER — identical on every report
+   ═══════════════════════════════════════════════════════════ */
+.ci-footer {
+  background: var(--navy);
+  color: var(--slate-400);
+  text-align: center;
+  padding: var(--space-lg) var(--space-xl);
+  font-size: 13px;
+  border-top: 3px solid var(--amber);
+}
+
+.ci-footer strong {
+  color: var(--slate-300);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   UTILITY CLASSES
+   ═══════════════════════════════════════════════════════════ */
+.text-amber { color: var(--amber); }
+.text-green { color: var(--green); }
+.text-red { color: var(--red); }
+.text-blue { color: var(--blue); }
+.text-slate { color: var(--slate-500); }
+.text-navy { color: var(--navy); }
+.text-sm { font-size: 13px; }
+.text-xs { font-size: 11px; }
+.font-bold { font-weight: 700; }
+.font-mono { font-family: 'SF Mono', 'Fira Code', monospace; }
+.mt-sm { margin-top: var(--space-sm); }
+.mt-md { margin-top: var(--space-md); }
+.mt-lg { margin-top: var(--space-lg); }
+.mb-sm { margin-bottom: var(--space-sm); }
+.mb-md { margin-bottom: var(--space-md); }
+.mb-lg { margin-bottom: var(--space-lg); }
+
+/* ═══════════════════════════════════════════════════════════
+   REPORT-SPECIFIC STYLES (Practice Better)
+   ═══════════════════════════════════════════════════════════ */
+.data-pair {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--slate-100);
+  font-size: 13px;
+}
+.data-pair:last-child { border-bottom: none; }
+.dp-label { color: var(--slate-500); }
+.dp-value { font-weight: 600; color: var(--slate-800); text-align: right; }
+
+.ci-card h4 {
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--slate-700);
+  margin-bottom: 8px;
+  margin-top: 16px;
+}
+.ci-card h4:first-child { margin-top: 0; }
+
+.ci-list li {
+  padding: 6px 0 6px 20px;
+  position: relative;
+  font-size: 13px;
+  color: var(--slate-700);
+  display: list-item;
+  list-style: none;
+}
+.ci-list li::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 13px;
+  width: 8px;
+  height: 8px;
+  background: var(--amber);
+  border-radius: 2px;
+}
+</style>
+</head>
+<body>
+
+<!-- ==================== HEADER ==================== -->
+<div class="ci-header">
+  <div class="ci-header-inner">
+    <div class="ci-suite-label">Competitive Intelligence Suite</div>
+    <h1>Practice Better</h1>
+    <p class="subtitle">Comprehensive Competitive Intelligence Dashboard -- practicebetter.io</p>
+    <div class="ci-header-meta">
+      <span class="ci-meta-badge">Research Date: <strong>2026-02-25</strong></span>
+      <span class="ci-meta-badge">Data Sources: <strong>6 Buckets, 42+ Sources</strong></span>
+      <span class="ci-meta-badge">Confidence: <strong>HIGH</strong></span>
+    </div>
+
+    <div class="ci-card-grid" style="margin-top:28px">
+      <div class="ci-stat-card" style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.08)">
+        <div class="ci-stat-label" style="color:var(--slate-400)">Monthly Visits</div><div class="ci-stat-value" style="color:white;font-size:26px">~1.5M</div><div class="ci-stat-detail">SimilarWeb</div>
+      </div>
+      <div class="ci-stat-card" style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.08)">
+        <div class="ci-stat-label" style="color:var(--slate-400)">User Base</div><div class="ci-stat-value" style="color:white;font-size:26px">50,000+</div><div class="ci-stat-detail">Self-reported</div>
+      </div>
+      <div class="ci-stat-card" style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.08)">
+        <div class="ci-stat-label" style="color:var(--slate-400)">G2 Rating</div><div class="ci-stat-value" style="color:white;font-size:26px">4.7/5</div><div class="ci-stat-detail">286 reviews</div>
+      </div>
+      <div class="ci-stat-card" style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.08)">
+        <div class="ci-stat-label" style="color:var(--slate-400)">Capterra Rating</div><div class="ci-stat-value" style="color:white;font-size:26px">4.8/5</div><div class="ci-stat-detail">91 reviews</div>
+      </div>
+      <div class="ci-stat-card" style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.08)">
+        <div class="ci-stat-label" style="color:var(--slate-400)">Total Funding</div><div class="ci-stat-value" style="color:white;font-size:26px">~$41M</div><div class="ci-stat-detail">Equity + Debt</div>
+      </div>
+      <div class="ci-stat-card" style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.08)">
+        <div class="ci-stat-label" style="color:var(--slate-400)">Employees</div><div class="ci-stat-value" style="color:white;font-size:26px">82</div><div class="ci-stat-detail">LinkedIn, Feb 2026</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== MAIN ==================== -->
+<div class="ci-container">
+
+  <!-- TABLE OF CONTENTS -->
+  <div class="ci-card ci-toc">
+    <div class="ci-card-header">Table of Contents</div>
+    <ol>
+      <li><a href="#company-overview">Company Overview</a></li>
+      <li><a href="#pricing-plans">Pricing &amp; Plans</a></li>
+      <li><a href="#feature-analysis">Feature Analysis</a></li>
+      <li><a href="#seo-performance">SEO Performance</a></li>
+      <li><a href="#customer-sentiment">Customer Sentiment</a></li>
+      <li><a href="#reddit-insights">Reddit Insights</a></li>
+      <li><a href="#youtube-presence">YouTube Presence</a></li>
+      <li><a href="#competitive-position">Competitive Position</a></li>
+      <li><a href="#key-findings">Key Findings &amp; Takeaways</a></li>
+    </ol>
+  </div>
+
+  <!-- ================================================================== -->
+  <!-- SECTION 1: COMPANY OVERVIEW                                        -->
+  <!-- ================================================================== -->
+  <div class="ci-section" id="company-overview">
+    <div class="ci-section-header">
+      <span class="ci-section-num">1</span>
+      <h2 class="ci-section-title">Company Overview</h2>
+    </div>
+
+    <div class="ci-grid-2">
+      <div class="ci-card">
+        <div class="ci-card-header">Corporate Profile</div>
+        <div class="data-pair">
+          <span class="dp-label">Legal Name</span>
+          <span class="dp-value">Practice Better Inc.</span>
+        </div>
+        <div class="data-pair">
+          <span class="dp-label">Founded</span>
+          <span class="dp-value">2016 (dev. started 2014)</span>
+        </div>
+        <div class="data-pair">
+          <span class="dp-label">Headquarters</span>
+          <span class="dp-value">Toronto, Ontario, Canada</span>
+        </div>
+        <div class="data-pair">
+          <span class="dp-label">Employees</span>
+          <span class="dp-value">82</span>
+        </div>
+        <div class="data-pair">
+          <span class="dp-label">Practitioners Served</span>
+          <span class="dp-value">50,000+</span>
+        </div>
+        <div class="data-pair">
+          <span class="dp-label">End Clients Served</span>
+          <span class="dp-value">1,000,000+</span>
+        </div>
+        <div class="data-pair">
+          <span class="dp-label">Geographic Reach</span>
+          <span class="dp-value">70+ countries</span>
+        </div>
+        <div class="data-pair">
+          <span class="dp-label">Profitability</span>
+          <span class="dp-value">Claims "long been profitable"</span>
+        </div>
+        <div class="data-pair">
+          <span class="dp-label">Est. Revenue (ARR)</span>
+          <span class="dp-value">~$15M (est.)</span>
+        </div>
+
+        <div class="ci-callout ci-callout-blue" style="margin-top: 14px;">
+          <div class="ci-callout-title">User Count Discrepancy</div>
+          <p>Apr 2023: 10,000+ customers (BetaKit) / Jul 2023: 15,000+ combined with TCL / Sep 2024: 18,000+ (BetaKit) / Feb 2026: 50,000+ (About page). The jump from 18K to 50K in ~16 months may include free/student Sprout accounts, That Clean Life users, or different counting methodology. Cannot independently verify.</p>
+        </div>
+      </div>
+
+      <div class="ci-card">
+        <div class="ci-card-header">Leadership & Ownership</div>
+        <h4>Current CEO</h4>
+        <div class="data-pair">
+          <span class="dp-label">Name</span>
+          <span class="dp-value">Kim Walsh</span>
+        </div>
+        <div class="data-pair">
+          <span class="dp-label">Appointed</span>
+          <span class="dp-value">May 2023</span>
+        </div>
+        <div class="data-pair">
+          <span class="dp-label">Background</span>
+          <span class="dp-value">11.5 yrs at HubSpot (Enterprise $0-$60M, Partnerships $1-$300M); Senior VP at Apollo</span>
+        </div>
+
+        <h4>Co-Founders</h4>
+        <div class="data-pair">
+          <span class="dp-label">Nathalie Garcia</span>
+          <span class="dp-value">Co-Founder, CSO (moved from CEO May 2023)</span>
+        </div>
+        <div class="data-pair">
+          <span class="dp-label">Graeme Downes</span>
+          <span class="dp-value">Co-Founder (technical)</span>
+        </div>
+
+        <h4>Ownership</h4>
+        <div class="data-pair">
+          <span class="dp-label">Lead Investor</span>
+          <span class="dp-value">Five Elms Capital (Kansas City PE)</span>
+        </div>
+        <div class="data-pair">
+          <span class="dp-label">Stake Size</span>
+          <span class="dp-value">Not disclosed (minority or majority)</span>
+        </div>
+
+        <h4>Target Market Segments</h4>
+        <ul class="ci-list">
+          <li>Nutritionists & Dietitians</li>
+          <li>Health Coaches</li>
+          <li>Functional Medicine Practitioners</li>
+          <li>Naturopathic Doctors</li>
+          <li>Mental Health Professionals (expanding)</li>
+          <li>Nurse Practitioners</li>
+          <li>Personal Trainers</li>
+          <li>Chiropractors</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- FUNDING TIMELINE -->
+    <div class="ci-card">
+        <div class="ci-card-header">Funding History & Key Milestones</div>
+      <div class="ci-table-wrap"><table class="ci-table">
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Event</th>
+            <th>Amount</th>
+            <th>Investor/Details</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>2016</td>
+            <td>Company founded</td>
+            <td>--</td>
+            <td>By Nathalie Garcia (holistic nutritionist) and Graeme Downes</td>
+          </tr>
+          <tr>
+            <td>2021</td>
+            <td>Seed investment</td>
+            <td>$1M CAD</td>
+            <td>Disruption Ventures (Toronto VC, women-led businesses)</td>
+          </tr>
+          <tr>
+            <td>Apr 2023</td>
+            <td>Growth equity</td>
+            <td>C$37.7M (~US$27M)</td>
+            <td>Five Elms Capital (lead). 10,000+ customers, 300% CAGR reported.</td>
+          </tr>
+          <tr>
+            <td>May 2023</td>
+            <td>CEO transition</td>
+            <td>--</td>
+            <td>Kim Walsh appointed CEO; Nathalie Garcia to CSO</td>
+          </tr>
+          <tr>
+            <td>Jun 2023</td>
+            <td>Acquisition: That Clean Life</td>
+            <td>Eight-figure USD</td>
+            <td>Nutrition planning platform. 4 FT + 6 contractors. Added ~5,000+ users.</td>
+          </tr>
+          <tr>
+            <td>Aug 2023</td>
+            <td>Practice Better Payments launched</td>
+            <td>--</td>
+            <td>Stripe-powered payment processing. Revenue tripled since launch.</td>
+          </tr>
+          <tr>
+            <td>Dec 2023</td>
+            <td>That Clean Life integration completed</td>
+            <td>--</td>
+            <td>Meal planning and nutrition protocols fully integrated</td>
+          </tr>
+          <tr>
+            <td>Sep 2024</td>
+            <td>Debt/credit facility</td>
+            <td>C$18M (~US$13M)</td>
+            <td>CIBC Innovation Banking. "Purely opportunistic" -- earmarked for AI, product dev, market expansion.</td>
+          </tr>
+          <tr>
+            <td>Jul 2025</td>
+            <td>$10/mo price increase</td>
+            <td>--</td>
+            <td>Flat $10 across all plans. Existing customers grandfathered until Oct 9, 2025.</td>
+          </tr>
+          <tr>
+            <td>Jul 2025</td>
+            <td>ePrescribe + Fullscript Labs launched</td>
+            <td>--</td>
+            <td>DrFirst ePrescribing (US only). Closes major clinical gap vs competitors.</td>
+          </tr>
+        </tbody>
+      </table></div>
+
+      <div class="data-pair" style="margin-top: 16px; font-weight: 600;">
+        <span class="dp-label">Total Funding (Equity + Debt)</span>
+        <span class="dp-value" style="font-size: 16px; color: var(--amber);">~$41M USD</span>
+      </div>
+
+      <h4>Growth Metrics</h4>
+      <div class="data-pair">
+        <span class="dp-label">CAGR (company-reported)</span>
+        <span class="dp-value">300% since inception</span>
+      </div>
+      <div class="data-pair">
+        <span class="dp-label">Customer Acquisition via Word-of-Mouth</span>
+        <span class="dp-value">65%+</span>
+      </div>
+      <div class="data-pair">
+        <span class="dp-label">Payment Revenue Growth</span>
+        <span class="dp-value">Revenue tripled since Aug 2023 launch; monthly volume doubled (Sep 2024)</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================================================================== -->
+  <!-- SECTION 2: PRICING & PLANS                                         -->
+  <!-- ================================================================== -->
+  <div class="ci-section" id="pricing-plans">
+    <div class="ci-section-header">
+      <span class="ci-section-num">2</span>
+      <h2 class="ci-section-title">Pricing & Plans</h2>
+    </div>
+
+    <!-- PLAN CARDS -->
+    <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 14px; margin-bottom: 20px;">
+      <div class="ci-card" style="text-align:center">
+        <div class="ci-subsection-title-sm" style="border:none;margin:0;text-align:center">Sprout</div>
+        <div class="ci-stat-value amber" style="font-size:32px">Free</div>
+        <div class="ci-stat-detail">Students & recent grads only</div>
+        <ul class="ci-list" style="text-align:left;margin-top:14px;font-size:12px">
+          <li>3 client limit</li>
+          <li>1 practitioner license</li>
+          <li>Limited storage</li>
+          <li>Basic scheduling</li>
+        </ul>
+      </div>
+      <div class="ci-card" style="text-align:center">
+        <div class="ci-subsection-title-sm" style="border:none;margin:0;text-align:center">Starter</div>
+        <div class="ci-stat-value amber" style="font-size:32px">$35<span>/mo</span></div>
+        <div class="ci-stat-detail" style="color:var(--red);text-decoration:line-through">Was $25/mo</div>
+        <div class="ci-stat-detail">Annual: $25/mo (29% off)</div>
+        <ul class="ci-list" style="text-align:left;margin-top:14px;font-size:12px">
+          <li>10 client limit</li>
+          <li>1 practitioner</li>
+          <li>1 GB storage</li>
+          <li>14-day trial</li>
+          <li>Telehealth video</li>
+          <li>Billing & payments</li>
+          <li>20+ integrations</li>
+        </ul>
+      </div>
+      <div class="ci-card" style="text-align:center">
+        <div class="ci-subsection-title-sm" style="border:none;margin:0;text-align:center">Professional</div>
+        <div class="ci-stat-value amber" style="font-size:32px">$69<span>/mo</span></div>
+        <div class="ci-stat-detail" style="color:var(--red);text-decoration:line-through">Was $59/mo</div>
+        <div class="ci-stat-detail">Annual price unverified</div>
+        <ul class="ci-list" style="text-align:left;margin-top:14px;font-size:12px">
+          <li>300 client limit</li>
+          <li>1 practitioner</li>
+          <li>5 GB storage</li>
+          <li>Group scheduling</li>
+          <li>Group messaging</li>
+          <li>Zapier integration</li>
+          <li>PDF branding</li>
+          <li>Payment plans</li>
+        </ul>
+      </div>
+      <div class="ci-card" style="text-align:center;border:2px solid var(--amber)">
+        <div class="ci-badge ci-badge-amber" style="position:absolute;top:-10px;left:50%;transform:translateX(-50%)">Recommended</div>
+        <div class="ci-subsection-title-sm" style="border:none;margin:0;text-align:center">Plus</div>
+        <div class="ci-stat-value amber" style="font-size:32px">$99<span>/mo</span></div>
+        <div class="ci-stat-detail" style="color:var(--red);text-decoration:line-through">Was $89/mo</div>
+        <div class="ci-stat-detail">Annual price unverified</div>
+        <ul class="ci-list" style="text-align:left;margin-top:14px;font-size:12px">
+          <li>Unlimited clients</li>
+          <li>1 practitioner + 3 admin</li>
+          <li>Unlimited storage</li>
+          <li>Evergreen programs</li>
+          <li>Self-paced programs</li>
+          <li>Portal branding</li>
+          <li>Custom URL</li>
+          <li>SMS (750/mo incl.)</li>
+          <li>Broadcast (10K/mo)</li>
+          <li>Dedicated fax</li>
+        </ul>
+      </div>
+      <div class="ci-card" style="text-align:center">
+        <div class="ci-subsection-title-sm" style="border:none;margin:0;text-align:center">Team</div>
+        <div class="ci-stat-value amber" style="font-size:32px">$155<span>/mo</span></div>
+        <div class="ci-stat-detail" style="color:var(--red);text-decoration:line-through">Was $145/mo</div>
+        <div class="ci-stat-detail">30-day trial</div>
+        <ul class="ci-list" style="text-align:left;margin-top:14px;font-size:12px">
+          <li>Unlimited clients</li>
+          <li>2 practitioners (up to 200)</li>
+          <li>Unlimited admin + storage</li>
+          <li>Custom roles</li>
+          <li>Team scheduling</li>
+          <li>Shared calendar</li>
+          <li>SMS (2K/mo incl.)</li>
+          <li>Broadcast (30K/mo)</li>
+          <li>$50/mo per add'l practitioner</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="ci-grid-2">
+      <div class="ci-card">
+        <div class="ci-card-header">Add-On Pricing</div>
+        <div class="ci-table-wrap"><table class="ci-table">
+          <thead>
+            <tr><th>Add-On</th><th>Price</th><th>Notes</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>AI Charting Assistant</td><td>$0.60/hr</td><td>First 600 minutes free</td></tr>
+            <tr><td>ePrescribe (DrFirst)</td><td>$49/mo + $99 onboarding</td><td>US only</td></tr>
+            <tr><td>PDMP Integration</td><td>$5/mo</td><td>Requires ePrescribe</td></tr>
+            <tr><td>SMS Reminders</td><td>$0.05/text</td><td>Plus: 750/mo incl.; Team: 2K/mo incl.</td></tr>
+            <tr><td>Faxing</td><td>$0.10/page</td><td>Dedicated fax on Plus+</td></tr>
+            <tr><td>Additional Practitioner</td><td>$50/mo</td><td>Team plan only; up to 200 total</td></tr>
+            <tr><td>Additional Admin</td><td>$10/mo</td><td>--</td></tr>
+            <tr><td>Additional Storage</td><td>$1/GB/mo</td><td>--</td></tr>
+          </tbody>
+        </table></div>
+      </div>
+
+      <div class="ci-card">
+        <div class="ci-card-header">July 2025 Price Increase Detail</div>
+        <div class="ci-table-wrap"><table class="ci-table">
+          <thead>
+            <tr><th>Plan</th><th>Old Price</th><th>New Price</th><th>Increase</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Starter</td><td>$25/mo</td><td>$35/mo</td><td style="color:var(--red);">+$10 (+40%)</td></tr>
+            <tr><td>Professional</td><td>$59/mo</td><td>$69/mo</td><td style="color:var(--red);">+$10 (+17%)</td></tr>
+            <tr><td>Plus</td><td>$89/mo</td><td>$99/mo</td><td style="color:var(--red);">+$10 (+11%)</td></tr>
+            <tr><td>Team</td><td>$145/mo</td><td>$155/mo</td><td style="color:var(--red);">+$10 (+7%)</td></tr>
+          </tbody>
+        </table></div>
+        <div class="data-pair" style="margin-top: 12px;">
+          <span class="dp-label">Effective Date</span>
+          <span class="dp-value">July 9, 2025</span>
+        </div>
+        <div class="data-pair">
+          <span class="dp-label">Existing Customer Grace Period</span>
+          <span class="dp-value">Until October 9, 2025</span>
+        </div>
+        <div class="data-pair">
+          <span class="dp-label">Billing Model</span>
+          <span class="dp-value">Monthly or Annual; no contracts</span>
+        </div>
+        <div class="data-pair">
+          <span class="dp-label">Payment Processor</span>
+          <span class="dp-value">Stripe (Practice Better Payments)</span>
+        </div>
+
+        <div class="ci-callout ci-callout-red" style="margin-top: 12px;">
+          <div class="ci-callout-title">Pricing Sensitivity Signal</div>
+          <p>The Starter plan increase is disproportionate (40%) and hits the most price-sensitive segment. Help center article about pricing changes ranks in SERPs, potentially driving alternative-seeking behavior. The $10 increase was a recurring complaint theme across G2, Capterra, and Reddit.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="ci-card">
+        <div class="ci-card-header">Competitive Pricing Context</div>
+      <div class="ci-table-wrap"><table class="ci-table">
+        <thead>
+          <tr><th>Comparison</th><th>PB Price</th><th>Competitor Price</th><th>PB Advantage</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>PB Plus vs Healthie Plus</td>
+            <td>$99/mo</td>
+            <td>$129.99/mo</td>
+            <td style="color:var(--green);">PB $31 cheaper/mo</td>
+          </tr>
+          <tr>
+            <td>PB Team seat vs Healthie Team seat</td>
+            <td>$50/mo per practitioner</td>
+            <td>$50/mo per practitioner</td>
+            <td>Parity (PB base lower)</td>
+          </tr>
+          <tr>
+            <td>PB Plus vs Jane (comparable tier)</td>
+            <td>$99/mo</td>
+            <td>~$99/mo</td>
+            <td>Rough parity on base price</td>
+          </tr>
+          <tr>
+            <td>PB Starter vs SimplePractice entry</td>
+            <td>$35/mo</td>
+            <td>$49/mo (SP Starter)</td>
+            <td style="color:var(--green);">PB $14 cheaper entry point</td>
+          </tr>
+        </tbody>
+      </table></div>
+    </div>
+  </div>
+
+  <!-- ================================================================== -->
+  <!-- SECTION 3: FEATURE ANALYSIS                                        -->
+  <!-- ================================================================== -->
+  <div class="ci-section" id="feature-analysis">
+    <div class="ci-section-header">
+      <span class="ci-section-num">3</span>
+      <h2 class="ci-section-title">Feature Analysis</h2>
+    </div>
+
+    <div class="ci-card">
+        <div class="ci-card-header">Core Feature Capabilities</div>
+      <div class="ci-table-wrap"><table class="ci-table">
+        <thead>
+          <tr><th>Feature Category</th><th>Assessment</th><th>Key Details</th><th>Plan Availability</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Scheduling</td><td><span class="ci-badge ci-badge-green">Strong</span></td><td>Self-booking, group scheduling, team scheduling, Google/Apple Calendar sync</td><td>Base: all plans; Group: Pro+; Team: Team plan</td></tr>
+          <tr><td>Telehealth</td><td><span class="ci-badge ci-badge-green">Strong</span></td><td>Built-in HIPAA-compliant video; optional Zoom integration for group sessions</td><td>All paid plans</td></tr>
+          <tr><td>Charting / EHR</td><td><span class="ci-badge ci-badge-green">Strong</span></td><td>AI Charting Assistant, customizable templates, SOAP notes, dictation</td><td>AI Charting is add-on ($0.60/hr)</td></tr>
+          <tr><td>Billing & Payments</td><td><span class="ci-badge ci-badge-green">Strong</span></td><td>Stripe-powered, insurance claims (Claim.MD), payment plans, recurring billing</td><td>All paid plans; insurance claims integration varies</td></tr>
+          <tr><td>Client Portal</td><td><span class="ci-badge ci-badge-green">Strong</span></td><td>Secure login, health records, appointments, documents, progress tracking</td><td>All plans</td></tr>
+          <tr><td>Mobile App</td><td><span class="ci-badge ci-badge-green">Strong</span></td><td>Native iOS and Android client-facing app</td><td>All plans</td></tr>
+          <tr><td>Programs & Courses</td><td><span class="ci-badge ci-badge-green">Strong</span></td><td>Fixed-date, evergreen, self-paced courses -- unique differentiator</td><td>Fixed: Pro+; Evergreen/Self-paced: Plus+</td></tr>
+          <tr><td>Nutrition Planning</td><td><span class="ci-badge ci-badge-green">Strong</span></td><td>That Clean Life integration (owned) -- recipe embedding, meal plans, curated collections</td><td>All plans (TCL integration)</td></tr>
+          <tr><td>Supplement Protocols</td><td><span class="ci-badge ci-badge-green">Strong</span></td><td>Fullscript, WholeScripts, The Natural Dispensary integrations</td><td>All paid plans</td></tr>
+          <tr><td>Secure Messaging</td><td><span class="ci-badge ci-badge-amber">Good</span></td><td>In-app messaging, group messaging, broadcast messaging</td><td>Group: Pro+; Broadcast: Plus+</td></tr>
+          <tr><td>Lab Testing</td><td><span class="ci-badge ci-badge-amber">Good</span></td><td>Rupa Health, Evexia Diagnostics, Fullscript Labs, Nutri-Q</td><td>Integration-dependent</td></tr>
+          <tr><td>ePrescribing</td><td><span class="ci-badge ci-badge-blue">Available</span></td><td>DrFirst integration (US only); launched July 2025</td><td>$49/mo add-on for all paid plans</td></tr>
+          <tr><td>AI Features</td><td><span class="ci-badge ci-badge-amber">Growing</span></td><td>AI Charting, AI-powered form builder, AI Google review requests</td><td>Usage-based or included</td></tr>
+          <tr><td>Reporting</td><td><span class="ci-badge ci-badge-amber">Basic</span></td><td>Business metrics, revenue tracking; team reporting on Team plan only</td><td>Basic: all; Team reporting: Team plan</td></tr>
+          <tr><td>Automations</td><td><span class="ci-badge ci-badge-amber">Basic</span></td><td>Workflow automations, Zapier integration for external connections</td><td>Zapier: Pro+; Advanced workflows: Team</td></tr>
+          <tr><td>Branding</td><td><span class="ci-badge ci-badge-amber">Good</span></td><td>PDF branding, portal branding, personalized URL</td><td>PDF: Pro+; Portal + URL: Plus+</td></tr>
+        </tbody>
+      </table></div>
+    </div>
+
+    <div class="ci-grid-2">
+      <div class="ci-card">
+        <div class="ci-card-header">Unique Differentiators</div>
+        <ul class="ci-list">
+          <li><strong>Owned nutrition planning (That Clean Life)</strong> -- No competitor has a built-in, owned meal planning and nutrition protocol tool. Acquired July 2023, fully integrated by Dec 2023.</li>
+          <li><strong>Deep supplement dispensary integrations</strong> -- Fullscript, Fullscript Labs, WholeScripts, The Natural Dispensary. Not matched by SimplePractice or Jane.</li>
+          <li><strong>Programs and courses</strong> -- Built-in course creation for practitioner revenue diversification. Unique in the clinical/wellness PM space.</li>
+          <li><strong>Multi-regulation compliance</strong> -- HIPAA + PIPEDA + PHIPA + GDPR. Broader than US-only competitors.</li>
+          <li><strong>Client-facing mobile app</strong> -- Native iOS/Android for client engagement.</li>
+          <li><strong>Wearable integrations</strong> -- Apple Health, Fitbit, Garmin, Oura data sync.</li>
+          <li><strong>AI Charting Assistant</strong> -- Real-time session summaries, dictation-to-notes, metered pricing.</li>
+        </ul>
+      </div>
+
+      <div class="ci-card">
+        <div class="ci-card-header">Notable Feature Gaps</div>
+        <ul class="ci-list">
+          <li><strong>No advanced marketing automation</strong> -- No email campaign sequences; not a marketing platform</li>
+          <li><strong>No built-in CRM</strong> beyond basic client management</li>
+          <li><strong>Limited reporting/analytics</strong> compared to enterprise EHRs</li>
+          <li><strong>ePrescribe is a paid add-on</strong> ($49/mo) -- not included in any plan tier</li>
+          <li><strong>Group telehealth requires Zoom</strong> -- built-in video is 1:1 only</li>
+          <li><strong>No native accounting integration</strong> (QuickBooks, Xero)</li>
+          <li><strong>Insurance billing gap</strong> -- Claim.MD integration available, but no built-in clearinghouse. #1 reason practitioners switch to SimplePractice (per Reddit).</li>
+          <li><strong>Pricing tier gap</strong> -- Jump from 10-client (Starter) to 300-client (Professional) with no intermediate option</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="ci-card">
+        <div class="ci-card-header">Integration Ecosystem (27+ integrations)</div>
+      <div class="ci-grid-3" style="margin-top:12px;">
+        <div>
+          <h4>Health & Fitness</h4>
+          <ul class="ci-list">
+            <li>Apple Health</li>
+            <li>Fitbit</li>
+            <li>Garmin Connect</li>
+            <li>Oura</li>
+          </ul>
+          <h4>Nutrition</h4>
+          <ul class="ci-list">
+            <li>Cronometer</li>
+            <li>That Clean Life (owned)</li>
+          </ul>
+        </div>
+        <div>
+          <h4>Supplements & Labs</h4>
+          <ul class="ci-list">
+            <li>Fullscript + Fullscript Labs</li>
+            <li>WholeScripts</li>
+            <li>The Natural Dispensary</li>
+            <li>Rupa Health</li>
+            <li>Evexia Diagnostics</li>
+            <li>Nutri-Q</li>
+          </ul>
+          <h4>Insurance & Rx</h4>
+          <ul class="ci-list">
+            <li>Claim.MD</li>
+            <li>Office Ally</li>
+            <li>DrFirst (ePrescribing)</li>
+          </ul>
+        </div>
+        <div>
+          <h4>Productivity</h4>
+          <ul class="ci-list">
+            <li>Google Calendar / Apple Calendar</li>
+            <li>Dropbox / Google Drive</li>
+            <li>Zapier</li>
+            <li>Zoom</li>
+          </ul>
+          <h4>Analytics & Marketing</h4>
+          <ul class="ci-list">
+            <li>Google Analytics</li>
+            <li>Meta Pixel</li>
+          </ul>
+          <h4>Payments</h4>
+          <ul class="ci-list">
+            <li>Stripe (Practice Better Payments)</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================================================================== -->
+  <!-- SECTION 4: SEO PERFORMANCE                                         -->
+  <!-- ================================================================== -->
+  <div class="ci-section" id="seo-performance">
+    <div class="ci-section-header">
+      <span class="ci-section-num">4</span>
+      <h2 class="ci-section-title">SEO Performance</h2>
+    </div>
+
+    <div class="ci-grid-2">
+      <div class="ci-card">
+        <div class="ci-card-header">Domain Metrics (SimilarWeb)</div>
+        <div class="data-pair">
+          <span class="dp-label">Total Monthly Visits</span>
+          <span class="dp-value">~1.5M</span>
+        </div>
+        <div class="data-pair">
+          <span class="dp-label">Bounce Rate</span>
+          <span class="dp-value">32.46%</span>
+        </div>
+        <div class="data-pair">
+          <span class="dp-label">Pages Per Visit</span>
+          <span class="dp-value">5.30</span>
+        </div>
+        <div class="data-pair">
+          <span class="dp-label">Avg. Visit Duration</span>
+          <span class="dp-value">6 min 27 sec</span>
+        </div>
+        <div class="data-pair">
+          <span class="dp-label">Global Rank</span>
+          <span class="dp-value">#36,879</span>
+        </div>
+        <div class="data-pair">
+          <span class="dp-label">US Country Rank</span>
+          <span class="dp-value">#9,188</span>
+        </div>
+        <div class="data-pair">
+          <span class="dp-label">Category Rank</span>
+          <span class="dp-value">#341 in Health > Nutrition Diets and Fitness (US)</span>
+        </div>
+        <div class="data-pair">
+          <span class="dp-label">Estimated Domain Rating</span>
+          <span class="dp-value">55-70</span>
+        </div>
+        <div class="data-pair">
+          <span class="dp-label">Estimated Referring Domains</span>
+          <span class="dp-value">2,000-5,000</span>
+        </div>
+
+        <h4 style="margin-top: 16px;">Traffic Source Breakdown (Estimated)</h4>
+        <div class="ci-bar-wrap">
+          <span class="label">Direct</span>
+          <div class="ci-bar-track"><div class="ci-bar-fill" style="width:47%"></div></div>
+          <span class="val">40-50%</span>
+        </div>
+        <div class="ci-bar-wrap">
+          <span class="label">Organic Search</span>
+          <div class="ci-bar-track"><div class="ci-bar-fill green" style="width:33%"></div></div>
+          <span class="val">30-35%</span>
+        </div>
+        <div class="ci-bar-wrap">
+          <span class="label">Referral</span>
+          <div class="ci-bar-track"><div class="ci-bar-fill blue" style="width:13%"></div></div>
+          <span class="val">10-15%</span>
+        </div>
+        <div class="ci-bar-wrap">
+          <span class="label">Social</span>
+          <div class="ci-bar-track"><div class="ci-bar-fill" style="width:7%"></div></div>
+          <span class="val">5-8%</span>
+        </div>
+        <div class="ci-bar-wrap">
+          <span class="label">Paid</span>
+          <div class="ci-bar-track"><div class="ci-bar-fill red" style="width:4%"></div></div>
+          <span class="val">3-5%</span>
+        </div>
+        <p style="font-size:11px; color:var(--slate-400); margin-top:6px;">Traffic sources estimated based on similar SaaS companies in health tech vertical</p>
+      </div>
+
+      <div class="ci-card">
+        <div class="ci-card-header">Top Organic Keywords</div>
+        <h4>Branded Keywords</h4>
+        <div class="ci-table-wrap"><table class="ci-table">
+          <thead><tr><th>Keyword</th><th>Est. Volume</th><th>Position</th></tr></thead>
+          <tbody>
+            <tr><td>practice better</td><td>8,000-12,000/mo</td><td>#1</td></tr>
+            <tr><td>practice better login</td><td>3,000-5,000/mo</td><td>#1</td></tr>
+            <tr><td>practice better pricing</td><td>1,000-2,000/mo</td><td>#1</td></tr>
+            <tr><td>practice better review</td><td>500-1,000/mo</td><td>#1-3</td></tr>
+            <tr><td>practice better alternatives</td><td>500-1,000/mo</td><td>#1-5</td></tr>
+          </tbody>
+        </table></div>
+
+        <h4>Non-Branded (Category)</h4>
+        <div class="ci-table-wrap"><table class="ci-table">
+          <thead><tr><th>Keyword</th><th>Est. Volume</th><th>PB Position</th></tr></thead>
+          <tbody>
+            <tr><td>health coach software</td><td>500-1,000/mo</td><td>#1-3</td></tr>
+            <tr><td>health coach apps</td><td>500-1,000/mo</td><td>#1-3</td></tr>
+            <tr><td>nutritionist software</td><td>500-1,000/mo</td><td>#3-8</td></tr>
+            <tr><td>best EHR for nutritionists</td><td>200-500/mo</td><td>#1-5</td></tr>
+            <tr><td>wellness practice management</td><td>200-500/mo</td><td>#1-5</td></tr>
+            <tr><td>EHR for dietitians</td><td>200-500/mo</td><td>#1-5</td></tr>
+            <tr><td>SimplePractice alternatives</td><td>1,000-2,000/mo</td><td>#3-10</td></tr>
+          </tbody>
+        </table></div>
+      </div>
+    </div>
+
+    <div class="ci-grid-2">
+      <div class="ci-card">
+        <div class="ci-card-header">SEO Strengths</div>
+        <ul class="ci-list">
+          <li><strong>Dominant for branded terms</strong> -- Owns SERP for all branded queries</li>
+          <li><strong>Strong comparison content</strong> -- /compare hub + blog posts create dual-ranking: /compare/practice-better-vs-simplepractice, vs-healthie, vs-jane, vs-practice-fusion</li>
+          <li><strong>Niche authority in nutrition/wellness</strong> -- Consistently ranks for nutritionist/dietitian/health coach queries</li>
+          <li><strong>Active content calendar</strong> -- 2-4 posts/month, content consistently dated 2025-2026</li>
+          <li><strong>Year-stamped titles</strong> -- "Best Health Coach Apps 2026", "Top SimplePractice Alternatives 2026"</li>
+          <li><strong>Schema.org Organization markup</strong> on homepage with social links</li>
+          <li><strong>Strong engagement metrics</strong> -- 6:27 avg visit, 5.3 pages/visit, 32% bounce</li>
+        </ul>
+      </div>
+
+      <div class="ci-card">
+        <div class="ci-card-header">SEO Weaknesses</div>
+        <ul class="ci-list">
+          <li><strong>Dated pillar content</strong> -- "Best EHR for Nutritionists in 2023" and "Best EHR for Dietitians in 2023" still have 2023 in URL/title</li>
+          <li><strong>No "alternatives" SERP ownership</strong> -- "Practice Better alternatives" dominated by G2, Capterra, Software Advice</li>
+          <li><strong>Missing comparison pages</strong> -- No vs Carepatron (emerging competitor), CharmHealth, or Tebra</li>
+          <li><strong>Subdomain fragmentation</strong> -- Main site, help (Zendesk), sites (landing pages), wordpress (legacy) all dilute authority</li>
+          <li><strong>No glossary/educational hub</strong> -- Missing TOFU content ("What is an EHR?", "HIPAA compliance guide")</li>
+          <li><strong>Missing Schema types</strong> -- No FAQ, HowTo, SoftwareApplication, or Review schema observed</li>
+          <li><strong>No visible resource center</strong> -- Missing lead magnets (ebooks, templates, calculators)</li>
+          <li><strong>Price increase article ranks</strong> -- help.practicebetter.io pricing changes article appears in SERPs, may drive alternative-seeking</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="ci-card">
+        <div class="ci-card-header">Competitive SEO Landscape</div>
+      <div class="ci-table-wrap"><table class="ci-table">
+        <thead><tr><th>Competitor</th><th>Est. Traffic</th><th>Primary SEO Strategy</th><th>Key SEO Advantage</th></tr></thead>
+        <tbody>
+          <tr><td><strong>SimplePractice</strong></td><td>3-5M visits/mo</td><td>Broad PM + mental health</td><td>225K+ users, brand dominance</td></tr>
+          <tr><td><strong>Tebra</strong></td><td>2-3M visits/mo</td><td>General practice mgmt</td><td>Insurance billing, scale</td></tr>
+          <tr><td><strong>Jane App</strong></td><td>1-2M visits/mo</td><td>Clinic management focus</td><td>10K+ templates, scheduling</td></tr>
+          <tr style="background:var(--amber-pale);">
+            <td><strong>Practice Better</strong></td><td>1.5M visits/mo</td><td>Wellness/nutrition niche</td><td>Client engagement, AI charting</td></tr>
+          <tr><td><strong>Healthie</strong></td><td>500K-1M visits/mo</td><td>API/platform positioning</td><td>Infrastructure play, wearables</td></tr>
+          <tr><td><strong>Carepatron</strong></td><td>300-500K visits/mo</td><td>Free tier + broad health</td><td>Emerging challenger, free plan</td></tr>
+        </tbody>
+      </table></div>
+      <p style="font-size:11px; color:var(--slate-400); margin-top:8px;">All competitor traffic estimates are directional only</p>
+    </div>
+  </div>
+
+  <!-- ================================================================== -->
+  <!-- SECTION 5: CUSTOMER SENTIMENT                                      -->
+  <!-- ================================================================== -->
+  <div class="ci-section" id="customer-sentiment">
+    <div class="ci-section-header">
+      <span class="ci-section-num">5</span>
+      <h2 class="ci-section-title">Customer Sentiment</h2>
+    </div>
+
+    <div class="ci-card">
+        <div class="ci-card-header">Review Platform Ratings</div>
+      <div class="ci-table-wrap"><table class="ci-table">
+        <thead><tr><th>Platform</th><th>Rating</th><th>Reviews</th><th>Notes</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><strong>G2</strong></td>
+            <td style="font-weight:700;color:var(--green);">4.7/5</td>
+            <td>~286</td>
+            <td>~87% 5-star, ~10% 4-star. Scraped from search snippets (G2 returned 403).</td>
+          </tr>
+          <tr>
+            <td><strong>Capterra</strong></td>
+            <td style="font-weight:700;color:var(--green);">4.8/5</td>
+            <td>~91</td>
+            <td>Sub-ratings: Ease of Use 4.6, Customer Service 4.6, Features 4.7, Value for Money 4.5. From search snippets.</td>
+          </tr>
+          <tr>
+            <td><strong>Trustpilot</strong></td>
+            <td style="font-weight:700;color:var(--red);">2.9/5</td>
+            <td>2</td>
+            <td>Both reviews are 1-star. TrustScore of 2.9 mathematically inconsistent with two 1-star reviews. Statistically unreliable (n=2).</td>
+          </tr>
+          <tr>
+            <td><strong>TrustRadius</strong></td>
+            <td>--</td>
+            <td>0</td>
+            <td>Zero reviews or ratings. Not a meaningful data source for PB.</td>
+          </tr>
+          <tr>
+            <td><strong>Software Finder</strong></td>
+            <td style="font-weight:700;color:var(--green);">4.7/5</td>
+            <td>75</td>
+            <td>95% positive rating</td>
+          </tr>
+        </tbody>
+      </table></div>
+    </div>
+
+    <div class="ci-grid-2">
+      <div class="ci-card">
+        <div class="ci-card-header">Capterra Sub-Ratings</div>
+        <div class="ci-bar-wrap">
+          <span class="label">Overall</span>
+          <div class="ci-bar-track"><div class="ci-bar-fill green" style="width:96%"></div></div>
+          <span class="val">4.8/5</span>
+        </div>
+        <div class="ci-bar-wrap">
+          <span class="label">Features</span>
+          <div class="ci-bar-track"><div class="ci-bar-fill green" style="width:94%"></div></div>
+          <span class="val">4.7/5</span>
+        </div>
+        <div class="ci-bar-wrap">
+          <span class="label">Ease of Use</span>
+          <div class="ci-bar-track"><div class="ci-bar-fill green" style="width:92%"></div></div>
+          <span class="val">4.6/5</span>
+        </div>
+        <div class="ci-bar-wrap">
+          <span class="label">Customer Service</span>
+          <div class="ci-bar-track"><div class="ci-bar-fill green" style="width:92%"></div></div>
+          <span class="val">4.6/5</span>
+        </div>
+        <div class="ci-bar-wrap">
+          <span class="label">Value for Money</span>
+          <div class="ci-bar-track"><div class="ci-bar-fill" style="width:90%"></div></div>
+          <span class="val">4.5/5</span>
+        </div>
+        <p style="font-size:11px;color:var(--slate-400);margin-top:8px;">Value for Money (4.5) is the lowest sub-rating -- area where competitors could erode positioning</p>
+
+        <h4>G2 Feature Ratings</h4>
+        <div class="ci-bar-wrap">
+          <span class="label">Compliance</span>
+          <div class="ci-bar-track"><div class="ci-bar-fill green" style="width:95%"></div></div>
+          <span class="val">9.5/10</span>
+        </div>
+        <div class="ci-bar-wrap">
+          <span class="label">Support Quality</span>
+          <div class="ci-bar-track"><div class="ci-bar-fill green" style="width:92%"></div></div>
+          <span class="val">9.2/10</span>
+        </div>
+        <div class="ci-bar-wrap">
+          <span class="label">Billing</span>
+          <div class="ci-bar-track"><div class="ci-bar-fill green" style="width:89%"></div></div>
+          <span class="val">8.9/10</span>
+        </div>
+        <div class="ci-bar-wrap">
+          <span class="label">Workflow Mgmt</span>
+          <div class="ci-bar-track"><div class="ci-bar-fill green" style="width:89%"></div></div>
+          <span class="val">8.9/10</span>
+        </div>
+        <div class="ci-bar-wrap">
+          <span class="label">Patient Portal</span>
+          <div class="ci-bar-track"><div class="ci-bar-fill green" style="width:88%"></div></div>
+          <span class="val">8.8/10</span>
+        </div>
+      </div>
+
+      <div class="ci-card">
+        <div class="ci-card-header">Top Pain Points from Reviews</div>
+
+        <div class="ci-quote">
+          "ALL you can get is an AI BOT with which to communicate. I am so frustrated...This is ONLY for those already computer smart."
+          <span class="ci-quote-source">-- Donna Pagano, Trustpilot, Sep 2025 (1-star)</span>
+        </div>
+
+        <div class="ci-quote">
+          "They have no customer service so if you can't figure something out that is on you...It is also a lie that they pay a referral fee."
+          <span class="ci-quote-source">-- Jessica Woodruff, Trustpilot, Nov 2025 (1-star)</span>
+        </div>
+
+        <h4>Pain Point Themes (from Reviews)</h4>
+        <ul class="ci-list">
+          <li><strong>Support (AI-only perception):</strong> Trustpilot reviewers cite inability to reach human support, AI bot frustration</li>
+          <li><strong>Pricing increases:</strong> July 2025 $10/mo increase challenging for solo practitioners and new business owners</li>
+          <li><strong>ePrescribe as add-on:</strong> Not included in base EHR cost, complicating budgeting (G2 search summary, paraphrased)</li>
+          <li><strong>Value for money for small practices:</strong> Pricing described as challenging for very small or solo practices, especially with add-ons (Capterra search summary, paraphrased)</li>
+        </ul>
+
+        <h4>Positive Themes</h4>
+        <ul class="ci-list">
+          <li><strong>All-in-one platform:</strong> Consolidates scheduling, billing, charting, messaging, programs in one place</li>
+          <li><strong>Intuitive UX:</strong> Described as "robust and aesthetically pleasing" (G2, paraphrased)</li>
+          <li><strong>Onboarding resources:</strong> Strong educational resources, help articles, and videos (Capterra, paraphrased)</li>
+          <li><strong>Automation time savings:</strong> Templates and automations frequently cited as key value</li>
+        </ul>
+
+        <div class="ci-callout ci-callout-red">
+          <div class="ci-callout-title">Support Quality Disconnect</div>
+          <p>Notable disconnect between Trustpilot (both 1-star, citing no human support) and G2's support score (9.2/10). Possible explanations: Trustpilot captures consumer-level frustration (n=2, very small); G2 reviewers more tech-savvy; support quality may vary by plan tier. This warrants investigation.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================================================================== -->
+  <!-- SECTION 6: REDDIT INSIGHTS                                         -->
+  <!-- ================================================================== -->
+  <div class="ci-section" id="reddit-insights">
+    <div class="ci-section-header">
+      <span class="ci-section-num">6</span>
+      <h2 class="ci-section-title">Reddit Social Listening</h2>
+    </div>
+
+    <div class="ci-grid-3" style="margin-bottom:16px;">
+      <div class="ci-card" style="text-align:center;">
+        <div style="font-size:32px; font-weight:800; font-family:'Fraunces',serif; color:var(--green);">73%</div>
+        <div style="font-size:12px; color:var(--slate-500);">Positive Sentiment</div>
+        <div style="font-size:11px; color:var(--slate-400);">16/22 verified data points</div>
+      </div>
+      <div class="ci-card" style="text-align:center;">
+        <div style="font-size:32px; font-weight:800; font-family:'Fraunces',serif; color:var(--slate-500);">18%</div>
+        <div style="font-size:12px; color:var(--slate-500);">Neutral</div>
+        <div style="font-size:11px; color:var(--slate-400);">4/22 verified data points</div>
+      </div>
+      <div class="ci-card" style="text-align:center;">
+        <div style="font-size:32px; font-weight:800; font-family:'Fraunces',serif; color:var(--red);">9%</div>
+        <div style="font-size:12px; color:var(--slate-500);">Negative</div>
+        <div style="font-size:11px; color:var(--slate-400);">2/22 verified data points</div>
+      </div>
+    </div>
+
+    <div class="ci-card">
+        <div class="ci-card-header">Sentiment Breakdown by Category (22 verified data points)</div>
+      <div class="ci-table-wrap"><table class="ci-table">
+        <thead><tr><th>Category</th><th>Count</th><th>%</th><th>Discussion Type</th><th>Count</th></tr></thead>
+        <tbody>
+          <tr><td>Feature Praise</td><td>11</td><td>50%</td><td>Comparison</td><td>8</td></tr>
+          <tr><td>Ease of Use</td><td>3</td><td>14%</td><td>Praise</td><td>7</td></tr>
+          <tr><td>General Mention</td><td>2</td><td>9%</td><td>Help Thread</td><td>2</td></tr>
+          <tr><td>Missing Feature</td><td>1</td><td>5%</td><td>Complaint</td><td>1</td></tr>
+          <tr><td>Pain Point</td><td>1</td><td>5%</td><td>Other</td><td>4</td></tr>
+          <tr><td>Value for Money</td><td>1</td><td>5%</td><td></td><td></td></tr>
+          <tr><td>Support Praise</td><td>1</td><td>5%</td><td></td><td></td></tr>
+        </tbody>
+      </table></div>
+    </div>
+
+    <div class="ci-card">
+        <div class="ci-card-header">Key Reddit Quotes (Verbatim, Verified via PullPush API)</div>
+
+      <div class="ci-quote">
+        "PB has a way better system in place for dietitians. It's more thoughtfully designed and there's way more you can do in there. It also feels smoother to use, as a practitioner and it has great features like custom text reminders, automation pathways, ability to create courses. Healthie seems to be more user friendly for clients."
+        <span class="ci-quote-source">-- u/Master-Guidance-9701, r/dietetics, May 2024</span>
+      </div>
+
+      <div class="ci-quote">
+        "I just switched emr's from practice better to simple practice. Practice better is definitely more nutrition oriented and some of my clients enjoyed using the food journal function, but the billing is soooo much better through simple practice. Esp if you bill insurance I think the built-in clearinghouse in SP is a huge sell. Plus the support is so much better on SP."
+        <span class="ci-quote-source">-- u/Proof_Negotiation_13, r/dietetics, Oct 2023</span>
+      </div>
+
+      <div class="ci-quote">
+        "I was turned off by how pushy their sales associates were and later found Practice Better which has all of the same features for a much lower price point. They are constantly making updates, have a responsive support team and actively integrate user suggests to edits."
+        <span class="ci-quote-source">-- u/easternstorm8118, r/dietetics, Jun 2020 (comparing to Healthie)</span>
+      </div>
+
+      <div class="ci-quote">
+        "Practice Better has been my go-to for years. There are lots of pros and cons to each software, but PB has the best user interface and included features in my opinion."
+        <span class="ci-quote-source">-- u/microboredom, r/dietetics, Jun 2024</span>
+      </div>
+
+      <div class="ci-quote">
+        "I know a decent amount of therapists who switched from SimplePractice to Practice Better and are super happy with it."
+        <span class="ci-quote-source">-- u/antisocialdistortion, r/therapists, Mar 2024</span>
+      </div>
+
+      <div class="ci-quote" style="border-left-color:var(--red);background:var(--red-light)">
+        "Practice better is terrible."
+        <span class="ci-quote-source">-- u/Ketchupadri, r/NaturopathicMedicine, Aug 2024 (preferred Charm; no specific reasons given)</span>
+      </div>
+
+      <div class="ci-quote">
+        "As a patient, I vastly prefer Practice Better over Charm."
+        <span class="ci-quote-source">-- u/onions-make-me-cry, r/NaturopathicMedicine, Apr 2025 (patient perspective)</span>
+      </div>
+    </div>
+
+    <div class="ci-grid-2">
+      <div class="ci-card">
+        <div class="ci-card-header">Key Themes Identified</div>
+        <ul class="ci-list">
+          <li><strong>#1: Strong in Nutrition/Dietetics</strong> -- Most-recommended EHR in r/dietetics. Food journals, client nutrition tools, and photo upload praised.</li>
+          <li><strong>#2: Insurance Billing is the Primary Weakness</strong> -- #1 reason practitioners switch to SimplePractice. Cash-pay practices happy; insurance-heavy are not.</li>
+          <li><strong>#3: Practitioner UX praised, client-side mixed</strong> -- Practitioners love the interface. Healthie's client portal called more user-friendly; but a patient preferred PB over Charm.</li>
+          <li><strong>#4: Setup complexity</strong> -- Multiple references to initial setup effort. Paid courses exist specifically to teach PB setup.</li>
+          <li><strong>#5: Growing therapist interest</strong> -- Appears in r/therapists as SimplePractice alternative, but not yet standard there.</li>
+          <li><strong>#6: Middle-of-the-road for NDs</strong> -- Between Practice Q (easier workflow) and Charm (deeper clinical EHR). PB differentiator: courses and programs.</li>
+        </ul>
+      </div>
+
+      <div class="ci-card">
+        <div class="ci-card-header">Competitors Mentioned in PB Discussions</div>
+        <div class="ci-table-wrap"><table class="ci-table">
+          <thead><tr><th>Competitor</th><th>Mentions</th><th>Context</th></tr></thead>
+          <tbody>
+            <tr><td>SimplePractice</td><td>8</td><td>Better insurance billing, clearinghouse, form templates, support</td></tr>
+            <tr><td>Healthie</td><td>5</td><td>More client-friendly portal, but slower app and higher price</td></tr>
+            <tr><td>Charm</td><td>3</td><td>More traditional EHR, preferred by some NDs, more expensive</td></tr>
+            <tr><td>Kalix</td><td>3</td><td>Smaller but great support; good access controls</td></tr>
+            <tr><td>Jane</td><td>2</td><td>Smoother out-of-box experience for clinic management</td></tr>
+            <tr><td>Practice Q</td><td>1</td><td>Better ease of use and workflow than PB</td></tr>
+            <tr><td>IntakeQ</td><td>1</td><td>Preferred by one therapist who tried many EHRs</td></tr>
+            <tr><td>Cronometer</td><td>1</td><td>PB's food journal replaced need for Cronometer</td></tr>
+          </tbody>
+        </table></div>
+
+        <h4 style="margin-top:16px;">Active Subreddits</h4>
+        <div class="ci-table-wrap"><table class="ci-table">
+          <thead><tr><th>Subreddit</th><th>Relevance</th></tr></thead>
+          <tbody>
+            <tr><td>r/dietetics</td><td><span class="ci-badge ci-badge-green">HIGH</span> Primary PB discussion hub (~60% of data)</td></tr>
+            <tr><td>r/HealthCoaching</td><td><span class="ci-badge ci-badge-green">HIGH</span> Active PB recommendations</td></tr>
+            <tr><td>r/therapists</td><td><span class="ci-badge ci-badge-amber">MEDIUM</span> Growing PB presence as SP alternative</td></tr>
+            <tr><td>r/NaturopathicMedicine</td><td><span class="ci-badge ci-badge-amber">MEDIUM</span> Small but substantive EHR comparisons</td></tr>
+            <tr><td>r/nursecoach</td><td><span class="ci-badge ci-badge-amber">LOW-MED</span> PB described as standard for nurse coaches</td></tr>
+          </tbody>
+        </table></div>
+
+        <p style="font-size:11px; color:var(--slate-400); margin-top:8px;">Data: 22 verified (PullPush API) + 5 unverified Google snippets. Date range: Jun 2020 - Apr 2025 (API) plus recent snippets through Feb 2026. 2 comments contain affiliate links (flagged).</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================================================================== -->
+  <!-- SECTION 7: YOUTUBE PRESENCE                                        -->
+  <!-- ================================================================== -->
+  <div class="ci-section" id="youtube-presence">
+    <div class="ci-section-header">
+      <span class="ci-section-num">7</span>
+      <h2 class="ci-section-title">YouTube Presence</h2>
+    </div>
+
+    <div class="ci-grid-3" style="margin-bottom:16px;">
+      <div class="ci-card" style="text-align:center;">
+        <div style="font-size:32px; font-weight:800; font-family:'Fraunces',serif; color:var(--amber);">44</div>
+        <div style="font-size:12px; color:var(--slate-500);">Total Videos Found</div>
+        <div style="font-size:11px; color:var(--slate-400);">24 official + 20 third-party</div>
+      </div>
+      <div class="ci-card" style="text-align:center;">
+        <div style="font-size:32px; font-weight:800; font-family:'Fraunces',serif; color:var(--amber);">30.6K</div>
+        <div style="font-size:12px; color:var(--slate-500);">Top Video Views</div>
+        <div style="font-size:11px; color:var(--slate-400);">"Practice Better Walkthrough" (~5 yrs old)</div>
+      </div>
+      <div class="ci-card" style="text-align:center;">
+        <div style="font-size:32px; font-weight:800; font-family:'Fraunces',serif; color:var(--green);">0</div>
+        <div style="font-size:12px; color:var(--slate-500);">Negative Videos Found</div>
+        <div style="font-size:11px; color:var(--slate-400);">Across all searches</div>
+      </div>
+    </div>
+
+    <div class="ci-grid-2">
+      <div class="ci-card">
+        <div class="ci-card-header">Official Channel: Top 10 Videos</div>
+        <div class="ci-table-wrap"><table class="ci-table">
+          <thead><tr><th>#</th><th>Title</th><th>Views</th><th>Duration</th><th>Age</th></tr></thead>
+          <tbody>
+            <tr><td>1</td><td>Practice Better Walkthrough</td><td style="font-weight:600;">30,614</td><td>15:08</td><td>~5 yrs</td></tr>
+            <tr><td>2</td><td>Tour of the Client Portal</td><td>23,147</td><td>2:31</td><td>~2 yrs</td></tr>
+            <tr><td>3</td><td>Practice Better Walkthrough (newer)</td><td>15,016</td><td>9:32</td><td>~2 yrs</td></tr>
+            <tr><td>4</td><td>Working with Programs</td><td>12,003</td><td>17:17</td><td>~7 yrs</td></tr>
+            <tr><td>5</td><td>Getting Started with Practice Better</td><td>9,318</td><td>49:19</td><td>~4 yrs</td></tr>
+            <tr><td>6</td><td>Deep Dive: Programs & Courses</td><td>6,579</td><td>82:02</td><td>~4 yrs</td></tr>
+            <tr><td>7</td><td>Deep Dive: Protocols & Recommendations</td><td>5,605</td><td>68:57</td><td>~6 yrs</td></tr>
+            <tr><td>8</td><td>AI Charting Assistant Walkthrough</td><td>3,970</td><td>8:02</td><td>~2 yrs</td></tr>
+            <tr><td>9</td><td>Deep Dive: Evergreen Programs</td><td>3,151</td><td>65:44</td><td>~3 yrs</td></tr>
+            <tr><td>10</td><td>Deep Dive: Client Portal Navigation</td><td>3,096</td><td>58:37</td><td>~4 yrs</td></tr>
+          </tbody>
+        </table></div>
+        <div class="data-pair" style="margin-top: 10px; font-weight:600;">
+          <span class="dp-label">Total Top-10 Views</span>
+          <span class="dp-value">~112,500</span>
+        </div>
+        <div class="data-pair">
+          <span class="dp-label">Est. Subscribers</span>
+          <span class="dp-value">1,000-5,000 (estimated)</span>
+        </div>
+        <div class="data-pair">
+          <span class="dp-label">Posting Frequency</span>
+          <span class="dp-value">Active: 1-3/month</span>
+        </div>
+        <div class="data-pair">
+          <span class="dp-label">Content Age</span>
+          <span class="dp-value">7 years of content</span>
+        </div>
+      </div>
+
+      <div class="ci-card">
+        <div class="ci-card-header">Third-Party Ecosystem</div>
+        <h4>Top Reviews</h4>
+        <div class="ci-table-wrap"><table class="ci-table">
+          <thead><tr><th>Video</th><th>Creator</th><th>Views</th><th>Sentiment</th></tr></thead>
+          <tbody>
+            <tr><td>Ep #203: An Honest Review</td><td>Ronda Nelson</td><td>969</td><td><span class="ci-badge ci-badge-amber">Mixed/Positive</span></td></tr>
+            <tr><td>7 Things You Need To Know</td><td>Dan Thorne</td><td>659</td><td><span class="ci-badge ci-badge-blue">Informational</span></td></tr>
+            <tr><td>Review + Healthie Comparison</td><td>Dietitian Success Center</td><td>354</td><td><span class="ci-badge ci-badge-blue">Informational</span></td></tr>
+          </tbody>
+        </table></div>
+
+        <h4>Top Tutorials (Third-Party)</h4>
+        <div class="ci-table-wrap"><table class="ci-table">
+          <thead><tr><th>Video</th><th>Creator</th><th>Views</th></tr></thead>
+          <tbody>
+            <tr><td>Tutorial for Holistic Health Coaches</td><td>Kendra Perry</td><td style="font-weight:600;">5,008</td></tr>
+            <tr><td>Workflow During a Patient Visit</td><td>Crystal Bailey</td><td>802</td></tr>
+            <tr><td>Tutorial for Newbies</td><td>How to Hermione</td><td>677</td></tr>
+            <tr><td>Protocols for Client Success</td><td>American Nutrition Assoc.</td><td>468</td></tr>
+          </tbody>
+        </table></div>
+
+        <h4>Comparison Videos</h4>
+        <div class="ci-table-wrap"><table class="ci-table">
+          <thead><tr><th>Video</th><th>Creator</th><th>Views</th></tr></thead>
+          <tbody>
+            <tr><td>Practice Better vs Dubsado</td><td>Jess Creatives</td><td>1,526</td></tr>
+            <tr><td>Software Comparison for Health Coaches</td><td>Digital Nomad Physicians</td><td>672</td></tr>
+            <tr><td>SP vs PB (2026)</td><td>Software Scope</td><td>119</td></tr>
+          </tbody>
+        </table></div>
+
+        <div class="ci-callout ci-callout-amber" style="margin-top:12px;">
+          <div class="ci-callout-title">Content Strategy Gaps</div>
+          <p>No "Practice Better vs Jane App" comparison video exists. No high-quality "PB vs SimplePractice" from a major creator. AI Charting Assistant video (3,970 views) is a differentiating asset. Official content mostly functional (how-to) rather than aspirational. No short-form content (YouTube Shorts) detected.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="ci-card">
+        <div class="ci-card-header">YouTube Competitive Benchmarking</div>
+      <div class="ci-table-wrap"><table class="ci-table">
+        <thead><tr><th>Metric</th><th>Practice Better</th><th>Jane App</th><th>Healthie</th><th>SimplePractice</th></tr></thead>
+        <tbody>
+          <tr><td>Top Video Views</td><td style="font-weight:600;color:var(--amber);">30,614</td><td>17,792</td><td>9,333</td><td>23,000+ (est.)</td></tr>
+          <tr><td>Content Style</td><td>Deep dive webinars</td><td>Clinic workflows</td><td>Webinars/demos</td><td>Broad tutorials</td></tr>
+          <tr><td>Third-Party Creators</td><td>~10</td><td>~8-10</td><td>~3-5</td><td>~15-20 (est.)</td></tr>
+          <tr><td>Comparison Videos</td><td>4</td><td>Many (vs SP)</td><td>Few</td><td>Many</td></tr>
+          <tr><td>Negative Videos</td><td>0</td><td>Some</td><td>Few</td><td>Some</td></tr>
+          <tr><td>Target Audience</td><td>Nutrition/wellness</td><td>Allied health/PT</td><td>Nutrition/wellness</td><td>Mental health</td></tr>
+          <tr><td>Posting Frequency</td><td>Active (1-3/mo)</td><td>Active</td><td>Moderate</td><td>Very active</td></tr>
+        </tbody>
+      </table></div>
+    </div>
+  </div>
+
+  <!-- ================================================================== -->
+  <!-- SECTION 8: COMPETITIVE POSITION                                    -->
+  <!-- ================================================================== -->
+  <div class="ci-section" id="competitive-position">
+    <div class="ci-section-header">
+      <span class="ci-section-num">8</span>
+      <h2 class="ci-section-title">Competitive Position</h2>
+    </div>
+
+    <div class="ci-card">
+        <div class="ci-card-header">Competitive Threat Assessment</div>
+      <div class="ci-table-wrap"><table class="ci-table">
+        <thead><tr><th>Competitor</th><th>Threat Level</th><th>Direction</th><th>Primary Threat Vector</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><strong>Cerbo / OptiMantra (merged)</strong></td>
+            <td><span style="display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600"><span style="width:10px;height:10px;border-radius:50%;background:var(--red)"></span> HIGH</span></td>
+            <td>Rising fast</td>
+            <td>Direct ICP overlap + clinical depth + support superiority (2025 Best Customer Support award) + PE growth mandate. Merged Dec 2025; combined 15,000+ practitioners. 1,074% 3-year growth.</td>
+          </tr>
+          <tr>
+            <td><strong>Jane App</strong></td>
+            <td><span style="display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600"><span style="width:10px;height:10px;border-radius:50%;background:var(--red)"></span> HIGH</span></td>
+            <td>Stable</td>
+            <td>~$100M ARR, profitable, 200K+ practitioners, 650+ employees. $1.8B valuation (May 2025). Payfirma disruption pending (May 2026). No programs/courses feature.</td>
+          </tr>
+          <tr>
+            <td><strong>Healthie</strong></td>
+            <td><span style="display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600"><span style="width:10px;height:10px;border-radius:50%;background:var(--amber)"></span> MEDIUM</span></td>
+            <td>Declining</td>
+            <td>Enterprise/B2B2C pivot abandoning solo practitioners. Series B $23M (Oct 2024). 45K clinicians. Mobile app crashes. Free tier discontinued. ONC certified.</td>
+          </tr>
+          <tr>
+            <td><strong>SimplePractice</strong></td>
+            <td><span style="display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600"><span style="width:10px;height:10px;border-radius:50%;background:var(--amber)"></span> MEDIUM</span></td>
+            <td>Stable (adjacent)</td>
+            <td>225K+ users but primarily mental health. 63% price increase 2025. Vista Equity PE extraction. 2023 ToS scandal. Dissatisfied users may evaluate PB.</td>
+          </tr>
+          <tr>
+            <td><strong>Tebra</strong></td>
+            <td><span style="display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600"><span style="width:10px;height:10px;border-radius:50%;background:var(--green)"></span> LOW</span></td>
+            <td>Declining</td>
+            <td>Different core ICP (medical billing). Product in freefall: 80%+ recent Trustpilot 1-2 stars. $250M raise (Dec 2025) funds AI marketing. More opportunity than threat.</td>
+          </tr>
+          <tr>
+            <td><strong>CharmEHR</strong></td>
+            <td><span style="display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600"><span style="width:10px;height:10px;border-radius:50%;background:var(--green)"></span> LOW</span></td>
+            <td>Declining</td>
+            <td>~22 employees, stagnant product. 3-7 day email support response. Free tier is a genuine moat but limited resources for growth. Running VC fund alongside EHR.</td>
+          </tr>
+        </tbody>
+      </table></div>
+    </div>
+
+    <div class="ci-grid-2">
+      <div class="ci-card">
+        <div class="ci-card-header">PB vs SimplePractice (G2 Ratings)</div>
+        <div class="ci-bar-wrap">
+          <span class="label">Billing</span>
+          <div class="ci-bar-track"><div class="ci-bar-fill green" style="width:89%"></div></div>
+          <span class="val">PB: 8.9 vs SP: 8.6</span>
+        </div>
+        <div class="ci-bar-wrap">
+          <span class="label">Patient Portal</span>
+          <div class="ci-bar-track"><div class="ci-bar-fill green" style="width:88%"></div></div>
+          <span class="val">PB: 8.8 vs SP: 8.5</span>
+        </div>
+        <div class="ci-bar-wrap">
+          <span class="label">Support Quality</span>
+          <div class="ci-bar-track"><div class="ci-bar-fill green" style="width:92%"></div></div>
+          <span class="val">PB: 9.2 vs SP: 8.1</span>
+        </div>
+        <p style="font-size:11px; color:var(--slate-400); margin-top:8px;">Source: G2 comparison data (from search snippets)</p>
+      </div>
+
+      <div class="ci-card">
+        <div class="ci-card-header">Most-Cited PB Alternatives (Review Sites)</div>
+        <div class="ci-table-wrap"><table class="ci-table">
+          <thead><tr><th>#</th><th>Alternative</th><th>Context</th></tr></thead>
+          <tbody>
+            <tr><td>1</td><td><strong>Healthie</strong></td><td>Consistently #1 alternative across all review sites</td></tr>
+            <tr><td>2</td><td><strong>SimplePractice</strong></td><td>#2 most cited</td></tr>
+            <tr><td>3</td><td><strong>Carepatron</strong></td><td>Emerging competitor, frequently mentioned</td></tr>
+            <tr><td>4</td><td><strong>Jane App</strong></td><td>Strong in physiotherapy/chiropractic overlap</td></tr>
+            <tr><td>5</td><td><strong>IntakeQ</strong></td><td>Mentioned for forms/intake focus</td></tr>
+            <tr><td>6</td><td><strong>Mindbody</strong></td><td>Mentioned but different market segment</td></tr>
+            <tr><td>7</td><td><strong>TherapyNotes</strong></td><td>Mental health focused</td></tr>
+          </tbody>
+        </table></div>
+
+        <div class="ci-callout ci-callout-red" style="margin-top:12px;">
+          <div class="ci-callout-title">"Alternatives" SERP Not Owned</div>
+          <p>PB does NOT own any SERP real estate for "Practice Better alternatives." This is dominated by G2, Capterra, Software Advice, and other third-party aggregators. PB's /compare pages do not rank for this term. Users searching this are actively considering leaving PB.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="ci-grid-2">
+      <div class="ci-card">
+        <div class="ci-card-header">Competitive Strengths</div>
+        <ul class="ci-list">
+          <li><strong>Nutrition workflow moat</strong> -- That Clean Life integration (owned, no competitor equivalent)</li>
+          <li><strong>Programs and courses</strong> -- Unique in the clinical/wellness PM space</li>
+          <li><strong>G2 support score 9.2/10</strong> -- #1 differentiator in a support-starved industry</li>
+          <li><strong>Multi-regulation compliance</strong> -- HIPAA + PIPEDA + PHIPA + GDPR</li>
+          <li><strong>Pricing advantage</strong> -- Lower entry point than SimplePractice ($35 vs $49) and Healthie ($99 vs $130)</li>
+          <li><strong>Deep integration ecosystem</strong> -- Fullscript, Rupa Health, That Clean Life create switching costs</li>
+          <li><strong>Word-of-mouth growth</strong> -- 65%+ customer acquisition via referrals</li>
+          <li><strong>AI Charting differentiation</strong> -- Ahead of most wellness competitors</li>
+          <li><strong>Zero negative YouTube videos</strong> -- Unusual; suggests strong product satisfaction</li>
+          <li><strong>American Nutrition Association endorsement</strong> -- Professional credibility no competitor matches</li>
+        </ul>
+      </div>
+
+      <div class="ci-card">
+        <div class="ci-card-header">Competitive Weaknesses</div>
+        <ul class="ci-list">
+          <li><strong>Insurance billing gap</strong> -- #1 reason practitioners switch to SimplePractice. No built-in clearinghouse.</li>
+          <li><strong>Scale disadvantage</strong> -- 50K vs SimplePractice 225K, Jane 200K users</li>
+          <li><strong>Setup complexity</strong> -- Paid courses exist specifically for PB onboarding</li>
+          <li><strong>Form template library</strong> -- SP has better pre-built forms; PB requires custom creation</li>
+          <li><strong>Feature gating</strong> -- Important features locked behind higher tiers; therapists note this</li>
+          <li><strong>Trustpilot exposure</strong> -- Only 2 reviews, both 1-star. Reputational risk for anyone checking.</li>
+          <li><strong>Zero TrustRadius presence</strong> -- Missing B2B credibility signal</li>
+          <li><strong>Pricing tier cliff</strong> -- 10-client to 300-client jump with no intermediate</li>
+          <li><strong>Subdomain fragmentation</strong> -- 4 subdomains diluting domain authority</li>
+          <li><strong>ePrescribe awareness gap</strong> -- Launched July 2025 but many sources still list it as a weakness</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="ci-card">
+        <div class="ci-card-header">Market Overlap Analysis: Where PB Competes Directly</div>
+      <div class="ci-table-wrap"><table class="ci-table">
+        <thead><tr><th>Segment</th><th>PB vs Jane</th><th>PB vs Healthie</th><th>PB vs OptiMantra/Cerbo</th><th>PB vs SimplePractice</th></tr></thead>
+        <tbody>
+          <tr><td>Solo Health Coaches</td><td>Direct</td><td>Direct (declining)</td><td>Limited</td><td>Adjacent</td></tr>
+          <tr><td>Nutritionists/RDs</td><td>Direct</td><td>Direct (declining)</td><td>Limited</td><td>Adjacent</td></tr>
+          <tr><td>Naturopaths</td><td>Direct</td><td>Indirect</td><td style="font-weight:700;color:var(--red);">Direct (primary overlap)</td><td>Adjacent</td></tr>
+          <tr><td>Functional Medicine</td><td>New (post-ePrescribe)</td><td>No</td><td style="font-weight:700;color:var(--red);">Direct (primary overlap)</td><td>No</td></tr>
+          <tr><td>Integrative Coaches</td><td>Direct</td><td>Direct</td><td>Growing</td><td>Adjacent</td></tr>
+          <tr><td>Therapists/MH</td><td>Limited</td><td>No</td><td>No</td><td>Direct (SP dominates)</td></tr>
+        </tbody>
+      </table></div>
+      <div class="ci-callout ci-callout-amber" style="margin-top:12px;">
+        <div class="ci-callout-title">Critical Battleground: Integrative Medicine (Next 24 Months)</div>
+        <p>PB's ePrescribe launch (July 2025) opened direct competition with Cerbo/OptiMantra in the naturopath/functional medicine segment. That segment is exactly where the merged OptiMantra/Cerbo entity's new PE-backed growth mandate is focused. This is the most important competitive battleground for the next 24 months. No competitor has yet claimed the "integrative medicine EHR" SERP.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================================================================== -->
+  <!-- SECTION 9: KEY FINDINGS & TAKEAWAYS                               -->
+  <!-- ================================================================== -->
+  <div class="ci-section" id="key-findings">
+    <div class="ci-section-header">
+      <span class="ci-section-num">9</span>
+      <h2 class="ci-section-title">Key Findings & Takeaways</h2>
+    </div>
+
+    <div class="ci-card">
+        <div class="ci-card-header">Top 10 Strategic Findings</div>
+      <div class="ci-table-wrap"><table class="ci-table">
+        <thead><tr><th>#</th><th>Finding</th><th>Evidence Basis</th></tr></thead>
+        <tbody>
+          <tr>
+            <td>1</td>
+            <td><strong>PB is the dominant EHR in the nutrition/dietetics niche</strong> -- Most-recommended in r/dietetics, strong G2/Capterra ratings, American Nutrition Association endorsement, That Clean Life moat.</td>
+            <td>Reddit (22 data points), Reviews (377+ combined), YouTube (ANA webinar)</td>
+          </tr>
+          <tr>
+            <td>2</td>
+            <td><strong>Insurance billing is the #1 competitive weakness</strong> -- The single most consistent negative across Reddit, reviews, and competitor comparisons. Primary driver of churn to SimplePractice.</td>
+            <td>Reddit (multiple users), Reviews (Capterra/G2 search summaries)</td>
+          </tr>
+          <tr>
+            <td>3</td>
+            <td><strong>The Cerbo-OptiMantra merger (Dec 2025) is the most significant emerging threat</strong> -- Combined 15K+ practitioners, 2025 Best Support award, PE-backed growth mandate, directly targeting PB's integrative medicine ICP.</td>
+            <td>Business intel, market data (press coverage, product launches)</td>
+          </tr>
+          <tr>
+            <td>4</td>
+            <td><strong>The July 2025 $10/mo price increase created a vulnerability window</strong> -- Help center article about changes ranks in SERPs. Users searching "Practice Better pricing" and "alternatives" are high-intent switchers. The Starter plan increase (40%) is disproportionate.</td>
+            <td>SEO (SERP observation), Reviews (pricing complaints), Pricing data</td>
+          </tr>
+          <tr>
+            <td>5</td>
+            <td><strong>ePrescribe launch (July 2025) neutralized a major clinical gap, but the market doesn't know</strong> -- Third-party sites, comparison pages, and reviews still list "no ePrescribing" as a PB limitation 8 months later.</td>
+            <td>Business intel (product launch confirmed), SEO (SERP observation)</td>
+          </tr>
+          <tr>
+            <td>6</td>
+            <td><strong>Tebra is in active collapse -- PB migration opportunity is NOW</strong> -- 80%+ recent Trustpilot reviews are 1-2 stars. Reddit "Stay Away from Tebra" posts across multiple subs. $250M raise will fund marketing, not recovery. Integrative medicine Tebra users are PB's target ICP.</td>
+            <td>Reviews (Trustpilot analysis), Reddit, Business intel, Market data</td>
+          </tr>
+          <tr>
+            <td>7</td>
+            <td><strong>Jane's Payfirma deprecation (May 2026) creates a tactical acquisition window</strong> -- Practitioners are being forced to rebuild billing workflows. Feb-Apr 2026 is when they're actively evaluating.</td>
+            <td>Business intel (confirmed deadline), Reddit (frustration documented)</td>
+          </tr>
+          <tr>
+            <td>8</td>
+            <td><strong>PB's community trust is its most valuable, least replaceable asset</strong> -- Zero negative YouTube videos, G2 9.2 support score, ANA endorsement, r/dietetics recommendations. Every competitor lost this trust under scale pressure (Tebra, SimplePractice). PB is at the inflection point.</td>
+            <td>YouTube (0 negatives), Reviews (G2 9.2), Reddit (73% positive), Business intel</td>
+          </tr>
+          <tr>
+            <td>9</td>
+            <td><strong>Healthie is abandoning PB's core ICP</strong> -- Enterprise/B2B2C pivot (TCV Series B) creating solo practitioner exit. Free tier discontinued. Mobile app crashes documented. Migration window open.</td>
+            <td>Business intel (Series B), Reddit, Reviews</td>
+          </tr>
+          <tr>
+            <td>10</td>
+            <td><strong>PB does not own the "alternatives" SERP</strong> -- Active churners are being directed to competitors by G2, Capterra, and other third-party aggregators. No PB-owned content ranks for "Practice Better alternatives."</td>
+            <td>SEO (SERP observation)</td>
+          </tr>
+        </tbody>
+      </table></div>
+    </div>
+
+    <div class="ci-grid-2">
+      <div class="ci-card">
+        <div class="ci-card-header">Priority Opportunities</div>
+        <div class="ci-table-wrap"><table class="ci-table">
+          <thead><tr><th>Priority</th><th>Opportunity</th><th>Effort</th><th>Timeline</th></tr></thead>
+          <tbody>
+            <tr style="background: var(--red-light);">
+              <td><strong>P0</strong></td>
+              <td>Tebra migration campaign</td>
+              <td>Low</td>
+              <td>This month</td>
+            </tr>
+            <tr style="background: var(--red-light);">
+              <td><strong>P0</strong></td>
+              <td>Jane Payfirma migration window</td>
+              <td>Low</td>
+              <td>This month</td>
+            </tr>
+            <tr style="background: var(--red-light);">
+              <td><strong>P0</strong></td>
+              <td>Update all ePrescribe messaging</td>
+              <td>Low</td>
+              <td>This week</td>
+            </tr>
+            <tr style="background: var(--amber-pale);">
+              <td><strong>P1</strong></td>
+              <td>Trustpilot review solicitation</td>
+              <td>Low</td>
+              <td>30 days</td>
+            </tr>
+            <tr style="background: var(--amber-pale);">
+              <td><strong>P1</strong></td>
+              <td>Support quality marketing pillar</td>
+              <td>Low</td>
+              <td>30 days</td>
+            </tr>
+            <tr style="background: var(--amber-pale);">
+              <td><strong>P1</strong></td>
+              <td>Dietitian community content campaign</td>
+              <td>Medium</td>
+              <td>60-90 days</td>
+            </tr>
+            <tr style="background: var(--amber-pale);">
+              <td><strong>P1</strong></td>
+              <td>That Clean Life integration marketing</td>
+              <td>Medium</td>
+              <td>60 days</td>
+            </tr>
+            <tr style="background: var(--blue-light);">
+              <td><strong>P2</strong></td>
+              <td>Integrative medicine landing pages</td>
+              <td>Medium</td>
+              <td>90 days</td>
+            </tr>
+            <tr style="background: var(--blue-light);">
+              <td><strong>P2</strong></td>
+              <td>YouTube comparison video content</td>
+              <td>Medium</td>
+              <td>60-90 days</td>
+            </tr>
+          </tbody>
+        </table></div>
+      </div>
+
+      <div class="ci-card">
+        <div class="ci-card-header">Defensive Priorities</div>
+        <div class="ci-table-wrap"><table class="ci-table">
+          <thead><tr><th>Priority</th><th>Action</th><th>Why</th></tr></thead>
+          <tbody>
+            <tr style="background: var(--red-light);">
+              <td><strong>D0</strong></td>
+              <td>Claim "integrative medicine" SERP</td>
+              <td>Before Cerbo/OptiMantra does. Currently uncontested.</td>
+            </tr>
+            <tr style="background: var(--red-light);">
+              <td><strong>D0</strong></td>
+              <td>Protect r/dietetics community presence</td>
+              <td>Most valuable organic moat. Maintain authentic engagement.</td>
+            </tr>
+            <tr style="background: var(--amber-pale);">
+              <td><strong>D1</strong></td>
+              <td>Support quality infrastructure investment</td>
+              <td>G2 9.2 is #1 differentiator. Every competitor let support degrade under scale.</td>
+            </tr>
+            <tr style="background: var(--amber-pale);">
+              <td><strong>D1</strong></td>
+              <td>Trustpilot review remediation</td>
+              <td>2 one-star reviews are the public face on Trustpilot.</td>
+            </tr>
+            <tr style="background: var(--blue-light);">
+              <td><strong>D2</strong></td>
+              <td>Monitor OptiMantra/Cerbo integration signals</td>
+              <td>Merger is 3 months old. Integration friction typically appears at 6-12 months.</td>
+            </tr>
+            <tr style="background: var(--blue-light);">
+              <td><strong>D2</strong></td>
+              <td>Build the ePrescribe narrative</td>
+              <td>Market still doesn't know about the July 2025 launch.</td>
+            </tr>
+          </tbody>
+        </table></div>
+
+        <h4 style="margin-top:16px;">Early Warning Signals to Monitor</h4>
+        <ul class="ci-list">
+          <li>G2 support score dropping below 9.0</li>
+          <li>First verified Reddit thread: "PB used to be better before..."</li>
+          <li>Pricing increase without product value announcement</li>
+          <li>Support response time increasing without public acknowledgment</li>
+          <li>Trustpilot negative reviews accumulating beyond current n=2</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="ci-card">
+        <div class="ci-card-header">The Internal Threat Nobody's Talking About</div>
+      <div class="ci-callout ci-callout-red">
+        <div class="ci-callout-title">Scaling vs. Community Trust</div>
+        <p>Every competitor followed the same trajectory: built a good product, grew, took investment, compromised on support, raised prices, lost practitioner trust, declined. Practice Better is at the inflection point with $41M in funding, 82 employees, and investor return expectations. The July 2025 $10/mo price increase generated more backlash than the size warranted -- the community is watching. PB's community trust (r/dietetics recommendations, G2 9.2 support score, ANA partnership, zero negative YouTube videos) is the most valuable and least replaceable asset. It cannot be rebuilt with marketing spend after it's lost.</p>
+      </div>
+    </div>
+
+    <div class="ci-card">
+        <div class="ci-card-header">2024-2025 Product Roadmap Highlights</div>
+      <p style="font-size:13px; color:var(--slate-600); margin-bottom:12px;">Key feature launches from help.practicebetter.io/announcements (confirmed from business intel):</p>
+      <div class="ci-table-wrap"><table class="ci-table">
+        <thead><tr><th>Date</th><th>Launch</th><th>Strategic Significance</th></tr></thead>
+        <tbody>
+          <tr><td>Jul 2025</td><td><strong>ePrescribe integration (DrFirst)</strong></td><td>Moves PB from practice management into clinical EHR territory. Directly competes with CharmEHR and OptiMantra.</td></tr>
+          <tr><td>Jul 2025</td><td><strong>Fullscript Labs integration</strong></td><td>Deeper clinical workflow for supplement-prescribing practitioners.</td></tr>
+          <tr><td>Jun 2025</td><td>Practice admin permissions</td><td>Multi-practitioner management improvement for Team plan.</td></tr>
+          <tr><td>May 2025</td><td>Automatic form builder (AI)</td><td>AI-powered feature demonstrating continued AI investment.</td></tr>
+          <tr><td>Apr 2025</td><td>Automated invoice reminders</td><td>Billing workflow improvement.</td></tr>
+          <tr><td>Feb 2025</td><td>Medication and supplement tracking</td><td>Clinical workflow deepening.</td></tr>
+          <tr><td>2024</td><td>AI-powered note-taking for telehealth</td><td>AI Charting Assistant launch -- usage-based pricing model.</td></tr>
+          <tr><td>Sep-Oct 2025</td><td>Journals redesign</td><td>Food/lifestyle journal improvements (core differentiator).</td></tr>
+        </tbody>
+      </table></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="ci-section">
+  <div class="ci-section-header">
+    <span class="ci-section-num">10</span>
+    <h2 class="ci-section-title">Data Quality & Sources</h2>
+  </div>
+  <div class="ci-callout ci-callout-blue">
+    <div class="ci-callout-title">About This Report</div>
+    <p>All data in this report was collected on 2026-02-25 from 6 research buckets: SEO analytics, business intelligence, customer reviews (G2, Capterra, Trustpilot, TrustRadius), market data (pricing, features, funding), Reddit social listening, and YouTube content analysis. Confidence levels vary by source — financial figures from SEC filings and Crunchbase carry HIGH confidence; self-reported metrics and Reddit sentiment carry MEDIUM confidence; revenue estimates from third-party databases carry LOW confidence. Full source files are available in the project repository.</p>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<div class="ci-footer">
+  <strong>Competitive Intelligence Suite</strong> &middot; Practice Better &middot; Research Date: 2026-02-25 &middot; All data sourced from verified repository files &middot; Generated by Claude Code
+</div>
+
+</body>
+</html>
