@@ -132,7 +132,11 @@ class TelegramBot:
             body = e.read().decode("utf-8", errors="replace")
             return {"ok": False, "description": f"HTTP {e.code}: {body[:300]}"}
         except Exception as e:
-            return {"ok": False, "description": str(e)}
+            # Sanitize: str(e) may contain the full URL with bot token
+            err_msg = str(e)
+            if BOT_TOKEN and BOT_TOKEN in err_msg:
+                err_msg = err_msg.replace(BOT_TOKEN, "bot***")
+            return {"ok": False, "description": err_msg}
 
     def send_message(self, chat_id, text):
         """Send a message, splitting at paragraph boundaries if too long."""
@@ -2319,37 +2323,15 @@ You're running locally on {owner_name}'s machine, with direct access to all SoY 
             return True
 
         if cmd == "/stop":
-            # Kill all active dev sessions and deploys with a single DB connection
-            with self._db() as conn:
-                for sid, info in list(self.active_dev_sessions.items()):
-                    try:
-                        info["process"].kill()
-                    except Exception:
-                        pass
-                    conn.execute(
-                        "UPDATE telegram_dev_sessions SET status = 'killed', "
-                        "completed_at = datetime('now') WHERE session_id = ?",
-                        (sid,),
-                    )
-                for sid, info in list(self.active_deploys.items()):
-                    try:
-                        info["process"].kill()
-                    except Exception:
-                        pass
-                    conn.execute(
-                        "UPDATE telegram_dev_sessions SET deploy_status = 'deploy_failed', "
-                        "deploy_pid = NULL WHERE session_id = ?",
-                        (sid,),
-                    )
-                if self.active_dev_sessions or self.active_deploys:
-                    conn.commit()
-            self.active_dev_sessions.clear()
-            self.active_deploys.clear()
+            self._shutdown_active_processes()
             self.send_message(chat_id, "Shutting down. Bye!")
             self.running = False
             return True
 
-        return False
+        # Unknown slash command
+        self.send_message(chat_id,
+            f"Unknown command: {cmd}\nSend /start for available commands.")
+        return True
 
     # ── Approve/Reject Handlers ──
 
@@ -2413,10 +2395,15 @@ You're running locally on {owner_name}'s machine, with direct access to all SoY 
                 )
                 return
 
-            # Delete the branch
+            # Delete the local branch
             subprocess.run(
                 ["git", "branch", "-d", branch],
                 capture_output=True, text=True, cwd=workspace, timeout=10,
+            )
+            # Delete the remote branch (best-effort)
+            subprocess.run(
+                ["git", "push", "origin", "--delete", branch],
+                capture_output=True, text=True, cwd=workspace, timeout=15,
             )
 
             # Push to remote so Vercel picks it up
@@ -2506,6 +2493,11 @@ You're running locally on {owner_name}'s machine, with direct access to all SoY 
                 ["git", "branch", "-D", branch],
                 capture_output=True, text=True, cwd=workspace, timeout=10,
                 check=True,
+            )
+            # Delete the remote branch (best-effort)
+            subprocess.run(
+                ["git", "push", "origin", "--delete", branch],
+                capture_output=True, text=True, cwd=workspace, timeout=15,
             )
         except subprocess.CalledProcessError as e:
             self.send_message(chat_id, f"❌ Git error: {e.stderr.strip() or e}")
