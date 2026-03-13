@@ -12,7 +12,7 @@ from software_of_you.db import execute, rows_to_dicts
 
 
 def _auto_sync_all() -> None:
-    """Check freshness and sync stale services. Silently fails."""
+    """Check freshness and sync stale services. Logs failures to stderr."""
     try:
         from software_of_you.google_sync import sync_service
         from datetime import datetime
@@ -28,12 +28,13 @@ def _auto_sync_all() -> None:
                 if (datetime.now() - last).total_seconds() < threshold:
                     continue
             sync_service(service)
-    except Exception:
-        pass
+    except Exception as e:
+        import sys
+        print(f"Auto-sync failed: {e}", file=sys.stderr)
 
 
 def _auto_sync_slack() -> None:
-    """Check Slack freshness and sync if stale. Silently fails."""
+    """Check Slack freshness and sync if stale. Logs failures to stderr."""
     try:
         from datetime import datetime
         rows = execute("SELECT value FROM soy_meta WHERE key = 'slack_last_synced'", ())
@@ -43,8 +44,9 @@ def _auto_sync_slack() -> None:
                 return
         from software_of_you.slack_sync import sync_slack
         sync_slack()
-    except Exception:
-        pass
+    except Exception as e:
+        import sys
+        print(f"Slack auto-sync failed: {e}", file=sys.stderr)
 
 
 def register(server: FastMCP) -> None:
@@ -232,14 +234,12 @@ def register(server: FastMCP) -> None:
     def commitments_view(
         status: str = "open",
         contact_id: int = 0,
-        days: int = 14,
     ) -> dict:
         """Show commitments — promises made in meetings, tracked automatically.
 
         Args:
             status: Filter: open, overdue, completed, all
             contact_id: Filter by person (0 = all people)
-            days: Look-back window for recent commitments
         """
         _auto_sync_all()  # Commitments come from transcripts
 

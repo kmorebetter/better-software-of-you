@@ -100,8 +100,10 @@ class _OAuthHandler(BaseHTTPRequestHandler):
             self.send_response(400)
             self.send_header("Content-type", "text/html")
             self.end_headers()
+            import html
+            safe_error = html.escape(params["error"][0])
             self.wfile.write(
-                f"<html><body>Slack auth failed: {params['error'][0]}</body></html>".encode()
+                f"<html><body>Slack auth failed: {safe_error}</body></html>".encode()
             )
 
     def log_message(self, format, *args):

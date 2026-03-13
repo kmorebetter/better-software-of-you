@@ -12,6 +12,7 @@ import json
 import platform
 import socket
 import urllib.error
+import urllib.parse
 import urllib.request
 from datetime import datetime, timedelta
 from pathlib import Path
