@@ -29,17 +29,25 @@ fi
 
 echo "  ✓ Python $version found ($PYTHON)"
 
-# Install package
+# Install into a virtual environment
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-echo "  Installing from: $SCRIPT_DIR"
-"$PYTHON" -m pip install -e "$SCRIPT_DIR" --quiet 2>/dev/null || \
-    "$PYTHON" -m pip install -e "$SCRIPT_DIR" --user --quiet
+VENV_DIR="$SCRIPT_DIR/.venv"
 
-echo "  ✓ Package installed"
+if [ ! -d "$VENV_DIR" ]; then
+    echo "  Creating virtual environment..."
+    "$PYTHON" -m venv "$VENV_DIR"
+fi
+
+# Activate and install
+source "$VENV_DIR/bin/activate"
+echo "  Installing from: $SCRIPT_DIR"
+pip install -e "$SCRIPT_DIR" --quiet
+
+echo "  ✓ Package installed (venv at .venv/)"
 
 # Run setup (--no-license for personal deployment)
 echo ""
-"$PYTHON" -m software_of_you setup --no-license
+python -m software_of_you setup --no-license
 
 echo ""
 echo "  ════════════════════════════════════════"
