@@ -1,9 +1,11 @@
-"""CLI for Software of You: setup, serve, status, uninstall.
+"""CLI for Software of You: setup, serve, status, migrate, uninstall.
 
 Usage:
     software-of-you setup [--key=KEY]  # Activate license + configure Claude Desktop
+    software-of-you setup --no-license # Skip license (personal/dev use)
     software-of-you serve              # Start MCP server (called by Claude Desktop)
     software-of-you status             # Show system status
+    software-of-you migrate            # Run database migrations only
     software-of-you uninstall          # Remove MCP config + deactivate license
 """
 
@@ -73,6 +75,10 @@ def cmd_setup() -> int:
     for arg in sys.argv[2:]:
         if arg.startswith("--key="):
             key = arg[len("--key="):]
+
+    no_license = "--no-license" in sys.argv[2:]
+    if no_license:
+        key = "TEST-PERSONAL"
 
     if key is None:
         print("  Enter your license key (from your purchase email):")
@@ -272,11 +278,21 @@ def cmd_uninstall() -> int:
     return 0
 
 
+def cmd_migrate() -> int:
+    """Run database migrations only (no license, no config)."""
+    init_db()
+    print(f"Database ready at {DB_PATH}")
+    modules = get_installed_modules()
+    print(f"Modules: {len(modules)} ({', '.join(modules)})")
+    return 0
+
+
 COMMANDS = {
     "setup": cmd_setup,
     "serve": cmd_serve,
     "status": cmd_status,
     "uninstall": cmd_uninstall,
+    "migrate": cmd_migrate,
 }
 
 
@@ -285,8 +301,10 @@ def main() -> int:
         print("Usage: software-of-you <command>\n")
         print("Commands:")
         print("  setup [--key=KEY]  Activate license + configure Claude Desktop")
+        print("  setup --no-license Skip license activation (personal/dev use)")
         print("  serve              Start MCP server (used by Claude Desktop)")
         print("  status             Show system status")
+        print("  migrate            Run database migrations only")
         print("  uninstall          Remove from Claude Desktop + deactivate license")
         return 0
 
