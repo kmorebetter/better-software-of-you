@@ -116,4 +116,11 @@ def create_server() -> FastMCP:
     from software_of_you.tools.slack_tool import register as register_slack
     register_slack(server)
 
+    # Register semantic search (optional — requires sqlite-vec)
+    try:
+        from software_of_you.tools.semantic_search_tool import register as register_semantic
+        register_semantic(server)
+    except ImportError:
+        pass  # sqlite-vec not installed
+
     return server
