@@ -105,6 +105,9 @@ def create_server() -> FastMCP:
     register_email(server)
     register_calendar(server)
 
+    from software_of_you.tools.inbox_tool import register as register_inbox
+    register_inbox(server)
+
     # Register intelligence tools
     from software_of_you.tools.intelligence import register as register_intelligence
     register_intelligence(server)
@@ -112,5 +115,12 @@ def create_server() -> FastMCP:
     # Register Slack tools
     from software_of_you.tools.slack_tool import register as register_slack
     register_slack(server)
+
+    # Register semantic search (optional — requires sqlite-vec)
+    try:
+        from software_of_you.tools.semantic_search_tool import register as register_semantic
+        register_semantic(server)
+    except ImportError:
+        pass  # sqlite-vec not installed
 
     return server

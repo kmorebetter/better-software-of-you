@@ -217,6 +217,103 @@ FROM projects p
 WHERE p.status = 'active' AND p.target_date BETWEEN date('now') AND date('now', '+14 days');
 ```
 
+## Step 2b: Cross-Module Synthesis
+
+After gathering all per-module data, perform a synthesis pass to find connections across entities. This is where the review's unique value comes from — it surfaces things no single module would reveal.
+
+### Synthesis Data
+
+Run these queries to build the cross-reference dataset:
+
+**Contacts with recent activity + linked projects/commitments/meetings:**
+```sql
+SELECT
+    c.id AS contact_id,
+    c.name AS contact_name,
+    ch.days_silent,
+    ch.last_activity,
+    ch.open_commitments_theirs,
+    ch.open_commitments_yours,
+    ch.next_meeting_date,
+    ch.active_projects,
+    ch.relationship_depth,
+    ch.trajectory,
+    p.id AS project_id,
+    p.name AS project_name,
+    ph.completion_pct,
+    ph.days_to_target,
+    ph.overdue_tasks
+FROM contacts c
+JOIN v_contact_health ch ON ch.contact_id = c.id
+LEFT JOIN projects p ON p.client_id = c.id AND p.status IN ('active', 'on-hold')
+LEFT JOIN v_project_health ph ON ph.project_id = p.id
+WHERE
+    ch.last_activity > datetime('now', '-7 days')
+    OR ch.next_meeting_date BETWEEN date('now') AND date('now', '+7 days')
+    OR ch.open_commitments_yours > 0
+    OR ch.open_commitments_theirs > 0
+ORDER BY ch.days_silent ASC;
+```
+
+**Important:** Use `ch.last_activity > datetime('now', '-7 days')` NOT `ch.days_silent < 7`. The `days_silent` field would incorrectly include contacts who were last active 6 days ago but not this week.
+
+**Journal entries mentioning contact names** (if Journal installed):
+```sql
+SELECT je.id, je.entry_date, je.content, c.id AS mentioned_contact_id, c.name AS mentioned_contact
+FROM journal_entries je
+JOIN contacts c ON je.content LIKE '%' || SUBSTR(c.name, 1, INSTR(c.name || ' ', ' ') - 1) || '%'
+WHERE je.entry_date > date('now', '-7 days')
+  AND c.status = 'active'
+  AND LENGTH(SUBSTR(c.name, 1, INSTR(c.name || ' ', ' ') - 1)) >= 3;
+```
+
+**Open decisions linked to active projects** (if Decision Log installed):
+```sql
+SELECT d.id, d.title, d.status, d.project_id, p.name AS project_name
+FROM decisions d
+JOIN projects p ON d.project_id = p.id
+WHERE d.status IN ('open', 'exploring')
+  AND p.status = 'active';
+```
+
+### Synthesis Patterns
+
+Read the combined result set and look for these specific cross-entity connections. Surface a maximum of 5 connections, prioritized by urgency:
+
+1. **People x Projects** — Contact touched this week + linked project near deadline
+2. **Commitments x Calendar** — Open commitment + meeting with that person coming next week
+3. **Journal x Contacts** — Journal mentions a person + that contact's health is declining
+4. **Decisions x Projects** — Open decision linked to active project with blockers
+5. **Cold contacts x Upcoming meetings** — Contact 30+ days silent + meeting next week
+
+If no cross-entity connections found (e.g., user has fewer than 3 contacts), skip this section entirely in the HTML.
+
+### HTML for Connections Section
+
+Add between the "This Week" and "Looking Ahead" columns (full-width section):
+
+```html
+<section id="connections" class="lg:col-span-5 mb-6 delight-section">
+  <div class="flex items-center gap-2 mb-4">
+    <h2 class="text-xs font-semibold text-zinc-400 uppercase tracking-wider">Connections</h2>
+    <div class="flex-1 h-px bg-zinc-200"></div>
+  </div>
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+    <!-- Each connection is a card: -->
+    <div class="bg-white rounded-xl shadow-sm border border-zinc-200 p-4 delight-card">
+      <div class="flex items-center gap-2 mb-2">
+        <i data-lucide="ICON1" class="w-4 h-4 text-zinc-400"></i>
+        <span class="text-zinc-300">×</span>
+        <i data-lucide="ICON2" class="w-4 h-4 text-zinc-400"></i>
+      </div>
+      <p class="text-sm text-zinc-700 font-medium">Entity A → Entity B</p>
+      <p class="text-xs text-zinc-500 mt-1">Why it matters (1 sentence)</p>
+      <p class="text-xs text-blue-600 mt-2">Suggested action</p>
+    </div>
+  </div>
+</section>
+```
+
 ## Step 3: Generate HTML
 
 Generate a self-contained HTML file. Follow the template-base.html structure (Tailwind CDN, Lucide CDN, Inter font).
