@@ -5,6 +5,24 @@ from mcp.server.fastmcp import FastMCP
 from software_of_you.db import execute, rows_to_dicts, get_installed_modules
 
 
+def _fts_search(query: str, limit: int = 10) -> list[dict] | None:
+    """Try FTS5 search. Returns None if FTS5 table doesn't exist."""
+    try:
+        rows = execute(
+            """SELECT entity_type, entity_id, title,
+                      snippet(search_fts, 3, '', '', '...', 30) as snippet,
+                      rank
+               FROM search_fts
+               WHERE search_fts MATCH ?
+               ORDER BY rank
+               LIMIT ?""",
+            (query, limit),
+        )
+        return rows_to_dicts(rows)
+    except Exception:
+        return None  # FTS5 table doesn't exist or query syntax error
+
+
 def register(server: FastMCP) -> None:
     @server.tool()
     def search(query: str, module: str = "") -> dict:
@@ -19,6 +37,27 @@ def register(server: FastMCP) -> None:
         """
         if not query:
             return {"error": "A search query is required."}
+
+        # Try FTS5 first (faster, stemmed matching)
+        fts_results = _fts_search(query)
+        if fts_results is not None:
+            # Group by entity_type for consistent response format
+            grouped = {}
+            for r in fts_results:
+                etype = r["entity_type"] + "s"  # pluralize for key consistency
+                if etype not in grouped:
+                    grouped[etype] = []
+                grouped[etype].append(r)
+            total = sum(len(v) for v in grouped.values())
+            return {
+                "result": grouped,
+                "total_matches": total,
+                "query": query,
+                "search_mode": "fts5",
+                "_context": {
+                    "presentation": "Group results by type. Show the most relevant matches first. Link to entity details where possible. Note: FTS5 search uses stemming, so 'hiring' matches 'hire'.",
+                },
+            }
 
         pattern = f"%{query}%"
         modules = get_installed_modules()
@@ -129,6 +168,7 @@ def register(server: FastMCP) -> None:
             "result": results,
             "total_matches": total,
             "query": query,
+            "search_mode": "keyword",
             "_context": {
                 "presentation": "Group results by type. Show the most relevant matches first. Link to entity details where possible.",
             },
