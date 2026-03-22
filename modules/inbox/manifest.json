@@ -1,0 +1,24 @@
+{
+  "name": "inbox",
+  "display_name": "Inbox",
+  "version": "1.0.0",
+  "description": "Quick capture inbox — write first, route later. Capture thoughts, extract #hashtags, match contact names, and route to the right module when ready.",
+  "migration": "020_inbox_module.sql",
+  "tables": ["inbox"],
+  "entities": ["inbox_item"],
+  "commands": ["capture", "inbox"],
+  "standalone_features": [
+    "Quick capture from natural language",
+    "Auto-extract #hashtags as tags",
+    "Auto-match contact names from content",
+    "Route items to any module when ready",
+    "Unrouted items surface in /nudges after 24 hours"
+  ],
+  "enhancements": [
+    {
+      "requires_module": "crm",
+      "features": ["Auto-detect contact names in captured content", "Route inbox items directly to contact records"],
+      "description": "Inbox captures automatically detect and link to contacts mentioned in your text."
+    }
+  ]
+}
