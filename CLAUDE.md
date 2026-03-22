@@ -33,6 +33,8 @@ SQL
 
 **Important:** Always use `${CLAUDE_PLUGIN_ROOT:-$(pwd)}` to reference the plugin directory. `CLAUDE_PLUGIN_ROOT` is set automatically when loaded as a plugin; `$(pwd)` is the fallback when running from a standalone clone. Use this pattern in ALL bash commands.
 
+**Schema reference:** Before writing any SQL query — SELECT, INSERT, UPDATE, or DELETE — read `docs/SCHEMA.md` first to verify table names, column names, types, and constraints. This prevents errors like using `description` instead of `context`, `event_id` instead of `google_event_id`, or `is_pinned` instead of `pinned`. Regenerate with `bash scripts/dump-schema.sh` after migrations.
+
 ## First-Run Onboarding
 
 After bootstrap, check the contact count from the status line. If contacts = 0, check if the user profile exists:
