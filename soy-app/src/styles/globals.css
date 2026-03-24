@@ -1,0 +1,13 @@
+@import "tailwindcss";
+
+@font-face {
+  font-family: 'Inter';
+  src: url('/fonts/Inter-Variable.woff2') format('woff2');
+  font-weight: 100 900;
+  font-display: swap;
+}
+
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  @apply bg-white text-zinc-900 antialiased;
+}
