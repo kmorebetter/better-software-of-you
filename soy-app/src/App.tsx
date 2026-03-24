@@ -1,50 +1,62 @@
-import { useState } from "react";
-import reactLogo from "./assets/react.svg";
-import { invoke } from "@tauri-apps/api/core";
-import "./App.css";
+import { useEffect, useState } from "react";
+import { ChatPane } from "./components/chat/ChatPane";
+import { useChat } from "./hooks/useChat";
+import { getApiKeyStatus, setApiKey } from "./lib/commands";
+import { KeyRound } from "lucide-react";
 
 function App() {
-  const [greetMsg, setGreetMsg] = useState("");
-  const [name, setName] = useState("");
+  const { messages, isStreaming, send } = useChat();
+  const [hasKey, setHasKey] = useState<boolean | null>(null);
+  const [keyInput, setKeyInput] = useState("");
 
-  async function greet() {
-    // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
-    setGreetMsg(await invoke("greet", { name }));
+  useEffect(() => {
+    getApiKeyStatus().then((s) => setHasKey(s.hasKey));
+  }, []);
+
+  const handleSetKey = async () => {
+    if (!keyInput.trim()) return;
+    await setApiKey(keyInput.trim());
+    setHasKey(true);
+  };
+
+  if (hasKey === null) return null;
+
+  if (!hasKey) {
+    return (
+      <div className="h-screen flex items-center justify-center">
+        <div className="max-w-md w-full px-8">
+          <div className="text-center mb-8">
+            <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-zinc-100 mb-4">
+              <KeyRound size={24} className="text-zinc-600" />
+            </div>
+            <h1 className="text-xl font-semibold text-zinc-900">Software of You</h1>
+            <p className="text-sm text-zinc-500 mt-1">Enter your Claude API key to get started.</p>
+          </div>
+          <input
+            type="password"
+            value={keyInput}
+            onChange={(e) => setKeyInput(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && handleSetKey()}
+            placeholder="sk-ant-..."
+            className="w-full px-4 py-3 rounded-xl bg-zinc-100 text-sm outline-none focus:ring-2 focus:ring-zinc-300"
+          />
+          <button
+            onClick={handleSetKey}
+            className="w-full mt-3 px-4 py-3 rounded-xl bg-zinc-900 text-white text-sm font-medium hover:bg-zinc-700 transition-colors"
+          >
+            Continue
+          </button>
+        </div>
+      </div>
+    );
   }
 
   return (
-    <main className="container">
-      <h1>Welcome to Tauri + React</h1>
-
-      <div className="row">
-        <a href="https://vite.dev" target="_blank">
-          <img src="/vite.svg" className="logo vite" alt="Vite logo" />
-        </a>
-        <a href="https://tauri.app" target="_blank">
-          <img src="/tauri.svg" className="logo tauri" alt="Tauri logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
+    <div className="h-screen flex">
+      <div className="flex-1 flex flex-col">
+        <ChatPane messages={messages} isStreaming={isStreaming} onSend={send} />
       </div>
-      <p>Click on the Tauri, Vite, and React logos to learn more.</p>
-
-      <form
-        className="row"
-        onSubmit={(e) => {
-          e.preventDefault();
-          greet();
-        }}
-      >
-        <input
-          id="greet-input"
-          onChange={(e) => setName(e.currentTarget.value)}
-          placeholder="Enter a name..."
-        />
-        <button type="submit">Greet</button>
-      </form>
-      <p>{greetMsg}</p>
-    </main>
+    </div>
   );
 }
 
