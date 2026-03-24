@@ -1,11 +1,14 @@
-use futures_util::StreamExt;
+use crate::db::Database;
+use crate::tools;
 use reqwest::Client;
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
+use std::sync::Arc;
 use tauri::{AppHandle, Emitter};
 
 const CLAUDE_API_URL: &str = "https://api.anthropic.com/v1/messages";
 const MODEL: &str = "claude-sonnet-4-20250514";
+const MAX_TOOL_ROUNDS: usize = 10;
 
 #[derive(Serialize, Clone)]
 pub struct StreamEvent {
@@ -15,108 +18,261 @@ pub struct StreamEvent {
     pub error: Option<String>,
 }
 
-pub async fn stream_message(
+#[derive(Serialize, Deserialize, Clone, Debug)]
+pub struct ChatMessage {
+    pub role: String,
+    pub content: Value, // String for user, Array of content blocks for assistant/tool
+}
+
+pub async fn send_with_tools(
     app: &AppHandle,
     api_key: &str,
-    user_message: &str,
+    messages: Vec<ChatMessage>,
+    db: &Arc<Database>,
 ) -> Result<(), String> {
     let client = Client::new();
+    let system_prompt = build_system_prompt(db);
+    let tool_defs = tools::tool_definitions();
+    let mut conversation = messages;
 
-    let system_prompt = build_system_prompt();
-
-    let request = json!({
-        "model": MODEL,
-        "max_tokens": 4096,
-        "system": system_prompt,
-        "messages": [{"role": "user", "content": user_message}],
-        "stream": true,
-    });
-
-    let response = client
-        .post(CLAUDE_API_URL)
-        .header("x-api-key", api_key)
-        .header("anthropic-version", "2023-06-01")
-        .header("content-type", "application/json")
-        .json(&request)
-        .send()
-        .await
-        .map_err(|e| format!("API request failed: {}", e))?;
-
-    if !response.status().is_success() {
-        let status = response.status();
-        let body = response.text().await.unwrap_or_default();
-        let _ = app.emit("chat-stream", StreamEvent {
-            token: None,
-            done: None,
-            panel_hint: None,
-            error: Some(format!("API error {}: {}", status, body)),
+    // Tool use loop: keep calling Claude until we get a text-only response
+    for _ in 0..MAX_TOOL_ROUNDS {
+        // Make non-streaming request to check for tool use
+        let request = json!({
+            "model": MODEL,
+            "max_tokens": 4096,
+            "system": system_prompt,
+            "messages": conversation,
+            "tools": tool_defs,
         });
-        return Err(format!("API error {}: {}", status, body));
+
+        let response = client
+            .post(CLAUDE_API_URL)
+            .header("x-api-key", api_key)
+            .header("anthropic-version", "2023-06-01")
+            .header("content-type", "application/json")
+            .json(&request)
+            .send()
+            .await
+            .map_err(|e| format!("API request failed: {}", e))?;
+
+        if !response.status().is_success() {
+            let status = response.status();
+            let body = response.text().await.unwrap_or_default();
+            return Err(format!("API error {}: {}", status, body));
+        }
+
+        let body: Value = response.json().await.map_err(|e| e.to_string())?;
+        let stop_reason = body["stop_reason"].as_str().unwrap_or("");
+        let content = body["content"]
+            .as_array()
+            .ok_or("No content in response")?;
+
+        // Check if response contains tool use
+        let tool_uses: Vec<&Value> = content
+            .iter()
+            .filter(|block| block["type"].as_str() == Some("tool_use"))
+            .collect();
+
+        if tool_uses.is_empty() || stop_reason != "tool_use" {
+            // Collect full text and extract panel hint before streaming
+            let full_text: String = content
+                .iter()
+                .filter_map(|b| b["text"].as_str())
+                .collect::<Vec<_>>()
+                .join("");
+
+            let panel_hint = extract_panel_hint(&full_text);
+
+            // Strip [PANEL:...] markers so they aren't visible to the user
+            let display_text = strip_panel_markers(&full_text);
+
+            // Emit cleaned text in chunks to simulate streaming feel
+            if !display_text.is_empty() {
+                for chunk in display_text.as_bytes().chunks(20) {
+                    let chunk_str = String::from_utf8_lossy(chunk);
+                    let _ = app.emit(
+                        "chat-stream",
+                        StreamEvent {
+                            token: Some(chunk_str.to_string()),
+                            done: None,
+                            panel_hint: None,
+                            error: None,
+                        },
+                    );
+                    tokio::time::sleep(tokio::time::Duration::from_millis(15)).await;
+                }
+            }
+
+            // Emit panel hint as a structured event (not visible text)
+            if let Some(hint) = panel_hint {
+                let _ = app.emit(
+                    "chat-stream",
+                    StreamEvent {
+                        token: None,
+                        done: None,
+                        panel_hint: Some(hint),
+                        error: None,
+                    },
+                );
+            }
+
+            let _ = app.emit(
+                "chat-stream",
+                StreamEvent {
+                    token: None,
+                    done: Some(true),
+                    panel_hint: None,
+                    error: None,
+                },
+            );
+            return Ok(());
+        }
+
+        // Has tool use — execute tools and continue the loop
+        // First, add the assistant's response to conversation
+        conversation.push(ChatMessage {
+            role: "assistant".to_string(),
+            content: json!(content),
+        });
+
+        // Execute each tool and build tool_result messages
+        let mut tool_results: Vec<Value> = Vec::new();
+        for tool_use in &tool_uses {
+            let tool_name = tool_use["name"].as_str().unwrap_or("");
+            let tool_id = tool_use["id"].as_str().unwrap_or("");
+            let tool_input = &tool_use["input"];
+
+            // Emit a status indicator so user sees something happening
+            let _ = app.emit(
+                "chat-stream",
+                StreamEvent {
+                    token: Some(format!("*Using {}...*\n", tool_name)),
+                    done: None,
+                    panel_hint: None,
+                    error: None,
+                },
+            );
+
+            let result = tools::execute_tool(db, tool_name, tool_input);
+
+            let tool_result = match result {
+                Ok(data) => json!({
+                    "type": "tool_result",
+                    "tool_use_id": tool_id,
+                    "content": serde_json::to_string(&data).unwrap_or_default()
+                }),
+                Err(err) => json!({
+                    "type": "tool_result",
+                    "tool_use_id": tool_id,
+                    "is_error": true,
+                    "content": err
+                }),
+            };
+
+            tool_results.push(tool_result);
+        }
+
+        // Add tool results as a user message
+        conversation.push(ChatMessage {
+            role: "user".to_string(),
+            content: json!(tool_results),
+        });
+
+        // Loop continues — next iteration calls Claude again with tool results
     }
 
-    let mut stream = response.bytes_stream();
-    let mut buffer = String::new();
+    Err("Too many tool use rounds".to_string())
+}
 
-    while let Some(chunk) = stream.next().await {
-        let chunk = chunk.map_err(|e| format!("Stream error: {}", e))?;
-        buffer.push_str(&String::from_utf8_lossy(&chunk));
+/// Extract [PANEL:type:id] markers from Claude's response
+fn extract_panel_hint(text: &str) -> Option<Value> {
+    let re_pattern = "[PANEL:";
+    if let Some(start) = text.find(re_pattern) {
+        let rest = &text[start + re_pattern.len()..];
+        if let Some(end) = rest.find(']') {
+            let parts: Vec<&str> = rest[..end].split(':').collect();
+            let panel_type = parts.first().copied().unwrap_or("");
+            let entity_id = parts.get(1).and_then(|s| s.parse::<i64>().ok());
+            return Some(json!({
+                "type": panel_type,
+                "entityId": entity_id,
+            }));
+        }
+    }
+    None
+}
 
-        // Process complete SSE events from buffer
-        while let Some(pos) = buffer.find("\n\n") {
-            let event_text = buffer[..pos].to_string();
-            buffer = buffer[pos + 2..].to_string();
+/// Strip [PANEL:...] markers from text so they aren't shown to the user
+fn strip_panel_markers(text: &str) -> String {
+    let mut result = text.to_string();
+    while let Some(start) = result.find("[PANEL:") {
+        if let Some(end) = result[start..].find(']') {
+            // Remove the marker and any surrounding whitespace/newline
+            let marker_end = start + end + 1;
+            // If the marker is on its own line, remove the whole line
+            let remove_start = if start > 0 && result.as_bytes()[start - 1] == b'\n' {
+                start - 1
+            } else {
+                start
+            };
+            result = format!("{}{}", &result[..remove_start], &result[marker_end..]);
+        } else {
+            break;
+        }
+    }
+    result.trim_end().to_string()
+}
 
-            for line in event_text.lines() {
-                if let Some(data) = line.strip_prefix("data: ") {
-                    if data == "[DONE]" {
-                        continue;
-                    }
-                    if let Ok(event) = serde_json::from_str::<Value>(data) {
-                        match event["type"].as_str() {
-                            Some("content_block_delta") => {
-                                if let Some(text) = event["delta"]["text"].as_str() {
-                                    let _ = app.emit("chat-stream", StreamEvent {
-                                        token: Some(text.to_string()),
-                                        done: None,
-                                        panel_hint: None,
-                                        error: None,
-                                    });
-                                }
-                            }
-                            Some("message_stop") => {
-                                let _ = app.emit("chat-stream", StreamEvent {
-                                    token: None,
-                                    done: Some(true),
-                                    panel_hint: None,
-                                    error: None,
-                                });
-                            }
-                            Some("error") => {
-                                let msg = event["error"]["message"]
-                                    .as_str()
-                                    .unwrap_or("Unknown error");
-                                let _ = app.emit("chat-stream", StreamEvent {
-                                    token: None,
-                                    done: None,
-                                    panel_hint: None,
-                                    error: Some(msg.to_string()),
-                                });
-                            }
-                            _ => {}
-                        }
-                    }
+fn build_system_prompt(db: &Arc<Database>) -> String {
+    // Load user profile from DB
+    let profile = db
+        .query_json(
+            "SELECT key, value FROM user_profile WHERE category IN ('identity', 'preferences')",
+            &[],
+        )
+        .unwrap_or(json!([]));
+
+    let mut name = "there".to_string();
+    let mut style = "concise".to_string();
+    if let Value::Array(ref rows) = profile {
+        for row in rows {
+            match row["key"].as_str() {
+                Some("name") => name = row["value"].as_str().unwrap_or("there").to_string(),
+                Some("communication_style") => {
+                    style = row["value"].as_str().unwrap_or("concise").to_string()
                 }
+                _ => {}
             }
         }
     }
 
-    Ok(())
-}
+    format!(
+        r#"You are Software of You — a personal data platform running as a native Mac app.
+The user's name is {name}. Communication style preference: {style}.
 
-fn build_system_prompt() -> String {
-    // Phase 1: minimal system prompt. Will be expanded in Task 6 with tools + user profile.
-    r#"You are Software of You — a personal data platform running as a native Mac app.
-You help users manage their relationships, track conversations, and stay on top of commitments.
-Be concise and direct. Use markdown for formatting. No filler.
-When you don't have data to answer a question, say so honestly."#.to_string()
+## Core Behavior
+- Be the interface. Users talk naturally. You translate to tool calls. Present results conversationally.
+- Always cross-reference: when showing a contact, check linked projects/emails/meetings.
+- Suggest next actions after completing a request.
+- Never expose raw SQL or tool calls unless asked.
+- Never fabricate data. If you can't derive a number, say so.
+
+## Panel Hints
+When your response references a specific entity that would benefit from a visual panel, include a marker:
+- Contact: [PANEL:contact:<id>]
+- Dashboard: [PANEL:dashboard]
+- Calendar: [PANEL:calendar]
+- Meeting prep: [PANEL:meeting-prep:<event_id>]
+- Nudges: [PANEL:nudges]
+- Commitments: [PANEL:commitments]
+
+Place the marker at the END of your response, on its own line. Only include one panel hint per response.
+
+## Style
+- {style}. No filler.
+- Use markdown tables for lists of 3+ items.
+- Dates in human-readable format ("3 days ago", "next Tuesday").
+- Focus on what matters — don't dump every field."#
+    )
 }

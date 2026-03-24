@@ -15,7 +15,14 @@ pub async fn send_message(
         .clone()
         .ok_or_else(|| "No API key set. Please set your Claude API key first.".to_string())?;
 
-    claude::stream_message(&app, &api_key, &message).await?;
+    let db = state.db.clone();
+
+    let messages = vec![claude::ChatMessage {
+        role: "user".to_string(),
+        content: serde_json::json!(message),
+    }];
+
+    claude::send_with_tools(&app, &api_key, messages, &db).await?;
     Ok("done".to_string())
 }
 
