@@ -1,5 +1,6 @@
 mod claude;
 mod commands;
+mod db;
 mod state;
 
 use state::AppState;
