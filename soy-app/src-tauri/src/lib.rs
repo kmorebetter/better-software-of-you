@@ -2,6 +2,7 @@ mod claude;
 mod commands;
 mod db;
 mod state;
+pub mod tools;
 
 use state::AppState;
 
