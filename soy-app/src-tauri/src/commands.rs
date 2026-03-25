@@ -1,7 +1,8 @@
 use crate::claude;
+use crate::google::{self, GoogleAuthState};
 use crate::state::AppState;
 use crate::tools;
-use tauri::{AppHandle, State};
+use tauri::{AppHandle, Emitter, State};
 
 #[tauri::command]
 pub async fn send_message(
@@ -84,4 +85,112 @@ pub async fn get_panel_data(
         }
         _ => Err(format!("Unknown panel type: {}", panel_type)),
     }
+}
+
+// ---------------------------------------------------------------------------
+// Google OAuth commands
+// ---------------------------------------------------------------------------
+
+/// Start the Google OAuth flow: generate PKCE, open browser to consent screen.
+#[tauri::command]
+pub async fn connect_google(state: State<'_, AppState>) -> Result<serde_json::Value, String> {
+    let (url, verifier) = google::oauth::build_auth_url();
+
+    // Store the verifier so we can use it when the callback arrives.
+    state.google_auth.set_pending_verifier(verifier);
+
+    // Open the authorization URL in the user's default browser.
+    open::that(&url).map_err(|e| format!("Failed to open browser: {}", e))?;
+
+    Ok(serde_json::json!({
+        "status": "pending",
+        "message": "Browser opened for Google sign-in. Waiting for authorization..."
+    }))
+}
+
+/// Handle the OAuth callback — exchange the authorization code for tokens.
+/// Called from the deep-link handler (not directly by frontend).
+#[tauri::command]
+pub async fn handle_google_callback(
+    app: AppHandle,
+    state: State<'_, AppState>,
+    code: String,
+) -> Result<serde_json::Value, String> {
+    let verifier = state
+        .google_auth
+        .take_pending_verifier()
+        .ok_or_else(|| "No pending OAuth flow. Please start connection again.".to_string())?;
+
+    // Exchange code for tokens.
+    let token_response = google::oauth::exchange_code(&code, &verifier).await?;
+
+    // Store refresh token in Keychain (persistent across restarts).
+    if let Some(ref refresh_token) = token_response.refresh_token {
+        GoogleAuthState::store_refresh_token(refresh_token)?;
+    }
+
+    // Store access token in memory.
+    state
+        .google_auth
+        .set_access_token(token_response.access_token.clone(), token_response.expires_in);
+
+    // Fetch and store the user's email for display purposes.
+    match google::oauth::fetch_user_email(&token_response.access_token).await {
+        Ok(email) => {
+            GoogleAuthState::store_email(&email)?;
+        }
+        Err(e) => {
+            // Non-fatal: we still have valid tokens even if email fetch fails.
+            eprintln!("Warning: could not fetch Google user email: {}", e);
+        }
+    }
+
+    // Notify the frontend.
+    let _ = app.emit("google-connected", serde_json::json!({ "connected": true }));
+
+    Ok(serde_json::json!({
+        "status": "connected",
+        "message": "Google account connected successfully."
+    }))
+}
+
+/// Disconnect the Google account: revoke the token, remove from Keychain, clear memory.
+#[tauri::command]
+pub async fn disconnect_google(
+    app: AppHandle,
+    state: State<'_, AppState>,
+) -> Result<serde_json::Value, String> {
+    // Best-effort revoke at Google (don't fail if network is down).
+    if let Ok(Some(refresh_token)) = GoogleAuthState::load_refresh_token() {
+        if let Err(e) = google::oauth::revoke_token(&refresh_token).await {
+            eprintln!("Warning: token revocation failed (continuing disconnect): {}", e);
+        }
+    }
+
+    // Remove from Keychain.
+    GoogleAuthState::delete_refresh_token()?;
+    GoogleAuthState::delete_email()?;
+
+    // Clear in-memory state.
+    state.google_auth.clear();
+
+    // Notify the frontend.
+    let _ = app.emit("google-connected", serde_json::json!({ "connected": false }));
+
+    Ok(serde_json::json!({
+        "status": "disconnected",
+        "message": "Google account disconnected."
+    }))
+}
+
+/// Check whether a Google account is connected (has a valid refresh token in Keychain).
+#[tauri::command]
+pub async fn get_google_status() -> Result<serde_json::Value, String> {
+    let connected = GoogleAuthState::load_refresh_token()?.is_some();
+    let email = GoogleAuthState::load_email()?;
+
+    Ok(serde_json::json!({
+        "connected": connected,
+        "email": email
+    }))
 }
