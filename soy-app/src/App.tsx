@@ -3,6 +3,7 @@ import { getCurrentWindow } from "@tauri-apps/api/window";
 import { ChatPane } from "./components/chat/ChatPane";
 import { MenuBarWindow } from "./components/menubar/MenuBarWindow";
 import { SidePanel } from "./components/panel/SidePanel";
+import { ErrorBanner } from "./components/shared/ErrorBanner";
 import { useChat } from "./hooks/useChat";
 import { usePanel } from "./hooks/usePanel";
 import { getApiKeyStatus, getOnboardingState, setApiKey } from "./lib/commands";
@@ -21,7 +22,7 @@ function App() {
 }
 
 function MainApp() {
-  const { messages, isStreaming, send, pendingPanelHint, setPendingPanelHint } = useChat();
+  const { messages, isStreaming, send, error, dismissError, pendingPanelHint, setPendingPanelHint } = useChat();
   const { panel, isOpen, isPinned, showPanel, closePanel, togglePin } = usePanel();
   const [hasKey, setHasKey] = useState<boolean | null>(null);
   const [keyInput, setKeyInput] = useState("");
@@ -50,6 +51,27 @@ function MainApp() {
       });
     }
   }, [hasKey, send]);
+
+  // Cmd+, keyboard shortcut to open Settings panel
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.metaKey && e.key === ",") {
+        e.preventDefault();
+        showPanel({ type: "settings", title: "Settings" });
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [showPanel]);
+
+  // Listen for "open-settings" events dispatched from error actions
+  useEffect(() => {
+    const handleOpenSettings = () => {
+      showPanel({ type: "settings", title: "Settings" });
+    };
+    window.addEventListener("open-settings", handleOpenSettings);
+    return () => window.removeEventListener("open-settings", handleOpenSettings);
+  }, [showPanel]);
 
   const handleSetKey = async () => {
     if (!keyInput.trim()) return;
@@ -92,6 +114,17 @@ function MainApp() {
   return (
     <div className="h-screen flex">
       <div className="flex-1 flex flex-col min-w-0">
+        {error && (
+          <ErrorBanner
+            message={error.message}
+            action={
+              error.action
+                ? error.action
+                : undefined
+            }
+            onDismiss={dismissError}
+          />
+        )}
         <ChatPane messages={messages} isStreaming={isStreaming} onSend={send} />
       </div>
       <SidePanel

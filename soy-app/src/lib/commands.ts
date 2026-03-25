@@ -48,3 +48,24 @@ export async function getOnboardingState(): Promise<{
 }> {
   return invoke("get_onboarding_state");
 }
+
+export async function getGoogleStatus(): Promise<{
+  connected: boolean;
+  email: string | null;
+}> {
+  return invoke("get_google_status");
+}
+
+export async function connectGoogle(): Promise<{
+  status: string;
+  message: string;
+}> {
+  return invoke("connect_google");
+}
+
+export async function disconnectGoogle(): Promise<{
+  status: string;
+  message: string;
+}> {
+  return invoke("disconnect_google");
+}

@@ -8,20 +8,79 @@ import {
   saveMessage,
 } from "../lib/commands";
 
+export interface ChatError {
+  message: string;
+  action?: { label: string; onClick: () => void };
+}
+
 export function useChat() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isStreaming, setIsStreaming] = useState(false);
   const [conversationId, setConversationId] = useState<number | null>(null);
+  const [error, setError] = useState<ChatError | null>(null);
   const streamBuffer = useRef("");
   const [pendingPanelHint, setPendingPanelHint] = useState<PanelHint | null>(
     null,
   );
   const conversationIdRef = useRef<number | null>(null);
+  const lastSentMessage = useRef<string>("");
 
   // Keep ref in sync so the send callback always has the latest value
   useEffect(() => {
     conversationIdRef.current = conversationId;
   }, [conversationId]);
+
+  const dismissError = useCallback(() => setError(null), []);
+
+  // Parse error messages from the backend into user-friendly ChatError objects
+  const parseError = useCallback((errStr: string): ChatError => {
+    const lower = errStr.toLowerCase();
+
+    // API key issues
+    if (lower.includes("invalid") && lower.includes("key") || lower.includes("401") || lower.includes("authentication")) {
+      return {
+        message: "Your API key appears to be invalid. Check Settings to update it.",
+        action: { label: "Open Settings", onClick: () => {
+          // This will be handled by the component that consumes the error
+          window.dispatchEvent(new CustomEvent("open-settings"));
+        }},
+      };
+    }
+
+    // Rate limiting
+    if (lower.includes("429") || lower.includes("rate limit")) {
+      return {
+        message: "Rate limited. Please wait a moment and try again.",
+      };
+    }
+
+    // Server errors
+    if (lower.includes("500") || lower.includes("502") || lower.includes("503") || lower.includes("server")) {
+      return {
+        message: "Claude is having trouble right now. Try again in a few seconds.",
+      };
+    }
+
+    // Network errors
+    if (lower.includes("network") || lower.includes("connect") || lower.includes("timeout") || lower.includes("dns") || lower.includes("fetch")) {
+      return {
+        message: "Can't reach Claude. Check your internet connection.",
+      };
+    }
+
+    // No API key
+    if (lower.includes("no api key")) {
+      return {
+        message: "No API key set. Add your Claude API key in Settings.",
+        action: { label: "Open Settings", onClick: () => {
+          window.dispatchEvent(new CustomEvent("open-settings"));
+        }},
+      };
+    }
+
+    // Generic fallback
+    return { message: errStr };
+  }, []);
 
   // Load most recent conversation on mount
   useEffect(() => {
@@ -48,6 +107,10 @@ export function useChat() {
   }, []);
 
   const send = useCallback(async (content: string) => {
+    // Clear any previous error when sending a new message
+    setError(null);
+    lastSentMessage.current = content;
+
     // Ensure we have a conversation
     let convId = conversationIdRef.current;
     if (!convId) {
@@ -135,13 +198,16 @@ export function useChat() {
       }
 
       if (data.error) {
+        const chatError = parseError(data.error);
+        setError(chatError);
+
         setMessages((prev) => {
           const updated = [...prev];
           const last = updated[updated.length - 1];
           if (last.role === "assistant") {
             updated[updated.length - 1] = {
               ...last,
-              content: `Something went wrong: ${data.error}`,
+              content: chatError.message,
               isStreaming: false,
             };
           }
@@ -155,13 +221,17 @@ export function useChat() {
     try {
       await sendMessage(content, currentConvId ?? undefined);
     } catch (err) {
+      const errStr = String(err);
+      const chatError = parseError(errStr);
+      setError(chatError);
+
       setMessages((prev) => {
         const updated = [...prev];
         const last = updated[updated.length - 1];
         if (last.role === "assistant") {
           updated[updated.length - 1] = {
             ...last,
-            content: `Failed to send message: ${err}`,
+            content: chatError.message,
             isStreaming: false,
           };
         }
@@ -170,7 +240,7 @@ export function useChat() {
       setIsStreaming(false);
       unlisten();
     }
-  }, []);
+  }, [parseError]);
 
-  return { messages, isStreaming, send, pendingPanelHint, setPendingPanelHint };
+  return { messages, isStreaming, send, error, dismissError, pendingPanelHint, setPendingPanelHint };
 }

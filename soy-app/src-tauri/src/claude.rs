@@ -46,7 +46,7 @@ pub async fn send_with_tools(
             "tools": tool_defs,
         });
 
-        let response = client
+        let response = match client
             .post(CLAUDE_API_URL)
             .header("x-api-key", api_key)
             .header("anthropic-version", "2023-06-01")
@@ -54,12 +54,27 @@ pub async fn send_with_tools(
             .json(&request)
             .send()
             .await
-            .map_err(|e| format!("API request failed: {}", e))?;
+        {
+            Ok(resp) => resp,
+            Err(e) => {
+                if e.is_connect() || e.is_timeout() {
+                    return Err(
+                        "Can't reach Claude. Check your internet connection.".to_string(),
+                    );
+                }
+                return Err(format!("Network error: {}", e));
+            }
+        };
 
         if !response.status().is_success() {
-            let status = response.status();
-            let body = response.text().await.unwrap_or_default();
-            return Err(format!("API error {}: {}", status, body));
+            let status = response.status().as_u16();
+            let _body = response.text().await.unwrap_or_default();
+            return Err(match status {
+                401 => "Your API key appears to be invalid. Check Settings (\u{2318},) to update it.".to_string(),
+                429 => "Rate limited. Please wait a moment and try again.".to_string(),
+                500..=599 => "Claude is having trouble right now. Try again in a few seconds.".to_string(),
+                _ => format!("API error ({}). Please try again.", status),
+            });
         }
 
         let body: Value = response.json().await.map_err(|e| e.to_string())?;
