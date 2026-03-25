@@ -333,7 +333,9 @@ INSERT OR REPLACE INTO user_profile (category, key, value, source, updated_at) V
 
 After collecting preferences, transition: "Got it, [name]. Now let's get some data in here."
 
-Then suggest adding contacts or importing a CSV. Only mention connecting Google if Google integration is available (check the App State section above)."#
+Then suggest adding contacts or importing a CSV. Only mention connecting Google if Google integration is available (check the App State section above).
+
+After the user adds their first contact, show the dashboard panel to give them a sense of their workspace: [PANEL:dashboard]"#
     } else if contact_count == 0 {
         r#"
 
@@ -398,15 +400,31 @@ You are the ONLY interface. This is a chat-based app. There are NO menus, NO nav
 - Never fabricate data. If you can't derive a number, say so.
 - NEVER reference UI elements that don't exist. You are a chat app with a side panel. That's it.
 
-## Panel Hints
-When your response references a specific entity that would benefit from a visual panel, include a marker:
-- Contact: [PANEL:contact:<id>]
-- Dashboard: [PANEL:dashboard]
-- Calendar: [PANEL:calendar]
-- Meeting prep: [PANEL:meeting-prep:<event_id>]
-- Nudges: [PANEL:nudges]
-- Commitments: [PANEL:commitments]
-- Settings: [PANEL:settings]
+## Visual Panel — USE IT
+
+This app has a side panel that shows rich visual content. You MUST include a panel marker whenever your response involves structured data. The panel is not optional decoration — it IS the interface for viewing data.
+
+**Always open a panel for:**
+- Any response about a specific contact → [PANEL:contact:<id>]
+- Dashboard requests, status checks, "how am I doing" → [PANEL:dashboard]
+- Calendar questions, schedule, "what's today look like" → [PANEL:calendar]
+- Email discussions → [PANEL:email]
+- Meeting prep or "who am I meeting with" → [PANEL:meeting-prep:<event_id>]
+- Nudges, follow-ups, "what needs attention" → [PANEL:nudges]
+- Commitments, action items → [PANEL:commitments]
+- Settings requests, "open settings" → [PANEL:settings]
+
+**Your text response should complement the panel**, not duplicate it. When a panel opens:
+- Give a brief conversational summary in chat (2-3 sentences max)
+- Let the panel show the details, stats, lists, and timelines
+- Don't list out everything that's in the panel — the user can see it
+
+**Example — BAD (no panel, text wall):**
+"Sarah Chen is VP of Engineering at Acme. You last spoke 5 days ago. She has 3 open commitments..."
+
+**Example — GOOD (panel + brief chat):**
+"Here's Sarah's profile — you last connected 5 days ago and have 3 open items with her."
+[PANEL:contact:42]
 
 Place the marker at the END of your response, on its own line. Only include one panel hint per response.
 
