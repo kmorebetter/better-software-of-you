@@ -11,3 +11,7 @@ export async function getApiKeyStatus(): Promise<{ hasKey: boolean }> {
 export async function setApiKey(key: string): Promise<void> {
   return invoke("set_api_key", { key });
 }
+
+export async function getPanelData(panelType: string, entityId?: number): Promise<any> {
+  return invoke("get_panel_data", { panelType, entityId });
+}

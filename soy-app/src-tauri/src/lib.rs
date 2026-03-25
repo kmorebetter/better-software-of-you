@@ -14,6 +14,7 @@ pub fn run() {
             commands::send_message,
             commands::get_api_key_status,
             commands::set_api_key,
+            commands::get_panel_data,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
