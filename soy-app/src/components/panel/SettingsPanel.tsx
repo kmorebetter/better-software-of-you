@@ -49,18 +49,22 @@ export function SettingsPanel() {
       .catch(() => setGoogleConnected(false));
   }, []);
 
-  // Listen for Google connection events (from deep-link callback)
+  // Listen for Google connection events (from connect/disconnect commands)
   useEffect(() => {
-    const unlistenPromise = listen<{ connected: boolean }>(
+    const unlistenPromise = listen<{ connected: boolean; email?: string }>(
       "google-connected",
       (event) => {
         setGoogleConnected(event.payload.connected);
         setGoogleLoading(false);
-        // Refresh email after connection
         if (event.payload.connected) {
-          getGoogleStatus()
-            .then((s) => setGoogleEmail(s.email))
-            .catch(() => {});
+          // Use email from event if available, otherwise refresh from status
+          if (event.payload.email) {
+            setGoogleEmail(event.payload.email);
+          } else {
+            getGoogleStatus()
+              .then((s) => setGoogleEmail(s.email))
+              .catch(() => {});
+          }
         } else {
           setGoogleEmail(null);
         }
@@ -89,9 +93,16 @@ export function SettingsPanel() {
   const handleConnectGoogle = useCallback(async () => {
     setGoogleLoading(true);
     try {
-      await connectGoogle();
-      // Connection completes asynchronously via deep-link callback
+      const result = await connectGoogle();
+      // The connect command now completes synchronously (localhost callback).
+      // The event listener will also fire, but we can set state here too.
+      setGoogleConnected(true);
+      if (result?.email) {
+        setGoogleEmail(result.email);
+      }
     } catch {
+      // If the user closes the browser or the flow times out
+    } finally {
       setGoogleLoading(false);
     }
   }, []);

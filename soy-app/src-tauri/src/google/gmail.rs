@@ -64,7 +64,7 @@ pub async fn sync_gmail(
     let client = reqwest::Client::new();
 
     // Resolve the user's own email for direction logic.
-    let user_email = super::GoogleAuthState::load_email()?
+    let user_email = super::oauth::load_primary_email(db)?
         .unwrap_or_default()
         .to_lowercase();
 

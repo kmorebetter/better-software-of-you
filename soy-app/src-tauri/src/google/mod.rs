@@ -2,12 +2,14 @@ pub mod calendar;
 pub mod gmail;
 pub mod oauth;
 
+use crate::db::Database;
 use serde::{Deserialize, Serialize};
-use std::sync::Mutex;
+use std::sync::{Arc, Mutex};
 use std::time::{Duration, SystemTime};
 
-/// In-memory Google auth state. Refresh token lives in Keychain;
-/// access token + expiry are ephemeral (lost on app restart, re-derived from refresh token).
+/// In-memory Google auth state. Refresh tokens live in token files on disk;
+/// the access token + expiry are ephemeral (lost on app restart, re-derived
+/// from the refresh token on demand).
 pub struct GoogleAuthState {
     inner: Mutex<GoogleAuthInner>,
 }
@@ -15,8 +17,6 @@ pub struct GoogleAuthState {
 struct GoogleAuthInner {
     access_token: Option<String>,
     expiry: Option<SystemTime>,
-    /// Held in memory during the PKCE flow between `connect_google` and `handle_google_callback`.
-    pending_verifier: Option<String>,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -31,21 +31,8 @@ impl GoogleAuthState {
             inner: Mutex::new(GoogleAuthInner {
                 access_token: None,
                 expiry: None,
-                pending_verifier: None,
             }),
         }
-    }
-
-    /// Store the PKCE verifier while we wait for the callback.
-    pub fn set_pending_verifier(&self, verifier: String) {
-        let mut inner = self.inner.lock().expect("GoogleAuthState lock poisoned");
-        inner.pending_verifier = Some(verifier);
-    }
-
-    /// Take the pending verifier (consumes it).
-    pub fn take_pending_verifier(&self) -> Option<String> {
-        let mut inner = self.inner.lock().expect("GoogleAuthState lock poisoned");
-        inner.pending_verifier.take()
     }
 
     /// Store a freshly obtained access token + its lifetime.
@@ -56,8 +43,11 @@ impl GoogleAuthState {
     }
 
     /// Get a valid access token, refreshing via the stored refresh token if expired.
-    /// Returns `None` if no refresh token exists (user not connected).
-    pub async fn get_valid_token(&self) -> Result<Option<String>, String> {
+    /// Returns `None` if no Google account is connected.
+    ///
+    /// Requires a reference to the database so we can look up the primary email
+    /// and find the corresponding token file on disk.
+    pub async fn get_valid_token(&self, db: &Arc<Database>) -> Result<Option<String>, String> {
         // Check if we have a non-expired token in memory.
         {
             let inner = self.inner.lock().expect("GoogleAuthState lock poisoned");
@@ -69,11 +59,16 @@ impl GoogleAuthState {
             }
         }
 
-        // Try to refresh using the stored refresh token from Keychain.
-        let refresh_token = Self::load_refresh_token()?;
-        let refresh_token = match refresh_token {
-            Some(rt) => rt,
+        // Look up the primary connected email from the database.
+        let email = match oauth::load_primary_email(db)? {
+            Some(e) => e,
             None => return Ok(None), // Not connected.
+        };
+
+        // Load the refresh token from the token file on disk.
+        let refresh_token = match oauth::load_refresh_token_for(&email)? {
+            Some(rt) => rt,
+            None => return Ok(None), // Token file missing or corrupt.
         };
 
         let token_response = oauth::refresh_access_token(&refresh_token).await?;
@@ -87,68 +82,5 @@ impl GoogleAuthState {
         let mut inner = self.inner.lock().expect("GoogleAuthState lock poisoned");
         inner.access_token = None;
         inner.expiry = None;
-        inner.pending_verifier = None;
-    }
-
-    // -- Keychain helpers (refresh token + email) --
-
-    const KEYCHAIN_SERVICE: &'static str = "com.softwareofyou.app";
-    const KEYCHAIN_REFRESH: &'static str = "google-refresh-token";
-    const KEYCHAIN_EMAIL: &'static str = "google-email";
-
-    pub fn store_refresh_token(token: &str) -> Result<(), String> {
-        let entry = keyring::Entry::new(Self::KEYCHAIN_SERVICE, Self::KEYCHAIN_REFRESH)
-            .map_err(|e| format!("Keychain error: {}", e))?;
-        entry
-            .set_password(token)
-            .map_err(|e| format!("Failed to save refresh token: {}", e))
-    }
-
-    pub fn load_refresh_token() -> Result<Option<String>, String> {
-        let entry = keyring::Entry::new(Self::KEYCHAIN_SERVICE, Self::KEYCHAIN_REFRESH)
-            .map_err(|e| format!("Keychain error: {}", e))?;
-        match entry.get_password() {
-            Ok(pw) => Ok(Some(pw)),
-            Err(keyring::Error::NoEntry) => Ok(None),
-            Err(e) => Err(format!("Keychain read error: {}", e)),
-        }
-    }
-
-    pub fn delete_refresh_token() -> Result<(), String> {
-        let entry = keyring::Entry::new(Self::KEYCHAIN_SERVICE, Self::KEYCHAIN_REFRESH)
-            .map_err(|e| format!("Keychain error: {}", e))?;
-        match entry.delete_credential() {
-            Ok(()) => Ok(()),
-            Err(keyring::Error::NoEntry) => Ok(()), // Already gone, fine.
-            Err(e) => Err(format!("Keychain delete error: {}", e)),
-        }
-    }
-
-    pub fn store_email(email: &str) -> Result<(), String> {
-        let entry = keyring::Entry::new(Self::KEYCHAIN_SERVICE, Self::KEYCHAIN_EMAIL)
-            .map_err(|e| format!("Keychain error: {}", e))?;
-        entry
-            .set_password(email)
-            .map_err(|e| format!("Failed to save email: {}", e))
-    }
-
-    pub fn load_email() -> Result<Option<String>, String> {
-        let entry = keyring::Entry::new(Self::KEYCHAIN_SERVICE, Self::KEYCHAIN_EMAIL)
-            .map_err(|e| format!("Keychain error: {}", e))?;
-        match entry.get_password() {
-            Ok(pw) => Ok(Some(pw)),
-            Err(keyring::Error::NoEntry) => Ok(None),
-            Err(e) => Err(format!("Keychain read error: {}", e)),
-        }
-    }
-
-    pub fn delete_email() -> Result<(), String> {
-        let entry = keyring::Entry::new(Self::KEYCHAIN_SERVICE, Self::KEYCHAIN_EMAIL)
-            .map_err(|e| format!("Keychain error: {}", e))?;
-        match entry.delete_credential() {
-            Ok(()) => Ok(()),
-            Err(keyring::Error::NoEntry) => Ok(()),
-            Err(e) => Err(format!("Keychain delete error: {}", e)),
-        }
     }
 }

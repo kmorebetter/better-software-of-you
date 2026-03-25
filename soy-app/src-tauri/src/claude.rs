@@ -263,11 +263,9 @@ fn build_system_prompt(db: &Arc<Database>) -> String {
     }
 
     // Check Google connection status
-    let google_connected = crate::google::GoogleAuthState::load_refresh_token()
-        .map(|t| t.is_some())
-        .unwrap_or(false);
+    let google_connected = crate::google::oauth::is_connected(db);
     let google_email = if google_connected {
-        crate::google::GoogleAuthState::load_email()
+        crate::google::oauth::load_primary_email(db)
             .ok()
             .flatten()
             .unwrap_or_default()

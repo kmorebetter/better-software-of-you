@@ -9,12 +9,11 @@ use state::AppState;
 use tauri::image::Image;
 use tauri::menu::{MenuBuilder, MenuItemBuilder};
 use tauri::tray::{MouseButton, MouseButtonState, TrayIconBuilder, TrayIconEvent};
-use tauri::{Emitter, Listener, Manager, WebviewUrl, WebviewWindowBuilder, WindowEvent};
+use tauri::{Emitter, Manager, WebviewUrl, WebviewWindowBuilder, WindowEvent};
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
-        .plugin(tauri_plugin_deep_link::init())
         .manage(AppState::new())
         .invoke_handler(tauri::generate_handler![
             commands::send_message,
@@ -22,7 +21,6 @@ pub fn run() {
             commands::set_api_key,
             commands::get_panel_data,
             commands::connect_google,
-            commands::handle_google_callback,
             commands::disconnect_google,
             commands::get_google_status,
             commands::get_onboarding_state,
@@ -33,64 +31,6 @@ pub fn run() {
             commands::sync_calendar,
         ])
         .setup(|app| {
-            // Handle deep-link callbacks (soy://auth/callback?code=...).
-            let handle = app.handle().clone();
-            app.listen("deep-link://new-url", move |event: tauri::Event| {
-                let payload = event.payload();
-                if let Some(code) = parse_oauth_callback(payload) {
-                    let handle = handle.clone();
-                    // Spawn async token exchange on the Tokio runtime.
-                    tauri::async_runtime::spawn(async move {
-                        let state = handle.state::<AppState>();
-                        let verifier = match state.google_auth.take_pending_verifier() {
-                            Some(v) => v,
-                            None => {
-                                eprintln!("Deep-link callback but no pending PKCE verifier");
-                                return;
-                            }
-                        };
-                        match google::oauth::exchange_code(&code, &verifier).await {
-                            Ok(token_response) => {
-                                // Store refresh token in Keychain.
-                                if let Some(ref rt) = token_response.refresh_token {
-                                    if let Err(e) =
-                                        google::GoogleAuthState::store_refresh_token(rt)
-                                    {
-                                        eprintln!("Failed to store refresh token: {}", e);
-                                        return;
-                                    }
-                                }
-                                // Store access token in memory.
-                                state.google_auth.set_access_token(
-                                    token_response.access_token.clone(),
-                                    token_response.expires_in,
-                                );
-                                // Fetch and store email.
-                                if let Ok(email) = google::oauth::fetch_user_email(
-                                    &token_response.access_token,
-                                )
-                                .await
-                                {
-                                    let _ = google::GoogleAuthState::store_email(&email);
-                                }
-                                // Notify frontend.
-                                let _ = handle.emit(
-                                    "google-connected",
-                                    serde_json::json!({ "connected": true }),
-                                );
-                            }
-                            Err(e) => {
-                                eprintln!("OAuth token exchange failed: {}", e);
-                                let _ = handle.emit(
-                                    "google-auth-error",
-                                    serde_json::json!({ "error": e }),
-                                );
-                            }
-                        }
-                    });
-                }
-            });
-
             // Auto-sync: periodically refresh Gmail + Calendar data every 15 minutes.
             let sync_handle = app.handle().clone();
             tauri::async_runtime::spawn(async move {
@@ -99,12 +39,12 @@ pub fn run() {
                     tokio::time::sleep(std::time::Duration::from_secs(900)).await;
 
                     let state = sync_handle.state::<AppState>();
-                    let token = match state.google_auth.get_valid_token().await {
+                    let db = state.db.clone();
+                    let token = match state.google_auth.get_valid_token(&db).await {
                         Ok(Some(t)) => t,
                         _ => continue, // Not connected or token error — skip this cycle.
                     };
 
-                    let db = state.db.clone();
                     if let Err(e) = google::gmail::sync_gmail(&db, &token).await {
                         eprintln!("Auto-sync gmail error: {}", e);
                     }
@@ -193,27 +133,4 @@ pub fn run() {
         })
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
-}
-
-/// Parse an OAuth callback URL from a deep-link event payload.
-/// Expected format: the payload is a JSON string like `"[\"soy://auth/callback?code=ABC123\"]"`.
-/// We extract the `code` query parameter.
-fn parse_oauth_callback(payload: &str) -> Option<String> {
-    // The deep-link plugin sends the URL(s) as a JSON array of strings.
-    if let Ok(urls) = serde_json::from_str::<Vec<String>>(payload) {
-        for url_str in urls {
-            if url_str.starts_with("soy://auth/callback") {
-                // Parse query string to extract `code`.
-                if let Some(query) = url_str.split('?').nth(1) {
-                    for param in query.split('&') {
-                        if let Some(value) = param.strip_prefix("code=") {
-                            let decoded = urlencoding::decode(value).ok()?;
-                            return Some(decoded.into_owned());
-                        }
-                    }
-                }
-            }
-        }
-    }
-    None
 }

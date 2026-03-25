@@ -58,7 +58,7 @@ export async function getGoogleStatus(): Promise<{
 
 export async function connectGoogle(): Promise<{
   status: string;
-  message: string;
+  email: string;
 }> {
   return invoke("connect_google");
 }

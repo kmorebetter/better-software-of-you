@@ -1,5 +1,5 @@
 use crate::claude;
-use crate::google::{self, GoogleAuthState};
+use crate::google;
 use crate::state::AppState;
 use crate::tools;
 use tauri::{AppHandle, Emitter, State};
@@ -230,91 +230,80 @@ pub async fn get_onboarding_state(
 // Google OAuth commands
 // ---------------------------------------------------------------------------
 
-/// Start the Google OAuth flow: generate PKCE, open browser to consent screen.
+/// Start the Google OAuth flow: opens browser, waits for localhost callback,
+/// exchanges code for tokens, saves to disk, registers in DB.
+/// Returns immediately with the result (no deep-link needed).
 #[tauri::command]
-pub async fn connect_google(state: State<'_, AppState>) -> Result<serde_json::Value, String> {
-    let (url, verifier) = google::oauth::build_auth_url();
-
-    // Store the verifier so we can use it when the callback arrives.
-    state.google_auth.set_pending_verifier(verifier);
-
-    // Open the authorization URL in the user's default browser.
-    open::that(&url).map_err(|e| format!("Failed to open browser: {}", e))?;
-
-    Ok(serde_json::json!({
-        "status": "pending",
-        "message": "Browser opened for Google sign-in. Waiting for authorization..."
-    }))
-}
-
-/// Handle the OAuth callback — exchange the authorization code for tokens.
-/// Called from the deep-link handler (not directly by frontend).
-#[tauri::command]
-pub async fn handle_google_callback(
+pub async fn connect_google(
     app: AppHandle,
     state: State<'_, AppState>,
-    code: String,
 ) -> Result<serde_json::Value, String> {
-    let verifier = state
-        .google_auth
-        .take_pending_verifier()
-        .ok_or_else(|| "No pending OAuth flow. Please start connection again.".to_string())?;
+    let db = state.db.clone();
+    let email = google::oauth::start_oauth_flow(&db).await?;
 
-    // Exchange code for tokens.
-    let token_response = google::oauth::exchange_code(&code, &verifier).await?;
-
-    // Store refresh token in Keychain (persistent across restarts).
-    if let Some(ref refresh_token) = token_response.refresh_token {
-        GoogleAuthState::store_refresh_token(refresh_token)?;
-    }
-
-    // Store access token in memory.
-    state
-        .google_auth
-        .set_access_token(token_response.access_token.clone(), token_response.expires_in);
-
-    // Fetch and store the user's email for display purposes.
-    match google::oauth::fetch_user_email(&token_response.access_token).await {
-        Ok(email) => {
-            GoogleAuthState::store_email(&email)?;
-        }
-        Err(e) => {
-            // Non-fatal: we still have valid tokens even if email fetch fails.
-            eprintln!("Warning: could not fetch Google user email: {}", e);
+    // Cache the access token in memory for this session.
+    // (start_oauth_flow already saved it to disk; load it for the in-memory cache)
+    if let Ok(Some(token_data)) = google::oauth::load_token_file(&email) {
+        if let Some(access_token) = token_data["access_token"].as_str() {
+            let expires_in = token_data["expires_in"].as_u64().unwrap_or(3600);
+            state
+                .google_auth
+                .set_access_token(access_token.to_string(), expires_in);
         }
     }
 
     // Notify the frontend.
-    let _ = app.emit("google-connected", serde_json::json!({ "connected": true }));
+    let _ = app.emit(
+        "google-connected",
+        serde_json::json!({ "connected": true, "email": &email }),
+    );
 
     Ok(serde_json::json!({
         "status": "connected",
-        "message": "Google account connected successfully."
+        "email": email,
     }))
 }
 
-/// Disconnect the Google account: revoke the token, remove from Keychain, clear memory.
+/// Disconnect a Google account: revoke the token, remove files, update DB.
 #[tauri::command]
 pub async fn disconnect_google(
     app: AppHandle,
     state: State<'_, AppState>,
 ) -> Result<serde_json::Value, String> {
-    // Best-effort revoke at Google (don't fail if network is down).
-    if let Ok(Some(refresh_token)) = GoogleAuthState::load_refresh_token() {
-        if let Err(e) = google::oauth::revoke_token(&refresh_token).await {
-            eprintln!("Warning: token revocation failed (continuing disconnect): {}", e);
-        }
-    }
+    let db = state.db.clone();
 
-    // Remove from Keychain.
-    GoogleAuthState::delete_refresh_token()?;
-    GoogleAuthState::delete_email()?;
+    // Find the primary connected email.
+    let email = google::oauth::load_primary_email(&db)?;
+
+    if let Some(ref email) = email {
+        // Best-effort revoke at Google.
+        if let Ok(Some(refresh_token)) = google::oauth::load_refresh_token_for(email) {
+            if let Err(e) = google::oauth::revoke_token(&refresh_token).await {
+                eprintln!(
+                    "Warning: token revocation failed (continuing disconnect): {}",
+                    e
+                );
+            }
+        }
+
+        // Delete the token file from disk.
+        google::oauth::delete_token_file(email)?;
+
+        // Mark as disconnected in the database.
+        let _ = db.execute(
+            "UPDATE google_accounts SET status = 'disconnected' WHERE email = ?1",
+            &[email as &dyn rusqlite::ToSql],
+        );
+    }
 
     // Clear in-memory state.
     state.google_auth.clear();
 
     // Notify the frontend.
-    let _ = app.emit("google-connected", serde_json::json!({ "connected": false }));
+    let _ = app.emit(
+        "google-connected",
+        serde_json::json!({ "connected": false }),
+    );
 
     Ok(serde_json::json!({
         "status": "disconnected",
@@ -322,15 +311,34 @@ pub async fn disconnect_google(
     }))
 }
 
-/// Check whether a Google account is connected (has a valid refresh token in Keychain).
+/// Check whether a Google account is connected.
 #[tauri::command]
-pub async fn get_google_status() -> Result<serde_json::Value, String> {
-    let connected = GoogleAuthState::load_refresh_token()?.is_some();
-    let email = GoogleAuthState::load_email()?;
+pub async fn get_google_status(
+    state: State<'_, AppState>,
+) -> Result<serde_json::Value, String> {
+    let db = state.db.clone();
+
+    let accounts = db
+        .query_json(
+            "SELECT email, status, is_primary FROM google_accounts WHERE status = 'active' ORDER BY is_primary DESC",
+            &[],
+        )
+        .unwrap_or(serde_json::json!([]));
+
+    let connected = accounts
+        .as_array()
+        .map(|a| !a.is_empty())
+        .unwrap_or(false);
+    let primary_email = accounts
+        .as_array()
+        .and_then(|a| a.first())
+        .and_then(|a| a["email"].as_str())
+        .map(String::from);
 
     Ok(serde_json::json!({
         "connected": connected,
-        "email": email
+        "email": primary_email,
+        "accounts": accounts,
     }))
 }
 
@@ -341,12 +349,12 @@ pub async fn get_google_status() -> Result<serde_json::Value, String> {
 /// Sync recent Gmail messages into the local database.
 #[tauri::command]
 pub async fn sync_gmail(state: State<'_, AppState>) -> Result<serde_json::Value, String> {
+    let db = state.db.clone();
     let token = state
         .google_auth
-        .get_valid_token()
+        .get_valid_token(&db)
         .await?
         .ok_or_else(|| "Google not connected".to_string())?;
-    let db = state.db.clone();
     let result = google::gmail::sync_gmail(&db, &token).await?;
     Ok(serde_json::to_value(result).map_err(|e| format!("Serialize error: {}", e))?)
 }
@@ -354,12 +362,12 @@ pub async fn sync_gmail(state: State<'_, AppState>) -> Result<serde_json::Value,
 /// Sync calendar events into the local database.
 #[tauri::command]
 pub async fn sync_calendar(state: State<'_, AppState>) -> Result<serde_json::Value, String> {
+    let db = state.db.clone();
     let token = state
         .google_auth
-        .get_valid_token()
+        .get_valid_token(&db)
         .await?
         .ok_or_else(|| "Google not connected".to_string())?;
-    let db = state.db.clone();
     let result = google::calendar::sync_calendar(&db, &token).await?;
     Ok(serde_json::to_value(result).map_err(|e| format!("Serialize error: {}", e))?)
 }
