@@ -9,6 +9,7 @@ import { EmailPanel } from "./EmailPanel";
 import { MeetingPrep } from "./MeetingPrep";
 import { TimelinePanel } from "./TimelinePanel";
 import { SettingsPanel } from "./SettingsPanel";
+import { CompositionRenderer } from "./CompositionRenderer";
 
 interface PanelRouterProps {
   panel: PanelHint;
@@ -34,6 +35,12 @@ export function PanelRouter({ panel }: PanelRouterProps) {
       return <TimelinePanel />;
     case "settings":
       return <SettingsPanel />;
+    case "composition":
+      return panel.composition ? (
+        <CompositionRenderer spec={panel.composition} />
+      ) : (
+        <EmptyState message="No composition data" />
+      );
     default:
       return <EmptyState message={`Unknown panel: ${panel.type}`} />;
   }
