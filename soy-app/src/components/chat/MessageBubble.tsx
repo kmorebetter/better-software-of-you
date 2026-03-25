@@ -1,11 +1,12 @@
-import { Message } from "../../lib/types";
+import { Message, PanelHint } from "../../lib/types";
 import { StreamingText } from "./StreamingText";
 
 interface MessageBubbleProps {
   message: Message;
+  onOpenPanel?: (hint: PanelHint) => void;
 }
 
-export function MessageBubble({ message }: MessageBubbleProps) {
+export function MessageBubble({ message, onOpenPanel: _onOpenPanel }: MessageBubbleProps) {
   const isUser = message.role === "user";
 
   return (

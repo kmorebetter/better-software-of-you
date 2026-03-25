@@ -1,12 +1,13 @@
 import { useEffect, useRef } from "react";
-import { Message } from "../../lib/types";
+import { Message, PanelHint } from "../../lib/types";
 import { MessageBubble } from "./MessageBubble";
 
 interface MessageListProps {
   messages: Message[];
+  onOpenPanel?: (hint: PanelHint) => void;
 }
 
-export function MessageList({ messages }: MessageListProps) {
+export function MessageList({ messages, onOpenPanel }: MessageListProps) {
   const endRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -22,7 +23,7 @@ export function MessageList({ messages }: MessageListProps) {
         </div>
       )}
       {messages.map((msg) => (
-        <MessageBubble key={msg.id} message={msg} />
+        <MessageBubble key={msg.id} message={msg} onOpenPanel={onOpenPanel} />
       ))}
       <div ref={endRef} />
     </div>
