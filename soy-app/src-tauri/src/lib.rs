@@ -117,7 +117,7 @@ pub fn run() {
             let icon = Image::from_path("icons/32x32.png")
                 .unwrap_or_else(|_| Image::from_bytes(include_bytes!("../icons/32x32.png")).expect("bundled tray icon"));
 
-            let _tray = TrayIconBuilder::new("main-tray")
+            let _tray = TrayIconBuilder::new()
                 .icon(icon)
                 .icon_as_template(true)
                 .tooltip("Software of You")
