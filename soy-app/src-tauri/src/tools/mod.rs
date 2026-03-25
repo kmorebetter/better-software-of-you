@@ -1,9 +1,14 @@
+pub mod calendar;
 pub mod contacts;
+pub mod email;
 pub mod inbox;
+pub mod intelligence;
+pub mod interactions;
 pub mod overview;
 pub mod profile;
 pub mod search;
 pub mod system;
+pub mod transcripts;
 
 use crate::db::Database;
 use serde_json::Value;
@@ -18,6 +23,11 @@ pub fn execute_tool(db: &Arc<Database>, tool_name: &str, args: &Value) -> Result
         "get_profile" => profile::execute(db, args),
         "system_status" => system::execute(db, args),
         "inbox" => inbox::execute(db, args),
+        "interactions" => interactions::execute(db, args),
+        "email" => email::execute(db, args),
+        "calendar" => calendar::execute(db, args),
+        "transcripts" => transcripts::execute(db, args),
+        "intelligence" => intelligence::execute(db, args),
         _ => Err(format!("Unknown tool: {}", tool_name)),
     }
 }
@@ -31,5 +41,10 @@ pub fn tool_definitions() -> Vec<Value> {
         profile::definition(),
         system::definition(),
         inbox::definition(),
+        interactions::definition(),
+        email::definition(),
+        calendar::definition(),
+        transcripts::definition(),
+        intelligence::definition(),
     ]
 }
