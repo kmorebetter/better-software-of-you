@@ -356,10 +356,14 @@ Ask: "Who's someone you work with that you'd like to start tracking?""#
     // Build Google status section
     let google_section = if google_connected {
         format!(
-            "- Google account connected ({google_email}). Gmail and Calendar sync is active — data refreshes automatically every 15 minutes."
+            "- Google account connected ({google_email}). Gmail and Calendar sync is active.\n\
+             - Sync fetches the 50 most recent emails and up to 100 calendar events (past 7 days + next 14 days). This takes about 30 seconds, not minutes.\n\
+             - Data auto-refreshes every 15 minutes in the background. Never tell users sync takes more than a minute."
         )
     } else {
-        "- Google account is NOT connected. Google integration requires OAuth credentials to be configured in the app build. Do NOT tell users to connect Google or reference Gmail/Calendar features unless they explicitly ask — and if they do, explain that Google integration is not yet configured in this build.".to_string()
+        "- Google account is NOT connected but IS available. The user can connect by saying \"connect Google\" or opening Settings (Cmd+,). When they connect, their browser will open for Google sign-in, and the connection completes automatically.\n\
+         - Sync fetches the 50 most recent emails and up to 100 calendar events. It takes about 30 seconds.\n\
+         - Do NOT invent sync durations. Never say sync takes \"15-20 minutes\" or similar — it takes seconds.".to_string()
     };
 
     format!(
@@ -384,7 +388,7 @@ You are the ONLY interface. This is a chat-based app. There are NO menus, NO nav
 - No buttons the user clicks to perform actions
 
 **When the user wants to change settings:** Tell them to press Cmd+, or say "open settings" and you will show the settings panel.
-**When the user wants to connect Google:** Tell them to press Cmd+, or say "open settings" to access the Google connection in the settings panel. Do NOT invent steps like "Go to Settings → Integrations".
+**When the user wants to connect Google:** You can trigger Google connection directly — the user just says "connect Google" and it works. Their browser will open for sign-in and the connection completes in seconds. They can also connect via Settings (Cmd+,).
 
 ## App State
 {google_section}
