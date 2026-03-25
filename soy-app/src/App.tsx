@@ -1,16 +1,31 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { getCurrentWindow } from "@tauri-apps/api/window";
 import { ChatPane } from "./components/chat/ChatPane";
+import { MenuBarWindow } from "./components/menubar/MenuBarWindow";
 import { SidePanel } from "./components/panel/SidePanel";
 import { useChat } from "./hooks/useChat";
 import { usePanel } from "./hooks/usePanel";
-import { getApiKeyStatus, setApiKey } from "./lib/commands";
+import { getApiKeyStatus, getOnboardingState, setApiKey } from "./lib/commands";
 import { KeyRound } from "lucide-react";
 
+/** Detect which Tauri window we are running in. */
+const currentWindowLabel = getCurrentWindow().label;
+
 function App() {
+  // Render the compact menu-bar view when hosted in the "menubar" window.
+  if (currentWindowLabel === "menubar") {
+    return <MenuBarWindow />;
+  }
+
+  return <MainApp />;
+}
+
+function MainApp() {
   const { messages, isStreaming, send, pendingPanelHint, setPendingPanelHint } = useChat();
   const { panel, isOpen, isPinned, showPanel, closePanel, togglePin } = usePanel();
   const [hasKey, setHasKey] = useState<boolean | null>(null);
   const [keyInput, setKeyInput] = useState("");
+  const onboardingTriggered = useRef(false);
 
   // React to panel hints from chat
   useEffect(() => {
@@ -23,6 +38,18 @@ function App() {
   useEffect(() => {
     getApiKeyStatus().then((s) => setHasKey(s.hasKey));
   }, []);
+
+  // Detect first-run and auto-trigger onboarding conversation
+  useEffect(() => {
+    if (hasKey && !onboardingTriggered.current) {
+      onboardingTriggered.current = true;
+      getOnboardingState().then((state) => {
+        if (state.stage === "fresh" || state.stage === "has_profile") {
+          send("Hello");
+        }
+      });
+    }
+  }, [hasKey, send]);
 
   const handleSetKey = async () => {
     if (!keyInput.trim()) return;

@@ -9,6 +9,7 @@ pub async fn send_message(
     app: AppHandle,
     state: State<'_, AppState>,
     message: String,
+    conversation_id: Option<i64>,
 ) -> Result<String, String> {
     let api_key = state
         .api_key
@@ -19,13 +20,112 @@ pub async fn send_message(
 
     let db = state.db.clone();
 
-    let messages = vec![claude::ChatMessage {
+    // Build message history from conversation
+    let mut messages = Vec::new();
+
+    if let Some(conv_id) = conversation_id {
+        let history = db
+            .query_json(
+                "SELECT role, content FROM messages WHERE conversation_id = ?1 ORDER BY created_at ASC LIMIT 50",
+                &[&conv_id as &dyn rusqlite::ToSql],
+            )
+            .unwrap_or(serde_json::json!([]));
+
+        if let Some(rows) = history.as_array() {
+            for row in rows {
+                messages.push(claude::ChatMessage {
+                    role: row["role"].as_str().unwrap_or("user").to_string(),
+                    content: serde_json::json!(row["content"].as_str().unwrap_or("")),
+                });
+            }
+        }
+    }
+
+    // Add the new user message
+    messages.push(claude::ChatMessage {
         role: "user".to_string(),
         content: serde_json::json!(message),
-    }];
+    });
 
     claude::send_with_tools(&app, &api_key, messages, &db).await?;
     Ok("done".to_string())
+}
+
+#[tauri::command]
+pub async fn create_conversation(state: State<'_, AppState>) -> Result<serde_json::Value, String> {
+    let db = state.db.clone();
+    let id = db.execute("INSERT INTO conversations (title) VALUES (NULL)", &[])?;
+    Ok(serde_json::json!({ "id": id }))
+}
+
+#[tauri::command]
+pub async fn get_recent_conversation(
+    state: State<'_, AppState>,
+) -> Result<serde_json::Value, String> {
+    let db = state.db.clone();
+    let conversations = db
+        .query_json(
+            "SELECT id, title, created_at FROM conversations ORDER BY updated_at DESC LIMIT 1",
+            &[],
+        )
+        .map_err(|e| e.to_string())?;
+
+    if let Some(conv) = conversations.as_array().and_then(|a| a.first()) {
+        let conv_id = conv["id"].as_i64().unwrap_or(0);
+        let messages = db
+            .query_json(
+                "SELECT role, content, panel_hint, created_at FROM messages WHERE conversation_id = ?1 ORDER BY created_at ASC",
+                &[&conv_id as &dyn rusqlite::ToSql],
+            )
+            .map_err(|e| e.to_string())?;
+
+        Ok(serde_json::json!({
+            "conversation": conv,
+            "messages": messages,
+        }))
+    } else {
+        Ok(serde_json::json!({ "conversation": null, "messages": [] }))
+    }
+}
+
+#[tauri::command]
+pub async fn save_message(
+    state: State<'_, AppState>,
+    conversation_id: i64,
+    role: String,
+    content: String,
+    panel_hint: Option<String>,
+) -> Result<serde_json::Value, String> {
+    let db = state.db.clone();
+    let id = db.execute(
+        "INSERT INTO messages (conversation_id, role, content, panel_hint) VALUES (?1, ?2, ?3, ?4)",
+        &[
+            &conversation_id as &dyn rusqlite::ToSql,
+            &role,
+            &content,
+            &panel_hint,
+        ],
+    )?;
+
+    // Update conversation title from first user message
+    if role == "user" {
+        let title: String = if content.len() > 50 {
+            content.chars().take(50).collect()
+        } else {
+            content.clone()
+        };
+        let _ = db.execute(
+            "UPDATE conversations SET title = COALESCE(title, ?1), updated_at = datetime('now') WHERE id = ?2",
+            &[&title as &dyn rusqlite::ToSql, &conversation_id],
+        );
+    } else {
+        let _ = db.execute(
+            "UPDATE conversations SET updated_at = datetime('now') WHERE id = ?1",
+            &[&conversation_id as &dyn rusqlite::ToSql],
+        );
+    }
+
+    Ok(serde_json::json!({ "id": id }))
 }
 
 #[tauri::command]

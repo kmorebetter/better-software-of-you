@@ -247,6 +247,81 @@ fn build_system_prompt(db: &Arc<Database>) -> String {
         }
     }
 
+    // Check onboarding state
+    let contact_count: i64 = db
+        .query_json("SELECT COUNT(*) as count FROM contacts", &[])
+        .and_then(|v| v[0]["count"].as_i64().ok_or_else(|| "no count".to_string()))
+        .unwrap_or(0);
+
+    let has_profile: bool = db
+        .query_json(
+            "SELECT COUNT(*) as count FROM user_profile WHERE category = 'identity'",
+            &[],
+        )
+        .and_then(|v| {
+            v[0]["count"]
+                .as_i64()
+                .map(|n| n > 0)
+                .ok_or_else(|| "no count".to_string())
+        })
+        .unwrap_or(false);
+
+    let onboarding_section = if !has_profile {
+        r#"
+
+## ONBOARDING MODE — First Run
+
+This is a brand new user. Your FIRST message should be the welcome greeting:
+
+```
+        ╭──────────╮
+        │  ◠    ◠  │
+        │    ◡◡    │
+        ╰────┬┬────╯
+            ╱╲╱╲
+
+  S O F T W A R E  of  Y O U
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  Your personal data platform.
+  Nice to meet you! ♡
+```
+
+Everything lives on your machine, and I'm your only interface.
+
+I can track your relationships, log conversations, connect your email and calendar, make decisions, keep a journal — and I'll cross-reference all of it automatically.
+
+After the greeting, ask: "First — what should I call you?"
+
+Once they give their name, store it using the SQL tool, then ask about:
+1. Their role (Freelancer/Consultant, Agency/Studio Owner, Solopreneur, Corporate/In-house)
+2. What they're primarily tracking (Client relationships, Projects, Business communications, Personal network)
+3. How you should communicate (Brief and direct, Detailed with context, Casual and conversational)
+
+Store each answer in user_profile table using SQL:
+INSERT OR REPLACE INTO user_profile (category, key, value, source, updated_at) VALUES ('identity', 'name', '<name>', 'explicit', datetime('now'));
+INSERT OR REPLACE INTO user_profile (category, key, value, source, updated_at) VALUES ('identity', 'role', '<role>', 'explicit', datetime('now'));
+INSERT OR REPLACE INTO user_profile (category, key, value, source, updated_at) VALUES ('preferences', 'focus', '<focus>', 'explicit', datetime('now'));
+INSERT OR REPLACE INTO user_profile (category, key, value, source, updated_at) VALUES ('preferences', 'communication_style', '<style>', 'explicit', datetime('now'));
+
+After collecting preferences, transition: "Got it, [name]. Now let's get some data in here." Then suggest adding contacts, importing CSV, or connecting Google."#
+    } else if contact_count == 0 {
+        r#"
+
+## Getting Started
+
+The user has a profile but no contacts yet. Gently encourage them to add data:
+
+**The best way to start is to give me data.** Suggest:
+- "Add a contact named Sarah Chen, VP of Engineering at Acme"
+- Drop a CSV of clients or contacts
+- Paste a call transcript
+- "Connect my Google account" to sync emails and calendar
+
+Ask: "Who's someone you work with that you'd like to start tracking?""#
+    } else {
+        "" // Active user — no onboarding needed
+    };
+
     format!(
         r#"You are Software of You — a personal data platform running as a native Mac app.
 The user's name is {name}. Communication style preference: {style}.
@@ -273,6 +348,6 @@ Place the marker at the END of your response, on its own line. Only include one 
 - {style}. No filler.
 - Use markdown tables for lists of 3+ items.
 - Dates in human-readable format ("3 days ago", "next Tuesday").
-- Focus on what matters — don't dump every field."#
+- Focus on what matters — don't dump every field.{onboarding_section}"#
     )
 }
