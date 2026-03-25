@@ -87,6 +87,45 @@ pub async fn get_panel_data(
     }
 }
 
+#[tauri::command]
+pub async fn get_onboarding_state(
+    state: State<'_, AppState>,
+) -> Result<serde_json::Value, String> {
+    let db = state.db.clone();
+
+    let contact_count: i64 = db
+        .query_json("SELECT COUNT(*) as count FROM contacts", &[])
+        .and_then(|v| v[0]["count"].as_i64().ok_or_else(|| "no count".to_string()))
+        .unwrap_or(0);
+
+    let has_profile: bool = db
+        .query_json(
+            "SELECT COUNT(*) as count FROM user_profile WHERE category = 'identity'",
+            &[],
+        )
+        .and_then(|v| {
+            v[0]["count"]
+                .as_i64()
+                .map(|n| n > 0)
+                .ok_or_else(|| "no count".to_string())
+        })
+        .unwrap_or(false);
+
+    let stage = if !has_profile {
+        "fresh"
+    } else if contact_count == 0 {
+        "has_profile"
+    } else {
+        "active"
+    };
+
+    Ok(serde_json::json!({
+        "stage": stage,
+        "contactCount": contact_count,
+        "hasProfile": has_profile,
+    }))
+}
+
 // ---------------------------------------------------------------------------
 // Google OAuth commands
 // ---------------------------------------------------------------------------
@@ -193,4 +232,34 @@ pub async fn get_google_status() -> Result<serde_json::Value, String> {
         "connected": connected,
         "email": email
     }))
+}
+
+// ---------------------------------------------------------------------------
+// Gmail + Calendar sync commands
+// ---------------------------------------------------------------------------
+
+/// Sync recent Gmail messages into the local database.
+#[tauri::command]
+pub async fn sync_gmail(state: State<'_, AppState>) -> Result<serde_json::Value, String> {
+    let token = state
+        .google_auth
+        .get_valid_token()
+        .await?
+        .ok_or_else(|| "Google not connected".to_string())?;
+    let db = state.db.clone();
+    let result = google::gmail::sync_gmail(&db, &token).await?;
+    Ok(serde_json::to_value(result).map_err(|e| format!("Serialize error: {}", e))?)
+}
+
+/// Sync calendar events into the local database.
+#[tauri::command]
+pub async fn sync_calendar(state: State<'_, AppState>) -> Result<serde_json::Value, String> {
+    let token = state
+        .google_auth
+        .get_valid_token()
+        .await?
+        .ok_or_else(|| "Google not connected".to_string())?;
+    let db = state.db.clone();
+    let result = google::calendar::sync_calendar(&db, &token).await?;
+    Ok(serde_json::to_value(result).map_err(|e| format!("Serialize error: {}", e))?)
 }

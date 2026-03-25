@@ -1,3 +1,5 @@
+pub mod calendar;
+pub mod gmail;
 pub mod oauth;
 
 use serde::{Deserialize, Serialize};

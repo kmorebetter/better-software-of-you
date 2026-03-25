@@ -22,6 +22,8 @@ pub fn run() {
             commands::handle_google_callback,
             commands::disconnect_google,
             commands::get_google_status,
+            commands::sync_gmail,
+            commands::sync_calendar,
         ])
         .setup(|app| {
             // Handle deep-link callbacks (soy://auth/callback?code=...).
@@ -79,6 +81,29 @@ pub fn run() {
                             }
                         }
                     });
+                }
+            });
+
+            // Auto-sync: periodically refresh Gmail + Calendar data every 15 minutes.
+            let sync_handle = app.handle().clone();
+            tauri::async_runtime::spawn(async move {
+                loop {
+                    // Wait 15 minutes between sync cycles.
+                    tokio::time::sleep(std::time::Duration::from_secs(900)).await;
+
+                    let state = sync_handle.state::<AppState>();
+                    let token = match state.google_auth.get_valid_token().await {
+                        Ok(Some(t)) => t,
+                        _ => continue, // Not connected or token error — skip this cycle.
+                    };
+
+                    let db = state.db.clone();
+                    if let Err(e) = google::gmail::sync_gmail(&db, &token).await {
+                        eprintln!("Auto-sync gmail error: {}", e);
+                    }
+                    if let Err(e) = google::calendar::sync_calendar(&db, &token).await {
+                        eprintln!("Auto-sync calendar error: {}", e);
+                    }
                 }
             });
 
