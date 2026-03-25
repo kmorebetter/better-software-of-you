@@ -18,6 +18,7 @@ import {
   Eye,
   EyeOff,
   Info,
+  Loader2,
 } from "lucide-react";
 
 const APP_VERSION = "0.1.0";
@@ -34,6 +35,7 @@ export function SettingsPanel() {
   const [googleConnected, setGoogleConnected] = useState<boolean | null>(null);
   const [googleEmail, setGoogleEmail] = useState<string | null>(null);
   const [googleLoading, setGoogleLoading] = useState(false);
+  const [syncStatus, setSyncStatus] = useState<string | null>(null);
 
   // Load initial state
   useEffect(() => {
@@ -55,9 +57,7 @@ export function SettingsPanel() {
       "google-connected",
       (event) => {
         setGoogleConnected(event.payload.connected);
-        setGoogleLoading(false);
         if (event.payload.connected) {
-          // Use email from event if available, otherwise refresh from status
           if (event.payload.email) {
             setGoogleEmail(event.payload.email);
           } else {
@@ -67,6 +67,28 @@ export function SettingsPanel() {
           }
         } else {
           setGoogleEmail(null);
+          setGoogleLoading(false);
+        }
+      },
+    );
+
+    return () => {
+      unlistenPromise.then((unlisten) => unlisten());
+    };
+  }, []);
+
+  // Listen for sync progress events
+  useEffect(() => {
+    const unlistenPromise = listen<{ status: string; step?: string }>(
+      "sync-status",
+      (event) => {
+        if (event.payload.status === "done") {
+          setSyncStatus(null);
+          setGoogleLoading(false);
+        } else if (event.payload.step === "gmail") {
+          setSyncStatus("Syncing emails...");
+        } else if (event.payload.step === "calendar") {
+          setSyncStatus("Syncing calendar...");
         }
       },
     );
@@ -225,6 +247,13 @@ export function SettingsPanel() {
             )}
           </div>
 
+          {syncStatus && (
+            <div className="mt-2 flex items-center gap-2 px-2 py-1.5 rounded-lg bg-blue-50 text-xs text-blue-700">
+              <Loader2 size={12} className="animate-spin" />
+              {syncStatus}
+            </div>
+          )}
+
           <div className="mt-3">
             {googleConnected ? (
               <button
@@ -241,7 +270,7 @@ export function SettingsPanel() {
                 className="w-full px-3 py-1.5 rounded-lg bg-zinc-900 text-white text-xs font-medium hover:bg-zinc-700 disabled:opacity-40 transition-colors"
               >
                 {googleLoading
-                  ? "Waiting for authorization..."
+                  ? "Connecting..."
                   : "Connect Google Account"}
               </button>
             )}

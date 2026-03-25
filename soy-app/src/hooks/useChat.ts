@@ -178,12 +178,8 @@ export function useChat() {
       }
 
       if (data.done) {
-        // Save the assistant response to DB
-        if (currentConvId && streamBuffer.current) {
-          saveMessage(currentConvId, "assistant", streamBuffer.current).catch(
-            () => {},
-          );
-        }
+        // Assistant response is saved by the backend (with tool context).
+        // No frontend save needed — avoids duplicates.
 
         setMessages((prev) => {
           const updated = [...prev];

@@ -7,7 +7,7 @@ pub mod tools;
 
 use state::AppState;
 use tauri::image::Image;
-use tauri::menu::{MenuBuilder, MenuItemBuilder};
+use tauri::menu::{MenuBuilder, MenuItemBuilder, PredefinedMenuItem, SubmenuBuilder};
 use tauri::tray::{MouseButton, MouseButtonState, TrayIconBuilder, TrayIconEvent};
 use tauri::{Emitter, Manager, WebviewUrl, WebviewWindowBuilder, WindowEvent};
 
@@ -31,36 +31,74 @@ pub fn run() {
             commands::sync_calendar,
         ])
         .setup(|app| {
-            // Auto-sync: periodically refresh Gmail + Calendar data every 15 minutes.
+            // Auto-sync: refresh Gmail + Calendar data on startup (after 10s)
+            // and then every 15 minutes.
             let sync_handle = app.handle().clone();
             tauri::async_runtime::spawn(async move {
-                loop {
-                    // Wait 15 minutes between sync cycles.
-                    tokio::time::sleep(std::time::Duration::from_secs(900)).await;
+                // Short delay on startup so the app is fully loaded before first sync.
+                tokio::time::sleep(std::time::Duration::from_secs(10)).await;
 
+                loop {
                     let state = sync_handle.state::<AppState>();
                     let db = state.db.clone();
                     let token = match state.google_auth.get_valid_token(&db).await {
                         Ok(Some(t)) => t,
-                        _ => continue, // Not connected or token error — skip this cycle.
+                        _ => {
+                            // Not connected or token error — wait and retry.
+                            tokio::time::sleep(std::time::Duration::from_secs(900)).await;
+                            continue;
+                        }
                     };
 
-                    if let Err(e) = google::gmail::sync_gmail(&db, &token).await {
+                    if let Err(e) = google::gmail::sync_gmail(&db, &token, 50).await {
                         eprintln!("Auto-sync gmail error: {}", e);
                     }
                     if let Err(e) = google::calendar::sync_calendar(&db, &token).await {
                         eprintln!("Auto-sync calendar error: {}", e);
                     }
+
+                    // Wait 15 minutes before next sync cycle.
+                    tokio::time::sleep(std::time::Duration::from_secs(900)).await;
                 }
             });
 
-            // ── App menu with Preferences ──────────────────────────────
+            // ── macOS-native menus (Quit, Copy/Paste, etc.) ─────────────
             let prefs_item = MenuItemBuilder::new("Settings...")
                 .accelerator("CmdOrCtrl+,")
                 .id("preferences")
                 .build(app)?;
-            let menu = MenuBuilder::new(app)
+
+            let app_menu = SubmenuBuilder::new(app, "Software of You")
+                .item(&PredefinedMenuItem::about(app, None, None)?)
+                .separator()
                 .item(&prefs_item)
+                .separator()
+                .item(&PredefinedMenuItem::hide(app, None)?)
+                .item(&PredefinedMenuItem::hide_others(app, None)?)
+                .item(&PredefinedMenuItem::show_all(app, None)?)
+                .separator()
+                .item(&PredefinedMenuItem::quit(app, None)?)
+                .build()?;
+
+            let edit_menu = SubmenuBuilder::new(app, "Edit")
+                .item(&PredefinedMenuItem::undo(app, None)?)
+                .item(&PredefinedMenuItem::redo(app, None)?)
+                .separator()
+                .item(&PredefinedMenuItem::cut(app, None)?)
+                .item(&PredefinedMenuItem::copy(app, None)?)
+                .item(&PredefinedMenuItem::paste(app, None)?)
+                .item(&PredefinedMenuItem::select_all(app, None)?)
+                .build()?;
+
+            let window_menu = SubmenuBuilder::new(app, "Window")
+                .item(&PredefinedMenuItem::minimize(app, None)?)
+                .item(&PredefinedMenuItem::close_window(app, None)?)
+                .build()?;
+
+            let menu = MenuBuilder::new(app)
+                .item(&app_menu)
+                .item(&edit_menu)
+                .item(&window_menu)
                 .build()?;
             app.set_menu(menu)?;
 

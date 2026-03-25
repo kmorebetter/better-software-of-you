@@ -69,3 +69,19 @@ export async function disconnectGoogle(): Promise<{
 }> {
   return invoke("disconnect_google");
 }
+
+export async function syncGmail(): Promise<{
+  synced: number;
+  linked: number;
+  errors: number;
+}> {
+  return invoke("sync_gmail");
+}
+
+export async function syncCalendar(): Promise<{
+  synced: number;
+  linked: number;
+  errors: number;
+}> {
+  return invoke("sync_calendar");
+}

@@ -1,6 +1,7 @@
 pub mod calendar;
 pub mod contacts;
 pub mod email;
+pub mod google;
 pub mod inbox;
 pub mod intelligence;
 pub mod interactions;
@@ -46,5 +47,6 @@ pub fn tool_definitions() -> Vec<Value> {
         calendar::definition(),
         transcripts::definition(),
         intelligence::definition(),
+        google::definition(),
     ]
 }

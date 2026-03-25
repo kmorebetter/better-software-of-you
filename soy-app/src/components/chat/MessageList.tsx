@@ -1,14 +1,13 @@
 import { useEffect, useRef } from "react";
-import { Message, PanelHint } from "../../lib/types";
+import { Message } from "../../lib/types";
 import { MessageBubble } from "./MessageBubble";
 import { WelcomePrompt } from "./WelcomePrompt";
 
 interface MessageListProps {
   messages: Message[];
-  onOpenPanel?: (hint: PanelHint) => void;
 }
 
-export function MessageList({ messages, onOpenPanel }: MessageListProps) {
+export function MessageList({ messages }: MessageListProps) {
   const endRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -26,7 +25,7 @@ export function MessageList({ messages, onOpenPanel }: MessageListProps) {
   return (
     <div className="flex-1 overflow-y-auto px-6 py-4">
       {messages.map((msg) => (
-        <MessageBubble key={msg.id} message={msg} onOpenPanel={onOpenPanel} />
+        <MessageBubble key={msg.id} message={msg} />
       ))}
       <div ref={endRef} />
     </div>

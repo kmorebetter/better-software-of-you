@@ -1,16 +1,19 @@
 use crate::db::Database;
+use crate::google;
+use crate::state::AppState;
 use crate::tools;
 use reqwest::Client;
 use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
 use std::sync::Arc;
-use tauri::{AppHandle, Emitter};
+use tauri::{AppHandle, Emitter, Manager};
 
 const CLAUDE_API_URL: &str = "https://api.anthropic.com/v1/messages";
 const MODEL: &str = "claude-sonnet-4-20250514";
 const MAX_TOOL_ROUNDS: usize = 10;
 
 #[derive(Serialize, Clone)]
+#[serde(rename_all = "camelCase")]
 pub struct StreamEvent {
     pub token: Option<String>,
     pub done: Option<bool>,
@@ -29,6 +32,7 @@ pub async fn send_with_tools(
     api_key: &str,
     messages: Vec<ChatMessage>,
     db: &Arc<Database>,
+    conversation_id: Option<i64>,
 ) -> Result<(), String> {
     let client = Client::new();
     let system_prompt = build_system_prompt(db);
@@ -102,6 +106,14 @@ pub async fn send_with_tools(
             // Strip [PANEL:...] markers so they aren't visible to the user
             let display_text = strip_panel_markers(&full_text);
 
+            // Save the final assistant response to DB (with full text, before stripping)
+            if let Some(conv_id) = conversation_id {
+                let _ = db.execute(
+                    "INSERT INTO messages (conversation_id, role, content) VALUES (?1, 'assistant', ?2)",
+                    &[&conv_id as &dyn rusqlite::ToSql, &display_text as &dyn rusqlite::ToSql],
+                );
+            }
+
             // Emit cleaned text in chunks to simulate streaming feel
             if !display_text.is_empty() {
                 for chunk in display_text.as_bytes().chunks(20) {
@@ -119,25 +131,15 @@ pub async fn send_with_tools(
                 }
             }
 
-            // Emit panel hint as a structured event (not visible text)
-            if let Some(hint) = panel_hint {
-                let _ = app.emit(
-                    "chat-stream",
-                    StreamEvent {
-                        token: None,
-                        done: None,
-                        panel_hint: Some(hint),
-                        error: None,
-                    },
-                );
-            }
-
+            // Emit done + panel hint together in a single event to avoid
+            // race conditions where done arrives first and the listener
+            // unsubscribes before the panel hint event is processed.
             let _ = app.emit(
                 "chat-stream",
                 StreamEvent {
                     token: None,
                     done: Some(true),
-                    panel_hint: None,
+                    panel_hint,
                     error: None,
                 },
             );
@@ -146,10 +148,20 @@ pub async fn send_with_tools(
 
         // Has tool use — execute tools and continue the loop
         // First, add the assistant's response to conversation
+        let assistant_content = json!(content);
         conversation.push(ChatMessage {
             role: "assistant".to_string(),
-            content: json!(content),
+            content: assistant_content.clone(),
         });
+
+        // Persist the assistant tool-use message so future turns have context
+        if let Some(conv_id) = conversation_id {
+            let content_str = serde_json::to_string(&assistant_content).unwrap_or_default();
+            let _ = db.execute(
+                "INSERT INTO messages (conversation_id, role, content, tool_calls) VALUES (?1, 'assistant', ?2, ?2)",
+                &[&conv_id as &dyn rusqlite::ToSql, &content_str],
+            );
+        }
 
         // Execute each tool and build tool_result messages
         let mut tool_results: Vec<Value> = Vec::new();
@@ -169,7 +181,12 @@ pub async fn send_with_tools(
                 },
             );
 
-            let result = tools::execute_tool(db, tool_name, tool_input);
+            // The `google` tool is async (needs network + AppState), handle it separately
+            let result = if tool_name == "google" {
+                execute_google_tool(app, db, tool_input).await
+            } else {
+                tools::execute_tool(db, tool_name, tool_input)
+            };
 
             let tool_result = match result {
                 Ok(data) => json!({
@@ -188,10 +205,21 @@ pub async fn send_with_tools(
             tool_results.push(tool_result);
         }
 
+        let tool_results_content = json!(tool_results);
+
+        // Persist the tool results so future turns have context
+        if let Some(conv_id) = conversation_id {
+            let content_str = serde_json::to_string(&tool_results_content).unwrap_or_default();
+            let _ = db.execute(
+                "INSERT INTO messages (conversation_id, role, content, tool_calls) VALUES (?1, 'user', ?2, ?2)",
+                &[&conv_id as &dyn rusqlite::ToSql, &content_str],
+            );
+        }
+
         // Add tool results as a user message
         conversation.push(ChatMessage {
             role: "user".to_string(),
-            content: json!(tool_results),
+            content: tool_results_content,
         });
 
         // Loop continues — next iteration calls Claude again with tool results
@@ -237,6 +265,159 @@ fn strip_panel_markers(text: &str) -> String {
         }
     }
     result.trim_end().to_string()
+}
+
+/// Execute the async `google` tool — handles connect, sync, and status actions.
+/// This runs outside the normal sync tool execution path because it needs
+/// network access and the AppState for token management.
+async fn execute_google_tool(
+    app: &AppHandle,
+    db: &Arc<Database>,
+    args: &Value,
+) -> Result<Value, String> {
+    let action = args["action"].as_str().ok_or("Missing action")?;
+    let state = app.state::<AppState>();
+
+    match action {
+        "status" => {
+            let connected = google::oauth::is_connected(db);
+            let email = google::oauth::load_primary_email(db)?.unwrap_or_default();
+            let gmail_synced = db
+                .query_json(
+                    "SELECT value FROM soy_meta WHERE key = 'gmail_last_synced'",
+                    &[],
+                )
+                .ok()
+                .and_then(|v| v[0]["value"].as_str().map(String::from));
+            let calendar_synced = db
+                .query_json(
+                    "SELECT value FROM soy_meta WHERE key = 'calendar_last_synced'",
+                    &[],
+                )
+                .ok()
+                .and_then(|v| v[0]["value"].as_str().map(String::from));
+            let email_count: i64 = db
+                .query_json("SELECT COUNT(*) as count FROM emails", &[])
+                .and_then(|v| v[0]["count"].as_i64().ok_or_else(|| "no count".into()))
+                .unwrap_or(0);
+            let event_count: i64 = db
+                .query_json("SELECT COUNT(*) as count FROM calendar_events", &[])
+                .and_then(|v| v[0]["count"].as_i64().ok_or_else(|| "no count".into()))
+                .unwrap_or(0);
+
+            Ok(json!({
+                "connected": connected,
+                "email": email,
+                "gmail_last_synced": gmail_synced,
+                "calendar_last_synced": calendar_synced,
+                "email_count": email_count,
+                "calendar_event_count": event_count,
+            }))
+        }
+
+        "sync" => {
+            let token = state
+                .google_auth
+                .get_valid_token(db)
+                .await?
+                .ok_or_else(|| "Google not connected. Ask the user to connect first via Settings (Cmd+,).".to_string())?;
+
+            let count = args["count"].as_u64().unwrap_or(50) as usize;
+
+            let _ = app.emit("sync-status", json!({"status": "syncing", "step": "gmail"}));
+            let gmail_result = google::gmail::sync_gmail(db, &token, count).await;
+            let _ = app.emit("sync-status", json!({"status": "syncing", "step": "calendar"}));
+            let calendar_result = google::calendar::sync_calendar(db, &token).await;
+            let _ = app.emit("sync-status", json!({"status": "done"}));
+
+            Ok(json!({
+                "gmail": match gmail_result {
+                    Ok(r) => json!({"synced": r.synced, "linked": r.linked, "errors": r.errors}),
+                    Err(e) => json!({"error": e}),
+                },
+                "calendar": match calendar_result {
+                    Ok(r) => json!({"synced": r.synced, "linked": r.linked, "errors": r.errors}),
+                    Err(e) => json!({"error": e}),
+                },
+            }))
+        }
+
+        "sync_transcripts" => {
+            let token = state
+                .google_auth
+                .get_valid_token(db)
+                .await?
+                .ok_or_else(|| "Google not connected. Ask the user to connect first via Settings (Cmd+,).".to_string())?;
+
+            let _ = app.emit("sync-status", json!({"status": "syncing", "step": "transcripts"}));
+            let result = google::transcripts::sync_transcripts(db, &token).await;
+            let _ = app.emit("sync-status", json!({"status": "done"}));
+
+            match result {
+                Ok(r) => Ok(json!({
+                    "found": r.found,
+                    "imported": r.imported,
+                    "skipped": r.skipped,
+                    "errors": r.errors,
+                    "transcripts": r.transcripts,
+                })),
+                Err(e) => Err(e),
+            }
+        }
+
+        "connect" => {
+            // Start the OAuth flow — this will open the browser
+            let email = google::oauth::start_oauth_flow(db).await?;
+
+            // Cache the token
+            if let Ok(Some(token_data)) = google::oauth::load_token_file(&email) {
+                if let Some(at) = token_data["access_token"].as_str() {
+                    let expires_in = token_data["expires_in"].as_u64().unwrap_or(3600);
+                    state
+                        .google_auth
+                        .set_access_token(at.to_string(), expires_in);
+
+                    // Immediately sync (default 50 for initial connect)
+                    let _ = app.emit("sync-status", json!({"status": "syncing", "step": "gmail"}));
+                    let gmail_result = google::gmail::sync_gmail(db, at, 50).await;
+                    let _ = app.emit("sync-status", json!({"status": "syncing", "step": "calendar"}));
+                    let calendar_result = google::calendar::sync_calendar(db, at).await;
+                    let _ = app.emit("sync-status", json!({"status": "done"}));
+
+                    let _ = app.emit(
+                        "google-connected",
+                        json!({"connected": true, "email": &email}),
+                    );
+
+                    return Ok(json!({
+                        "status": "connected",
+                        "email": email,
+                        "gmail": match gmail_result {
+                            Ok(r) => json!({"synced": r.synced, "linked": r.linked}),
+                            Err(e) => json!({"error": e}),
+                        },
+                        "calendar": match calendar_result {
+                            Ok(r) => json!({"synced": r.synced, "linked": r.linked}),
+                            Err(e) => json!({"error": e}),
+                        },
+                    }));
+                }
+            }
+
+            let _ = app.emit(
+                "google-connected",
+                json!({"connected": true, "email": &email}),
+            );
+
+            Ok(json!({
+                "status": "connected",
+                "email": email,
+                "note": "Connected but initial sync skipped — will sync on next auto-refresh."
+            }))
+        }
+
+        _ => Err(format!("Unknown google action: {}", action)),
+    }
 }
 
 fn build_system_prompt(db: &Arc<Database>) -> String {
@@ -388,7 +569,10 @@ You are the ONLY interface. This is a chat-based app. There are NO menus, NO nav
 - No buttons the user clicks to perform actions
 
 **When the user wants to change settings:** Tell them to press Cmd+, or say "open settings" and you will show the settings panel.
-**When the user wants to connect Google:** You can trigger Google connection directly — the user just says "connect Google" and it works. Their browser will open for sign-in and the connection completes in seconds. They can also connect via Settings (Cmd+,).
+**When the user wants to connect Google:** Use the `google` tool with action "connect". This opens their browser for sign-in and automatically syncs emails + calendar once connected.
+**When the user asks about email/calendar and data seems stale or empty:** Use the `google` tool with action "sync" to trigger a fresh sync. Pass a `count` parameter to control how many emails to fetch (default 50). If the user asks for more emails (e.g. "get 300 emails"), just do it — pass count: 300. Don't argue or explain limits. Data auto-refreshes every 15 minutes, but you can sync on demand anytime.
+**To check Google connection status:** Use the `google` tool with action "status" — it returns connection info, last sync times, and data counts.
+**When the user wants to import meeting transcripts:** Use the `google` tool with action "sync_transcripts". This searches Gmail for Google Meet transcript notification emails (from gemini-notes@google.com), fetches the linked Google Docs content, and stores them in the database. Report the results: how many were found, imported, skipped (already imported), and any errors. If you get a 403 error about Google Docs access, tell the user to disconnect and reconnect Google in Settings (Cmd+,) to grant the updated permissions.
 
 ## App State
 {google_section}

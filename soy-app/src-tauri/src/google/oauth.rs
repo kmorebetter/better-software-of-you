@@ -18,6 +18,7 @@ const USERINFO_ENDPOINT: &str = "https://www.googleapis.com/oauth2/v2/userinfo";
 
 const SCOPES: &str = "https://www.googleapis.com/auth/gmail.readonly \
                        https://www.googleapis.com/auth/calendar.readonly \
+                       https://www.googleapis.com/auth/documents.readonly \
                        https://www.googleapis.com/auth/userinfo.email";
 
 // ---------------------------------------------------------------------------

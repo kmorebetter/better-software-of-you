@@ -1,6 +1,7 @@
 pub mod calendar;
 pub mod gmail;
 pub mod oauth;
+pub mod transcripts;
 
 use crate::db::Database;
 use serde::{Deserialize, Serialize};

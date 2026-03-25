@@ -107,7 +107,7 @@ pub fn execute(db: &Arc<Database>, args: &Value) -> Result<Value, String> {
 
     // Health / relationship score from computed view
     let health = db.query_json(
-        "SELECT days_silent, email_count, interaction_count, relationship_depth, trajectory FROM v_contact_health WHERE contact_id = ?1",
+        "SELECT days_silent, emails_total AS email_count, interactions_total AS interaction_count, relationship_depth, trajectory FROM v_contact_health WHERE id = ?1",
         &[&contact_id],
     ).unwrap_or(json!([]));
 

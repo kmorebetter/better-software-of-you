@@ -276,7 +276,7 @@ fn get_contact(db: &Arc<Database>, args: &Value) -> Result<Value, String> {
 
     // Health stats from computed view (may not exist, handle gracefully)
     let health = db.query_json(
-        "SELECT days_silent, email_count, interaction_count, relationship_depth FROM v_contact_health WHERE contact_id = ?1",
+        "SELECT days_silent, emails_total AS email_count, interactions_total AS interaction_count, relationship_depth FROM v_contact_health WHERE id = ?1",
         &[&contact_id],
     ).unwrap_or(json!([]));
 

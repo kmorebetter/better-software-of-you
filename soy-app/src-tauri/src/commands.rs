@@ -26,17 +26,28 @@ pub async fn send_message(
     if let Some(conv_id) = conversation_id {
         let history = db
             .query_json(
-                "SELECT role, content FROM messages WHERE conversation_id = ?1 ORDER BY created_at ASC LIMIT 50",
+                "SELECT role, content, tool_calls FROM messages WHERE conversation_id = ?1 ORDER BY created_at ASC LIMIT 100",
                 &[&conv_id as &dyn rusqlite::ToSql],
             )
             .unwrap_or(serde_json::json!([]));
 
         if let Some(rows) = history.as_array() {
             for row in rows {
-                messages.push(claude::ChatMessage {
-                    role: row["role"].as_str().unwrap_or("user").to_string(),
-                    content: serde_json::json!(row["content"].as_str().unwrap_or("")),
-                });
+                let role = row["role"].as_str().unwrap_or("user").to_string();
+                let tool_calls = row["tool_calls"].as_str();
+
+                // If tool_calls is set, this is a structured message (tool_use or tool_result).
+                // Parse it back as JSON content for the Claude API.
+                let content = if let Some(tc) = tool_calls {
+                    serde_json::from_str::<serde_json::Value>(tc).unwrap_or_else(|_| {
+                        serde_json::json!(row["content"].as_str().unwrap_or(""))
+                    })
+                } else {
+                    // Plain text message
+                    serde_json::json!(row["content"].as_str().unwrap_or(""))
+                };
+
+                messages.push(claude::ChatMessage { role, content });
             }
         }
     }
@@ -47,7 +58,7 @@ pub async fn send_message(
         content: serde_json::json!(message),
     });
 
-    claude::send_with_tools(&app, &api_key, messages, &db).await?;
+    claude::send_with_tools(&app, &api_key, messages, &db, conversation_id).await?;
     Ok("done".to_string())
 }
 
@@ -140,12 +151,12 @@ pub async fn get_api_key_status(state: State<'_, AppState>) -> Result<serde_json
 
 #[tauri::command]
 pub async fn set_api_key(state: State<'_, AppState>, key: String) -> Result<(), String> {
-    // Store in keychain
-    let entry = keyring::Entry::new("com.softwareofyou.app", "claude-api-key")
-        .map_err(|e| format!("Keychain error: {}", e))?;
-    entry
-        .set_password(&key)
-        .map_err(|e| format!("Failed to save key: {}", e))?;
+    // Persist in the database (survives app rebuilds, no code-signing issues)
+    let db = state.db.clone();
+    db.execute(
+        "INSERT OR REPLACE INTO soy_meta (key, value, updated_at) VALUES ('api_key', ?1, datetime('now'))",
+        &[&key as &dyn rusqlite::ToSql],
+    )?;
 
     // Update in-memory state
     let mut api_key = state
@@ -231,8 +242,8 @@ pub async fn get_onboarding_state(
 // ---------------------------------------------------------------------------
 
 /// Start the Google OAuth flow: opens browser, waits for localhost callback,
-/// exchanges code for tokens, saves to disk, registers in DB.
-/// Returns immediately with the result (no deep-link needed).
+/// exchanges code for tokens, saves to disk, registers in DB, then
+/// immediately syncs Gmail + Calendar so data is available right away.
 #[tauri::command]
 pub async fn connect_google(
     app: AppHandle,
@@ -243,24 +254,61 @@ pub async fn connect_google(
 
     // Cache the access token in memory for this session.
     // (start_oauth_flow already saved it to disk; load it for the in-memory cache)
-    if let Ok(Some(token_data)) = google::oauth::load_token_file(&email) {
-        if let Some(access_token) = token_data["access_token"].as_str() {
+    let access_token = if let Ok(Some(token_data)) = google::oauth::load_token_file(&email) {
+        if let Some(at) = token_data["access_token"].as_str() {
             let expires_in = token_data["expires_in"].as_u64().unwrap_or(3600);
             state
                 .google_auth
-                .set_access_token(access_token.to_string(), expires_in);
+                .set_access_token(at.to_string(), expires_in);
+            Some(at.to_string())
+        } else {
+            None
         }
-    }
+    } else {
+        None
+    };
 
-    // Notify the frontend.
+    // Notify the frontend that Google is connected.
     let _ = app.emit(
         "google-connected",
         serde_json::json!({ "connected": true, "email": &email }),
     );
 
+    // Immediately sync Gmail + Calendar so data is available without waiting
+    // for the 15-minute auto-sync timer.
+    let mut gmail_result = None;
+    let mut calendar_result = None;
+
+    if let Some(ref token) = access_token {
+        let _ = app.emit(
+            "sync-status",
+            serde_json::json!({ "status": "syncing", "step": "gmail" }),
+        );
+        match google::gmail::sync_gmail(&db, token, 50).await {
+            Ok(result) => gmail_result = Some(result),
+            Err(e) => eprintln!("Initial gmail sync error: {}", e),
+        }
+
+        let _ = app.emit(
+            "sync-status",
+            serde_json::json!({ "status": "syncing", "step": "calendar" }),
+        );
+        match google::calendar::sync_calendar(&db, token).await {
+            Ok(result) => calendar_result = Some(result),
+            Err(e) => eprintln!("Initial calendar sync error: {}", e),
+        }
+
+        let _ = app.emit(
+            "sync-status",
+            serde_json::json!({ "status": "done" }),
+        );
+    }
+
     Ok(serde_json::json!({
         "status": "connected",
         "email": email,
+        "gmail_sync": gmail_result,
+        "calendar_sync": calendar_result,
     }))
 }
 
@@ -355,7 +403,7 @@ pub async fn sync_gmail(state: State<'_, AppState>) -> Result<serde_json::Value,
         .get_valid_token(&db)
         .await?
         .ok_or_else(|| "Google not connected".to_string())?;
-    let result = google::gmail::sync_gmail(&db, &token).await?;
+    let result = google::gmail::sync_gmail(&db, &token, 50).await?;
     Ok(serde_json::to_value(result).map_err(|e| format!("Serialize error: {}", e))?)
 }
 

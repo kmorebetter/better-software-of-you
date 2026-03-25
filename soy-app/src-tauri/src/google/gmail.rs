@@ -6,10 +6,7 @@ use std::sync::Arc;
 // Gmail API response types
 // ---------------------------------------------------------------------------
 
-#[derive(Debug, Deserialize)]
-struct MessageList {
-    messages: Option<Vec<MessageRef>>,
-}
+// MessageList moved inline as MessageListResponse (with pagination support)
 
 #[derive(Debug, Deserialize)]
 struct MessageRef {
@@ -53,53 +50,87 @@ pub struct SyncResult {
 // Core sync logic
 // ---------------------------------------------------------------------------
 
+/// Response includes an optional page token for pagination.
+#[derive(Debug, Deserialize)]
+struct MessageListResponse {
+    messages: Option<Vec<MessageRef>>,
+    #[serde(rename = "nextPageToken")]
+    next_page_token: Option<String>,
+}
+
 /// Fetch recent Gmail messages and upsert into the local database.
 ///
-/// `user_email` is the authenticated Google account email, used to determine
-/// inbound vs outbound direction. If not available, all messages default to inbound.
+/// `max_results` controls how many messages to fetch. The Gmail API pages at
+/// 500 per request, so larger values are fetched across multiple pages.
+/// Pass 0 or use `sync_gmail(db, token, 50)` for the default.
 pub async fn sync_gmail(
     db: &Arc<Database>,
     access_token: &str,
+    max_results: usize,
 ) -> Result<SyncResult, String> {
     let client = reqwest::Client::new();
+    let max_results = if max_results == 0 { 50 } else { max_results };
 
     // Resolve the user's own email for direction logic.
     let user_email = super::oauth::load_primary_email(db)?
         .unwrap_or_default()
         .to_lowercase();
 
-    // 1. Fetch the list of recent message IDs.
-    let list_url = "https://gmail.googleapis.com/gmail/v1/users/me/messages?maxResults=50";
-    let list_resp = client
-        .get(list_url)
-        .bearer_auth(access_token)
-        .send()
-        .await
-        .map_err(|e| format!("Gmail list request failed: {}", e))?;
+    // 1. Fetch message IDs, paginating if needed.
+    //    Gmail API caps maxResults at 500 per page.
+    let mut message_refs: Vec<MessageRef> = Vec::new();
+    let mut page_token: Option<String> = None;
 
-    if !list_resp.status().is_success() {
-        let status = list_resp.status();
-        let body = list_resp.text().await.unwrap_or_default();
-        return Err(format!("Gmail list failed ({}): {}", status, body));
+    loop {
+        let per_page = std::cmp::min(max_results - message_refs.len(), 500);
+        let mut url = format!(
+            "https://gmail.googleapis.com/gmail/v1/users/me/messages?maxResults={}",
+            per_page
+        );
+        if let Some(ref token) = page_token {
+            url.push_str(&format!("&pageToken={}", token));
+        }
+
+        let list_resp = client
+            .get(&url)
+            .bearer_auth(access_token)
+            .send()
+            .await
+            .map_err(|e| format!("Gmail list request failed: {}", e))?;
+
+        if !list_resp.status().is_success() {
+            let status = list_resp.status();
+            let body = list_resp.text().await.unwrap_or_default();
+            return Err(format!("Gmail list failed ({}): {}", status, body));
+        }
+
+        let page: MessageListResponse = list_resp
+            .json()
+            .await
+            .map_err(|e| format!("Failed to parse message list: {}", e))?;
+
+        if let Some(msgs) = page.messages {
+            message_refs.extend(msgs);
+        }
+
+        // Stop if we've collected enough or there are no more pages.
+        if message_refs.len() >= max_results || page.next_page_token.is_none() {
+            break;
+        }
+        page_token = page.next_page_token;
     }
 
-    let list: MessageList = list_resp
-        .json()
-        .await
-        .map_err(|e| format!("Failed to parse message list: {}", e))?;
+    // Trim to exact requested count.
+    message_refs.truncate(max_results);
 
-    let message_refs = match list.messages {
-        Some(msgs) => msgs,
-        None => {
-            // No messages at all — still update the timestamp.
-            update_sync_timestamp(db)?;
-            return Ok(SyncResult {
-                synced: 0,
-                linked: 0,
-                errors: 0,
-            });
-        }
-    };
+    if message_refs.is_empty() {
+        update_sync_timestamp(db)?;
+        return Ok(SyncResult {
+            synced: 0,
+            linked: 0,
+            errors: 0,
+        });
+    }
 
     // 2. Fetch metadata for each message and upsert.
     let mut synced: usize = 0;

@@ -44,7 +44,7 @@ pub fn execute(db: &Arc<Database>) -> Result<Value, String> {
 
     // Unread email count
     let unread_emails = db.query_json(
-        "SELECT COUNT(*) AS count FROM emails WHERE direction = 'inbound' AND read_at IS NULL",
+        "SELECT COUNT(*) AS count FROM emails WHERE direction = 'inbound' AND is_read = 0",
         &[],
     ).unwrap_or(json!([]));
 
