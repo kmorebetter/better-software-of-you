@@ -7,6 +7,7 @@ pub mod tools;
 
 use state::AppState;
 use tauri::image::Image;
+use tauri::menu::{MenuBuilder, MenuItemBuilder};
 use tauri::tray::{MouseButton, MouseButtonState, TrayIconBuilder, TrayIconEvent};
 use tauri::{Emitter, Listener, Manager, WebviewUrl, WebviewWindowBuilder, WindowEvent};
 
@@ -110,6 +111,28 @@ pub fn run() {
                     if let Err(e) = google::calendar::sync_calendar(&db, &token).await {
                         eprintln!("Auto-sync calendar error: {}", e);
                     }
+                }
+            });
+
+            // ── App menu with Preferences ──────────────────────────────
+            let prefs_item = MenuItemBuilder::new("Settings...")
+                .accelerator("CmdOrCtrl+,")
+                .id("preferences")
+                .build(app)?;
+            let menu = MenuBuilder::new(app)
+                .item(&prefs_item)
+                .build()?;
+            app.set_menu(menu)?;
+
+            // Handle the Preferences menu click
+            let prefs_handle = app.handle().clone();
+            app.on_menu_event(move |_app, event| {
+                if event.id().0 == "preferences" {
+                    // Emit an event to the frontend to open settings panel
+                    let _ = prefs_handle.emit(
+                        "open-settings",
+                        serde_json::json!({ "type": "settings", "title": "Settings" }),
+                    );
                 }
             });
 

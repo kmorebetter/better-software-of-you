@@ -262,6 +262,19 @@ fn build_system_prompt(db: &Arc<Database>) -> String {
         }
     }
 
+    // Check Google connection status
+    let google_connected = crate::google::GoogleAuthState::load_refresh_token()
+        .map(|t| t.is_some())
+        .unwrap_or(false);
+    let google_email = if google_connected {
+        crate::google::GoogleAuthState::load_email()
+            .ok()
+            .flatten()
+            .unwrap_or_default()
+    } else {
+        String::new()
+    };
+
     // Check onboarding state
     let contact_count: i64 = db
         .query_json("SELECT COUNT(*) as count FROM contacts", &[])
@@ -318,7 +331,9 @@ INSERT OR REPLACE INTO user_profile (category, key, value, source, updated_at) V
 INSERT OR REPLACE INTO user_profile (category, key, value, source, updated_at) VALUES ('preferences', 'focus', '<focus>', 'explicit', datetime('now'));
 INSERT OR REPLACE INTO user_profile (category, key, value, source, updated_at) VALUES ('preferences', 'communication_style', '<style>', 'explicit', datetime('now'));
 
-After collecting preferences, transition: "Got it, [name]. Now let's get some data in here." Then suggest adding contacts, importing CSV, or connecting Google."#
+After collecting preferences, transition: "Got it, [name]. Now let's get some data in here."
+
+Then suggest adding contacts or importing a CSV. Only mention connecting Google if Google integration is available (check the App State section above)."#
     } else if contact_count == 0 {
         r#"
 
@@ -330,16 +345,50 @@ The user has a profile but no contacts yet. Gently encourage them to add data:
 - "Add a contact named Sarah Chen, VP of Engineering at Acme"
 - Drop a CSV of clients or contacts
 - Paste a call transcript
-- "Connect my Google account" to sync emails and calendar
+
+Only suggest connecting Google if Google integration is available (check the App State section above).
 
 Ask: "Who's someone you work with that you'd like to start tracking?""#
     } else {
         "" // Active user — no onboarding needed
     };
 
+    // Build Google status section
+    let google_section = if google_connected {
+        format!(
+            "- Google account connected ({google_email}). Gmail and Calendar sync is active — data refreshes automatically every 15 minutes."
+        )
+    } else {
+        "- Google account is NOT connected. Google integration requires OAuth credentials to be configured in the app build. Do NOT tell users to connect Google or reference Gmail/Calendar features unless they explicitly ask — and if they do, explain that Google integration is not yet configured in this build.".to_string()
+    };
+
     format!(
         r#"You are Software of You — a personal data platform running as a native Mac app.
 The user's name is {name}. Communication style preference: {style}.
+
+## Your Interface — IMPORTANT
+
+You are the ONLY interface. This is a chat-based app. There are NO menus, NO navigation bars, NO settings screens, NO "File > Preferences" menus. Everything happens through this conversation.
+
+**What exists:**
+- This chat window (where the user talks to you)
+- A side panel that slides out when you include a [PANEL:...] marker (shows contact details, dashboards, etc.)
+- A menu bar icon in the macOS status bar (shows nudges and quick input)
+- Cmd+, keyboard shortcut opens a Settings panel in the side panel
+
+**What does NOT exist — never reference these:**
+- No "Settings menu" or "Settings page" in a menu bar
+- No "Integrations" page
+- No navigation or tabs
+- No "Go to..." anything
+- No buttons the user clicks to perform actions
+
+**When the user wants to change settings:** Tell them to press Cmd+, or say "open settings" and you will show the settings panel.
+**When the user wants to connect Google:** Tell them to press Cmd+, or say "open settings" to access the Google connection in the settings panel. Do NOT invent steps like "Go to Settings → Integrations".
+
+## App State
+{google_section}
+- Contacts in database: {contact_count}
 
 ## Core Behavior
 - Be the interface. Users talk naturally. You translate to tool calls. Present results conversationally.
@@ -347,6 +396,7 @@ The user's name is {name}. Communication style preference: {style}.
 - Suggest next actions after completing a request.
 - Never expose raw SQL or tool calls unless asked.
 - Never fabricate data. If you can't derive a number, say so.
+- NEVER reference UI elements that don't exist. You are a chat app with a side panel. That's it.
 
 ## Panel Hints
 When your response references a specific entity that would benefit from a visual panel, include a marker:
@@ -356,6 +406,7 @@ When your response references a specific entity that would benefit from a visual
 - Meeting prep: [PANEL:meeting-prep:<event_id>]
 - Nudges: [PANEL:nudges]
 - Commitments: [PANEL:commitments]
+- Settings: [PANEL:settings]
 
 Place the marker at the END of your response, on its own line. Only include one panel hint per response.
 

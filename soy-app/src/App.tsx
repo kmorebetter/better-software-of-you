@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { getCurrentWindow } from "@tauri-apps/api/window";
+import { listen } from "@tauri-apps/api/event";
 import { ChatPane } from "./components/chat/ChatPane";
 import { MenuBarWindow } from "./components/menubar/MenuBarWindow";
 import { SidePanel } from "./components/panel/SidePanel";
@@ -65,13 +66,22 @@ function MainApp() {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [showPanel]);
 
-  // Listen for "open-settings" events dispatched from error actions
+  // Listen for "open-settings" events from DOM (error actions) and Tauri (menu item)
   useEffect(() => {
     const handleOpenSettings = () => {
       showPanel({ type: "settings", title: "Settings" });
     };
+    // DOM event from error banner actions
     window.addEventListener("open-settings", handleOpenSettings);
-    return () => window.removeEventListener("open-settings", handleOpenSettings);
+    // Tauri event from native Preferences menu item
+    let unlistenTauri: (() => void) | undefined;
+    listen("open-settings", handleOpenSettings).then((fn) => {
+      unlistenTauri = fn;
+    });
+    return () => {
+      window.removeEventListener("open-settings", handleOpenSettings);
+      unlistenTauri?.();
+    };
   }, [showPanel]);
 
   const handleSetKey = async () => {
