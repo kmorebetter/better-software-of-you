@@ -4,6 +4,7 @@ import { ChatPane } from "./components/chat/ChatPane";
 import { MenuBarWindow } from "./components/menubar/MenuBarWindow";
 import { SidePanel } from "./components/panel/SidePanel";
 import { ErrorBanner } from "./components/shared/ErrorBanner";
+import { LoadingScreen } from "./components/shared/LoadingScreen";
 import { useChat } from "./hooks/useChat";
 import { usePanel } from "./hooks/usePanel";
 import { getApiKeyStatus, getOnboardingState, setApiKey } from "./lib/commands";
@@ -79,7 +80,7 @@ function MainApp() {
     setHasKey(true);
   };
 
-  if (hasKey === null) return null;
+  if (hasKey === null) return <LoadingScreen />;
 
   if (!hasKey) {
     return (
