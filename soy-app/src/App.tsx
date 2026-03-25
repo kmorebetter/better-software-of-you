@@ -1,13 +1,24 @@
 import { useEffect, useState } from "react";
 import { ChatPane } from "./components/chat/ChatPane";
+import { SidePanel } from "./components/panel/SidePanel";
 import { useChat } from "./hooks/useChat";
+import { usePanel } from "./hooks/usePanel";
 import { getApiKeyStatus, setApiKey } from "./lib/commands";
 import { KeyRound } from "lucide-react";
 
 function App() {
-  const { messages, isStreaming, send } = useChat();
+  const { messages, isStreaming, send, pendingPanelHint, setPendingPanelHint } = useChat();
+  const { panel, isOpen, isPinned, showPanel, closePanel, togglePin } = usePanel();
   const [hasKey, setHasKey] = useState<boolean | null>(null);
   const [keyInput, setKeyInput] = useState("");
+
+  // React to panel hints from chat
+  useEffect(() => {
+    if (pendingPanelHint) {
+      showPanel(pendingPanelHint);
+      setPendingPanelHint(null);
+    }
+  }, [pendingPanelHint, showPanel, setPendingPanelHint]);
 
   useEffect(() => {
     getApiKeyStatus().then((s) => setHasKey(s.hasKey));
@@ -53,9 +64,16 @@ function App() {
 
   return (
     <div className="h-screen flex">
-      <div className="flex-1 flex flex-col">
+      <div className="flex-1 flex flex-col min-w-0">
         <ChatPane messages={messages} isStreaming={isStreaming} onSend={send} />
       </div>
+      <SidePanel
+        panel={panel}
+        isOpen={isOpen}
+        isPinned={isPinned}
+        onClose={closePanel}
+        onTogglePin={togglePin}
+      />
     </div>
   );
 }
