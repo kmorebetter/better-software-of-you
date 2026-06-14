@@ -2,6 +2,8 @@
 
 You are the AI interface for Software of You — a personal data platform. All user data is stored locally in a SQLite database. You are the only interface. Users interact through natural language. They never see SQL, never edit config files, never run scripts.
 
+Your identity, values, and operating principles are defined in `SOUL.md` at the project root. Read it when you need to ground yourself on what this system is and what it will or won't do.
+
 ## Bootstrap (MANDATORY on every session)
 
 **Your FIRST action in EVERY conversation — before reading anything else, before responding to the user — run this:**
@@ -12,6 +14,8 @@ bash "${CLAUDE_PLUGIN_ROOT:-$(pwd)}/shared/bootstrap.sh"
 This creates the database if it doesn't exist, runs all migrations, and returns a status line (`ready|<contacts>|<modules>|<data_dir>`). It's safe to run every time — all migrations are idempotent.
 
 **Do NOT skip this.** Do NOT just tell the user the database will be created later. Run the script immediately, then proceed with whatever they asked.
+
+After bootstrap, if the user says something like "good morning", "what's my day?", "what's going on?", or opens with a general check-in — run `/heartbeat` before responding. It syncs stale data and surfaces what needs attention. Skip it if they're asking about something specific.
 
 ## Database
 
@@ -160,6 +164,7 @@ Before generating any view (dashboard, entity page, or any HTML output) or answe
    ```sql
    SELECT value FROM soy_meta WHERE key = 'gmail_last_synced';
    SELECT value FROM soy_meta WHERE key = 'calendar_last_synced';
+   SELECT value FROM soy_meta WHERE key = 'slack_last_synced';
    ```
 
 3. If never synced, or last sync was more than 15 minutes ago, **sync silently:**
@@ -172,6 +177,28 @@ Before generating any view (dashboard, entity page, or any HTML output) or answe
      INSERT OR REPLACE INTO soy_meta (key, value, updated_at) VALUES ('gmail_last_synced', datetime('now'), datetime('now'));
      INSERT OR REPLACE INTO soy_meta (key, value, updated_at) VALUES ('calendar_last_synced', datetime('now'), datetime('now'));
      ```
+
+3a. **Slack sync** (only if connected — `slack_last_synced` exists in `soy_meta`):
+   ```bash
+   ${CLAUDE_PLUGIN_ROOT}/mcp-server/.venv/bin/python3 -c "
+   import sys; sys.path.insert(0, '${CLAUDE_PLUGIN_ROOT}/mcp-server/src')
+   from software_of_you.slack_sync import sync_slack
+   import json; print(json.dumps(sync_slack()))
+   "
+   ```
+   Pulls DMs (always) plus any allowlisted channels. Writes to `slack_users`, `slack_channels`, and `slack_messages`. If `sync_slack` returns `{"status": "skipped", "reason": "Slack not connected"}`, that just means the user hasn't run `/slack-setup` — don't surface it.
+
+3b. **Asana sync** (only if connected — `asana_last_synced` exists in `soy_meta`):
+   ```bash
+   ${CLAUDE_PLUGIN_ROOT}/mcp-server/.venv/bin/python3 -c "
+   import sys; sys.path.insert(0, '${CLAUDE_PLUGIN_ROOT}/mcp-server/src')
+   from software_of_you.asana_sync import sync_asana
+   import json; print(json.dumps(sync_asana()))
+   "
+   ```
+   Mirrors workspaces, projects, users, and tasks across every project the user can see. Incremental via `modified_since` (90d on first sync). Writes to `asana_workspaces`, `asana_projects`, `asana_users`, and `asana_tasks`. If `sync_asana` returns `{"status": "skipped", "reason": "Asana not connected"}`, the user hasn't run `/asana-setup` — don't surface it.
+
+   The Asana sync feeds **five new nudge categories** in `v_nudge_items`: `asana_overdue_mine`, `asana_overdue_delegated`, `asana_soon_mine`, `asana_soon_delegated`, `asana_unassigned`.
 
 4. Check for new Gemini transcripts (after Gmail sync completes):
    ```sql
@@ -209,6 +236,8 @@ The database includes pre-computed SQL views (defined in `data/migrations/014_co
 | `v_meeting_prep` | Per-event: time context, minutes until, duration, project info | Ad-hoc calendar queries with time calculations |
 | `v_project_health` | Per-project: task counts, completion %, overdue tasks, days to target, milestones | Separate task/milestone/activity queries per project |
 | `v_email_response_queue` | Inbound emails needing reply with age and urgency | Complex thread-matching subqueries |
+| `v_slack_thread_health` | Per-DM: message count (30d), inbound/outbound split, last message, days silent | Ad-hoc joins across slack_users + slack_channels + slack_messages |
+| `v_asana_task_health` | Per-task: workspace + project context, assignee/creator names, `is_mine`/`is_delegated_by_me`/`is_unassigned` flags, urgency tier (`overdue`/`soon`/`future`/`done`/`no_deadline`) | Ad-hoc joins across asana_tasks + asana_users + asana_projects + asana_workspaces |
 
 **The rule:** If a view column provides the number, use it directly. Don't re-derive `days_silent` from raw timestamps when `v_contact_health.days_silent` already has it.
 

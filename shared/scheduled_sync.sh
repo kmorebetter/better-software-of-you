@@ -66,8 +66,14 @@ plugin_root = os.environ["CLAUDE_PLUGIN_ROOT"]
 sys.path.insert(0, os.path.join(plugin_root, "mcp-server", "src"))
 
 from software_of_you.google_sync import sync_all_accounts
+from software_of_you.slack_sync import sync_slack
+from software_of_you.asana_sync import sync_asana
 
-result = sync_all_accounts()
+result = {
+    "google": sync_all_accounts(),
+    "slack": sync_slack(),
+    "asana": sync_asana(),
+}
 print(json.dumps(result))
 ' 2>&1) || true
 

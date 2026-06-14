@@ -113,4 +113,8 @@ def create_server() -> FastMCP:
     from software_of_you.tools.slack_tool import register as register_slack
     register_slack(server)
 
+    # Register brief tool
+    from software_of_you.tools.brief_tool import register as register_brief
+    register_brief(server)
+
     return server

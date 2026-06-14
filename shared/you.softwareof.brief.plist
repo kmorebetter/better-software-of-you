@@ -3,36 +3,36 @@
 <plist version="1.0">
 <dict>
     <key>Label</key>
-    <string>you.softwareof.sync</string>
+    <string>you.softwareof.brief</string>
 
     <key>ProgramArguments</key>
     <array>
-        <string>/bin/bash</string>
-        <string>__PLUGIN_ROOT__/shared/scheduled_sync.sh</string>
+        <string>__VENV_PYTHON__</string>
+        <string>__PLUGIN_ROOT__/shared/generate_brief.py</string>
     </array>
 
     <key>StartCalendarInterval</key>
     <array>
-        <!-- 6:00 AM -->
+        <!-- 6:05 AM — morning brief (after 6am sync) -->
         <dict>
             <key>Hour</key>
             <integer>6</integer>
             <key>Minute</key>
-            <integer>0</integer>
+            <integer>5</integer>
         </dict>
-        <!-- 12:00 PM -->
+        <!-- 12:05 PM — midday brief (after noon sync) -->
         <dict>
             <key>Hour</key>
             <integer>12</integer>
             <key>Minute</key>
-            <integer>0</integer>
+            <integer>5</integer>
         </dict>
-        <!-- 6:00 PM -->
+        <!-- 6:05 PM — EOD brief (after 6pm sync) -->
         <dict>
             <key>Hour</key>
             <integer>18</integer>
             <key>Minute</key>
-            <integer>0</integer>
+            <integer>5</integer>
         </dict>
     </array>
 
@@ -47,10 +47,10 @@
     </dict>
 
     <key>StandardOutPath</key>
-    <string>__DATA_DIR__/logs/launchd-sync.log</string>
+    <string>__DATA_DIR__/logs/brief.log</string>
 
     <key>StandardErrorPath</key>
-    <string>__DATA_DIR__/logs/launchd-sync.log</string>
+    <string>__DATA_DIR__/logs/brief.log</string>
 
     <key>WorkingDirectory</key>
     <string>__PLUGIN_ROOT__</string>

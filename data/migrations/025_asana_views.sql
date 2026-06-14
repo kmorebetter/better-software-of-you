@@ -1,9 +1,68 @@
--- 018: Update computed views to include Slack messages in activity calculations
--- After Slack integration, v_contact_health and v_nudge_items must factor in
--- slack_messages so contacts with active Slack threads don't appear "silent."
+-- 025: Integrate Asana into relationship health, nudges, and per-task urgency.
 
 -- ═══════════════════════════════════════════════════════════════
--- v_contact_health: Add slack_messages to last_activity / days_silent
+-- v_asana_task_health: Per-task derived urgency and delegation status
+-- ═══════════════════════════════════════════════════════════════
+
+DROP VIEW IF EXISTS v_asana_task_health;
+CREATE VIEW IF NOT EXISTS v_asana_task_health AS
+SELECT
+  at.id,
+  at.gid,
+  at.name,
+  at.notes,
+  at.permalink,
+  at.completed,
+  at.due_on,
+  at.due_at,
+  at.modified_at,
+  at.created_at,
+  at.assignee_gid,
+  at.assignee_contact_id,
+  at.created_by_gid,
+
+  -- Workspace + project context
+  aw.gid AS workspace_gid,
+  aw.name AS workspace_name,
+  ap.gid AS project_gid,
+  ap.name AS project_name,
+  ap.archived AS project_archived,
+
+  -- Assignee + creator names
+  ua.name AS assignee_name,
+  ua.email AS assignee_email,
+  uc.name AS creator_name,
+  c_assignee.name AS assignee_contact_name,
+
+  -- Self-as-assignee / delegation flags
+  CASE WHEN ua.is_self = 1 THEN 1 ELSE 0 END AS is_mine,
+  CASE WHEN uc.is_self = 1 AND ua.is_self = 0 AND at.assignee_gid IS NOT NULL THEN 1 ELSE 0 END AS is_delegated_by_me,
+  CASE WHEN at.assignee_gid IS NULL THEN 1 ELSE 0 END AS is_unassigned,
+
+  -- Days until / overdue
+  CASE
+    WHEN at.due_on IS NULL THEN NULL
+    ELSE CAST(julianday(at.due_on) - julianday('now') AS INTEGER)
+  END AS days_until_due,
+
+  CASE
+    WHEN at.completed = 1 THEN 'done'
+    WHEN at.due_on IS NULL THEN 'no_deadline'
+    WHEN at.due_on < date('now') THEN 'overdue'
+    WHEN at.due_on <= date('now', '+3 days') THEN 'soon'
+    ELSE 'future'
+  END AS urgency
+
+FROM asana_tasks at
+LEFT JOIN asana_projects ap ON ap.gid = at.project_gid
+LEFT JOIN asana_workspaces aw ON aw.gid = at.workspace_gid
+LEFT JOIN asana_users ua ON ua.gid = at.assignee_gid
+LEFT JOIN asana_users uc ON uc.gid = at.created_by_gid
+LEFT JOIN contacts c_assignee ON c_assignee.id = at.assignee_contact_id;
+
+
+-- ═══════════════════════════════════════════════════════════════
+-- v_contact_health: now also factors Asana activity
 -- ═══════════════════════════════════════════════════════════════
 
 DROP VIEW IF EXISTS v_contact_health;
@@ -16,7 +75,6 @@ SELECT
   c.role,
   c.status,
 
-  -- Email stats (last 30 days)
   (SELECT COUNT(*) FROM emails WHERE contact_id = c.id
     AND received_at > datetime('now', '-30 days')) AS emails_30d,
   (SELECT COUNT(*) FROM emails WHERE contact_id = c.id
@@ -29,12 +87,11 @@ SELECT
     AND received_at > datetime('now', '-30 days')) AS threads_30d,
   (SELECT COUNT(*) FROM emails WHERE contact_id = c.id) AS emails_total,
 
-  -- Interaction stats
   (SELECT COUNT(*) FROM contact_interactions WHERE contact_id = c.id
     AND occurred_at > datetime('now', '-30 days')) AS interactions_30d,
   (SELECT COUNT(*) FROM contact_interactions WHERE contact_id = c.id) AS interactions_total,
 
-  -- Last activity (most recent across interactions, emails, transcripts, AND SLACK)
+  -- last_activity now also considers slack + asana
   (SELECT MAX(ts) FROM (
     SELECT MAX(occurred_at) AS ts FROM contact_interactions WHERE contact_id = c.id
     UNION ALL
@@ -44,10 +101,11 @@ SELECT
       JOIN transcript_participants tp ON tp.transcript_id = t.id
       WHERE tp.contact_id = c.id
     UNION ALL
-    SELECT MAX(received_at) FROM slack_messages WHERE contact_id = c.id
+    SELECT MAX(sent_at) FROM slack_messages WHERE contact_id = c.id
+    UNION ALL
+    SELECT MAX(modified_at) FROM asana_tasks WHERE assignee_contact_id = c.id
   )) AS last_activity,
 
-  -- Days since last activity (NULL if no activity) — now includes Slack
   CAST(julianday('now') - julianday(
     (SELECT MAX(ts) FROM (
       SELECT MAX(occurred_at) AS ts FROM contact_interactions WHERE contact_id = c.id
@@ -58,11 +116,12 @@ SELECT
         JOIN transcript_participants tp ON tp.transcript_id = t.id
         WHERE tp.contact_id = c.id
       UNION ALL
-      SELECT MAX(received_at) FROM slack_messages WHERE contact_id = c.id
+      SELECT MAX(sent_at) FROM slack_messages WHERE contact_id = c.id
+      UNION ALL
+      SELECT MAX(modified_at) FROM asana_tasks WHERE assignee_contact_id = c.id
     ))
   ) AS INTEGER) AS days_silent,
 
-  -- Transcript/call stats
   (SELECT COUNT(DISTINCT tp.transcript_id) FROM transcript_participants tp
     WHERE tp.contact_id = c.id) AS transcripts_total,
   (SELECT COUNT(DISTINCT tp.transcript_id) FROM transcript_participants tp
@@ -70,12 +129,23 @@ SELECT
     WHERE tp.contact_id = c.id
     AND t.occurred_at > datetime('now', '-30 days')) AS transcripts_30d,
 
-  -- Slack stats (last 30 days)
   (SELECT COUNT(*) FROM slack_messages WHERE contact_id = c.id
-    AND received_at > datetime('now', '-30 days')) AS slack_messages_30d,
+    AND sent_at > datetime('now', '-30 days')) AS slack_messages_30d,
   (SELECT COUNT(*) FROM slack_messages WHERE contact_id = c.id) AS slack_messages_total,
 
-  -- Open commitments (you owe them)
+  -- Asana stats
+  (SELECT COUNT(*) FROM asana_tasks
+    WHERE assignee_contact_id = c.id
+    AND modified_at > datetime('now', '-30 days')) AS asana_tasks_30d,
+  (SELECT COUNT(*) FROM asana_tasks
+    WHERE assignee_contact_id = c.id
+    AND completed = 0) AS asana_tasks_open,
+  (SELECT COUNT(*) FROM asana_tasks
+    WHERE assignee_contact_id = c.id
+    AND completed = 0
+    AND due_on IS NOT NULL
+    AND due_on < date('now')) AS asana_tasks_overdue,
+
   (SELECT COUNT(*) FROM commitments com
     WHERE com.status IN ('open', 'overdue')
     AND com.is_user_commitment = 1
@@ -83,13 +153,11 @@ SELECT
       SELECT transcript_id FROM transcript_participants WHERE contact_id = c.id
     )) AS your_open_commitments,
 
-  -- Open commitments (they owe you)
   (SELECT COUNT(*) FROM commitments com
     WHERE com.status IN ('open', 'overdue')
     AND com.is_user_commitment = 0
     AND com.owner_contact_id = c.id) AS their_open_commitments,
 
-  -- Overdue commitments (either direction)
   (SELECT COUNT(*) FROM commitments com
     WHERE com.status IN ('open', 'overdue')
     AND com.deadline_date < date('now')
@@ -98,23 +166,19 @@ SELECT
         SELECT transcript_id FROM transcript_participants WHERE contact_id = c.id
       )))) AS overdue_commitments,
 
-  -- Pending follow-ups
   (SELECT COUNT(*) FROM follow_ups WHERE contact_id = c.id
     AND status = 'pending') AS pending_follow_ups,
   (SELECT COUNT(*) FROM follow_ups WHERE contact_id = c.id
     AND status = 'pending' AND due_date < date('now')) AS overdue_follow_ups,
 
-  -- Next upcoming event with this contact
   (SELECT MIN(start_time) FROM calendar_events
     WHERE contact_ids LIKE '%' || c.id || '%'
     AND start_time > datetime('now')
     AND status != 'cancelled') AS next_meeting,
 
-  -- Active projects where this contact is the client
   (SELECT COUNT(*) FROM projects WHERE client_id = c.id
     AND status IN ('active', 'planning')) AS active_projects,
 
-  -- Latest relationship score
   (SELECT relationship_depth FROM relationship_scores
     WHERE contact_id = c.id ORDER BY score_date DESC LIMIT 1) AS relationship_depth,
   (SELECT trajectory FROM relationship_scores
@@ -131,14 +195,13 @@ WHERE c.status = 'active';
 
 
 -- ═══════════════════════════════════════════════════════════════
--- v_nudge_items: Update cold_contact detection to include Slack
--- The full view must be recreated since we're changing the cold_contact UNION member
+-- v_nudge_items: rebuilt with 5 new Asana nudge categories.
 -- ═══════════════════════════════════════════════════════════════
 
+DROP VIEW IF EXISTS v_nudge_summary;
 DROP VIEW IF EXISTS v_nudge_items;
 CREATE VIEW IF NOT EXISTS v_nudge_items AS
 
--- Overdue follow-ups (URGENT)
 SELECT
   'follow_up' AS nudge_type,
   f.id AS entity_id,
@@ -157,7 +220,6 @@ WHERE f.status = 'pending' AND f.due_date < date('now')
 
 UNION ALL
 
--- Overdue commitments (URGENT)
 SELECT
   'commitment',
   com.id,
@@ -177,7 +239,6 @@ WHERE com.status IN ('open', 'overdue') AND com.deadline_date < date('now')
 
 UNION ALL
 
--- Overdue tasks (URGENT)
 SELECT
   'task',
   tk.id,
@@ -196,7 +257,50 @@ WHERE tk.status NOT IN ('done') AND tk.due_date < date('now')
 
 UNION ALL
 
--- Follow-ups due soon (SOON — within 3 days)
+-- Asana: my overdue tasks (URGENT)
+SELECT
+  'asana_overdue_mine',
+  ath.id,
+  'urgent',
+  ath.name,
+  ath.assignee_contact_id,
+  NULL,
+  COALESCE(ath.project_name, '(no project)') ||
+    CASE WHEN ath.workspace_name IS NOT NULL
+         THEN ' · ' || ath.workspace_name ELSE '' END,
+  ath.due_on,
+  CAST(julianday('now') - julianday(ath.due_on) AS INTEGER),
+  ath.workspace_name,
+  'check-square'
+FROM v_asana_task_health ath
+WHERE ath.completed = 0
+  AND ath.is_mine = 1
+  AND ath.urgency = 'overdue'
+  AND COALESCE(ath.project_archived, 0) = 0
+
+UNION ALL
+
+-- Asana: tasks I delegated that are overdue (URGENT)
+SELECT
+  'asana_overdue_delegated',
+  ath.id,
+  'urgent',
+  ath.name,
+  ath.assignee_contact_id,
+  NULL,
+  'Assigned to ' || COALESCE(ath.assignee_contact_name, ath.assignee_name, 'unknown'),
+  ath.due_on,
+  CAST(julianday('now') - julianday(ath.due_on) AS INTEGER),
+  COALESCE(ath.project_name, ''),
+  'user-x'
+FROM v_asana_task_health ath
+WHERE ath.completed = 0
+  AND ath.is_delegated_by_me = 1
+  AND ath.urgency = 'overdue'
+  AND COALESCE(ath.project_archived, 0) = 0
+
+UNION ALL
+
 SELECT
   'follow_up',
   f.id,
@@ -216,7 +320,6 @@ WHERE f.status = 'pending'
 
 UNION ALL
 
--- Commitments due soon (SOON — within 3 days)
 SELECT
   'commitment',
   com.id,
@@ -237,7 +340,6 @@ WHERE com.status = 'open'
 
 UNION ALL
 
--- Tasks due soon (SOON — within 3 days)
 SELECT
   'task',
   tk.id,
@@ -257,7 +359,48 @@ WHERE tk.status NOT IN ('done')
 
 UNION ALL
 
--- Projects approaching target date (SOON — within 7 days)
+-- Asana: my tasks due soon (SOON — within 3 days)
+SELECT
+  'asana_soon_mine',
+  ath.id,
+  'soon',
+  ath.name,
+  ath.assignee_contact_id,
+  NULL,
+  COALESCE(ath.project_name, '(no project)'),
+  ath.due_on,
+  CAST(julianday(ath.due_on) - julianday('now') AS INTEGER),
+  ath.workspace_name,
+  'check-square'
+FROM v_asana_task_health ath
+WHERE ath.completed = 0
+  AND ath.is_mine = 1
+  AND ath.urgency = 'soon'
+  AND COALESCE(ath.project_archived, 0) = 0
+
+UNION ALL
+
+-- Asana: tasks I delegated due soon (SOON — within 3 days)
+SELECT
+  'asana_soon_delegated',
+  ath.id,
+  'soon',
+  ath.name,
+  ath.assignee_contact_id,
+  NULL,
+  'Assigned to ' || COALESCE(ath.assignee_contact_name, ath.assignee_name, 'unknown'),
+  ath.due_on,
+  CAST(julianday(ath.due_on) - julianday('now') AS INTEGER),
+  COALESCE(ath.project_name, ''),
+  'user-check'
+FROM v_asana_task_health ath
+WHERE ath.completed = 0
+  AND ath.is_delegated_by_me = 1
+  AND ath.urgency = 'soon'
+  AND COALESCE(ath.project_archived, 0) = 0
+
+UNION ALL
+
 SELECT
   'project',
   p.id,
@@ -276,7 +419,7 @@ WHERE p.status = 'active'
 
 UNION ALL
 
--- Contacts going cold (AWARENESS — 30+ days silent) — NOW INCLUDES SLACK
+-- Cold contacts (AWARENESS) — also counts Asana activity now
 SELECT
   'cold_contact',
   c.id,
@@ -290,7 +433,8 @@ SELECT
     UNION ALL SELECT MAX(received_at) FROM emails WHERE contact_id = c.id
     UNION ALL SELECT MAX(t2.occurred_at) FROM transcripts t2
       JOIN transcript_participants tp ON tp.transcript_id = t2.id WHERE tp.contact_id = c.id
-    UNION ALL SELECT MAX(received_at) FROM slack_messages WHERE contact_id = c.id
+    UNION ALL SELECT MAX(sent_at) FROM slack_messages WHERE contact_id = c.id
+    UNION ALL SELECT MAX(modified_at) FROM asana_tasks WHERE assignee_contact_id = c.id
   )),
   CAST(julianday('now') - julianday(
     (SELECT MAX(ts) FROM (
@@ -298,7 +442,8 @@ SELECT
       UNION ALL SELECT MAX(received_at) FROM emails WHERE contact_id = c.id
       UNION ALL SELECT MAX(t2.occurred_at) FROM transcripts t2
         JOIN transcript_participants tp ON tp.transcript_id = t2.id WHERE tp.contact_id = c.id
-      UNION ALL SELECT MAX(received_at) FROM slack_messages WHERE contact_id = c.id
+      UNION ALL SELECT MAX(sent_at) FROM slack_messages WHERE contact_id = c.id
+      UNION ALL SELECT MAX(modified_at) FROM asana_tasks WHERE assignee_contact_id = c.id
     ))
   ) AS INTEGER),
   c.email,
@@ -306,22 +451,22 @@ SELECT
 FROM contacts c
 WHERE c.status = 'active'
   AND (
-    -- Either last activity was 30+ days ago
     (SELECT MAX(ts) FROM (
       SELECT MAX(occurred_at) AS ts FROM contact_interactions WHERE contact_id = c.id
       UNION ALL SELECT MAX(received_at) FROM emails WHERE contact_id = c.id
       UNION ALL SELECT MAX(t2.occurred_at) FROM transcripts t2
         JOIN transcript_participants tp ON tp.transcript_id = t2.id WHERE tp.contact_id = c.id
-      UNION ALL SELECT MAX(received_at) FROM slack_messages WHERE contact_id = c.id
+      UNION ALL SELECT MAX(sent_at) FROM slack_messages WHERE contact_id = c.id
+      UNION ALL SELECT MAX(modified_at) FROM asana_tasks WHERE assignee_contact_id = c.id
     )) < datetime('now', '-30 days')
-    -- Or contact has zero activity and was added 30+ days ago
     OR (
       (SELECT MAX(ts) FROM (
         SELECT MAX(occurred_at) AS ts FROM contact_interactions WHERE contact_id = c.id
         UNION ALL SELECT MAX(received_at) FROM emails WHERE contact_id = c.id
         UNION ALL SELECT MAX(t2.occurred_at) FROM transcripts t2
           JOIN transcript_participants tp ON tp.transcript_id = t2.id WHERE tp.contact_id = c.id
-        UNION ALL SELECT MAX(received_at) FROM slack_messages WHERE contact_id = c.id
+        UNION ALL SELECT MAX(sent_at) FROM slack_messages WHERE contact_id = c.id
+        UNION ALL SELECT MAX(modified_at) FROM asana_tasks WHERE assignee_contact_id = c.id
       )) IS NULL
       AND julianday('now') - julianday(c.created_at) > 30
     )
@@ -329,7 +474,28 @@ WHERE c.status = 'active'
 
 UNION ALL
 
--- Stale projects (AWARENESS — 14+ days no activity)
+-- Asana: unassigned tasks (AWARENESS — every task should have an owner)
+SELECT
+  'asana_unassigned',
+  ath.id,
+  'awareness',
+  ath.name,
+  NULL,
+  NULL,
+  COALESCE(ath.project_name, '(no project)') ||
+    CASE WHEN ath.workspace_name IS NOT NULL
+         THEN ' · ' || ath.workspace_name ELSE '' END,
+  ath.modified_at,
+  CAST(julianday('now') - julianday(ath.modified_at) AS INTEGER),
+  'Needs an assignee',
+  'user-plus'
+FROM v_asana_task_health ath
+WHERE ath.completed = 0
+  AND ath.is_unassigned = 1
+  AND COALESCE(ath.project_archived, 0) = 0
+
+UNION ALL
+
 SELECT
   'stale_project',
   p.id,
@@ -350,7 +516,6 @@ HAVING CAST(julianday('now') - julianday(COALESCE(MAX(al.created_at), p.created_
 
 UNION ALL
 
--- Decisions pending outcome (AWARENESS — 90+ days old)
 SELECT
   'decision',
   d.id,
@@ -369,7 +534,6 @@ WHERE d.status = 'decided' AND d.outcome IS NULL
 
 UNION ALL
 
--- Untracked frequent contacts (AWARENESS — 5+ emails, not in CRM)
 SELECT
   'untracked_contact',
   NULL,
@@ -401,5 +565,20 @@ WHERE e.direction = 'inbound'
   AND e.from_address NOT IN (
     SELECT email FROM contacts WHERE email IS NOT NULL AND email != ''
   )
+  AND e.from_address NOT IN (
+    SELECT email FROM google_accounts WHERE status = 'active'
+  )
 GROUP BY e.from_address
 HAVING COUNT(*) >= 5;
+
+
+-- ═══════════════════════════════════════════════════════════════
+-- v_nudge_summary: rebuild (depends on v_nudge_items)
+-- ═══════════════════════════════════════════════════════════════
+
+CREATE VIEW IF NOT EXISTS v_nudge_summary AS
+SELECT
+  tier,
+  COUNT(*) AS count
+FROM v_nudge_items
+GROUP BY tier;

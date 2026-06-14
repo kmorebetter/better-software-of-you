@@ -13,6 +13,18 @@ __pycache__/
 *.pyc
 mcp-server/dist/
 mcp-server/*.egg-info/
+mcp-server/.venv/
+.venv/
+
+# OMC tooling runtime state (keep monday_brief_prompt.md tracked)
+.omc/sessions/
+.omc/state/
+.omc/project-memory.json
+mcp-server/.omc/
+
+# Stray artifacts
+Users/
+soy-migration-*.zip
 
 # Internal planning and marketing (not shipped to users)
 context-engineering-manifesto.md

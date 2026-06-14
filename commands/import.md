@@ -26,7 +26,58 @@ Supported input formats (non-exhaustive — handle anything reasonable):
 - Pasted spreadsheet rows
 - Multiple records at once (batch import)
 
-## Step 2: Identify What the Data Is
+## Step 2: Dispatch Decision
+
+**Count the records** in the input (estimate if needed).
+
+**If ≤ 3 records** → Handle inline (proceed to Step 3 directly).
+
+**If > 3 records OR a file path is provided** → Delegate to a sub-agent:
+
+> "Got it — [N records / file]. Handing this to a focused import agent. I'll have results in a moment."
+
+Spawn a sub-agent (use the `general-purpose` agent type) with this prompt:
+
+```
+You are a data import specialist for Software of You, a personal data platform backed by SQLite.
+
+DATABASE: /Users/kmo/.local/share/software-of-you/soy.db (use sqlite3 CLI)
+DB COMMAND: sqlite3 "/Users/kmo/.local/share/software-of-you/soy.db"
+
+INPUT DATA:
+[paste the full raw input here]
+
+YOUR JOB:
+1. Identify entity types (contacts, projects, tasks, notes, interactions)
+2. Map fields to schema (see field mapping rules below)
+3. Check for duplicates before inserting:
+   SELECT id, name, email FROM contacts WHERE name LIKE '%<name>%' OR email = '<email>';
+4. Insert each record with activity_log in one transaction
+5. Return a structured summary: how many inserted, how many skipped (duplicates), any errors
+
+FIELD MAPPING:
+Contacts: name, email, phone, company, role, notes, type ('person'|'company')
+Projects: name, description, status (idea/planning/active/paused/completed/cancelled), priority (low/medium/high/urgent), target_date, client_id
+Tasks: title, description, status (todo/in_progress/done), priority, due_date, project_id
+Notes: content, entity_type, entity_id
+
+RULES:
+- Use INSERT OR IGNORE for contacts (dedup by email)
+- Always INSERT into activity_log after each record:
+  INSERT INTO activity_log (entity_type, entity_id, action, details, created_at)
+  VALUES ('<type>', last_insert_rowid(), 'created', json_object('source','import'), datetime('now'));
+- Set updated_at = datetime('now') on all records
+- For ambiguous duplicates (same name, different email), flag them — do not auto-merge
+- Return results as: INSERTED: N, SKIPPED: N, FLAGGED: [list of ambiguous records]
+```
+
+Wait for the sub-agent to complete. Present its results as the Step 5 summary.
+
+---
+
+## Step 3: Identify What the Data Is
+
+*(Only reached for ≤ 3 records or when handling inline)*
 
 Look at the data and determine which entity type(s) it contains:
 
@@ -38,72 +89,54 @@ Look at the data and determine which entity type(s) it contains:
 
 A single import can contain multiple entity types. For example, a meeting note might contain a new contact AND an interaction AND follow-up items.
 
-## Step 3: Map Fields
+## Step 4: Map Fields
 
 Map the extracted data to the database schema. Be flexible with field names:
 
-**Contact field mapping (examples):**
-- "Full Name" / "Name" / "Contact" / person's name → `name`
-- "Email" / "E-mail" / "Email Address" / anything@domain → `email`
-- "Phone" / "Mobile" / "Cell" / "Tel" / +1-xxx pattern → `phone`
-- "Company" / "Organisation" / "Organization" / "Org" / "Employer" → `company`
-- "Title" / "Role" / "Position" / "Job Title" → `role`
-- If the data is clearly a company (not a person), set `type = 'company'`
+**Contact field mapping:**
+- "Full Name" / "Name" / "Contact" → `name`
+- "Email" / "E-mail" / anything@domain → `email`
+- "Phone" / "Mobile" / "Cell" → `phone`
+- "Company" / "Organisation" / "Org" → `company`
+- "Title" / "Role" / "Position" → `role`
+- Company entity (not a person) → `type = 'company'`
 
 **Project field mapping:**
-- "Project" / "Project Name" / "Name" → `name`
-- "Client" / "Customer" / "For" → look up contact by name, set `client_id`
-- "Status" / "State" → map to: idea, planning, active, paused, completed, cancelled
-- "Priority" / "Importance" → map to: low, medium, high, urgent
-- "Due" / "Deadline" / "Target" / "Due Date" → `target_date`
+- "Project" / "Name" → `name`
+- "Client" / "Customer" → look up contact by name, set `client_id`
+- "Status" / "State" → idea, planning, active, paused, completed, cancelled
+- "Priority" → low, medium, high, urgent
+- "Due" / "Deadline" / "Target" → `target_date`
 
-**Handle duplicates:** Before inserting a contact, check if one with the same name or email already exists:
+**Handle duplicates:** Before inserting a contact, check:
 ```sql
 SELECT id, name, email FROM contacts WHERE name LIKE ? OR email = ?;
 ```
-If a match is found, ask the user: "I found an existing contact [name]. Update it with the new info, or create a separate entry?"
+If a match is found, ask: "I found an existing contact [name]. Update it with the new info, or create a separate entry?"
 
-## Step 4: Insert the Data
+## Step 5: Insert + Confirm
 
 Use the database at `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/data/soy.db`.
 
-For each record, run the INSERT and activity_log together in one sqlite3 call:
+For each record, run INSERT and activity_log in one call:
 ```sql
-INSERT INTO contacts (name, email, phone, company, role) VALUES (?, ?, ?, ?, ?);
-INSERT INTO activity_log (entity_type, entity_id, action, details)
-VALUES ('contact', last_insert_rowid(), 'created', json_object('name', ?, 'source', 'import'));
+INSERT INTO contacts (name, email, phone, company, role, updated_at)
+VALUES (?, ?, ?, ?, ?, datetime('now'));
+INSERT INTO activity_log (entity_type, entity_id, action, details, created_at)
+VALUES ('contact', last_insert_rowid(), 'created', json_object('name', ?, 'source', 'import'), datetime('now'));
 ```
 
-For batch imports (multiple records), process them one at a time so each gets its own activity log entry.
+After all inserts, present a clear summary:
 
-## Step 5: Confirm
-
-After importing, present a clear summary:
-
-"Imported X contacts, Y projects, Z notes:
+```
+Imported 3 contacts (1 skipped — duplicate):
 
 | Name | Company | Email |
 |------|---------|-------|
 | Jane Smith | Acme Corp | jane@acme.com |
-| ... | ... | ... |
+| Bob Johnson | Widgets Inc | bob@widgets.io |
 
-Want to tag these contacts, add notes, or link them to projects?"
+Want to tag these, add notes, or link them to a project?
+```
 
-## Examples of What Users Might Paste
-
-**LinkedIn profile text:**
-"Jane Smith · Head of Design at Acme Corp · San Francisco Bay Area · 500+ connections · jane.smith@acme.com"
-
-**Email signature:**
-"Best regards, Bob Johnson | CTO, Widgets Inc | bob@widgets.io | +1 (555) 123-4567 | widgets.io"
-
-**CSV dump:**
-"Name,Email,Company\nJane Smith,jane@acme.com,Acme Corp\nBob Johnson,bob@widgets.io,Widgets Inc"
-
-**Messy freeform text:**
-"Met Sarah at the conference - she's a PM at Google, sarah.connor@google.com, said she's interested in our API project. Also talked to Mike from Stripe (mike@stripe.com) about payments integration."
-
-**Business card (OCR text):**
-"ACME CORPORATION Jane Smith Head of Design jane@acme.com +1 555 867 5309 123 Main St, San Francisco CA"
-
-All of these should be parseable. Extract what you can, ask about anything ambiguous.
+If the sub-agent flagged ambiguous records, present those separately and ask the user to resolve them one at a time.

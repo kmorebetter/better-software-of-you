@@ -200,6 +200,31 @@ FROM projects p
 WHERE p.id = ?;
 ```
 
+### If Episodic Memory installed:
+
+```sql
+-- Episode recall: top memories for each attendee, ranked by recency × salience
+SELECT episode_id, title, summary, significance, source_type, occurred_at,
+  days_ago, recall_score
+FROM v_episode_recall
+WHERE contact_id = ?
+ORDER BY recall_score DESC
+LIMIT 5;
+
+-- Current facts about each attendee
+SELECT id, category, content, confidence, learned_at, last_confirmed_at,
+  CAST(julianday('now') - julianday(last_confirmed_at) AS INTEGER) AS days_since_confirmed
+FROM facts
+WHERE subject_type = 'contact' AND subject_id = ? AND superseded_at IS NULL
+ORDER BY confidence DESC, last_confirmed_at DESC;
+
+-- Active learned rules that apply to this contact
+SELECT rule, trigger_condition, action, priority
+FROM learned_rules
+WHERE target_contact_id = ? AND status = 'active'
+ORDER BY priority DESC;
+```
+
 ### Cross-meeting data:
 
 ```sql
@@ -249,6 +274,10 @@ Synthesize from ALL of the above into 3-7 concrete, data-grounded talking points
 - "Address the unanswered email from Daniel (Feb 25) about the budget proposal"
 - "Check on their Q1 headcount decision — mentioned as pending in your last call"
 
+**Incorporate memory layer data:** If episodes or facts exist for an attendee, use them to generate stronger talking points. A fact like "prefers decisions confirmed in writing" should inform how you frame a decision point. An episode noting "pricing discussed but unresolved" should generate a talking point to close that loop.
+
+**Apply learned rules:** If any active `learned_rules` match this contact, follow their `action` field. For example, if a rule says "surface last 3 episodes and open commitments before meetings with JP", make sure that data is prominent in the brief.
+
 **Never generate generic talking points like "Discuss project updates" or "Establish meeting objectives."** Every point must trace to a specific piece of data. If there isn't enough data for 3 grounded points, generate fewer — quality over quantity.
 
 ## Step 6: Generate HTML
@@ -291,6 +320,12 @@ Two-column grid (lg:grid-cols-3)
 │       ├── Project name + status badge + progress bar
 │       └── Open tasks count, next milestone
 └── Right column
+    ├── Memory card (if episodic memory installed and has data)
+    │   ├── "What I remember" — top 3-5 episodes by recall_score, each as:
+    │   │   title + days_ago + 1-line summary
+    │   ├── "What I know" — current facts grouped by category,
+    │   │   with confidence dots (●●●○ = 0.75) and staleness warning if >90d unconfirmed
+    │   └── Learned rules as callout: "Before meetings with {name}: {action}"
     ├── Talking Points card (PREMIUM — special blue gradient treatment)
     │   ├── bg-gradient-to-b from-blue-50 to-white, border-blue-100
     │   ├── Numbered list with blue number circles

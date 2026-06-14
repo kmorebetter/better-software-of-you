@@ -146,9 +146,13 @@ def register(server: FastMCP) -> None:
             # Recent Slack messages
             try:
                 slack_msgs = execute(
-                    """SELECT content, channel_name, received_at FROM slack_messages
-                       WHERE contact_id = ? AND received_at > datetime('now', '-14 days')
-                       ORDER BY received_at DESC LIMIT 5""",
+                    """SELECT sm.text, sc.name AS channel_name, sm.sent_at,
+                              sm.permalink, sm.direction
+                       FROM slack_messages sm
+                       JOIN slack_channels sc ON sc.id = sm.channel_id
+                       WHERE sm.contact_id = ?
+                         AND sm.sent_at > datetime('now', '-14 days')
+                       ORDER BY sm.sent_at DESC LIMIT 5""",
                     (cid,),
                 )
                 if slack_msgs:
@@ -300,15 +304,7 @@ def register(server: FastMCP) -> None:
 
             contact = rows_to_dicts(rows)[0]
 
-            # Enrich with recent Slack
-            try:
-                slack_count = execute(
-                    "SELECT COUNT(*) as n FROM slack_messages WHERE contact_id = ? AND received_at > datetime('now', '-30 days')",
-                    (contact_id,),
-                )
-                contact["slack_messages_30d"] = slack_count[0]["n"] if slack_count else 0
-            except Exception:
-                contact["slack_messages_30d"] = 0
+            # slack_messages_30d already provided by v_contact_health (migration 023)
 
             return {
                 "result": contact,

@@ -181,6 +181,75 @@ Save it:
 UPDATE transcripts SET call_intelligence = ? WHERE id = ?;
 ```
 
+**3i. Create episode (memory layer):**
+
+After all analysis, distill this call into a compressed, retrievable memory. This is the record that surfaces before future meetings with these people.
+
+Generate:
+- `summary`: 2-3 sentences — what happened, what was decided, what's unresolved. Not a transcript summary — a **memory** of this interaction.
+- `significance`: Why this episode matters — key outcomes, relationship changes, important revelations. NULL if routine.
+- `salience`: Float 0.0–1.0 based on:
+  - **0.7–1.0**: Significant decisions, relationship shifts, new initiatives, major commitments, conflict or tension
+  - **0.4–0.6**: Regular working session with commitments, useful intel gathered
+  - **0.1–0.3**: Routine status update, no new information or decisions
+
+```sql
+INSERT INTO episodes (title, summary, significance, source_type, source_id, project_id, occurred_at, salience)
+VALUES (?, ?, ?, 'transcript', <transcript_id>, <project_id or NULL>, <occurred_at from transcript>, ?);
+```
+
+Then link every participant (not the user) as contacts:
+```sql
+INSERT INTO episode_contacts (episode_id, contact_id, role)
+VALUES (<new episode_id>, ?, 'participant');
+```
+
+If the transcript mentions other contacts who weren't in the call, link them too with role `'mentioned'`.
+
+**3j. Extract facts (knowledge layer):**
+
+Scan the transcript for persistent knowledge about people, companies, or projects. Facts are things that remain true beyond this conversation.
+
+**What qualifies as a fact:**
+- Org intel: team size, reporting structure, budget context, decision-making process
+- Personal: role changes, preferences, working style, timezone, upcoming life events
+- Business: company initiatives, strategic direction, pain points, vendor relationships
+- Technical: tools in use, infrastructure decisions, migration plans
+- Relationship: how contacts relate to each other, who reports to whom, who influences decisions
+
+**What does NOT qualify:** opinions about the call, transient scheduling ("let's meet Thursday"), or anything already captured as a commitment.
+
+For each fact:
+
+1. Check if it updates an existing fact:
+```sql
+SELECT id, content FROM facts
+WHERE subject_type = ? AND subject_id = ? AND category = ? AND superseded_at IS NULL
+AND content LIKE ?;
+```
+
+2. If it supersedes an existing fact:
+```sql
+INSERT INTO facts (subject_type, subject_id, subject_name, category, content, confidence, source_episode_id)
+VALUES (?, ?, ?, ?, ?, ?, <episode_id from 3i>);
+
+UPDATE facts SET superseded_at = datetime('now'), superseded_by_id = <new fact id>, updated_at = datetime('now')
+WHERE id = <old fact id>;
+```
+
+3. If it's new:
+```sql
+INSERT INTO facts (subject_type, subject_id, subject_name, category, content, confidence, source_episode_id)
+VALUES (?, ?, ?, ?, ?, ?, <episode_id from 3i>);
+```
+
+Set `confidence`:
+- **0.9–1.0**: Stated explicitly by the person themselves ("We have 12 people on the team")
+- **0.6–0.8**: Inferred from context or stated by a third party
+- **0.3–0.5**: Ambiguous or speculative ("sounds like they might be restructuring")
+
+**Do not extract more than 10 facts per transcript.** Focus on what's most durable and useful for future interactions.
+
 ## Step 4: Present Results
 
 Present structured blocks first (at-a-glance), then narrative prose (deeper context).
@@ -219,5 +288,11 @@ Present structured blocks first (at-a-glance), then narrative prose (deeper cont
 **Relationship pulse:** Relationship depth: **Collaborative** — 6 meetings in 90 days, follow-through user:85% contact:80%, dominance 0.9x (balanced). Trajectory: **Strengthening** — frequency up from 3 meetings last quarter.
 
 **Coach's note:** You asked Sarah what worried her most about the timeline, then **stayed quiet while she worked through it**. That space led to the most productive part of the call. More of that."
+
+**4f. Memory layer summary (if episodes/facts were created):**
+
+After the narrative, add a brief memory summary:
+
+> **Memory:** Saved as episode with [N] facts extracted ([list key facts briefly]). This will surface automatically before your next meeting with [contact name(s)].
 
 End with: "Use `/commitments` to see all open items, or `/relationship-pulse Sarah` for the full picture."

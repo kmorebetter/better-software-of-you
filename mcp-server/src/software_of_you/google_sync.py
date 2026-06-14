@@ -59,7 +59,7 @@ def _lookup_account_id(account_email: str | None) -> int | None:
         return None
 
 
-def sync_gmail(token: str | None = None, account_email: str | None = None) -> dict:
+def sync_gmail(token: str | None = None, account_email: str | None = None, max_results: int = 50) -> dict:
     """Sync recent emails from Gmail.
 
     Args:
@@ -78,7 +78,7 @@ def sync_gmail(token: str | None = None, account_email: str | None = None) -> di
 
     try:
         # Fetch recent message list
-        url = f"{GMAIL_API}/messages?maxResults=50&q=newer_than:7d"
+        url = f"{GMAIL_API}/messages?maxResults={max_results}&q=newer_than:30d"
         data = _api_get(url, token)
         messages = data.get("messages", [])
 

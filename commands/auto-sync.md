@@ -1,4 +1,4 @@
-Manage automatic background syncing (Gmail, Calendar, Transcripts) on a schedule — 3x/day at 8am, 12pm, 6pm.
+Manage automatic background syncing (Gmail, Calendar, Transcripts, Slack, Asana) on a schedule — 3x/day at 8am, 12pm, 6pm.
 
 **Subcommands:**
 - `on` — Enable the auto-sync schedule (installs launchd agent)
@@ -113,4 +113,4 @@ Show the current schedule:
 > | 12:00 PM | Midday sync — pick up morning activity |
 > | 6:00 PM | Evening sync — capture afternoon emails and meetings |
 >
-> Syncs: Gmail (last 7 days), Calendar (±14 days), Gemini transcripts
+> Syncs: Gmail (last 7 days), Calendar (±14 days), Gemini transcripts, Slack (DMs + allowlisted channels — only runs if connected via `/slack-setup`), Asana (workspaces, projects, tasks across all visible projects — only runs if connected via `/asana-setup`)

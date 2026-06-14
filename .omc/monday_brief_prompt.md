@@ -76,6 +76,16 @@ Write a meeting agenda. Structure:
 
 Only include sections with real content. Keep it tight — cut anything vague or redundant.
 
+### What must always be included (never omit these categories):
+
+- **New inbound leads** — any new prospect, registration form, referral, or walkthrough request. Include estimated value and who owns the next step.
+- **Active sales pipeline** — potential client handoffs, calls being scheduled, warm prospects in discussion. These are high-value and always belong on the agenda.
+- **Ximena's lead updates** — Ximena owns business development and new client outreach. Always surface: leads she's working, walkthroughs scheduled or pending, and any pipeline activity she reported in Slack or email.
+- **Client relationship issues** — any client expressing concern, waiting on something, or flagged as at-risk.
+- **Decisions that need the group** — anything where a partner needs to weigh in before work can proceed.
+
+The brief should read like a real management meeting agenda — not a filtered task list. If it happened in the business this week and it affects anyone in the room, include it.
+
 ---
 
 ## Step 5 — Create Asana Tasks

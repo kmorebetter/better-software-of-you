@@ -11,7 +11,9 @@
       "Write(/config/**)",
       "Edit(/config/**)",
       "Write(/data/**)",
-      "Edit(/data/**)"
+      "Edit(/data/**)",
+      "Bash(pdftotext *)",
+      "Bash(launchctl list *)"
     ]
   }
 }
