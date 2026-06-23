@@ -39,7 +39,13 @@ run_migrations_ledgered() {
     if [ "$prev" = "$cs" ]; then
       continue  # already applied with the same content
     fi
-    err=$(sqlite3 "$db" < "$f" 2>&1)
+    # -bail stops at the first error in the file, matching Python's
+    # executescript (which aborts the whole script on error). Without it,
+    # sqlite3 keeps going after a failed statement and would run later ones —
+    # e.g. a migration whose guard ALTER fails on re-run would still execute a
+    # following data-mutating statement, diverging from (and losing data the
+    # MCP path preserves on) the same edited file.
+    err=$(sqlite3 -bail "$db" < "$f" 2>&1)
     rc=$?
     if [ "$rc" -ne 0 ]; then
       # Expected idempotency error → record + continue; anything else → fail loud.

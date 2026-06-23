@@ -6,6 +6,7 @@ instant template rendering.
 
 import json
 import platform
+import re
 import subprocess
 import sys
 from datetime import datetime, date, timedelta
@@ -21,6 +22,17 @@ from software_of_you.db import (
 )
 
 TEMPLATES_DIR = Path(__file__).parent.parent / "templates"
+
+
+def _safe_slug(name: str, fallback: str = "view") -> str:
+    """Whitelist a name to a filesystem-safe slug (``[a-z0-9-]``).
+
+    Generated-view filenames are derived from contact names and model-supplied
+    titles. Without this, a name containing ``/`` or ``..`` would crash the
+    write (or, if parent dirs were ever created, escape VIEWS_DIR).
+    """
+    slug = re.sub(r"[^a-z0-9]+", "-", (name or "").lower()).strip("-")
+    return slug or fallback
 
 
 def _get_env() -> jinja2.Environment:
@@ -417,10 +429,8 @@ def _render_entity_page(contact_id: int, narrative_sections_json: str, open_afte
     contact = rows_to_dicts(rows)[0]
     modules = get_installed_modules()
 
-    # Build slug
-    slug = contact["name"].lower().replace(" ", "-")
-    for c in "'.()":
-        slug = slug.replace(c, "")
+    # Build slug (whitelist — a contact name must never inject path chars)
+    slug = _safe_slug(contact["name"], "contact")
 
     # Nav context — sidebar with this contact active in People section
     ctx = _get_nav_context("contacts", "people", active_entity_id=contact_id,
@@ -590,7 +600,10 @@ def _render_module_view(sections_data_json: str, open_after: bool) -> dict:
         return {"error": "Invalid sections_data JSON."}
 
     page_title = data.get("page_title", "View")
-    filename = data.get("filename", page_title.lower().replace(" ", "-") + ".html")
+    # Sanitize the (model-supplied) filename: strip any extension, whitelist to
+    # a safe slug, re-append .html — prevents path traversal / write-escape.
+    raw_name = data.get("filename") or page_title
+    filename = _safe_slug(re.sub(r"\.html?$", "", raw_name, flags=re.IGNORECASE), "view") + ".html"
     active_page = data.get("active_page", "dashboard")
     active_section = data.get("active_section", "")
 
