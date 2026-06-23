@@ -9,6 +9,7 @@
   so a name containing ``/`` or ``..`` can't crash the write or escape VIEWS_DIR.
 """
 
+import json
 import os
 import shutil
 import sqlite3
@@ -17,6 +18,7 @@ from pathlib import Path
 
 import pytest
 
+from software_of_you.tools import contacts, transcripts
 from software_of_you.tools.views import _safe_slug
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
@@ -85,3 +87,28 @@ def test_safe_slug_strips_path_chars():
     for name in ["a/b", "..", "../x", "x/../../y", "..\\..\\win"]:
         s = _safe_slug(name)
         assert "/" not in s and "\\" not in s and ".." not in s
+
+
+def test_add_analysis_skips_constraint_violations_at_execute(soy_db):
+    """A row that constructs fine but violates a DB constraint at INSERT time
+    (here: a participant with a non-existent contact_id → FK violation) must be
+    skipped and counted, not roll back the whole analysis. Regression for the
+    M4 execute-layer gap (execute_lenient)."""
+    contacts._add("Ann", "", "", "Acme", "", "individual", "active", None)
+    cid = soy_db.execute("SELECT id FROM contacts WHERE name = 'Ann'")[0]["id"]
+    tid = transcripts._import("hello world", "T", "paste", None)["result"]["transcript_id"]
+
+    participants = json.dumps([
+        {"contact_id": cid, "speaker_label": "You", "is_user": 1},      # valid
+        {"contact_id": 999999, "speaker_label": "Ghost", "is_user": 0},  # FK violation
+    ])
+    res = transcripts._add_analysis(tid, participants, "", "", "", "", "", "", 0)
+
+    # No exception, success reported, and the bad row is counted as skipped.
+    assert res["result"]["analysis_stored"] is True
+    assert res["result"]["skipped"] >= 1
+    # The valid participant was still stored (one bad row didn't nuke the rest).
+    stored = soy_db.execute(
+        "SELECT COUNT(*) AS c FROM transcript_participants WHERE transcript_id = ?", (tid,)
+    )[0]["c"]
+    assert stored == 1

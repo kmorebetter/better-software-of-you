@@ -296,6 +296,35 @@ def execute_many(statements: list[tuple[str, tuple]]) -> int:
         conn.close()
 
 
+def execute_lenient(statements: list[tuple[str, tuple]]) -> int:
+    """Execute statements best-effort, each in its own SAVEPOINT.
+
+    Returns the number of statements that FAILED (were skipped). Unlike
+    ``execute_many``'s single all-or-nothing transaction, a row that violates a
+    constraint at execution time (a stale ``contact_id`` foreign key, an
+    out-of-set CHECK value) only rolls back its own savepoint — the remaining
+    rows still commit. Used for transcript-analysis storage so one bad item
+    doesn't discard the whole analysis; the caller surfaces the skip count
+    instead of silently failing.
+    """
+    conn = get_connection()
+    skipped = 0
+    try:
+        for sql, params in statements:
+            try:
+                conn.execute("SAVEPOINT row")
+                conn.execute(sql, params)
+                conn.execute("RELEASE SAVEPOINT row")
+            except sqlite3.Error:
+                conn.execute("ROLLBACK TO SAVEPOINT row")
+                conn.execute("RELEASE SAVEPOINT row")
+                skipped += 1
+        conn.commit()
+        return skipped
+    finally:
+        conn.close()
+
+
 def insert_with_log(
     entity_sql: str,
     entity_params: tuple,

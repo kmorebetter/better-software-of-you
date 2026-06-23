@@ -12,7 +12,7 @@ import json
 
 from mcp.server.fastmcp import FastMCP
 
-from software_of_you.db import execute, execute_many, insert_with_log, rows_to_dicts
+from software_of_you.db import execute, execute_many, execute_lenient, insert_with_log, rows_to_dicts
 
 
 def register(server: FastMCP) -> None:
@@ -236,8 +236,11 @@ def _add_analysis(transcript_id, participants, metrics, commitments_data,
             except (KeyError, TypeError, AttributeError):
                 skipped += 1
 
+    # Execute best-effort: a row that violates a constraint at INSERT time
+    # (stale contact_id FK, out-of-set CHECK value) is skipped and counted
+    # rather than rolling back the whole analysis — so partial loss is visible.
     if statements:
-        execute_many(statements)
+        skipped += execute_lenient(statements)
 
     return {
         "result": {"transcript_id": transcript_id, "analysis_stored": True, "skipped": skipped},
