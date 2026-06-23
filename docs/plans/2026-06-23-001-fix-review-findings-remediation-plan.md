@@ -1,6 +1,6 @@
 ---
 title: "fix: Remediate engineering review findings (correctness, security, data integrity, architecture)"
-status: active
+status: completed
 type: fix
 created: 2026-06-23
 depth: deep
