@@ -20,9 +20,6 @@ CREATE TABLE IF NOT EXISTS emails (
     synced_at TEXT NOT NULL DEFAULT (datetime('now'))
 );
 
--- Add from_name for existing databases (safe to re-run — bootstrap swallows duplicate column errors)
-ALTER TABLE emails ADD COLUMN from_name TEXT;
-
 CREATE INDEX IF NOT EXISTS idx_emails_contact ON emails(contact_id);
 CREATE INDEX IF NOT EXISTS idx_emails_thread ON emails(thread_id);
 CREATE INDEX IF NOT EXISTS idx_emails_date ON emails(received_at);
