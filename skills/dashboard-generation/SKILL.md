@@ -23,6 +23,7 @@ All views share a consistent visual language:
 - **Colors:** zinc/slate palette (zinc-50 background, zinc-900 text, blue-600 accents)
 - **Layout:** max-w-7xl centered, responsive grid, card-based sections
 - **Cards:** bg-white rounded-xl shadow-sm border border-zinc-200 p-6
+- **Escaping:** HTML-escape every DB / email / calendar / transcript value before emitting it — a contact name, email subject, or event title like `<script>...` must render as inert escaped text, never executable markup. Only known-trusted, already-escaped markup may be inserted raw.
 
 ## References
 

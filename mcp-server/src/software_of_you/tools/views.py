@@ -24,10 +24,30 @@ TEMPLATES_DIR = Path(__file__).parent.parent / "templates"
 
 
 def _get_env() -> jinja2.Environment:
-    """Get Jinja2 environment with template directory."""
+    """Get Jinja2 environment with template directory.
+
+    Autoescaping is ON for HTML templates so that DB- and external-derived
+    values (contact names, email from_name, calendar event titles, transcript
+    text, etc.) are rendered as inert escaped text and can never execute
+    injected script. The ONE intentional raw-HTML channel is
+    ``module_view.html`` line ~98: ``{{ section.html | safe }}``.
+
+    Audit of that ``|safe`` channel: ``section.html`` is sourced solely from
+    ``data.get("sections", [])`` in ``_render_module_view`` — i.e. the
+    ``sections_data`` tool argument, a JSON document the model assembles. No
+    builder in this module concatenates raw DB strings into ``section.html``;
+    nothing reads a contact name / note / email field and splices it into that
+    fragment. So ``|safe`` wraps only model-authored, trusted markup. The
+    ``narrative_sections`` fields (relationship_context, company_intel,
+    discovery_questions) render through plain ``{{ }}`` in ``entity_page.html``
+    (NOT ``|safe``), so autoescaping makes them inert automatically. If a future
+    builder ever interpolates raw DB/external data into a ``|safe`` fragment,
+    that substring MUST be escaped (``markupsafe.escape`` / ``html.escape``)
+    before concatenation.
+    """
     return jinja2.Environment(
         loader=jinja2.FileSystemLoader(str(TEMPLATES_DIR)),
-        autoescape=False,
+        autoescape=jinja2.select_autoescape(["html"]),
     )
 
 
