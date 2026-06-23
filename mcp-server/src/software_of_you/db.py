@@ -5,6 +5,7 @@ the Claude Code plugin. Migrations are bundled in this package and are
 idempotent (safe to re-run every startup).
 """
 
+import hashlib
 import os
 import shutil
 import sqlite3
@@ -91,6 +92,75 @@ def _get_contact_count(conn: sqlite3.Connection) -> int:
         return 0
 
 
+def _apply_migrations(conn: sqlite3.Connection) -> None:
+    """Apply all bundled migrations against ``conn``, tracked by a ledger.
+
+    A ``schema_migrations`` ledger (filename + sha256 checksum + applied_at)
+    records which migration files have run. On each launch we skip files whose
+    checksum already matches the ledger and execute (or re-execute) the rest.
+
+    RECORD-AS-YOU-RUN — NOT seed-all-as-applied. The unified migration tree is
+    a *superset*: an existing plugin DB has never run the slack migrations, and
+    an existing MCP DB has never run pipeline_runs/health_checks. A blanket
+    "mark everything applied" seed on an existing DB would skip that genuinely
+    needed work. Instead, on a pre-ledger DB's first ledgered launch we run the
+    full set once and record each file as we go. That single re-run is safe
+    because every migration is idempotent (``CREATE ... IF NOT EXISTS`` /
+    ``DROP VIEW IF EXISTS`` + ``CREATE`` / ``INSERT OR REPLACE`` / guarded
+    ``ALTER``) and the one non-idempotent abort (the 004 ALTER) is already
+    fixed; the ledger then skips every file on all subsequent launches.
+
+    Loud on real failure: an *expected* idempotency error (``duplicate column``
+    / ``already exists``) is treated as success — we stop executing the rest of
+    that file quietly but STILL record it as applied. Any *other* sqlite error
+    (``OperationalError``, ``IntegrityError``, or any ``sqlite3.Error``) prints
+    a prominent ``MIGRATION FAILED`` to stderr, is NOT recorded, and is
+    re-raised so the failure surfaces instead of being silently swallowed.
+    """
+    conn.execute(
+        "CREATE TABLE IF NOT EXISTS schema_migrations ("
+        "filename TEXT PRIMARY KEY, checksum TEXT, applied_at TEXT)"
+    )
+    conn.commit()
+
+    for sql_file in sorted(MIGRATIONS_DIR.glob("*.sql")):
+        file_bytes = sql_file.read_bytes()
+        checksum = hashlib.sha256(file_bytes).hexdigest()
+
+        row = conn.execute(
+            "SELECT checksum FROM schema_migrations WHERE filename = ?",
+            (sql_file.name,),
+        ).fetchone()
+        if row is not None and row[0] == checksum:
+            # Already applied with the same content — skip, do not re-execute.
+            continue
+
+        sql = file_bytes.decode("utf-8")
+        try:
+            conn.executescript(sql)
+        except sqlite3.Error as e:
+            err = str(e).lower()
+            if "duplicate column" in err or "already exists" in err:
+                # Expected idempotency error: the schema already has this object.
+                # Stop executing the rest of this file quietly, but the file is
+                # effectively applied — record it so we don't keep re-running it.
+                pass
+            else:
+                # Genuine failure — be loud, do not record, re-raise.
+                print(
+                    f"MIGRATION FAILED ({sql_file.name}): {e}",
+                    file=sys.stderr,
+                )
+                raise
+
+        conn.execute(
+            "INSERT OR REPLACE INTO schema_migrations "
+            "(filename, checksum, applied_at) VALUES (?, ?, datetime('now'))",
+            (sql_file.name, checksum),
+        )
+        conn.commit()
+
+
 def run_migrations(conn: sqlite3.Connection | None = None) -> None:
     """Run all bundled migrations in order. Idempotent.
 
@@ -109,18 +179,15 @@ def run_migrations(conn: sqlite3.Connection | None = None) -> None:
     if count_before > 0:
         backup_db()
 
-    # Run each migration file in order
-    migration_files = sorted(MIGRATIONS_DIR.glob("*.sql"))
-    for sql_file in migration_files:
-        sql = sql_file.read_text()
-        try:
-            conn.executescript(sql)
-        except sqlite3.OperationalError as e:
-            # Silently skip known-safe errors (e.g., ALTER TABLE column already exists)
-            err = str(e).lower()
-            if "duplicate column" in err or "already exists" in err:
-                continue
-            print(f"Migration warning ({sql_file.name}): {e}", file=sys.stderr)
+    # Run each migration file in order, tracked by the schema_migrations ledger.
+    # On a genuine failure _apply_migrations re-raises (loud); close the live
+    # connection first so a fatal abort doesn't leak it (init_db's trailing
+    # close() never runs on the exception path).
+    try:
+        _apply_migrations(conn)
+    except Exception:
+        conn.close()
+        raise
 
     # Data loss detection: if we had contacts before but now have zero, restore
     count_after = _get_contact_count(conn)
@@ -171,19 +238,11 @@ def _restore_latest_backup() -> bool:
     shutil.copy2(latest, DB_PATH)
 
     # Re-run migrations on the restored DB to pick up any new schema, then close.
+    # The restored backup may predate the current ledger state, so the ledgered
+    # runner re-checks every file by checksum and re-applies whatever is missing.
     conn = get_connection()
     try:
-        migration_files = sorted(MIGRATIONS_DIR.glob("*.sql"))
-        for sql_file in migration_files:
-            sql = sql_file.read_text()
-            try:
-                conn.executescript(sql)
-            except sqlite3.OperationalError as e:
-                err = str(e).lower()
-                if "duplicate column" in err or "already exists" in err:
-                    continue
-                print(f"Migration warning ({sql_file.name}): {e}", file=sys.stderr)
-        conn.commit()
+        _apply_migrations(conn)
     finally:
         conn.close()
     return True

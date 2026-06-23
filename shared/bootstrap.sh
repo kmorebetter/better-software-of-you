@@ -14,6 +14,47 @@ fi
 
 PLUGIN_ROOT="${CLAUDE_PLUGIN_ROOT:-$(cd "$(dirname "$0")/.." && pwd)}"
 DATA_HOME="${XDG_DATA_HOME:-$HOME/.local/share}/software-of-you"
+
+# --- Ledgered migration runner ---
+#
+# Mirrors the Python runner in db.py: a schema_migrations ledger (filename +
+# sha256 checksum) records which migrations have run so we skip unchanged
+# already-applied files and re-run the rest. Statements stay idempotent as
+# belt-and-suspenders. RECORD-AS-YOU-RUN — we never blanket-seed everything as
+# applied (an existing plugin DB has never run the slack migrations; an existing
+# MCP DB has never run pipeline_runs/health_checks — a blanket seed would skip
+# that needed work). Loud on real failure: an expected idempotency error
+# (duplicate column / already exists) is recorded and skipped; any other error
+# prints MIGRATION FAILED and exits 1 instead of being swallowed by 2>/dev/null.
+run_migrations_ledgered() {
+  local db="$1"
+  sqlite3 "$db" \
+    "CREATE TABLE IF NOT EXISTS schema_migrations (filename TEXT PRIMARY KEY, checksum TEXT, applied_at TEXT);" \
+    2>/dev/null
+  local f cs fname prev err rc
+  for f in "$PLUGIN_ROOT"/data/migrations/*.sql; do
+    cs=$(shasum -a 256 "$f" | cut -d' ' -f1)
+    fname=$(basename "$f")
+    prev=$(sqlite3 "$db" "SELECT checksum FROM schema_migrations WHERE filename='$fname';" 2>/dev/null)
+    if [ "$prev" = "$cs" ]; then
+      continue  # already applied with the same content
+    fi
+    err=$(sqlite3 "$db" < "$f" 2>&1)
+    rc=$?
+    if [ "$rc" -ne 0 ]; then
+      # Expected idempotency error → record + continue; anything else → fail loud.
+      if echo "$err" | grep -qiE 'duplicate column|already exists'; then
+        :
+      else
+        echo "MIGRATION FAILED ($fname): $err" >&2
+        exit 1
+      fi
+    fi
+    sqlite3 "$db" \
+      "INSERT OR REPLACE INTO schema_migrations (filename, checksum, applied_at) VALUES ('$fname', '$cs', datetime('now'));" \
+      2>/dev/null
+  done
+}
 DB_REAL="$DATA_HOME/soy.db"
 DB_LINK="$PLUGIN_ROOT/data/soy.db"
 TOKEN_REAL="$DATA_HOME/google_token.json"
@@ -89,9 +130,7 @@ fi
 
 # --- Run Migrations ---
 
-for f in "$PLUGIN_ROOT"/data/migrations/*.sql; do
-  sqlite3 "$DB_REAL" < "$f" 2>/dev/null
-done
+run_migrations_ledgered "$DB_REAL"
 
 # --- Data Loss Detection ---
 
@@ -110,9 +149,7 @@ if [ "$CONTACTS" = "0" ]; then
       sqlite3 "$DB_REAL" 'PRAGMA wal_checkpoint(TRUNCATE);' 2>/dev/null
       cp "$LATEST_BACKUP" "$DB_REAL"
       # Re-run migrations on restored DB to pick up any new tables
-      for f in "$PLUGIN_ROOT"/data/migrations/*.sql; do
-        sqlite3 "$DB_REAL" < "$f" 2>/dev/null
-      done
+      run_migrations_ledgered "$DB_REAL"
       CONTACTS=$(sqlite3 "$DB_REAL" "SELECT COUNT(*) FROM contacts;" 2>/dev/null || echo "0")
     fi
   fi
