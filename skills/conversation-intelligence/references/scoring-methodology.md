@@ -20,31 +20,60 @@ WHERE tp.contact_id = ?
 
 ### commitment_follow_through
 
-Percentage of resolved commitments that were completed (not overdue) in the last 90 days. Computed bidirectionally — user→contact and contact→user are separate values.
+Fraction of "resolved" commitments that were completed, where the denominator is
+completed commitments plus **genuinely-late open** ones. There is no `overdue`
+status in this system — a commitment that has blown its deadline is simply
+`status = 'open' AND deadline_date < date('now')`. That predicate (the same one
+`overview.py` uses to count overdue work) stands in for "should have been done by
+now but wasn't." Open commitments whose deadline is still in the future — or which
+have no deadline — are excluded, because they are neither completed nor late yet.
+
+This metric is **BIDIRECTIONAL** and stored in **two columns** on
+`relationship_scores`:
+
+| Column | Direction | Source rows |
+|--------|-----------|-------------|
+| `commitment_follow_through` | **outbound** (user → contact) | `is_user_commitment = 1` |
+| `commitment_follow_through_inbound` | **inbound** (contact → user) | `is_user_commitment = 0` |
+
+Compute each independently and store both. A one-sided relationship stores a real
+value in one column and `NULL` in the other — never echo the same number into both.
 
 ```sql
--- User's follow-through (commitments user made to this contact)
+-- Outbound: commitment_follow_through (commitments the user made to this contact)
 SELECT CAST(SUM(CASE WHEN status = 'completed' THEN 1 ELSE 0 END) AS REAL)
-     / NULLIF(SUM(CASE WHEN status IN ('completed', 'overdue') THEN 1 ELSE 0 END), 0)
+     / NULLIF(SUM(CASE
+                     WHEN status = 'completed' THEN 1
+                     WHEN status = 'open' AND deadline_date < date('now') THEN 1
+                     ELSE 0 END), 0)
 FROM commitments
 WHERE is_user_commitment = 1
   AND transcript_id IN (
     SELECT transcript_id FROM transcript_participants WHERE contact_id = ?
   )
-  AND (completed_at >= date('now', '-90 days') OR (status = 'overdue' AND updated_at >= date('now', '-90 days')));
+  AND (completed_at >= date('now', '-90 days')
+       OR (status = 'open' AND deadline_date < date('now')
+           AND deadline_date >= date('now', '-90 days')));
 
--- Contact's follow-through (commitments they made to user)
+-- Inbound: commitment_follow_through_inbound (commitments they made to the user)
 SELECT CAST(SUM(CASE WHEN status = 'completed' THEN 1 ELSE 0 END) AS REAL)
-     / NULLIF(SUM(CASE WHEN status IN ('completed', 'overdue') THEN 1 ELSE 0 END), 0)
+     / NULLIF(SUM(CASE
+                     WHEN status = 'completed' THEN 1
+                     WHEN status = 'open' AND deadline_date < date('now') THEN 1
+                     ELSE 0 END), 0)
 FROM commitments
 WHERE owner_contact_id = ?
   AND is_user_commitment = 0
-  AND (completed_at >= date('now', '-90 days') OR (status = 'overdue' AND updated_at >= date('now', '-90 days')));
+  AND (completed_at >= date('now', '-90 days')
+       OR (status = 'open' AND deadline_date < date('now')
+           AND deadline_date >= date('now', '-90 days')));
 ```
 
-Open-not-yet-due commitments are excluded from the calculation.
+Open-and-not-yet-due commitments are excluded from the calculation.
 
-**NULL when:** No resolved (completed or overdue) commitments exist in 90 days.
+**NULL when:** No resolved commitments (completed, or open-and-past-deadline) exist
+in the last 90 days. Store `NULL` rather than fabricating a value — the read path
+displays "—" until enough data exists to derive a real percentage.
 
 ### talk_ratio_avg
 

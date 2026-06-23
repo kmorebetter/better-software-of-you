@@ -208,11 +208,12 @@ def _add_analysis(transcript_id, participants, metrics, commitments_data,
                 statements.append((
                     """INSERT INTO relationship_scores
                        (contact_id, score_date, meeting_frequency, talk_ratio_avg,
-                        commitment_follow_through, topic_diversity, relationship_depth,
-                        trajectory, notes)
-                       VALUES (?, date('now'), ?, ?, ?, NULL, ?, ?, ?)""",
+                        commitment_follow_through, commitment_follow_through_inbound,
+                        topic_diversity, relationship_depth, trajectory, notes)
+                       VALUES (?, date('now'), ?, ?, ?, ?, NULL, ?, ?, ?)""",
                     (s["contact_id"], s.get("meeting_frequency"),
                      s.get("talk_ratio_avg"), s.get("commitment_follow_through"),
+                     s.get("commitment_follow_through_inbound"),
                      s.get("relationship_depth"), s.get("trajectory"),
                      s.get("notes")),
                 ))
