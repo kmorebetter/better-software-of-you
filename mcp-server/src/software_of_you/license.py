@@ -9,6 +9,7 @@ License data stored at ~/.local/share/software-of-you/license.json
 """
 
 import json
+import os
 import platform
 import socket
 import urllib.error
@@ -28,6 +29,33 @@ DEACTIVATE_URL = "https://api.lemonsqueezy.com/v1/licenses/deactivate"
 PRODUCT_ID = None  # TODO: set after storefront is live
 
 GRACE_PERIOD_DAYS = 3
+
+# Opt-in env var that allows TEST* keys to bypass the API. Unset by default so
+# a key starting with "TEST" is NOT treated as a free pass in normal operation.
+TEST_LICENSE_ENV = "SOY_ALLOW_TEST_LICENSE"
+
+
+def _write_license(license_data: dict) -> None:
+    """Write the license file atomically-ish with owner-only (0600) perms.
+
+    The license file is secret-adjacent (it holds the license key), so it must
+    never be world-readable.
+    """
+    LICENSE_PATH.write_text(json.dumps(license_data, indent=2) + "\n")
+    try:
+        os.chmod(LICENSE_PATH, 0o600)
+    except OSError:
+        pass
+
+
+def _test_keys_allowed() -> bool:
+    """True only when the operator has explicitly opted into TEST-key bypass."""
+    return os.environ.get(TEST_LICENSE_ENV, "").strip().lower() in {
+        "1",
+        "true",
+        "yes",
+        "on",
+    }
 
 
 def _instance_name() -> str:
@@ -51,8 +79,13 @@ def _post(url: str, data: dict) -> dict:
 
 
 def _is_test_key(key: str) -> bool:
-    """Check if this is a test/beta key that bypasses the API."""
-    return key.upper().startswith("TEST")
+    """Check if this is a test/beta key that may bypass the API.
+
+    A TEST* prefix alone is NOT enough — the operator must also opt in via the
+    ``SOY_ALLOW_TEST_LICENSE`` env var. Without that opt-in, TEST* keys fall
+    through to normal API validation (and are rejected by Lemon Squeezy).
+    """
+    return _test_keys_allowed() and key.upper().startswith("TEST")
 
 
 def activate_license(key: str) -> dict:
@@ -61,8 +94,10 @@ def activate_license(key: str) -> dict:
     Returns dict with customer info on success.
     Raises RuntimeError on invalid key or wrong product.
 
-    Keys starting with "TEST" skip the API and activate locally
-    (for beta testers before the storefront is live).
+    Keys starting with "TEST" skip the API and activate locally ONLY when the
+    operator has opted in via the SOY_ALLOW_TEST_LICENSE env var (for beta
+    testers before the storefront is live). Otherwise they are validated like
+    any other key.
     """
     DATA_DIR.mkdir(parents=True, exist_ok=True)
 
@@ -78,7 +113,7 @@ def activate_license(key: str) -> dict:
             "status": "active",
             "test_mode": True,
         }
-        LICENSE_PATH.write_text(json.dumps(license_data, indent=2) + "\n")
+        _write_license(license_data)
         return license_data
 
     try:
@@ -118,13 +153,64 @@ def activate_license(key: str) -> dict:
         "activated_at": datetime.now().isoformat(),
         "status": "active",
     }
-    LICENSE_PATH.write_text(json.dumps(license_data, indent=2) + "\n")
+    _write_license(license_data)
     return license_data
 
 
+def _grace_anchor() -> str | None:
+    """Return the activation timestamp the offline grace should anchor to.
+
+    Grace is only ever granted when there is a PRIOR successful activation on
+    record. The anchor is that activation's timestamp — never "now" — so a
+    network error cannot extend access indefinitely on repeated retries.
+
+    - A prior real (non-test) ``active`` record anchors to its ``activated_at``.
+    - A prior ``pending`` record carries the original anchor forward via
+      ``grace_anchor`` so re-failures keep the same expiry.
+    - Anything else (no license, a test-mode record, an unverified record)
+      yields ``None`` → no grace.
+    """
+    info = get_license_info()
+    if info is None:
+        return None
+
+    status = info.get("status")
+    if status == "active" and not info.get("test_mode"):
+        anchor = info.get("activated_at")
+        return anchor if isinstance(anchor, str) and anchor else None
+
+    if status == "pending":
+        anchor = info.get("grace_anchor")
+        return anchor if isinstance(anchor, str) and anchor else None
+
+    return None
+
+
 def _store_pending(key: str, error: str) -> dict:
-    """Store a pending activation when network is unavailable."""
-    grace_expires = (datetime.now() + timedelta(days=GRACE_PERIOD_DAYS)).isoformat()
+    """Store a pending activation when the network is unavailable.
+
+    Grace is granted ONLY if there is a prior successful activation on record,
+    and the grace window is anchored to that activation (not to the moment of
+    failure). With no prior activation, this raises — a network error must not
+    open access for a never-validated key.
+    """
+    anchor = _grace_anchor()
+    if anchor is None:
+        raise RuntimeError(
+            "Activation failed: could not reach the license server and no "
+            f"prior activation exists on this machine. ({error})"
+        )
+
+    try:
+        grace_expires = (
+            datetime.fromisoformat(anchor) + timedelta(days=GRACE_PERIOD_DAYS)
+        ).isoformat()
+    except ValueError:
+        raise RuntimeError(
+            "Activation failed: could not reach the license server and the "
+            f"prior activation record is unreadable. ({error})"
+        ) from None
+
     license_data = {
         "license_key": key,
         "instance_id": "",
@@ -134,10 +220,11 @@ def _store_pending(key: str, error: str) -> dict:
         "customer_email": "",
         "activated_at": datetime.now().isoformat(),
         "status": "pending",
+        "grace_anchor": anchor,
         "grace_expires": grace_expires,
         "pending_reason": error,
     }
-    LICENSE_PATH.write_text(json.dumps(license_data, indent=2) + "\n")
+    _write_license(license_data)
     return license_data
 
 
@@ -190,8 +277,9 @@ def validate_license() -> bool:
         if valid:
             info["status"] = "active"
             info.pop("grace_expires", None)
+            info.pop("grace_anchor", None)
             info.pop("pending_reason", None)
-            LICENSE_PATH.write_text(json.dumps(info, indent=2) + "\n")
+            _write_license(info)
         return valid
     except (urllib.error.URLError, OSError):
         return is_activated()  # Fall back to local check

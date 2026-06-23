@@ -9,6 +9,7 @@ the tokens/ directory. Legacy single-token files are auto-migrated.
 
 import base64
 import hashlib
+import html
 import json
 import os
 import secrets
@@ -116,6 +117,8 @@ def save_token(token_data: dict, email: str | None = None) -> None:
         path = LEGACY_TOKEN_FILE
     token_data["saved_at"] = int(time.time())
     path.write_text(json.dumps(token_data, indent=2))
+    # Token files hold OAuth secrets — restrict to owner-only read/write.
+    os.chmod(path, 0o600)
 
 
 def is_token_expired(token_data: dict) -> bool:
@@ -323,7 +326,10 @@ class _OAuthHandler(BaseHTTPRequestHandler):
             self.send_response(400)
             self.send_header("Content-type", "text/html")
             self.end_headers()
-            self.wfile.write(f"<html><body>Auth failed: {params['error'][0]}</body></html>".encode())
+            safe_error = html.escape(params["error"][0])
+            self.wfile.write(
+                f"<html><body>Auth failed: {safe_error}</body></html>".encode()
+            )
 
     def log_message(self, format, *args):
         pass
