@@ -1,6 +1,6 @@
 # AGENTS.md
 
-This file provides guidance to WARP (warp.dev) when working with code in this repository.
+This file provides guidance to coding agents (Claude Code and similar) when working with code in this repository.
 
 ## What This Project Is
 
@@ -53,7 +53,16 @@ sqlite3 data/soy.db "SELECT name, version FROM modules WHERE enabled=1;"
 python3 shared/google_auth.py status
 ```
 
-There are no automated tests in this repo currently.
+Automated tests live in `mcp-server/tests/` (pytest). Run them from the `mcp-server` directory:
+
+```bash
+cd mcp-server
+python3 -m venv .venv && source .venv/bin/activate
+pip install -e ".[dev]"
+pytest
+```
+
+The suite uses an isolated temporary database (see `tests/conftest.py`) and never touches the real `~/.local/share/software-of-you/soy.db`.
 
 ## Architecture
 
