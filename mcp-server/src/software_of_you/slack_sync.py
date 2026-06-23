@@ -15,8 +15,19 @@ from datetime import datetime, timedelta
 
 from software_of_you.db import execute, execute_many, execute_write, rows_to_dicts
 from software_of_you.slack_auth import get_bot_token
+from software_of_you.tools._resolve import resolve_contact_by_name
 
 SLACK_API = "https://slack.com/api"
+
+
+def _should_mark_synced(failed: int) -> bool:
+    """Only advance the freshness timestamp on a fully-clean sync.
+
+    When channels were dropped (``failed > 0``) the timestamp must NOT advance,
+    so auto-sync retries on the next call instead of waiting out the freshness
+    window.
+    """
+    return failed == 0
 
 
 def _api_get(method: str, token: str, params: dict | None = None) -> dict:
@@ -63,13 +74,12 @@ def _match_contact(sender_name: str | None, sender_email: str | None) -> int | N
         if rows:
             return rows[0]["id"]
 
-    if sender_name:
-        rows = execute(
-            "SELECT id FROM contacts WHERE name LIKE ?",
-            (f"%{sender_name}%",),
-        )
-        if len(rows) == 1:
-            return rows[0]["id"]
+    # Fuzzy name fallback. On an ambiguous multi-match the helper returns an
+    # ambiguous result rather than a unique id; here we intentionally leave the
+    # message unlinked (preserving prior behavior) rather than guess.
+    match = resolve_contact_by_name(sender_name or "")
+    if match and "id" in match:
+        return match["id"]
 
     return None
 
@@ -144,6 +154,7 @@ def sync_messages(token: str | None = None, days: int = 7) -> dict:
         return {"error": "Not connected to Slack."}
 
     synced = 0
+    failed = 0
     errors = []
 
     try:
@@ -238,22 +249,26 @@ def sync_messages(token: str | None = None, days: int = 7) -> dict:
                 )
 
             except Exception as e:
+                failed += 1
                 errors.append({"channel": channel_name, "error": str(e)})
 
-        # Update global sync timestamp
-        execute_many([(
-            "INSERT OR REPLACE INTO soy_meta (key, value, updated_at) VALUES ('slack_last_synced', datetime('now'), datetime('now'))",
-            (),
-        )])
+        # Only advance the freshness timestamp on a fully-clean sync. If any
+        # channel was dropped, leave the timestamp so auto-sync retries instead
+        # of waiting out the freshness window.
+        if _should_mark_synced(failed):
+            execute_many([(
+                "INSERT OR REPLACE INTO soy_meta (key, value, updated_at) VALUES ('slack_last_synced', datetime('now'), datetime('now'))",
+                (),
+            )])
 
-        result = {"synced": synced, "channels_checked": len(channels)}
+        result = {"synced": synced, "failed": failed, "channels_checked": len(channels)}
         if errors:
             result["errors"] = errors
         return result
 
     except Exception as e:
         print(f"Slack message sync failed: {e}", file=sys.stderr)
-        return {"error": str(e), "synced": synced}
+        return {"error": str(e), "synced": synced, "failed": failed}
 
 
 def sync_slack(token: str | None = None) -> dict:

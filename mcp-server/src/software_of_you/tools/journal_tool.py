@@ -4,7 +4,7 @@ from datetime import date
 
 from mcp.server.fastmcp import FastMCP
 
-from software_of_you.db import execute, execute_many, rows_to_dicts
+from software_of_you.db import execute, execute_many, insert_with_log, rows_to_dicts
 
 
 def register(server: FastMCP) -> None:
@@ -100,19 +100,15 @@ def _write(content, mood, energy, entry_date, linked_contacts, linked_projects):
             },
         }
     else:
-        eid = execute_many([
-            (
-                """INSERT INTO journal_entries (content, mood, energy, entry_date, linked_contacts, linked_projects)
-                   VALUES (?, ?, ?, ?, ?, ?)""",
-                (content, mood or None, energy or None, today,
-                 linked_contacts or None, linked_projects or None),
-            ),
-            (
-                """INSERT INTO activity_log (entity_type, entity_id, action, details)
-                   VALUES ('journal', last_insert_rowid(), 'created', ?)""",
-                (f"Journal entry for {today}",),
-            ),
-        ])
+        eid = insert_with_log(
+            """INSERT INTO journal_entries (content, mood, energy, entry_date, linked_contacts, linked_projects)
+               VALUES (?, ?, ?, ?, ?, ?)""",
+            (content, mood or None, energy or None, today,
+             linked_contacts or None, linked_projects or None),
+            """INSERT INTO activity_log (entity_type, entity_id, action, details)
+               VALUES ('journal', last_insert_rowid(), 'created', ?)""",
+            (f"Journal entry for {today}",),
+        )
 
         return {
             "result": {"entry_id": eid, "date": today, "mood": mood, "energy": energy},

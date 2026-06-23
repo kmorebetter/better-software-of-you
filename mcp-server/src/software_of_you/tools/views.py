@@ -6,6 +6,7 @@ instant template rendering.
 
 import json
 import platform
+import re
 import subprocess
 import sys
 from datetime import datetime, date, timedelta
@@ -23,11 +24,42 @@ from software_of_you.db import (
 TEMPLATES_DIR = Path(__file__).parent.parent / "templates"
 
 
+def _safe_slug(name: str, fallback: str = "view") -> str:
+    """Whitelist a name to a filesystem-safe slug (``[a-z0-9-]``).
+
+    Generated-view filenames are derived from contact names and model-supplied
+    titles. Without this, a name containing ``/`` or ``..`` would crash the
+    write (or, if parent dirs were ever created, escape VIEWS_DIR).
+    """
+    slug = re.sub(r"[^a-z0-9]+", "-", (name or "").lower()).strip("-")
+    return slug or fallback
+
+
 def _get_env() -> jinja2.Environment:
-    """Get Jinja2 environment with template directory."""
+    """Get Jinja2 environment with template directory.
+
+    Autoescaping is ON for HTML templates so that DB- and external-derived
+    values (contact names, email from_name, calendar event titles, transcript
+    text, etc.) are rendered as inert escaped text and can never execute
+    injected script. The ONE intentional raw-HTML channel is
+    ``module_view.html`` line ~98: ``{{ section.html | safe }}``.
+
+    Audit of that ``|safe`` channel: ``section.html`` is sourced solely from
+    ``data.get("sections", [])`` in ``_render_module_view`` — i.e. the
+    ``sections_data`` tool argument, a JSON document the model assembles. No
+    builder in this module concatenates raw DB strings into ``section.html``;
+    nothing reads a contact name / note / email field and splices it into that
+    fragment. So ``|safe`` wraps only model-authored, trusted markup. The
+    ``narrative_sections`` fields (relationship_context, company_intel,
+    discovery_questions) render through plain ``{{ }}`` in ``entity_page.html``
+    (NOT ``|safe``), so autoescaping makes them inert automatically. If a future
+    builder ever interpolates raw DB/external data into a ``|safe`` fragment,
+    that substring MUST be escaped (``markupsafe.escape`` / ``html.escape``)
+    before concatenation.
+    """
     return jinja2.Environment(
         loader=jinja2.FileSystemLoader(str(TEMPLATES_DIR)),
-        autoescape=False,
+        autoescape=jinja2.select_autoescape(["html"]),
     )
 
 
@@ -397,10 +429,8 @@ def _render_entity_page(contact_id: int, narrative_sections_json: str, open_afte
     contact = rows_to_dicts(rows)[0]
     modules = get_installed_modules()
 
-    # Build slug
-    slug = contact["name"].lower().replace(" ", "-")
-    for c in "'.()":
-        slug = slug.replace(c, "")
+    # Build slug (whitelist — a contact name must never inject path chars)
+    slug = _safe_slug(contact["name"], "contact")
 
     # Nav context — sidebar with this contact active in People section
     ctx = _get_nav_context("contacts", "people", active_entity_id=contact_id,
@@ -570,7 +600,10 @@ def _render_module_view(sections_data_json: str, open_after: bool) -> dict:
         return {"error": "Invalid sections_data JSON."}
 
     page_title = data.get("page_title", "View")
-    filename = data.get("filename", page_title.lower().replace(" ", "-") + ".html")
+    # Sanitize the (model-supplied) filename: strip any extension, whitelist to
+    # a safe slug, re-append .html — prevents path traversal / write-escape.
+    raw_name = data.get("filename") or page_title
+    filename = _safe_slug(re.sub(r"\.html?$", "", raw_name, flags=re.IGNORECASE), "view") + ".html"
     active_page = data.get("active_page", "dashboard")
     active_section = data.get("active_section", "")
 

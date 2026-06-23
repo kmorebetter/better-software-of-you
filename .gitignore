@@ -2,6 +2,8 @@ data/soy.db
 data/soy.db-journal
 data/soy.db-wal
 data/soy.db-shm
+# output/ is a per-environment symlink created by bootstrap.sh — never tracked
+/output
 output/*.html
 config/google_token.json
 config/google_credentials.json
@@ -11,6 +13,9 @@ data/tokens/
 client_secret_*.json
 __pycache__/
 *.pyc
+.venv/
+mcp-server/.venv/
+.pytest_cache/
 mcp-server/dist/
 mcp-server/*.egg-info/
 

@@ -55,6 +55,8 @@ def save_token(token_data: dict) -> None:
     DATA_DIR.mkdir(parents=True, exist_ok=True)
     token_data["saved_at"] = int(time.time())
     TOKEN_PATH.write_text(json.dumps(token_data, indent=2))
+    # Token file holds the Slack bot secret — restrict to owner-only read/write.
+    os.chmod(TOKEN_PATH, 0o600)
 
 
 def get_bot_token() -> str | None:

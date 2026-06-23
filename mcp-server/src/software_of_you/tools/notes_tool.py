@@ -2,7 +2,7 @@
 
 from mcp.server.fastmcp import FastMCP
 
-from software_of_you.db import execute, execute_many, rows_to_dicts
+from software_of_you.db import execute, execute_many, insert_with_log, rows_to_dicts
 
 
 def register(server: FastMCP) -> None:
@@ -49,19 +49,15 @@ def _add(title, content, tags, linked_contacts, linked_projects, pinned):
     if not content:
         return {"error": "Content is required for a note."}
 
-    nid = execute_many([
-        (
-            """INSERT INTO standalone_notes (title, content, tags, linked_contacts, linked_projects, pinned)
-               VALUES (?, ?, ?, ?, ?, ?)""",
-            (title or None, content, tags or None,
-             linked_contacts or None, linked_projects or None, 1 if pinned else 0),
-        ),
-        (
-            """INSERT INTO activity_log (entity_type, entity_id, action, details)
-               VALUES ('note', last_insert_rowid(), 'created', ?)""",
-            (f"Note: {title or content[:50]}",),
-        ),
-    ])
+    nid = insert_with_log(
+        """INSERT INTO standalone_notes (title, content, tags, linked_contacts, linked_projects, pinned)
+           VALUES (?, ?, ?, ?, ?, ?)""",
+        (title or None, content, tags or None,
+         linked_contacts or None, linked_projects or None, 1 if pinned else 0),
+        """INSERT INTO activity_log (entity_type, entity_id, action, details)
+           VALUES ('note', last_insert_rowid(), 'created', ?)""",
+        (f"Note: {title or content[:50]}",),
+    )
 
     return {
         "result": {"note_id": nid, "title": title, "pinned": pinned},

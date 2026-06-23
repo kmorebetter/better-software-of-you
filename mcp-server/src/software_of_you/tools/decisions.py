@@ -2,7 +2,7 @@
 
 from mcp.server.fastmcp import FastMCP
 
-from software_of_you.db import execute, execute_many, rows_to_dicts
+from software_of_you.db import execute, execute_many, insert_with_log, rows_to_dicts
 
 
 def register(server: FastMCP) -> None:
@@ -50,19 +50,15 @@ def _log(title, context, options_considered, decision, rationale, status, projec
     if not title or not decision:
         return {"error": "Both title and decision text are required."}
 
-    did = execute_many([
-        (
-            """INSERT INTO decisions (title, context, options_considered, decision, rationale, status, project_id, contact_id)
-               VALUES (?, ?, ?, ?, ?, ?, ?, ?)""",
-            (title, context or None, options_considered or None, decision,
-             rationale or None, status, project_id or None, contact_id or None),
-        ),
-        (
-            """INSERT INTO activity_log (entity_type, entity_id, action, details)
-               VALUES ('decision', last_insert_rowid(), 'logged', ?)""",
-            (f"Decision: {title}",),
-        ),
-    ])
+    did = insert_with_log(
+        """INSERT INTO decisions (title, context, options_considered, decision, rationale, status, project_id, contact_id)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?)""",
+        (title, context or None, options_considered or None, decision,
+         rationale or None, status, project_id or None, contact_id or None),
+        """INSERT INTO activity_log (entity_type, entity_id, action, details)
+           VALUES ('decision', last_insert_rowid(), 'logged', ?)""",
+        (f"Decision: {title}",),
+    )
 
     return {
         "result": {"decision_id": did, "title": title, "status": status},

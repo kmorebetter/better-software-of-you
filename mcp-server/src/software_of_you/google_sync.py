@@ -19,7 +19,9 @@ from software_of_you.db import execute, execute_many, execute_write
 from software_of_you.google_auth import (
     get_valid_token,
     list_accounts,
+    load_token,
     migrate_legacy_token,
+    refresh_access_token,
 )
 
 GMAIL_API = "https://gmail.googleapis.com/gmail/v1/users/me"
@@ -35,6 +37,35 @@ def _api_get(url: str, token: str) -> dict:
     req = urllib.request.Request(url, headers={"Authorization": f"Bearer {token}"})
     with urllib.request.urlopen(req, timeout=15) as resp:
         return json.loads(resp.read().decode())
+
+
+def _is_auth_error(exc: Exception) -> bool:
+    """True if the exception is an HTTP 401 (expired/invalid token)."""
+    return isinstance(exc, urllib.error.HTTPError) and exc.code == 401
+
+
+def _refresh_token(account_email: str | None) -> str | None:
+    """Refresh the OAuth access token once, returning the new access token.
+
+    Reuses the existing refresh path in google_auth (load saved token data,
+    exchange the refresh_token, persist). Returns None if no refreshable
+    token is available.
+    """
+    token_data = load_token(email=account_email)
+    if not token_data:
+        return None
+    new_data = refresh_access_token(token_data, email=account_email)
+    return new_data.get("access_token") if new_data else None
+
+
+def _should_mark_synced(failed: int) -> bool:
+    """Only advance the freshness timestamp on a fully-clean sync.
+
+    When items were dropped (``failed > 0``) the timestamp must NOT advance,
+    so auto-sync retries on the next call instead of waiting out the 15-minute
+    freshness window.
+    """
+    return failed == 0
 
 
 def _get_user_email(token: str) -> str | None:
@@ -75,6 +106,7 @@ def sync_gmail(token: str | None = None, account_email: str | None = None) -> di
     user_email = account_email or _get_user_email(token)
     account_id = _lookup_account_id(account_email)
     synced = 0
+    failed = 0
 
     try:
         # Fetch recent message list
@@ -91,11 +123,28 @@ def sync_gmail(token: str | None = None, account_email: str | None = None) -> di
             if existing:
                 continue
 
-            # Fetch full message
+            # Fetch full message. On a per-message 401 (token expired mid-sync),
+            # refresh the token once and retry this item once. Any item we still
+            # can't fetch counts as a failure so the timestamp is not advanced.
+            msg_url = f"{GMAIL_API}/messages/{msg_id}?format=metadata&metadataHeaders=From&metadataHeaders=To&metadataHeaders=Subject"
             try:
-                msg = _api_get(f"{GMAIL_API}/messages/{msg_id}?format=metadata&metadataHeaders=From&metadataHeaders=To&metadataHeaders=Subject", token)
-            except Exception:
-                continue
+                msg = _api_get(msg_url, token)
+            except Exception as e:
+                if _is_auth_error(e):
+                    new_token = _refresh_token(account_email)
+                    if new_token:
+                        token = new_token
+                        try:
+                            msg = _api_get(msg_url, token)
+                        except Exception:
+                            failed += 1
+                            continue
+                    else:
+                        failed += 1
+                        continue
+                else:
+                    failed += 1
+                    continue
 
             headers = {h["name"].lower(): h["value"] for h in msg.get("payload", {}).get("headers", [])}
             from_addr = headers.get("from", "")
@@ -149,22 +198,29 @@ def sync_gmail(token: str | None = None, account_email: str | None = None) -> di
         if statements:
             execute_many(statements)
 
-        # Update sync timestamps — per-account and global
-        ts_statements = [
-            ("INSERT OR REPLACE INTO soy_meta (key, value, updated_at) VALUES ('gmail_last_synced', datetime('now'), datetime('now'))", ()),
-        ]
-        if account_email:
-            ts_statements.append((
-                "INSERT OR REPLACE INTO soy_meta (key, value, updated_at) VALUES (?, datetime('now'), datetime('now'))",
-                (f"gmail_last_synced:{account_email}",),
-            ))
-        execute_many(ts_statements)
+        # Only advance the freshness timestamp on a fully-clean sync. If any
+        # messages were dropped, leave the timestamp so auto-sync retries.
+        if _should_mark_synced(failed):
+            ts_statements = [
+                ("INSERT OR REPLACE INTO soy_meta (key, value, updated_at) VALUES ('gmail_last_synced', datetime('now'), datetime('now'))", ()),
+            ]
+            if account_email:
+                ts_statements.append((
+                    "INSERT OR REPLACE INTO soy_meta (key, value, updated_at) VALUES (?, datetime('now'), datetime('now'))",
+                    (f"gmail_last_synced:{account_email}",),
+                ))
+            execute_many(ts_statements)
 
-        return {"synced": synced, "total_checked": len(messages), "account": account_email}
+        return {
+            "synced": synced,
+            "failed": failed,
+            "total_checked": len(messages),
+            "account": account_email,
+        }
 
     except urllib.error.URLError as e:
         print(f"Gmail sync failed: {e}", file=sys.stderr)
-        return {"error": str(e), "synced": synced}
+        return {"error": str(e), "synced": synced, "failed": failed}
 
 
 def sync_calendar(token: str | None = None, account_email: str | None = None) -> dict:
@@ -180,6 +236,7 @@ def sync_calendar(token: str | None = None, account_email: str | None = None) ->
 
     account_id = _lookup_account_id(account_email)
     synced = 0
+    failed = 0
     now = datetime.now()
     time_min = (now - timedelta(days=7)).isoformat() + "Z"
     time_max = (now + timedelta(days=14)).isoformat() + "Z"
@@ -248,22 +305,28 @@ def sync_calendar(token: str | None = None, account_email: str | None = None) ->
         if statements:
             execute_many(statements)
 
-        # Update sync timestamps
-        ts_statements = [
-            ("INSERT OR REPLACE INTO soy_meta (key, value, updated_at) VALUES ('calendar_last_synced', datetime('now'), datetime('now'))", ()),
-        ]
-        if account_email:
-            ts_statements.append((
-                "INSERT OR REPLACE INTO soy_meta (key, value, updated_at) VALUES (?, datetime('now'), datetime('now'))",
-                (f"calendar_last_synced:{account_email}",),
-            ))
-        execute_many(ts_statements)
+        # Only advance the freshness timestamp on a fully-clean sync.
+        if _should_mark_synced(failed):
+            ts_statements = [
+                ("INSERT OR REPLACE INTO soy_meta (key, value, updated_at) VALUES ('calendar_last_synced', datetime('now'), datetime('now'))", ()),
+            ]
+            if account_email:
+                ts_statements.append((
+                    "INSERT OR REPLACE INTO soy_meta (key, value, updated_at) VALUES (?, datetime('now'), datetime('now'))",
+                    (f"calendar_last_synced:{account_email}",),
+                ))
+            execute_many(ts_statements)
 
-        return {"synced": synced, "total_events": len(events), "account": account_email}
+        return {
+            "synced": synced,
+            "failed": failed,
+            "total_events": len(events),
+            "account": account_email,
+        }
 
     except urllib.error.URLError as e:
         print(f"Calendar sync failed: {e}", file=sys.stderr)
-        return {"error": str(e), "synced": synced}
+        return {"error": str(e), "synced": synced, "failed": failed}
 
 
 def _decode_base64url(data: str) -> str:
@@ -330,6 +393,10 @@ def sync_transcripts(token: str | None = None, account_email: str | None = None)
 
     imported = 0
     errors = []
+    # Transient failures (network/auth that survived the refresh-retry) — these
+    # warrant a retry, so they gate the scan timestamp. "No Doc link"/"Empty doc"
+    # are permanent classifications of an email and do NOT block freshness.
+    transient_failed = 0
 
     try:
         # Find Gemini emails not yet in transcript_sources
@@ -355,8 +422,20 @@ def sync_transcripts(token: str | None = None, account_email: str | None = None)
             subject = email["subject"] or ""
 
             try:
-                # Fetch full email body
-                msg = _api_get(f"{GMAIL_API}/messages/{gmail_id}?format=full", token)
+                # Fetch full email body. On a per-message 401 (token expired
+                # mid-sync), refresh the token once and retry this item once.
+                full_url = f"{GMAIL_API}/messages/{gmail_id}?format=full"
+                try:
+                    msg = _api_get(full_url, token)
+                except Exception as e:
+                    if _is_auth_error(e):
+                        new_token = _refresh_token(account_email)
+                        if not new_token:
+                            raise
+                        token = new_token
+                        msg = _api_get(full_url, token)
+                    else:
+                        raise
 
                 html_body = _extract_body_parts(msg.get("payload", {}), "text/html")
                 plain_body = _extract_body_parts(msg.get("payload", {}), "text/plain")
@@ -432,19 +511,27 @@ def sync_transcripts(token: str | None = None, account_email: str | None = None)
                 imported += 1
 
             except Exception as e:
+                transient_failed += 1
                 errors.append({"email_id": email_id, "error": str(e)})
 
-        # Update scan timestamp
-        execute_many([(
-            "INSERT OR REPLACE INTO soy_meta (key, value, updated_at) VALUES ('transcripts_last_scanned', datetime('now'), datetime('now'))",
-            (),
-        )])
+        # Only advance the scan timestamp if no transient failures occurred, so
+        # auto-sync retries dropped transcripts instead of waiting out the window.
+        if _should_mark_synced(transient_failed):
+            execute_many([(
+                "INSERT OR REPLACE INTO soy_meta (key, value, updated_at) VALUES ('transcripts_last_scanned', datetime('now'), datetime('now'))",
+                (),
+            )])
 
-        return {"imported": imported, "errors": errors, "account": account_email}
+        return {
+            "imported": imported,
+            "failed": transient_failed,
+            "errors": errors,
+            "account": account_email,
+        }
 
     except urllib.error.URLError as e:
         print(f"Transcript sync failed: {e}", file=sys.stderr)
-        return {"error": str(e), "imported": imported}
+        return {"error": str(e), "imported": imported, "failed": transient_failed}
 
 
 def sync_all_accounts() -> dict:

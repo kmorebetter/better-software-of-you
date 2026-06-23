@@ -373,10 +373,15 @@ def register(server: FastMCP) -> None:
         )
         data["meetings"] = {"items": rows_to_dicts(meetings), "count": len(meetings)}
 
-        # Commitments made this week (view has created_at)
+        # Commitments made this week — count from the base table by created_at,
+        # independent of status. The v_commitment_status view filters to
+        # status IN ('open','overdue'), which would drop a commitment that was
+        # made AND completed in the same week, undercounting "made".
         new_commits = execute(
-            """SELECT * FROM v_commitment_status
-               WHERE created_at BETWEEN ? AND ?""",
+            """SELECT c.id, c.description, c.status, c.created_at, co.name as owner_name
+               FROM commitments c
+               LEFT JOIN contacts co ON c.owner_contact_id = co.id
+               WHERE c.created_at BETWEEN ? AND ?""",
             (monday_str, sunday_str + " 23:59:59"),
         )
         # Completed this week (query commitments table directly — view doesn't expose completed_at)

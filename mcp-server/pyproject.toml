@@ -26,6 +26,11 @@ dependencies = [
     "jinja2>=3.1",
 ]
 
+[project.optional-dependencies]
+dev = [
+    "pytest>=8",
+]
+
 [project.scripts]
 software-of-you = "software_of_you.cli:main"
 
@@ -34,3 +39,7 @@ Homepage = "https://github.com/kerrymorrison/software-of-you"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/software_of_you"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]

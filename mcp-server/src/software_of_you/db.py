@@ -5,6 +5,7 @@ the Claude Code plugin. Migrations are bundled in this package and are
 idempotent (safe to re-run every startup).
 """
 
+import hashlib
 import os
 import shutil
 import sqlite3
@@ -44,14 +45,35 @@ def get_connection(readonly: bool = False) -> sqlite3.Connection:
 
 
 def backup_db() -> Path | None:
-    """Create a rolling backup of the database. Returns backup path or None."""
+    """Create a rolling, crash-consistent backup of the database.
+
+    Uses SQLite's online backup API rather than ``shutil.copy2`` of the ``.db``
+    file alone. The database runs in WAL mode (set persistently in
+    ``get_connection``), so committed-but-uncheckpointed rows live in the
+    ``-wal`` sidecar — a raw copy of ``.db`` silently drops them. ``backup``
+    reads through the live WAL, capturing a complete, openable snapshot.
+
+    Returns the backup path, or None if the DB does not exist yet.
+    """
     if not DB_PATH.exists():
         return None
 
     ensure_dirs()
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     backup_path = BACKUP_DIR / f"soy_{timestamp}.db"
-    shutil.copy2(DB_PATH, backup_path)
+
+    src = sqlite3.connect(str(DB_PATH))
+    try:
+        dst = sqlite3.connect(str(backup_path))
+        try:
+            src.backup(dst)
+        finally:
+            dst.close()
+    finally:
+        src.close()
+
+    # Backups carry the same data as the DB — keep them owner-only (L1 parity).
+    os.chmod(backup_path, 0o600)
 
     # Keep only MAX_BACKUPS most recent
     backups = sorted(BACKUP_DIR.glob("soy_*.db"), key=lambda p: p.stat().st_mtime)
@@ -68,6 +90,75 @@ def _get_contact_count(conn: sqlite3.Connection) -> int:
         return row[0] if row else 0
     except sqlite3.OperationalError:
         return 0
+
+
+def _apply_migrations(conn: sqlite3.Connection) -> None:
+    """Apply all bundled migrations against ``conn``, tracked by a ledger.
+
+    A ``schema_migrations`` ledger (filename + sha256 checksum + applied_at)
+    records which migration files have run. On each launch we skip files whose
+    checksum already matches the ledger and execute (or re-execute) the rest.
+
+    RECORD-AS-YOU-RUN — NOT seed-all-as-applied. The unified migration tree is
+    a *superset*: an existing plugin DB has never run the slack migrations, and
+    an existing MCP DB has never run pipeline_runs/health_checks. A blanket
+    "mark everything applied" seed on an existing DB would skip that genuinely
+    needed work. Instead, on a pre-ledger DB's first ledgered launch we run the
+    full set once and record each file as we go. That single re-run is safe
+    because every migration is idempotent (``CREATE ... IF NOT EXISTS`` /
+    ``DROP VIEW IF EXISTS`` + ``CREATE`` / ``INSERT OR REPLACE`` / guarded
+    ``ALTER``) and the one non-idempotent abort (the 004 ALTER) is already
+    fixed; the ledger then skips every file on all subsequent launches.
+
+    Loud on real failure: an *expected* idempotency error (``duplicate column``
+    / ``already exists``) is treated as success — we stop executing the rest of
+    that file quietly but STILL record it as applied. Any *other* sqlite error
+    (``OperationalError``, ``IntegrityError``, or any ``sqlite3.Error``) prints
+    a prominent ``MIGRATION FAILED`` to stderr, is NOT recorded, and is
+    re-raised so the failure surfaces instead of being silently swallowed.
+    """
+    conn.execute(
+        "CREATE TABLE IF NOT EXISTS schema_migrations ("
+        "filename TEXT PRIMARY KEY, checksum TEXT, applied_at TEXT)"
+    )
+    conn.commit()
+
+    for sql_file in sorted(MIGRATIONS_DIR.glob("*.sql")):
+        file_bytes = sql_file.read_bytes()
+        checksum = hashlib.sha256(file_bytes).hexdigest()
+
+        row = conn.execute(
+            "SELECT checksum FROM schema_migrations WHERE filename = ?",
+            (sql_file.name,),
+        ).fetchone()
+        if row is not None and row[0] == checksum:
+            # Already applied with the same content — skip, do not re-execute.
+            continue
+
+        sql = file_bytes.decode("utf-8")
+        try:
+            conn.executescript(sql)
+        except sqlite3.Error as e:
+            err = str(e).lower()
+            if "duplicate column" in err or "already exists" in err:
+                # Expected idempotency error: the schema already has this object.
+                # Stop executing the rest of this file quietly, but the file is
+                # effectively applied — record it so we don't keep re-running it.
+                pass
+            else:
+                # Genuine failure — be loud, do not record, re-raise.
+                print(
+                    f"MIGRATION FAILED ({sql_file.name}): {e}",
+                    file=sys.stderr,
+                )
+                raise
+
+        conn.execute(
+            "INSERT OR REPLACE INTO schema_migrations "
+            "(filename, checksum, applied_at) VALUES (?, ?, datetime('now'))",
+            (sql_file.name, checksum),
+        )
+        conn.commit()
 
 
 def run_migrations(conn: sqlite3.Connection | None = None) -> None:
@@ -88,39 +179,72 @@ def run_migrations(conn: sqlite3.Connection | None = None) -> None:
     if count_before > 0:
         backup_db()
 
-    # Run each migration file in order
-    migration_files = sorted(MIGRATIONS_DIR.glob("*.sql"))
-    for sql_file in migration_files:
-        sql = sql_file.read_text()
-        try:
-            conn.executescript(sql)
-        except sqlite3.OperationalError as e:
-            # Silently skip known-safe errors (e.g., ALTER TABLE column already exists)
-            err = str(e).lower()
-            if "duplicate column" in err or "already exists" in err:
-                continue
-            print(f"Migration warning ({sql_file.name}): {e}", file=sys.stderr)
+    # Run each migration file in order, tracked by the schema_migrations ledger.
+    # On a genuine failure _apply_migrations re-raises (loud); close the live
+    # connection first so a fatal abort doesn't leak it (init_db's trailing
+    # close() never runs on the exception path).
+    try:
+        _apply_migrations(conn)
+    except Exception:
+        conn.close()
+        raise
 
     # Data loss detection: if we had contacts before but now have zero, restore
     count_after = _get_contact_count(conn)
     if count_before > 0 and count_after == 0:
         print("Data loss detected after migrations — restoring from backup.", file=sys.stderr)
-        if close_after:
-            conn.close()
+        # The restore overwrites DB_PATH on disk, so NO connection may be open
+        # over the live file during the copy — otherwise we copy a backup over a
+        # file a caller still holds a (now-stale, WAL-mode) handle to and corrupt
+        # it. Close the live connection here regardless of who opened it
+        # (close_after True for our own conn, False for an init_db-owned one);
+        # _restore_latest_backup then owns the checkpoint, copy, and a fresh
+        # reopen + re-migrate on the restored file, mirroring the bash path.
+        conn.close()
         _restore_latest_backup()
-        if close_after:
-            conn = get_connection()
+        # The caller's handle (if any) is now stale and must not be reused for
+        # a copy/write; init_db's trailing close() on it is a safe no-op.
     elif close_after:
         conn.close()
 
 
 def _restore_latest_backup() -> bool:
-    """Restore the most recent backup. Returns True if restored."""
+    """Restore the most recent backup over DB_PATH and re-run migrations.
+
+    The caller MUST have closed every connection to the live DB before calling
+    this — the restore overwrites DB_PATH (and clears its WAL sidecars) on disk.
+
+    Steps: checkpoint+drop any stale ``-wal``/``-shm`` left by the dead
+    connection (so they can't re-clobber the restored file on the next open),
+    copy the latest backup over DB_PATH, then reopen a fresh connection to
+    re-apply migrations on the restored data (parity with bootstrap.sh).
+    Returns True if a backup was restored.
+    """
     backups = sorted(BACKUP_DIR.glob("soy_*.db"), key=lambda p: p.stat().st_mtime)
     if not backups:
         return False
     latest = backups[-1]
+
+    # Remove stale WAL sidecars from the now-closed connection. If left in place,
+    # SQLite would replay them into the freshly-restored .db on next open,
+    # re-clobbering exactly the rows we just recovered.
+    for sidecar in (
+        DB_PATH.with_name(DB_PATH.name + "-wal"),
+        DB_PATH.with_name(DB_PATH.name + "-shm"),
+    ):
+        if sidecar.exists():
+            sidecar.unlink()
+
     shutil.copy2(latest, DB_PATH)
+
+    # Re-run migrations on the restored DB to pick up any new schema, then close.
+    # The restored backup may predate the current ledger state, so the ledgered
+    # runner re-checks every file by checksum and re-applies whatever is missing.
+    conn = get_connection()
+    try:
+        _apply_migrations(conn)
+    finally:
+        conn.close()
     return True
 
 
@@ -165,6 +289,67 @@ def execute_many(statements: list[tuple[str, tuple]]) -> int:
             last_id = cursor.lastrowid
         conn.commit()
         return last_id
+    except Exception:
+        conn.rollback()
+        raise
+    finally:
+        conn.close()
+
+
+def execute_lenient(statements: list[tuple[str, tuple]]) -> int:
+    """Execute statements best-effort, each in its own SAVEPOINT.
+
+    Returns the number of statements that FAILED (were skipped). Unlike
+    ``execute_many``'s single all-or-nothing transaction, a row that violates a
+    constraint at execution time (a stale ``contact_id`` foreign key, an
+    out-of-set CHECK value) only rolls back its own savepoint — the remaining
+    rows still commit. Used for transcript-analysis storage so one bad item
+    doesn't discard the whole analysis; the caller surfaces the skip count
+    instead of silently failing.
+    """
+    conn = get_connection()
+    skipped = 0
+    try:
+        for sql, params in statements:
+            try:
+                conn.execute("SAVEPOINT row")
+                conn.execute(sql, params)
+                conn.execute("RELEASE SAVEPOINT row")
+            except sqlite3.Error:
+                conn.execute("ROLLBACK TO SAVEPOINT row")
+                conn.execute("RELEASE SAVEPOINT row")
+                skipped += 1
+        conn.commit()
+        return skipped
+    finally:
+        conn.close()
+
+
+def insert_with_log(
+    entity_sql: str,
+    entity_params: tuple,
+    log_sql: str,
+    log_params: tuple = (),
+) -> int:
+    """Insert an entity row and its activity_log row in one transaction,
+    returning the ENTITY's rowid.
+
+    This replaces the create-path use of ``execute_many``, which returned the
+    *last* statement's ``lastrowid`` — the activity_log row's id, not the
+    entity's — so callers handed back the wrong id on every create. Here the
+    entity's id is captured immediately after its insert and returned.
+
+    ``log_sql`` is run unchanged on the same connection, so an inline
+    ``last_insert_rowid()`` in the log still resolves to the entity just
+    inserted (its FK was always correct; only the Python return value was not).
+    """
+    conn = get_connection()
+    try:
+        cursor = conn.execute(entity_sql, entity_params)
+        entity_id = cursor.lastrowid
+        conn.execute(log_sql, log_params)
+        conn.commit()
+        return entity_id
     except Exception:
         conn.rollback()
         raise

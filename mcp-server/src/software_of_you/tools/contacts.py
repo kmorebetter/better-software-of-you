@@ -6,7 +6,12 @@ cross-references contacts.
 
 from mcp.server.fastmcp import FastMCP
 
-from software_of_you.db import execute, execute_many, rows_to_dicts
+from software_of_you.db import execute, execute_many, insert_with_log, rows_to_dicts
+from software_of_you.tools._validate import (
+    CONTACT_STATUS,
+    CONTACT_TYPE,
+    validate_enum,
+)
 
 
 def register(server: FastMCP) -> None:
@@ -54,6 +59,12 @@ def _add(name, email, phone, company, role, contact_type, status, notes):
     if not name:
         return {"error": "Name is required to add a contact."}
 
+    err = validate_enum(contact_type, CONTACT_TYPE, "contact_type") or validate_enum(
+        status, CONTACT_STATUS, "status"
+    )
+    if err:
+        return err
+
     # Check for duplicates
     existing = execute(
         "SELECT id, name, email FROM contacts WHERE name = ? OR (email = ? AND email != '')",
@@ -69,19 +80,15 @@ def _add(name, email, phone, company, role, contact_type, status, notes):
             },
         }
 
-    contact_id = execute_many([
-        (
-            """INSERT INTO contacts (name, email, phone, company, role, type, status, notes)
-               VALUES (?, ?, ?, ?, ?, ?, ?, ?)""",
-            (name, email, phone, company, role, contact_type, status, notes or None),
-        ),
-        (
-            """INSERT INTO activity_log (entity_type, entity_id, action, details)
-               VALUES ('contact', last_insert_rowid(), 'created',
-                       json_object('name', ?, 'company', ?, 'email', ?))""",
-            (name, company, email),
-        ),
-    ])
+    contact_id = insert_with_log(
+        """INSERT INTO contacts (name, email, phone, company, role, type, status, notes)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?)""",
+        (name, email, phone, company, role, contact_type, status, notes or None),
+        """INSERT INTO activity_log (entity_type, entity_id, action, details)
+           VALUES ('contact', last_insert_rowid(), 'created',
+                   json_object('name', ?, 'company', ?, 'email', ?))""",
+        (name, company, email),
+    )
 
     # Check for others at same company
     colleagues = []
@@ -109,6 +116,10 @@ def _add(name, email, phone, company, role, contact_type, status, notes):
 def _edit(contact_id, name, email, phone, company, role, status, notes):
     if not contact_id:
         return {"error": "contact_id is required to edit a contact."}
+
+    err = validate_enum(status, CONTACT_STATUS, "status")
+    if err:
+        return err
 
     existing = execute("SELECT * FROM contacts WHERE id = ?", (contact_id,))
     if not existing:

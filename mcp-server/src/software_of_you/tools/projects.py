@@ -2,7 +2,14 @@
 
 from mcp.server.fastmcp import FastMCP
 
-from software_of_you.db import execute, execute_many, rows_to_dicts
+from software_of_you.db import execute, execute_many, insert_with_log, rows_to_dicts
+from software_of_you.tools._resolve import resolve_contact_by_name
+from software_of_you.tools._validate import (
+    PRIORITY,
+    PROJECT_STATUS,
+    TASK_STATUS,
+    validate_enum,
+)
 
 
 def register(server: FastMCP) -> None:
@@ -59,10 +66,10 @@ def register(server: FastMCP) -> None:
 def _resolve_client(client_id, client_name):
     if client_id:
         return client_id
-    if client_name:
-        rows = execute("SELECT id FROM contacts WHERE name LIKE ?", (f"%{client_name}%",))
-        if len(rows) == 1:
-            return rows[0]["id"]
+    match = resolve_contact_by_name(client_name)
+    if match and "id" in match:
+        return match["id"]
+    # Ambiguous or no match → no link (preserves prior behavior).
     return None
 
 
@@ -70,20 +77,22 @@ def _add(name, description, client_id, client_name, status, priority, start_date
     if not name:
         return {"error": "Project name is required."}
 
+    err = validate_enum(status, PROJECT_STATUS, "status") or validate_enum(
+        priority, PRIORITY, "priority"
+    )
+    if err:
+        return err
+
     cid = _resolve_client(client_id, client_name)
 
-    pid = execute_many([
-        (
-            """INSERT INTO projects (name, description, client_id, status, priority, start_date, target_date)
-               VALUES (?, ?, ?, ?, ?, ?, ?)""",
-            (name, description or None, cid, status, priority, start_date or None, target_date or None),
-        ),
-        (
-            """INSERT INTO activity_log (entity_type, entity_id, action, details)
-               VALUES ('project', last_insert_rowid(), 'created', ?)""",
-            (f"Project: {name}",),
-        ),
-    ])
+    pid = insert_with_log(
+        """INSERT INTO projects (name, description, client_id, status, priority, start_date, target_date)
+           VALUES (?, ?, ?, ?, ?, ?, ?)""",
+        (name, description or None, cid, status, priority, start_date or None, target_date or None),
+        """INSERT INTO activity_log (entity_type, entity_id, action, details)
+           VALUES ('project', last_insert_rowid(), 'created', ?)""",
+        (f"Project: {name}",),
+    )
 
     client_info = None
     if cid:
@@ -107,6 +116,12 @@ def _add(name, description, client_id, client_name, status, priority, start_date
 def _edit(project_id, name, description, client_id, status, priority, target_date):
     if not project_id:
         return {"error": "project_id is required."}
+
+    err = validate_enum(status, PROJECT_STATUS, "status") or validate_enum(
+        priority, PRIORITY, "priority"
+    )
+    if err:
+        return err
 
     updates = []
     params = []
@@ -216,17 +231,17 @@ def _add_task(project_id, title, description, priority, due_date):
     if not project_id or not title:
         return {"error": "project_id and title are required."}
 
-    tid = execute_many([
-        (
-            "INSERT INTO tasks (project_id, title, description, priority, due_date) VALUES (?, ?, ?, ?, ?)",
-            (project_id, title, description or None, priority, due_date or None),
-        ),
-        (
-            """INSERT INTO activity_log (entity_type, entity_id, action, details)
-               VALUES ('project', ?, 'task_added', ?)""",
-            (project_id, title),
-        ),
-    ])
+    err = validate_enum(priority, PRIORITY, "priority")
+    if err:
+        return err
+
+    tid = insert_with_log(
+        "INSERT INTO tasks (project_id, title, description, priority, due_date) VALUES (?, ?, ?, ?, ?)",
+        (project_id, title, description or None, priority, due_date or None),
+        """INSERT INTO activity_log (entity_type, entity_id, action, details)
+           VALUES ('project', ?, 'task_added', ?)""",
+        (project_id, title),
+    )
 
     return {
         "result": {"task_id": tid, "project_id": project_id, "title": title},
@@ -237,6 +252,10 @@ def _add_task(project_id, title, description, priority, due_date):
 def _update_task(task_id, task_status):
     if not task_id or not task_status:
         return {"error": "task_id and task_status are required."}
+
+    err = validate_enum(task_status, TASK_STATUS, "task_status")
+    if err:
+        return err
 
     rows = execute(
         "SELECT t.*, p.name as project_name FROM tasks t JOIN projects p ON p.id = t.project_id WHERE t.id = ?",
@@ -270,17 +289,13 @@ def _add_milestone(project_id, milestone_name, description, milestone_date):
     if not project_id or not milestone_name:
         return {"error": "project_id and milestone_name are required."}
 
-    mid = execute_many([
-        (
-            "INSERT INTO milestones (project_id, name, description, target_date) VALUES (?, ?, ?, ?)",
-            (project_id, milestone_name, description or None, milestone_date or None),
-        ),
-        (
-            """INSERT INTO activity_log (entity_type, entity_id, action, details)
-               VALUES ('project', ?, 'milestone_added', ?)""",
-            (project_id, milestone_name),
-        ),
-    ])
+    mid = insert_with_log(
+        "INSERT INTO milestones (project_id, name, description, target_date) VALUES (?, ?, ?, ?)",
+        (project_id, milestone_name, description or None, milestone_date or None),
+        """INSERT INTO activity_log (entity_type, entity_id, action, details)
+           VALUES ('project', ?, 'milestone_added', ?)""",
+        (project_id, milestone_name),
+    )
 
     return {
         "result": {"milestone_id": mid, "project_id": project_id, "name": milestone_name},

@@ -8,6 +8,7 @@ CREATE TABLE IF NOT EXISTS emails (
     contact_id INTEGER REFERENCES contacts(id) ON DELETE SET NULL,
     direction TEXT NOT NULL CHECK (direction IN ('inbound', 'outbound')),
     from_address TEXT NOT NULL,
+    from_name TEXT,
     to_addresses TEXT,
     subject TEXT,
     snippet TEXT,
@@ -26,5 +27,3 @@ CREATE INDEX IF NOT EXISTS idx_emails_gmail_id ON emails(gmail_id);
 
 -- Register module
 INSERT OR REPLACE INTO modules (name, version) VALUES ('gmail', '1.0.0');
-
-ALTER TABLE emails ADD COLUMN from_name TEXT;

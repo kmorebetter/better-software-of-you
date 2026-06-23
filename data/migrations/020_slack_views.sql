@@ -60,7 +60,7 @@ SELECT
       UNION ALL
       SELECT MAX(received_at) FROM slack_messages WHERE contact_id = c.id
     ))
-  ) AS INTEGER) AS days_silent,
+  ) + 0.5 AS INTEGER) AS days_silent,
 
   -- Transcript/call stats
   (SELECT COUNT(DISTINCT tp.transcript_id) FROM transcript_participants tp
@@ -148,7 +148,7 @@ SELECT
   NULL AS project_id,
   f.reason AS description,
   f.due_date AS relevant_date,
-  CAST(julianday('now') - julianday(f.due_date) AS INTEGER) AS days_value,
+  CAST(julianday('now') - julianday(f.due_date) + 0.5 AS INTEGER) AS days_value,
   c.company AS extra_context,
   'clock' AS icon
 FROM follow_ups f
@@ -167,7 +167,7 @@ SELECT
   NULL,
   com.description,
   com.deadline_date,
-  CAST(julianday('now') - julianday(com.deadline_date) AS INTEGER),
+  CAST(julianday('now') - julianday(com.deadline_date) + 0.5 AS INTEGER),
   t.title,
   'target'
 FROM commitments com
@@ -187,7 +187,7 @@ SELECT
   tk.project_id,
   p.name,
   tk.due_date,
-  CAST(julianday('now') - julianday(tk.due_date) AS INTEGER),
+  CAST(julianday('now') - julianday(tk.due_date) + 0.5 AS INTEGER),
   p.name,
   'check-square'
 FROM tasks tk
@@ -206,7 +206,7 @@ SELECT
   NULL,
   f.reason,
   f.due_date,
-  CAST(julianday(f.due_date) - julianday('now') AS INTEGER),
+  CAST(julianday(f.due_date) - julianday('now') + 0.5 AS INTEGER),
   c.company,
   'clock'
 FROM follow_ups f
@@ -226,7 +226,7 @@ SELECT
   NULL,
   com.description,
   com.deadline_date,
-  CAST(julianday(com.deadline_date) - julianday('now') AS INTEGER),
+  CAST(julianday(com.deadline_date) - julianday('now') + 0.5 AS INTEGER),
   t.title,
   'target'
 FROM commitments com
@@ -247,7 +247,7 @@ SELECT
   tk.project_id,
   p.name,
   tk.due_date,
-  CAST(julianday(tk.due_date) - julianday('now') AS INTEGER),
+  CAST(julianday(tk.due_date) - julianday('now') + 0.5 AS INTEGER),
   p.name,
   'check-square'
 FROM tasks tk
@@ -267,7 +267,7 @@ SELECT
   p.id,
   CAST((SELECT COUNT(*) FROM tasks WHERE project_id = p.id AND status != 'done') AS TEXT) || ' open tasks',
   p.target_date,
-  CAST(julianday(p.target_date) - julianday('now') AS INTEGER),
+  CAST(julianday(p.target_date) - julianday('now') + 0.5 AS INTEGER),
   NULL,
   'folder'
 FROM projects p
@@ -300,7 +300,7 @@ SELECT
         JOIN transcript_participants tp ON tp.transcript_id = t2.id WHERE tp.contact_id = c.id
       UNION ALL SELECT MAX(received_at) FROM slack_messages WHERE contact_id = c.id
     ))
-  ) AS INTEGER),
+  ) + 0.5 AS INTEGER),
   c.email,
   'users'
 FROM contacts c
@@ -339,7 +339,7 @@ SELECT
   p.id,
   p.status,
   MAX(al.created_at),
-  CAST(julianday('now') - julianday(COALESCE(MAX(al.created_at), p.created_at)) AS INTEGER),
+  CAST(julianday('now') - julianday(COALESCE(MAX(al.created_at), p.created_at)) + 0.5 AS INTEGER),
   p.target_date,
   'folder'
 FROM projects p
@@ -360,7 +360,7 @@ SELECT
   d.project_id,
   'No outcome recorded',
   d.decided_at,
-  CAST(julianday('now') - julianday(d.decided_at) AS INTEGER),
+  CAST(julianday('now') - julianday(d.decided_at) + 0.5 AS INTEGER),
   NULL,
   'git-branch'
 FROM decisions d

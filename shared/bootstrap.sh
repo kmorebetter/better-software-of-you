@@ -14,6 +14,53 @@ fi
 
 PLUGIN_ROOT="${CLAUDE_PLUGIN_ROOT:-$(cd "$(dirname "$0")/.." && pwd)}"
 DATA_HOME="${XDG_DATA_HOME:-$HOME/.local/share}/software-of-you"
+
+# --- Ledgered migration runner ---
+#
+# Mirrors the Python runner in db.py: a schema_migrations ledger (filename +
+# sha256 checksum) records which migrations have run so we skip unchanged
+# already-applied files and re-run the rest. Statements stay idempotent as
+# belt-and-suspenders. RECORD-AS-YOU-RUN — we never blanket-seed everything as
+# applied (an existing plugin DB has never run the slack migrations; an existing
+# MCP DB has never run pipeline_runs/health_checks — a blanket seed would skip
+# that needed work). Loud on real failure: an expected idempotency error
+# (duplicate column / already exists) is recorded and skipped; any other error
+# prints MIGRATION FAILED and exits 1 instead of being swallowed by 2>/dev/null.
+run_migrations_ledgered() {
+  local db="$1"
+  sqlite3 "$db" \
+    "CREATE TABLE IF NOT EXISTS schema_migrations (filename TEXT PRIMARY KEY, checksum TEXT, applied_at TEXT);" \
+    2>/dev/null
+  local f cs fname prev err rc
+  for f in "$PLUGIN_ROOT"/data/migrations/*.sql; do
+    cs=$(shasum -a 256 "$f" | cut -d' ' -f1)
+    fname=$(basename "$f")
+    prev=$(sqlite3 "$db" "SELECT checksum FROM schema_migrations WHERE filename='$fname';" 2>/dev/null)
+    if [ "$prev" = "$cs" ]; then
+      continue  # already applied with the same content
+    fi
+    # -bail stops at the first error in the file, matching Python's
+    # executescript (which aborts the whole script on error). Without it,
+    # sqlite3 keeps going after a failed statement and would run later ones —
+    # e.g. a migration whose guard ALTER fails on re-run would still execute a
+    # following data-mutating statement, diverging from (and losing data the
+    # MCP path preserves on) the same edited file.
+    err=$(sqlite3 -bail "$db" < "$f" 2>&1)
+    rc=$?
+    if [ "$rc" -ne 0 ]; then
+      # Expected idempotency error → record + continue; anything else → fail loud.
+      if echo "$err" | grep -qiE 'duplicate column|already exists'; then
+        :
+      else
+        echo "MIGRATION FAILED ($fname): $err" >&2
+        exit 1
+      fi
+    fi
+    sqlite3 "$db" \
+      "INSERT OR REPLACE INTO schema_migrations (filename, checksum, applied_at) VALUES ('$fname', '$cs', datetime('now'));" \
+      2>/dev/null
+  done
+}
 DB_REAL="$DATA_HOME/soy.db"
 DB_LINK="$PLUGIN_ROOT/data/soy.db"
 TOKEN_REAL="$DATA_HOME/google_token.json"
@@ -74,7 +121,14 @@ if [ -f "$DB_REAL" ]; then
   DB_SIZE=$(wc -c < "$DB_REAL" | tr -d ' ')
   # Only backup if DB has real data (>50KB = beyond empty schema)
   if [ "$DB_SIZE" -gt 51200 ]; then
-    cp "$DB_REAL" "$BACKUP_DIR/soy-$(date +%Y%m%d-%H%M%S).db"
+    # The MCP server sets journal_mode=WAL persistently on this shared file, so
+    # committed rows may live in the -wal sidecar. Checkpoint into the main .db
+    # first or a raw cp silently drops them.
+    sqlite3 "$DB_REAL" 'PRAGMA wal_checkpoint(TRUNCATE);' 2>/dev/null
+    BACKUP_FILE="$BACKUP_DIR/soy-$(date +%Y%m%d-%H%M%S).db"
+    cp "$DB_REAL" "$BACKUP_FILE"
+    # Backups carry the same data as the DB — keep them owner-only.
+    chmod 600 "$BACKUP_FILE" 2>/dev/null
     # Keep only the 5 most recent backups
     ls -t "$BACKUP_DIR"/soy-*.db 2>/dev/null | tail -n +6 | xargs rm -f 2>/dev/null
   fi
@@ -82,9 +136,7 @@ fi
 
 # --- Run Migrations ---
 
-for f in "$PLUGIN_ROOT"/data/migrations/*.sql; do
-  sqlite3 "$DB_REAL" < "$f" 2>/dev/null
-done
+run_migrations_ledgered "$DB_REAL"
 
 # --- Data Loss Detection ---
 
@@ -98,11 +150,12 @@ if [ "$CONTACTS" = "0" ]; then
     BACKUP_CONTACTS=$(sqlite3 "$LATEST_BACKUP" "SELECT COUNT(*) FROM contacts;" 2>/dev/null || echo "0")
     if [ "$BACKUP_CONTACTS" -gt 0 ]; then
       echo "WARNING: Database has 0 contacts but backup has $BACKUP_CONTACTS. Restoring from backup."
+      # Checkpoint+truncate the WAL so the live -wal sidecar can't replay over
+      # the file we're about to overwrite, then restore the backup.
+      sqlite3 "$DB_REAL" 'PRAGMA wal_checkpoint(TRUNCATE);' 2>/dev/null
       cp "$LATEST_BACKUP" "$DB_REAL"
       # Re-run migrations on restored DB to pick up any new tables
-      for f in "$PLUGIN_ROOT"/data/migrations/*.sql; do
-        sqlite3 "$DB_REAL" < "$f" 2>/dev/null
-      done
+      run_migrations_ledgered "$DB_REAL"
       CONTACTS=$(sqlite3 "$DB_REAL" "SELECT COUNT(*) FROM contacts;" 2>/dev/null || echo "0")
     fi
   fi

@@ -233,6 +233,7 @@ When generating HTML dashboards or views:
 - Use Inter font from Google Fonts
 - Clean, minimal design — white background, zinc/slate color palette, card-based layout
 - Open the file with `open <filepath>` after writing
+- HTML-escape every DB / email / calendar / transcript value before emitting it (a contact name like `<script>...` must render as inert escaped text, never executable markup) — only known-trusted, already-escaped markup may be inserted raw
 - Refer to the `skills/dashboard-generation/` skill for design system reference
 
 ## Style

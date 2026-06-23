@@ -1,6 +1,6 @@
 # AGENTS.md
 
-This file provides guidance to WARP (warp.dev) when working with code in this repository.
+This file provides guidance to coding agents (Claude Code and similar) when working with code in this repository.
 
 ## What This Project Is
 
@@ -10,7 +10,7 @@ This file provides guidance to WARP (warp.dev) when working with code in this re
 
 2. **MCP server** — a distributable Python package (`mcp-server/`) users install via `pipx install software-of-you`. It registers itself into Claude Desktop's MCP config and exposes Python-based tools. Entry point: `software_of_you.cli:main`.
 
-Both modes share the same SQLite database file path and the same migration files (the plugin uses `data/migrations/*.sql`; the MCP server bundles its own copy under `mcp-server/src/software_of_you/migrations/`). Keep these in sync when adding migrations.
+Both modes share the same SQLite database file path and the same migration files (the plugin uses `data/migrations/*.sql`; the MCP server bundles its own copy under `mcp-server/src/software_of_you/migrations/`). The two directories must stay **byte-identical supersets** — every file present in one, present in the other, with identical bytes (a drift-guard test in `mcp-server/tests/test_migrations.py` enforces this). See "Module System" below for the migration-authoring rules (ledger, idempotency, numbering).
 
 ## Development Commands
 
@@ -53,7 +53,16 @@ sqlite3 data/soy.db "SELECT name, version FROM modules WHERE enabled=1;"
 python3 shared/google_auth.py status
 ```
 
-There are no automated tests in this repo currently.
+Automated tests live in `mcp-server/tests/` (pytest). Run them from the `mcp-server` directory:
+
+```bash
+cd mcp-server
+python3 -m venv .venv && source .venv/bin/activate
+pip install -e ".[dev]"
+pytest
+```
+
+The suite uses an isolated temporary database (see `tests/conftest.py`) and never touches the real `~/.local/share/software-of-you/soy.db`.
 
 ## Architecture
 
@@ -82,11 +91,22 @@ Modules are self-contained feature packs, each in `modules/{name}/manifest.json`
 
 To add a new module:
 1. Create `modules/{name}/manifest.json`
-2. Add a numbered migration in `data/migrations/` (and mirror it to `mcp-server/src/software_of_you/migrations/`)
+2. Add a numbered migration in `data/migrations/` (and mirror the **identical bytes** to `mcp-server/src/software_of_you/migrations/`)
 3. Add command `.md` files to `commands/`
-4. The migration must `INSERT OR REPLACE INTO modules` to register it
+4. The migration must `INSERT OR REPLACE INTO modules` (or `INSERT OR IGNORE`) to register it
 
-Current modules: CRM, Project Tracker, Gmail, Calendar, Conversation Intelligence, Decision Log, Journal, Notes, User Profile.
+#### Migration ledger & authoring rules
+
+Migrations are tracked by a **`schema_migrations` ledger** (`filename TEXT PRIMARY KEY, checksum TEXT, applied_at TEXT`), maintained by both runners — `db.py`'s `_apply_migrations` (MCP) and `bootstrap.sh`'s `run_migrations_ledgered` (plugin). On each launch the runner computes the sha256 of each migration file and **skips** files whose checksum already matches the ledger; everything else runs and is recorded. Because the ledger is recorded as-you-run (never blanket-seeded), an existing DB's first ledgered launch runs the full superset once, then skips it forever after.
+
+- **Both dirs are byte-identical supersets (001–020).** Mirror every shared-SQL edit into both directories in the same commit. The 017–020 range was reconciled from a numbering collision: the plugin's `017_pipeline_runs` / `018_health_checks` and the MCP-only `slack` migrations (renumbered `017_slack_module → 019_slack_module`, `018_slack_views → 020_slack_views`) are now both present, identically, in both dirs.
+  - `001`–`016` — shared core + module schema and computed views.
+  - `017_pipeline_runs`, `018_health_checks` — were plugin-only; now mirrored into MCP.
+  - `019_slack_module`, `020_slack_views` — were MCP-only `017/018`; renumbered (via `git mv`, preserving history) and mirrored into the plugin. `020` must sort **after** `019` (creates `slack_messages`) and after `014`/`016` (base view definitions) so the slack-aware `v_contact_health` / `v_nudge_items` definitions win and reference an existing `slack_messages` table.
+- **Migration files must stay idempotent.** Use `CREATE TABLE/INDEX IF NOT EXISTS`, `DROP VIEW IF EXISTS` + `CREATE VIEW`, `INSERT OR REPLACE`/`INSERT OR IGNORE`, and guarded `ALTER`. Editing a migration in place changes its checksum, so it **re-runs exactly once** under the new checksum — it must be safe to re-run. Never add a non-idempotent statement (e.g. a bare `INSERT`, or an `ALTER` that re-adds a column already in the `CREATE TABLE`) to a migration file.
+- **Loud on real failure.** Expected idempotency errors (`duplicate column` / `already exists`) are recorded and skipped quietly; any other error prints `MIGRATION FAILED (<file>): <err>` and aborts (the Python runner re-raises; bootstrap exits 1) — failures surface instead of being swallowed.
+
+Current modules: CRM, Project Tracker, Gmail, Calendar, Conversation Intelligence, Decision Log, Journal, Notes, User Profile, Slack.
 
 ### MCP Server Architecture
 
