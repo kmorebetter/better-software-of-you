@@ -11,6 +11,9 @@ data/tokens/
 client_secret_*.json
 __pycache__/
 *.pyc
+.venv/
+mcp-server/.venv/
+.pytest_cache/
 mcp-server/dist/
 mcp-server/*.egg-info/
 
