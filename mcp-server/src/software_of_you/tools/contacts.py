@@ -6,7 +6,7 @@ cross-references contacts.
 
 from mcp.server.fastmcp import FastMCP
 
-from software_of_you.db import execute, execute_many, rows_to_dicts
+from software_of_you.db import execute, execute_many, insert_with_log, rows_to_dicts
 
 
 def register(server: FastMCP) -> None:
@@ -69,19 +69,15 @@ def _add(name, email, phone, company, role, contact_type, status, notes):
             },
         }
 
-    contact_id = execute_many([
-        (
-            """INSERT INTO contacts (name, email, phone, company, role, type, status, notes)
-               VALUES (?, ?, ?, ?, ?, ?, ?, ?)""",
-            (name, email, phone, company, role, contact_type, status, notes or None),
-        ),
-        (
-            """INSERT INTO activity_log (entity_type, entity_id, action, details)
-               VALUES ('contact', last_insert_rowid(), 'created',
-                       json_object('name', ?, 'company', ?, 'email', ?))""",
-            (name, company, email),
-        ),
-    ])
+    contact_id = insert_with_log(
+        """INSERT INTO contacts (name, email, phone, company, role, type, status, notes)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?)""",
+        (name, email, phone, company, role, contact_type, status, notes or None),
+        """INSERT INTO activity_log (entity_type, entity_id, action, details)
+           VALUES ('contact', last_insert_rowid(), 'created',
+                   json_object('name', ?, 'company', ?, 'email', ?))""",
+        (name, company, email),
+    )
 
     # Check for others at same company
     colleagues = []

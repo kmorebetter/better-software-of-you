@@ -2,7 +2,7 @@
 
 from mcp.server.fastmcp import FastMCP
 
-from software_of_you.db import execute, execute_many, rows_to_dicts
+from software_of_you.db import execute, execute_many, insert_with_log, rows_to_dicts
 
 
 def register(server: FastMCP) -> None:
@@ -72,18 +72,14 @@ def _add(name, description, client_id, client_name, status, priority, start_date
 
     cid = _resolve_client(client_id, client_name)
 
-    pid = execute_many([
-        (
-            """INSERT INTO projects (name, description, client_id, status, priority, start_date, target_date)
-               VALUES (?, ?, ?, ?, ?, ?, ?)""",
-            (name, description or None, cid, status, priority, start_date or None, target_date or None),
-        ),
-        (
-            """INSERT INTO activity_log (entity_type, entity_id, action, details)
-               VALUES ('project', last_insert_rowid(), 'created', ?)""",
-            (f"Project: {name}",),
-        ),
-    ])
+    pid = insert_with_log(
+        """INSERT INTO projects (name, description, client_id, status, priority, start_date, target_date)
+           VALUES (?, ?, ?, ?, ?, ?, ?)""",
+        (name, description or None, cid, status, priority, start_date or None, target_date or None),
+        """INSERT INTO activity_log (entity_type, entity_id, action, details)
+           VALUES ('project', last_insert_rowid(), 'created', ?)""",
+        (f"Project: {name}",),
+    )
 
     client_info = None
     if cid:
@@ -216,17 +212,13 @@ def _add_task(project_id, title, description, priority, due_date):
     if not project_id or not title:
         return {"error": "project_id and title are required."}
 
-    tid = execute_many([
-        (
-            "INSERT INTO tasks (project_id, title, description, priority, due_date) VALUES (?, ?, ?, ?, ?)",
-            (project_id, title, description or None, priority, due_date or None),
-        ),
-        (
-            """INSERT INTO activity_log (entity_type, entity_id, action, details)
-               VALUES ('project', ?, 'task_added', ?)""",
-            (project_id, title),
-        ),
-    ])
+    tid = insert_with_log(
+        "INSERT INTO tasks (project_id, title, description, priority, due_date) VALUES (?, ?, ?, ?, ?)",
+        (project_id, title, description or None, priority, due_date or None),
+        """INSERT INTO activity_log (entity_type, entity_id, action, details)
+           VALUES ('project', ?, 'task_added', ?)""",
+        (project_id, title),
+    )
 
     return {
         "result": {"task_id": tid, "project_id": project_id, "title": title},
@@ -270,17 +262,13 @@ def _add_milestone(project_id, milestone_name, description, milestone_date):
     if not project_id or not milestone_name:
         return {"error": "project_id and milestone_name are required."}
 
-    mid = execute_many([
-        (
-            "INSERT INTO milestones (project_id, name, description, target_date) VALUES (?, ?, ?, ?)",
-            (project_id, milestone_name, description or None, milestone_date or None),
-        ),
-        (
-            """INSERT INTO activity_log (entity_type, entity_id, action, details)
-               VALUES ('project', ?, 'milestone_added', ?)""",
-            (project_id, milestone_name),
-        ),
-    ])
+    mid = insert_with_log(
+        "INSERT INTO milestones (project_id, name, description, target_date) VALUES (?, ?, ?, ?)",
+        (project_id, milestone_name, description or None, milestone_date or None),
+        """INSERT INTO activity_log (entity_type, entity_id, action, details)
+           VALUES ('project', ?, 'milestone_added', ?)""",
+        (project_id, milestone_name),
+    )
 
     return {
         "result": {"milestone_id": mid, "project_id": project_id, "name": milestone_name},

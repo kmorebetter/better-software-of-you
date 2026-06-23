@@ -12,7 +12,7 @@ import json
 
 from mcp.server.fastmcp import FastMCP
 
-from software_of_you.db import execute, execute_many, rows_to_dicts
+from software_of_you.db import execute, execute_many, insert_with_log, rows_to_dicts
 
 
 def register(server: FastMCP) -> None:
@@ -75,31 +75,14 @@ def _import(raw_text, title, source, occurred_at):
     if not raw_text:
         return {"error": "raw_text is required — paste the transcript content."}
 
-    occ = occurred_at or "datetime('now')"
-    if occ == "datetime('now')":
-        tid = execute_many([
-            (
-                "INSERT INTO transcripts (title, source, raw_text) VALUES (?, ?, ?)",
-                (title or "Untitled transcript", source, raw_text),
-            ),
-            (
-                """INSERT INTO activity_log (entity_type, entity_id, action, details)
-                   VALUES ('transcript', last_insert_rowid(), 'imported', ?)""",
-                (f"Transcript: {title or 'Untitled'}",),
-            ),
-        ])
-    else:
-        tid = execute_many([
-            (
-                "INSERT INTO transcripts (title, source, raw_text, occurred_at) VALUES (?, ?, ?, ?)",
-                (title or "Untitled transcript", source, raw_text, occurred_at),
-            ),
-            (
-                """INSERT INTO activity_log (entity_type, entity_id, action, details)
-                   VALUES ('transcript', last_insert_rowid(), 'imported', ?)""",
-                (f"Transcript: {title or 'Untitled'}",),
-            ),
-        ])
+    tid = insert_with_log(
+        """INSERT INTO transcripts (title, source, raw_text, occurred_at)
+           VALUES (?, ?, ?, COALESCE(?, datetime('now')))""",
+        (title or "Untitled transcript", source, raw_text, occurred_at or None),
+        """INSERT INTO activity_log (entity_type, entity_id, action, details)
+           VALUES ('transcript', last_insert_rowid(), 'imported', ?)""",
+        (f"Transcript: {title or 'Untitled'}",),
+    )
 
     return {
         "result": {

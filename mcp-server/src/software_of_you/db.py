@@ -172,6 +172,38 @@ def execute_many(statements: list[tuple[str, tuple]]) -> int:
         conn.close()
 
 
+def insert_with_log(
+    entity_sql: str,
+    entity_params: tuple,
+    log_sql: str,
+    log_params: tuple = (),
+) -> int:
+    """Insert an entity row and its activity_log row in one transaction,
+    returning the ENTITY's rowid.
+
+    This replaces the create-path use of ``execute_many``, which returned the
+    *last* statement's ``lastrowid`` — the activity_log row's id, not the
+    entity's — so callers handed back the wrong id on every create. Here the
+    entity's id is captured immediately after its insert and returned.
+
+    ``log_sql`` is run unchanged on the same connection, so an inline
+    ``last_insert_rowid()`` in the log still resolves to the entity just
+    inserted (its FK was always correct; only the Python return value was not).
+    """
+    conn = get_connection()
+    try:
+        cursor = conn.execute(entity_sql, entity_params)
+        entity_id = cursor.lastrowid
+        conn.execute(log_sql, log_params)
+        conn.commit()
+        return entity_id
+    except Exception:
+        conn.rollback()
+        raise
+    finally:
+        conn.close()
+
+
 def dict_from_row(row: sqlite3.Row) -> dict:
     """Convert a sqlite3.Row to a plain dict."""
     return dict(row)

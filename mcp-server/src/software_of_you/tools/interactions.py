@@ -6,7 +6,7 @@ and follow-up scheduling.
 
 from mcp.server.fastmcp import FastMCP
 
-from software_of_you.db import execute, execute_many, rows_to_dicts
+from software_of_you.db import execute, execute_many, insert_with_log, rows_to_dicts
 
 
 def register(server: FastMCP) -> None:
@@ -160,17 +160,13 @@ def _follow_up(contact_id, contact_name, due_date, reason):
     if not due_date or not reason:
         return {"error": "Both due_date (YYYY-MM-DD) and reason are required."}
 
-    fid = execute_many([
-        (
-            "INSERT INTO follow_ups (contact_id, due_date, reason) VALUES (?, ?, ?)",
-            (cid, due_date, reason),
-        ),
-        (
-            """INSERT INTO activity_log (entity_type, entity_id, action, details)
-               VALUES ('contact', ?, 'follow_up_created', ?)""",
-            (cid, f"Due {due_date}: {reason}"),
-        ),
-    ])
+    fid = insert_with_log(
+        "INSERT INTO follow_ups (contact_id, due_date, reason) VALUES (?, ?, ?)",
+        (cid, due_date, reason),
+        """INSERT INTO activity_log (entity_type, entity_id, action, details)
+           VALUES ('contact', ?, 'follow_up_created', ?)""",
+        (cid, f"Due {due_date}: {reason}"),
+    )
 
     return {
         "result": {"follow_up_id": fid, "contact_name": resolved, "due_date": due_date, "reason": reason},
