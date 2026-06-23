@@ -7,6 +7,8 @@ and follow-up scheduling.
 from mcp.server.fastmcp import FastMCP
 
 from software_of_you.db import execute, execute_many, insert_with_log, rows_to_dicts
+from software_of_you.tools._resolve import resolve_contact_by_name
+from software_of_you.tools._validate import DIRECTION, INTERACTION_TYPE, validate_enum
 
 
 def register(server: FastMCP) -> None:
@@ -59,20 +61,23 @@ def _resolve_contact(contact_id, contact_name):
         return None, None
 
     if contact_name:
-        rows = execute(
-            "SELECT id, name FROM contacts WHERE name LIKE ?",
-            (f"%{contact_name}%",),
-        )
-        if len(rows) == 1:
-            return rows[0]["id"], rows[0]["name"]
-        elif len(rows) > 1:
-            return None, rows_to_dicts(rows)  # ambiguous
-        return None, None
+        match = resolve_contact_by_name(contact_name)
+        if match is None:
+            return None, None
+        if "ambiguous" in match:
+            return None, match["ambiguous"]  # ambiguous
+        return match["id"], match["name"]
 
     return None, None
 
 
 def _log(contact_id, contact_name, interaction_type, direction, subject, summary, occurred_at):
+    err = validate_enum(interaction_type, INTERACTION_TYPE, "interaction_type") or validate_enum(
+        direction, DIRECTION, "direction"
+    )
+    if err:
+        return err
+
     cid, resolved = _resolve_contact(contact_id, contact_name)
     if cid is None:
         if isinstance(resolved, list):
@@ -85,34 +90,20 @@ def _log(contact_id, contact_name, interaction_type, direction, subject, summary
     if not subject:
         return {"error": "Subject is required for logging an interaction."}
 
-    occurred = occurred_at or "datetime('now')"
-    if occurred == "datetime('now')":
-        # Use SQL default
-        execute_many([
-            (
-                """INSERT INTO contact_interactions (contact_id, type, direction, subject, summary)
-                   VALUES (?, ?, ?, ?, ?)""",
-                (cid, interaction_type, direction, subject, summary or None),
-            ),
-            (
-                """INSERT INTO activity_log (entity_type, entity_id, action, details)
-                   VALUES ('contact', ?, 'interaction_logged', ?)""",
-                (cid, f"{interaction_type}: {subject}"),
-            ),
-        ])
-    else:
-        execute_many([
-            (
-                """INSERT INTO contact_interactions (contact_id, type, direction, subject, summary, occurred_at)
-                   VALUES (?, ?, ?, ?, ?, ?)""",
-                (cid, interaction_type, direction, subject, summary or None, occurred_at),
-            ),
-            (
-                """INSERT INTO activity_log (entity_type, entity_id, action, details)
-                   VALUES ('contact', ?, 'interaction_logged', ?)""",
-                (cid, f"{interaction_type}: {subject}"),
-            ),
-        ])
+    # occurred_at defaults to now via COALESCE; the column is NOT NULL DEFAULT
+    # (datetime('now')) but COALESCE keeps a single insert path.
+    execute_many([
+        (
+            """INSERT INTO contact_interactions (contact_id, type, direction, subject, summary, occurred_at)
+               VALUES (?, ?, ?, ?, ?, COALESCE(?, datetime('now')))""",
+            (cid, interaction_type, direction, subject, summary or None, occurred_at or None),
+        ),
+        (
+            """INSERT INTO activity_log (entity_type, entity_id, action, details)
+               VALUES ('contact', ?, 'interaction_logged', ?)""",
+            (cid, f"{interaction_type}: {subject}"),
+        ),
+    ])
 
     return {
         "result": {"contact_id": cid, "contact_name": resolved, "type": interaction_type, "subject": subject},

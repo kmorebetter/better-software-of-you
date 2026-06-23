@@ -15,6 +15,7 @@ from datetime import datetime, timedelta
 
 from software_of_you.db import execute, execute_many, execute_write, rows_to_dicts
 from software_of_you.slack_auth import get_bot_token
+from software_of_you.tools._resolve import resolve_contact_by_name
 
 SLACK_API = "https://slack.com/api"
 
@@ -73,13 +74,12 @@ def _match_contact(sender_name: str | None, sender_email: str | None) -> int | N
         if rows:
             return rows[0]["id"]
 
-    if sender_name:
-        rows = execute(
-            "SELECT id FROM contacts WHERE name LIKE ?",
-            (f"%{sender_name}%",),
-        )
-        if len(rows) == 1:
-            return rows[0]["id"]
+    # Fuzzy name fallback. On an ambiguous multi-match the helper returns an
+    # ambiguous result rather than a unique id; here we intentionally leave the
+    # message unlinked (preserving prior behavior) rather than guess.
+    match = resolve_contact_by_name(sender_name or "")
+    if match and "id" in match:
+        return match["id"]
 
     return None
 
