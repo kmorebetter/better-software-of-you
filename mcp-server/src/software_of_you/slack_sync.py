@@ -19,6 +19,16 @@ from software_of_you.slack_auth import get_bot_token
 SLACK_API = "https://slack.com/api"
 
 
+def _should_mark_synced(failed: int) -> bool:
+    """Only advance the freshness timestamp on a fully-clean sync.
+
+    When channels were dropped (``failed > 0``) the timestamp must NOT advance,
+    so auto-sync retries on the next call instead of waiting out the freshness
+    window.
+    """
+    return failed == 0
+
+
 def _api_get(method: str, token: str, params: dict | None = None) -> dict:
     """Make an authenticated GET request to the Slack API.
 
@@ -144,6 +154,7 @@ def sync_messages(token: str | None = None, days: int = 7) -> dict:
         return {"error": "Not connected to Slack."}
 
     synced = 0
+    failed = 0
     errors = []
 
     try:
@@ -238,22 +249,26 @@ def sync_messages(token: str | None = None, days: int = 7) -> dict:
                 )
 
             except Exception as e:
+                failed += 1
                 errors.append({"channel": channel_name, "error": str(e)})
 
-        # Update global sync timestamp
-        execute_many([(
-            "INSERT OR REPLACE INTO soy_meta (key, value, updated_at) VALUES ('slack_last_synced', datetime('now'), datetime('now'))",
-            (),
-        )])
+        # Only advance the freshness timestamp on a fully-clean sync. If any
+        # channel was dropped, leave the timestamp so auto-sync retries instead
+        # of waiting out the freshness window.
+        if _should_mark_synced(failed):
+            execute_many([(
+                "INSERT OR REPLACE INTO soy_meta (key, value, updated_at) VALUES ('slack_last_synced', datetime('now'), datetime('now'))",
+                (),
+            )])
 
-        result = {"synced": synced, "channels_checked": len(channels)}
+        result = {"synced": synced, "failed": failed, "channels_checked": len(channels)}
         if errors:
             result["errors"] = errors
         return result
 
     except Exception as e:
         print(f"Slack message sync failed: {e}", file=sys.stderr)
-        return {"error": str(e), "synced": synced}
+        return {"error": str(e), "synced": synced, "failed": failed}
 
 
 def sync_slack(token: str | None = None) -> dict:
