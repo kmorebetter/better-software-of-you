@@ -118,6 +118,7 @@ def _add_analysis(transcript_id, participants, metrics, commitments_data,
         return {"error": "transcript_id is required."}
 
     statements = []
+    skipped = 0  # per-item build failures across all sections (visible data loss)
 
     # Update transcript with summary and duration
     if summary or duration_minutes or call_intelligence:
@@ -142,20 +143,26 @@ def _add_analysis(transcript_id, participants, metrics, commitments_data,
     if participants:
         try:
             parts = json.loads(participants) if isinstance(participants, str) else participants
-            for p in parts:
+        except (json.JSONDecodeError, TypeError):
+            parts = []
+        for p in parts:
+            try:
                 statements.append((
                     """INSERT INTO transcript_participants (transcript_id, contact_id, speaker_label, is_user)
                        VALUES (?, ?, ?, ?)""",
                     (transcript_id, p.get("contact_id"), p["speaker_label"], p.get("is_user", 0)),
                 ))
-        except (json.JSONDecodeError, KeyError):
-            pass
+            except (KeyError, TypeError, AttributeError):
+                skipped += 1
 
     # Save metrics: JSON array of {contact_id, talk_ratio, word_count, question_count, ...}
     if metrics:
         try:
             mets = json.loads(metrics) if isinstance(metrics, str) else metrics
-            for m in mets:
+        except (json.JSONDecodeError, TypeError):
+            mets = []
+        for m in mets:
+            try:
                 statements.append((
                     """INSERT INTO conversation_metrics
                        (transcript_id, contact_id, talk_ratio, word_count, question_count,
@@ -165,14 +172,17 @@ def _add_analysis(transcript_id, participants, metrics, commitments_data,
                      m.get("word_count"), m.get("question_count"),
                      m.get("interruption_count", 0), m.get("longest_monologue_seconds")),
                 ))
-        except (json.JSONDecodeError, KeyError):
-            pass
+            except (KeyError, TypeError, AttributeError):
+                skipped += 1
 
     # Save commitments: JSON array of {owner_contact_id, is_user_commitment, description, ...}
     if commitments_data:
         try:
             comms = json.loads(commitments_data) if isinstance(commitments_data, str) else commitments_data
-            for c in comms:
+        except (json.JSONDecodeError, TypeError):
+            comms = []
+        for c in comms:
+            try:
                 statements.append((
                     """INSERT INTO commitments
                        (transcript_id, owner_contact_id, is_user_commitment, description,
@@ -181,14 +191,17 @@ def _add_analysis(transcript_id, participants, metrics, commitments_data,
                     (transcript_id, c.get("owner_contact_id"), c.get("is_user_commitment", 0),
                      c["description"], c.get("deadline_mentioned"), c.get("deadline_date")),
                 ))
-        except (json.JSONDecodeError, KeyError):
-            pass
+            except (KeyError, TypeError, AttributeError):
+                skipped += 1
 
     # Save insights: JSON array of {contact_id, insight_type, content, sentiment}
     if insights:
         try:
             ins = json.loads(insights) if isinstance(insights, str) else insights
-            for i in ins:
+        except (json.JSONDecodeError, TypeError):
+            ins = []
+        for i in ins:
+            try:
                 statements.append((
                     """INSERT INTO communication_insights
                        (transcript_id, contact_id, insight_type, content, sentiment, data_points)
@@ -197,14 +210,17 @@ def _add_analysis(transcript_id, participants, metrics, commitments_data,
                      i["content"], i.get("sentiment", "neutral"),
                      json.dumps(i["data_points"]) if i.get("data_points") else None),
                 ))
-        except (json.JSONDecodeError, KeyError):
-            pass
+            except (KeyError, TypeError, AttributeError):
+                skipped += 1
 
     # Save relationship scores: JSON array of {contact_id, meeting_frequency, talk_ratio_avg, ...}
     if relationship_scores:
         try:
             scores = json.loads(relationship_scores) if isinstance(relationship_scores, str) else relationship_scores
-            for s in scores:
+        except (json.JSONDecodeError, TypeError):
+            scores = []
+        for s in scores:
+            try:
                 statements.append((
                     """INSERT INTO relationship_scores
                        (contact_id, score_date, meeting_frequency, talk_ratio_avg,
@@ -217,14 +233,14 @@ def _add_analysis(transcript_id, participants, metrics, commitments_data,
                      s.get("relationship_depth"), s.get("trajectory"),
                      s.get("notes")),
                 ))
-        except (json.JSONDecodeError, KeyError):
-            pass
+            except (KeyError, TypeError, AttributeError):
+                skipped += 1
 
     if statements:
         execute_many(statements)
 
     return {
-        "result": {"transcript_id": transcript_id, "analysis_stored": True},
+        "result": {"transcript_id": transcript_id, "analysis_stored": True, "skipped": skipped},
         "_context": {
             "suggestions": [
                 "Present the analysis summary to the user",
