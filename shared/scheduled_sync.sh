@@ -78,6 +78,12 @@ fi
 log "Result: ${sync_result}"
 log "--- Sync complete ---"
 
+# --- Rebuild contact sheets (deterministic, stdlib-only — keeps "Your People" pages fresh) ---
+if command -v python3 >/dev/null 2>&1 && [[ -f "${CLAUDE_PLUGIN_ROOT}/scripts/build_contact_pages.py" ]]; then
+    pages_result=$(python3 "${CLAUDE_PLUGIN_ROOT}/scripts/build_contact_pages.py" 2>&1) || true
+    log "Pages: ${pages_result}"
+fi
+
 # --- Rotate log to prevent unbounded growth ---
 rotate_log
 

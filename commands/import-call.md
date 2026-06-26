@@ -181,6 +181,18 @@ Save it:
 UPDATE transcripts SET call_intelligence = ? WHERE id = ?;
 ```
 
+**3i. Refresh contact context + rebuild sheets (keep contact pages current):**
+
+This call is new interaction data — so the contacts in it must be updated, per CLAUDE.md → "Enrich contacts from interactions".
+
+- For each **participant contact** (not the user): refresh their interaction-derived `notes` context — WHO they are, the RELATIONSHIP, what was DISCUSSED, and the current STATE / open thread — folding in what this call adds. Ground every claim in the transcript; never fabricate (use the `STATE:` / `OPEN THREAD:` / `Basis:` labels so the visual brief renders cleanly). Always set `updated_at = datetime('now')` and log to `activity_log`.
+- Any **new person** named in the call who isn't a contact yet is a candidate to card (transcript-grounded role + context; leave role NULL if unstated).
+- Then rebuild the contact sheets so the visual pages reflect the new data:
+  ```
+  python3 "${CLAUDE_PLUGIN_ROOT:-$(pwd)}/scripts/build_contact_pages.py"
+  ```
+  (Read-only renderer; safe to run every import. Equivalent to `/contact-pages`.)
+
 ## Step 4: Present Results
 
 Present structured blocks first (at-a-glance), then narrative prose (deeper context).

@@ -146,3 +146,4 @@ Before generating any HTML view or answering questions about email/calendar data
 - **Multi-line SQL with special characters** — use heredoc syntax: `sqlite3 "...soy.db" <<'SQL' ... SQL`
 - **HTML output** — self-contained files written to `output/`, opened with `open <filepath>`. Use Tailwind CSS CDN + Lucide icons CDN + Inter font. Refer to `skills/dashboard-generation/` for the design system.
 - **Module-gated tables** — always check `SELECT name FROM modules WHERE enabled=1` before querying module-specific tables. Missing tables will error.
+- **Documented solutions** — `docs/solutions/` holds learnings from past problems (bugs, best practices, conventions), organized by category with YAML frontmatter (`module`, `tags`, `problem_type`). Relevant when implementing or debugging in a documented area.
