@@ -146,8 +146,34 @@ def main():
     if not success:
         parts.append(f"Warning: {msg}")
 
+    # Proactive surfacing: lead the session with what needs attention. Refresh the
+    # Signals Engine ledger from current data, then attach a one-line summary.
+    # Best-effort — never block or fail the session on this.
+    signal_line = get_signals_summary()
+    if signal_line:
+        parts.append(signal_line)
+
     output_result(" ".join(parts))
     sys.exit(0)
+
+
+def get_signals_summary():
+    """Refresh + summarize signals for in-session surfacing. Returns '' on any failure."""
+    script = os.path.join(PLUGIN_ROOT, "scripts", "signals.py")
+    if not os.path.exists(script):
+        return ""
+    try:
+        subprocess.run([sys.executable, script, "detect"],
+                       capture_output=True, text=True, timeout=10)
+        out = subprocess.run([sys.executable, script, "summary"],
+                             capture_output=True, text=True, timeout=10)
+        line = (out.stdout or "").strip()
+        # Skip the empty-state line so a clear inbox adds no noise to the context.
+        if line and "nothing needs attention" not in line.lower():
+            return line
+    except Exception:
+        pass
+    return ""
 
 
 if __name__ == "__main__":
