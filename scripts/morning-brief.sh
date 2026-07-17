@@ -20,15 +20,23 @@ PY="python3"
 mkdir -p "$OUTPUT_DIR"
 cd "$PLUGIN_ROOT"
 
-# 1. Sync fresh data (pure Python, no Claude).
-echo "[brief] syncing…"
-python3 scripts/pipeline.py --trigger cron >"${OUTPUT_DIR}/pipeline-${DATE}.log" 2>&1 || true
+# Bounded runner: cap a command's wall-clock so a hung child (e.g. an
+# unauthenticated headless `claude` under launchd) can never block delivery.
+# macOS has no `timeout` builtin; prefer coreutils, else a portable kill guard.
+run_bounded() {
+  local secs="$1"; shift
+  if command -v timeout >/dev/null 2>&1; then timeout "$secs" "$@"; return $?; fi
+  if command -v gtimeout >/dev/null 2>&1; then gtimeout "$secs" "$@"; return $?; fi
+  "$@" & local pid=$!
+  ( sleep "$secs"; kill -0 "$pid" 2>/dev/null && kill "$pid" 2>/dev/null ) & local w=$!
+  wait "$pid" 2>/dev/null; local rc=$?
+  kill "$w" 2>/dev/null; return "$rc"
+}
 
-# 2. Regenerate views deterministically if the renderer exists (Phase B). Never blocks.
-if [[ -f "${PLUGIN_ROOT}/scripts/render.py" ]]; then
-  echo "[brief] rendering views…"
-  "${PY}" scripts/render.py >"${OUTPUT_DIR}/render-${DATE}.log" 2>&1 || true
-fi
+# 1. Sync fresh data + render views deterministically (pipeline Phase 1 + Phase 3;
+#    no Claude). Phase 3 already regenerates the whole site, so no separate render.
+echo "[brief] syncing + rendering…"
+python3 scripts/pipeline.py --trigger cron >"${OUTPUT_DIR}/pipeline-${DATE}.log" 2>&1 || true
 
 # 3. Detect signals (deterministic; updates the state ledger).
 echo "[brief] detecting signals…"
@@ -59,10 +67,13 @@ except Exception:
     top = []
 
 today = datetime.date.today().strftime("%A, %B %-d")
+name_rows = q("SELECT value FROM user_profile WHERE category='identity' AND key='name'")
+name = name_rows[0]["value"] if name_rows else None
 events = q("SELECT title, start_time FROM calendar_events "
            "WHERE date(start_time)=date('now') AND status!='cancelled' ORDER BY start_time")
 
-lines = [f"# Morning Brief — {today}", ""]
+heading = f"# Morning Brief — {today}" + (f" · {name}" if name else "")
+lines = [heading, ""]
 if top:
     lines.append("## What needs your attention")
     for s in top:
@@ -84,21 +95,26 @@ open(brief_file, "w").write("\n".join(lines) + "\n")
 print(brief_file)
 PY
 
-# 5. Optional Claude enrichment — only if the CLI is reachable (launchd PATH may not
-#    include it). Rewrites the brief into grounded prose; failure keeps the floor brief.
+# 5. Optional Claude enrichment — bounded so it can NEVER block delivery, and
+#    written to a temp file so a killed/hung run can't corrupt the floor brief.
+#    Only the deterministic floor is guaranteed; enrichment is best-effort.
 if command -v claude >/dev/null 2>&1; then
-  echo "[brief] enriching via Claude…"
+  echo "[brief] enriching via Claude (bounded)…"
+  ENRICHED="${BRIEF_FILE}.enriched"
+  rm -f "$ENRICHED"
   PROMPT="You are Software of You. Data is already synced and today's signals are in the DB.
-Rewrite ${BRIEF_FILE} into a concise, grounded morning brief for Kerry (4-6 items max).
+Read ${BRIEF_FILE} and write a concise, grounded morning brief (4-6 items max) to ${ENRICHED}.
 Use ONLY facts from the DB and the current file — never invent numbers or names.
 Cover: what needs attention (from the signals already listed), today's calendar with attendee
 context where known, and any current/overdue commitments (use v_commitment_status).
-Keep the same file path. Skip automated/notification emails."
-  claude -p "$PROMPT" --allowedTools "Bash,Read,Write,Edit,Grep,Glob" \
+Skip automated/notification emails."
+  run_bounded 180 claude -p "$PROMPT" --allowedTools "Bash,Read,Write,Edit,Grep,Glob" \
     >"${OUTPUT_DIR}/brief-claude-${DATE}.log" 2>&1 || true
+  # Swap in the enriched version only if it actually produced content.
+  [[ -s "$ENRICHED" ]] && mv "$ENRICHED" "$BRIEF_FILE" || rm -f "$ENRICHED"
 fi
 
-# 6. Deliver: email to self + open the dashboard.
+# 6. Deliver: email to self + open the dashboard. The floor brief guarantees content.
 if [[ -s "$BRIEF_FILE" ]]; then
   echo "[brief] emailing…"
   python3 shared/send_email.py --subject "Morning Brief — ${DATE}" \

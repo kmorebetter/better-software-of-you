@@ -162,11 +162,13 @@ def get_signals_summary():
     script = os.path.join(PLUGIN_ROOT, "scripts", "signals.py")
     if not os.path.exists(script):
         return ""
+    # Tight timeouts: the SessionStart hook has a ~15s budget and this runs after
+    # migrations/module detection. detect refreshes the ledger; summary reads it.
     try:
         subprocess.run([sys.executable, script, "detect"],
-                       capture_output=True, text=True, timeout=10)
+                       capture_output=True, text=True, timeout=7)
         out = subprocess.run([sys.executable, script, "summary"],
-                             capture_output=True, text=True, timeout=10)
+                             capture_output=True, text=True, timeout=3)
         line = (out.stdout or "").strip()
         # Skip the empty-state line so a clear inbox adds no noise to the context.
         if line and "nothing needs attention" not in line.lower():
