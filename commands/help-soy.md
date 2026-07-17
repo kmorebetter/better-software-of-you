@@ -16,6 +16,7 @@ Present available commands based on what's installed:
 | Command | Description |
 |---------|-------------|
 | `/setup` | First-run setup (or re-check) |
+| `/morning` | Start-of-day catch-up — fresh pull of Gmail/Calendar/transcripts, regenerate dashboards, and a today briefing |
 | `/status` | System overview — modules, data counts, recent activity |
 | `/search <query>` | Natural language search across all your data |
 | `/note <entity> <content>` | Add a note to any contact or project |
@@ -32,6 +33,8 @@ Present available commands based on what's installed:
 | `/entity-page <name>` | Generate a contact intelligence brief |
 | `/build-all` | Generate ALL views — entity pages, project pages, module views, dashboard |
 | `/soul` | Generate a soul.md snapshot — your profile, patterns, and insights |
+| `/patrol` | Run system health checks, auto-repair issues, and open the health dashboard |
+| `/health` | Quick read-only health check (no repairs) |
 | `/help-soy` | This help page |
 
 ## If CRM Module Installed
