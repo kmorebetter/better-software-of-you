@@ -63,10 +63,10 @@ interactive pass).
 ## Step 5: Regenerate Dashboards
 
 Read `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/commands/build-all.md` and follow it completely:
-- Incremental by default — only rebuilds pages whose data changed, and creates pages for any
-  **new** contacts/projects (that's "the dashboards required").
-- Always rebuilds `dashboard.html`, `nudges.html`, `timeline.html`, `weekly-review.html`, `search.html`.
-- If `FULL_REBUILD = true`, run build-all in its `force` mode (rebuild everything).
+- The deterministic renderer (`scripts/render.py all`) rebuilds the whole site — dashboard, all
+  module views, and every contact entity page — in ~1–2 seconds.
+- Claude then refreshes narratives only for the contacts the renderer reports as stale.
+- If `FULL_REBUILD = true`, pass `force` to build-all so every data-rich contact's narrative is refreshed.
 
 Build-all's own Step 1 auto-sync is now a no-op (we just synced and stamped fresh timestamps).
 
@@ -91,8 +91,9 @@ WHERE date(start_time) = date('now') OR time_context IN ('now','imminent')
 ORDER BY start_time;
 
 -- Attention radar (counts + top items)
-SELECT tier, COUNT(*) FROM v_nudge_summary;            -- header counts
-SELECT tier, title, context FROM v_nudge_items ORDER BY tier LIMIT 8;
+SELECT tier, count FROM v_nudge_summary;              -- header counts
+SELECT tier, entity_name, description, extra_context FROM v_nudge_items
+ORDER BY CASE tier WHEN 'urgent' THEN 0 WHEN 'soon' THEN 1 ELSE 2 END LIMIT 8;
 
 -- Overdue commitments
 SELECT owner_name, description, days_overdue
