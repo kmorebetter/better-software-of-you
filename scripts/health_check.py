@@ -45,10 +45,11 @@ REQUIRED_TABLES = [
     "communication_insights", "relationship_scores", "decisions", "journal_entries",
     "standalone_notes", "transcript_sources", "user_profile", "google_accounts",
     "pipeline_runs", "pipeline_phases", "health_checks",
+    "slack_channels", "slack_messages",
 ]
 
 REQUIRED_VIEWS = [
-    "v_contact_health", "v_commitment_status", "v_commitment_triage",
+    "v_contact_health", "v_commitment_status",
     "v_nudge_items", "v_nudge_summary", "v_discovery_candidates",
     "v_meeting_prep", "v_project_health", "v_email_response_queue",
 ]

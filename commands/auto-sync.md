@@ -1,13 +1,14 @@
-Manage automatic background syncing (Gmail, Calendar, Transcripts) on a schedule — 3x/day at 8am, 12pm, 6pm.
+Manage automatic background syncing (Gmail, Calendar, Transcripts) at 8am/12pm/6pm **and** a weekday
+7:53am morning brief (what needs attention + today's calendar, emailed to you with a refreshed dashboard).
 
 **Subcommands:**
-- `on` — Enable the auto-sync schedule (installs launchd agent)
-- `off` — Disable the auto-sync schedule (removes launchd agent)
-- `status` — Show schedule status and recent sync log
+- `on` — Enable the schedule (installs the sync + brief launchd agents)
+- `off` — Disable the schedule (removes both agents)
+- `status` — Show agent status and recent sync/brief activity
 - `run` — Trigger an immediate sync now
-- `times` — Show the current sync schedule
+- `times` — Show the current schedule
 
-**How it works:** Uses macOS launchd to run the sync script at scheduled times, even if Claude Code isn't open. If your Mac is asleep at a scheduled time, the sync runs when it wakes up.
+**How it works:** Uses macOS launchd to run the sync script and morning brief at scheduled times, even if Claude Code isn't open. If your Mac is asleep at a scheduled time, the job runs when it wakes up.
 
 ---
 
@@ -27,65 +28,71 @@ Parse the user's subcommand from `$ARGUMENTS`. Default to `status` if no argumen
    chmod +x "${PLUGIN_ROOT}/shared/scheduled_sync.sh"
    ```
 
-3. Create the installed plist by copying the template and replacing placeholders:
+3. Create the installed plists by copying **both** templates and replacing placeholders — the
+   3×/day sync agent AND the morning-brief agent (fresh pull → deterministic render → Signals Engine
+   → grounded brief emailed to you + dashboard):
    ```bash
-   PLIST_SRC="${PLUGIN_ROOT}/shared/you.softwareof.sync.plist"
-   PLIST_DST="${HOME}/Library/LaunchAgents/you.softwareof.sync.plist"
    DATA_DIR="${HOME}/.local/share/software-of-you"
+   mkdir -p "${HOME}/Library/LaunchAgents" "${DATA_DIR}/logs"
 
-   mkdir -p "${HOME}/Library/LaunchAgents"
-   mkdir -p "${DATA_DIR}/logs"
-
-   sed -e "s|__PLUGIN_ROOT__|${PLUGIN_ROOT}|g" \
-       -e "s|__HOME__|${HOME}|g" \
-       -e "s|__DATA_DIR__|${DATA_DIR}|g" \
-       "${PLIST_SRC}" > "${PLIST_DST}"
+   for agent in sync brief; do
+     sed -e "s|__PLUGIN_ROOT__|${PLUGIN_ROOT}|g" \
+         -e "s|__HOME__|${HOME}|g" \
+         -e "s|__DATA_DIR__|${DATA_DIR}|g" \
+         "${PLUGIN_ROOT}/shared/you.softwareof.${agent}.plist" \
+         > "${HOME}/Library/LaunchAgents/you.softwareof.${agent}.plist"
+   done
    ```
 
-4. Load the agent (use modern launchctl API):
+4. Load both agents (use modern launchctl API):
    ```bash
    DOMAIN_TARGET="gui/$(id -u)"
-   launchctl bootout "${DOMAIN_TARGET}/you.softwareof.sync" 2>/dev/null || true
-   launchctl bootstrap "${DOMAIN_TARGET}" "${PLIST_DST}"
+   for agent in sync brief; do
+     launchctl bootout "${DOMAIN_TARGET}/you.softwareof.${agent}" 2>/dev/null || true
+     launchctl bootstrap "${DOMAIN_TARGET}" "${HOME}/Library/LaunchAgents/you.softwareof.${agent}.plist"
+   done
    ```
 
 5. Confirm to the user:
    > Auto-sync enabled. Gmail, Calendar, and Transcripts will sync at **8:00 AM**, **12:00 PM**, and **6:00 PM** daily.
+   > A **morning brief** (what needs your attention + today's calendar) will land in your inbox at **7:53 AM** on weekdays, and your dashboard will refresh with it.
    >
    > Use `/auto-sync status` to check on it, or `/auto-sync off` to disable.
 
 ### Subcommand: `off`
 
-1. Unload and remove:
+1. Unload and remove both agents:
    ```bash
-   PLIST_DST="${HOME}/Library/LaunchAgents/you.softwareof.sync.plist"
    DOMAIN_TARGET="gui/$(id -u)"
-   launchctl bootout "${DOMAIN_TARGET}/you.softwareof.sync" 2>/dev/null || true
-   rm -f "${PLIST_DST}"
+   for agent in sync brief; do
+     launchctl bootout "${DOMAIN_TARGET}/you.softwareof.${agent}" 2>/dev/null || true
+     rm -f "${HOME}/Library/LaunchAgents/you.softwareof.${agent}.plist"
+   done
    ```
 
 2. Confirm:
-   > Auto-sync disabled. Background syncing has been turned off. Your data will only sync when you're in a Claude Code session.
+   > Auto-sync disabled. Background syncing and the morning brief have been turned off. Your data will only sync when you're in a Claude Code session.
 
 ### Subcommand: `status`
 
-1. Check if the plist is installed:
+1. Check whether each agent is installed and loaded:
    ```bash
-   PLIST_DST="${HOME}/Library/LaunchAgents/you.softwareof.sync.plist"
-   ls -la "${PLIST_DST}" 2>/dev/null
+   ls -la "${HOME}/Library/LaunchAgents/you.softwareof.sync.plist" 2>/dev/null
+   ls -la "${HOME}/Library/LaunchAgents/you.softwareof.brief.plist" 2>/dev/null
    launchctl list | grep softwareof 2>/dev/null
    ```
 
-2. Show last 5 sync log entries:
+2. Show recent sync + brief activity:
    ```bash
-   LOG_FILE="${HOME}/.local/share/software-of-you/logs/sync.log"
-   tail -n 10 "${LOG_FILE}" 2>/dev/null
+   LOG_DIR="${HOME}/.local/share/software-of-you/logs"
+   tail -n 10 "${LOG_DIR}/sync.log" 2>/dev/null
+   tail -n 5 "${LOG_DIR}/launchd-brief.log" 2>/dev/null
    ```
 
 3. Present as a clean status report:
-   - **Schedule:** Active / Inactive
-   - **Next sync times:** 8:00 AM, 12:00 PM, 6:00 PM
-   - **Recent syncs:** show last few entries from the log
+   - **Sync agent:** Active / Inactive — 8:00 AM, 12:00 PM, 6:00 PM
+   - **Brief agent:** Active / Inactive — 7:53 AM weekdays (email + dashboard)
+   - **Recent activity:** last few entries from each log
 
 ### Subcommand: `run`
 

@@ -1,5 +1,40 @@
 # Common Query Patterns
 
+## Computed Views First
+
+The database ships pre-computed SQL views (defined in `data/migrations/014_computed_views.sql`
+and `020_slack_views.sql`) that already do the deterministic math — counts, days-silent,
+overdue tiers, completion percentages. **If a view column gives you the number, read it
+directly. Do not re-derive it with an ad-hoc JOIN or subquery.** Claude narrates the numbers;
+it does not recompute them. This mirrors the "Computed Views" rule in the project's CLAUDE.md.
+
+| View | What it provides | Use instead of |
+|------|-----------------|----------------|
+| `v_contact_health` | Per-contact: email/interaction/Slack counts, days silent, relationship depth/trajectory, open commitments, next meeting | Ad-hoc JOINs across emails + interactions + commitments + relationship_scores |
+| `v_commitment_status` | All open/overdue commitments with owner name, source call, days overdue, urgency tier | Manual commitment queries with CASE statements |
+| `v_nudge_items` | Unified nudge feed: all urgency tiers, all entity types, pre-computed days and context | Separate queries per nudge type (follow-ups, commitments, tasks, cold contacts, etc.) |
+| `v_nudge_summary` | Count per tier (urgent/soon/awareness) | Manually summing nudge queries |
+| `v_discovery_candidates` | Frequent emailers not in CRM with relevance scores | The inline discovery query with a wall of NOT LIKE filters |
+| `v_meeting_prep` | Per-event: time context, minutes until, duration, project info | Ad-hoc calendar queries with time calculations |
+| `v_project_health` | Per-project: task counts, completion %, overdue tasks, days to target, milestones, client name | Separate task/milestone/activity queries per project |
+| `v_email_response_queue` | Inbound emails needing reply with age and urgency | Complex thread-matching subqueries |
+
+Examples:
+```sql
+-- Contact health snapshot — everything in one row, no manual counting
+SELECT * FROM v_contact_health WHERE id = ?;
+
+-- Project rollups with client name and completion %
+SELECT name, client_name, completion_pct, overdue_tasks FROM v_project_health;
+
+-- What needs attention, already tiered (tier is text — order it explicitly)
+SELECT * FROM v_nudge_items
+ORDER BY CASE tier WHEN 'urgent' THEN 0 WHEN 'soon' THEN 1 ELSE 2 END;
+```
+
+**Ad-hoc joins below are only for data no view covers** (free-text search, activity
+logging, tag lookups, raw date filtering). When a view already exposes the column, prefer it.
+
 ## Text Search
 ```sql
 -- Search contacts by name or company
@@ -13,18 +48,16 @@ UNION ALL
 SELECT 'note' as type, id, substr(content, 1, 80) as title FROM notes WHERE content LIKE '%term%';
 ```
 
-## Cross-Module Joins
+## Trivial Joins
+
+For a plain lookup a view doesn't cover, a direct join is fine. (For per-contact or
+per-project rollups, use `v_contact_health` / `v_project_health` instead — they already
+carry `client_name`, counts, and days-silent.)
+
 ```sql
--- Projects with client names
+-- Projects with client names (simple label join — no rollups)
 SELECT p.*, c.name as client_name, c.email as client_email
 FROM projects p LEFT JOIN contacts c ON p.client_id = c.id;
-
--- All data for a contact (use contact_id = ?)
-SELECT c.*,
-  (SELECT COUNT(*) FROM notes WHERE entity_type='contact' AND entity_id=c.id) as note_count,
-  (SELECT COUNT(*) FROM projects WHERE client_id=c.id) as project_count,
-  (SELECT COUNT(*) FROM follow_ups WHERE contact_id=c.id AND status='pending') as pending_followups
-FROM contacts c WHERE c.id = ?;
 ```
 
 ## Activity Logging

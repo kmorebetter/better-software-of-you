@@ -251,30 +251,36 @@ def run_pipeline(trigger="manual", with_claude=False, skip_sync=False):
         update_phase(conn, phase_id, "skipped", result={"reason": "no --with-claude flag"})
         print("  Skipping transcript analysis (no --with-claude)")
 
-    # ── Phase 3: View regeneration ───────────────────────────────────
-    if with_claude:
-        phase_id = create_phase(conn, run_id, "view_generation")
-        update_phase(conn, phase_id, "running")
-        print("  Regenerating views...")
-
-        prompt = (
-            "Regenerate the main dashboard and key views with fresh data. "
-            "Generate: dashboard, contacts index, week view, email hub, nudges, "
-            "timeline, conversations, notes, decision journal, and any entity pages "
-            "for contacts with recent activity. Write all HTML to the output/ directory. "
-            "Be concise — just generate and report what was created."
+    # ── Phase 3: View regeneration (deterministic — no Claude needed) ─
+    # The renderer builds the whole site in ~1-2s from the computed views; it
+    # runs regardless of --with-claude (structure never needs the model). Narrative
+    # refresh for stale contacts is a separate, interactive concern (see build-all).
+    phase_id = create_phase(conn, run_id, "view_generation")
+    update_phase(conn, phase_id, "running")
+    print("  Rendering views (deterministic)...")
+    try:
+        render_py = str(PROJECT_ROOT / "scripts" / "render.py")
+        proc = subprocess.run(
+            [SYNC_PYTHON, render_py, "all"],
+            capture_output=True, text=True, timeout=120, cwd=str(PROJECT_ROOT),
         )
-        result = run_claude_phase(prompt, timeout=600)
-        has_error = result.get("error")
-        update_phase(conn, phase_id, "failed" if has_error else "completed", result=result, error=has_error)
-        results["view_generation"] = result
-        if has_error:
-            any_failed = True
-        print(f"    [{'x' if has_error else 'ok'}] view generation")
-    else:
-        phase_id = create_phase(conn, run_id, "view_generation")
-        update_phase(conn, phase_id, "skipped", result={"reason": "no --with-claude flag"})
-        print("  Skipping view generation (no --with-claude)")
+        try:
+            # render.py prints one (multi-line, indented) JSON summary object.
+            result = json.loads(proc.stdout.strip()) if proc.stdout.strip() else {}
+        except (json.JSONDecodeError, ValueError):
+            result = {"stdout": proc.stdout[:300]}
+        if proc.returncode != 0:
+            result["error"] = proc.stderr.strip()[:500] or "render.py returned non-zero"
+    except subprocess.TimeoutExpired:
+        result = {"error": "Timeout after 120s"}
+    except Exception as e:
+        result = {"error": str(e)}
+    has_error = result.get("error")
+    update_phase(conn, phase_id, "failed" if has_error else "completed", result=result, error=has_error)
+    results["view_generation"] = result
+    if has_error:
+        any_failed = True
+    print(f"    [{'x' if has_error else 'ok'}] view generation ({result.get('count', '?')} pages)")
 
     # ── Finalize ─────────────────────────────────────────────────────
     # Determine overall status

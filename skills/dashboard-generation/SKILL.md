@@ -31,6 +31,10 @@ All views share a consistent visual language:
 - `references/component-patterns.md` — reusable snippets for stat cards, tables, timelines, badges
 - `references/delight-patterns.md` — micro-interactions, animations, copy personality, and empty state patterns
 - `references/shared-html-patterns.md` — cross-command patterns: header cards, stat pills, filter tabs, left-border cards, empty states, avatar/icon patterns, color/icon reference table, footer, nav badge query, view registration SQL
+- `references/activity-feed-patterns.md` — timeline components for entity pages: section dividers, collapsed email threads, and other dated activity items
+- `references/navigation-patterns.md` — the persistent left sidebar every page embeds: nav data queries, sidebar structure and active-state variants, entity-page listing rules, page layout wrapper, and footer
+- `references/staleness-queries.md` — `/build-all` incremental-build queries: per-page-type `MAX()` timestamps compared against `generated_views.updated_at` to decide what needs rebuilding
+- `references/entity-page-reference.html` — a full worked-example contact entity page (sidebar + layout + sections) to model new entity pages on
 
 ## View Types
 

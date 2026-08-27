@@ -33,7 +33,7 @@ python3 "${CLAUDE_PLUGIN_ROOT:-$(pwd)}/scripts/health_check.py" --fix --json
 
 | Check | What | Auto-Fix |
 |-------|------|----------|
-| **Database integrity** | All 31 tables + 9 views exist, SQLite integrity_check passes, no FK violations | Runs bootstrap to recreate missing tables/views |
+| **Database integrity** | 33 required tables + 8 required views exist, SQLite integrity_check passes, no FK violations | Runs bootstrap to recreate missing tables/views |
 | **OAuth tokens** | Token files exist, not expired, have refresh tokens | Auto-refreshes expired tokens |
 | **HTML views** | Core views (dashboard, contacts, week-view, email-hub, nudges, timeline) exist with content | Flags missing views in `soy_meta` for regeneration |
 | **Backups** | Backup directory has files, latest is < 48h old | Creates fresh backup |
